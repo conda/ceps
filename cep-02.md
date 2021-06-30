@@ -4,8 +4,8 @@
 <tr><td> Status </td><td> Draft </td></tr>
 <tr><td> Author(s) </td><td> Jannis Leidel <jleidel@anaconda.com></td></tr>
 <tr><td> Created </td><td> Jun 29, 2021</td></tr>
-<tr><td> Updated </td><td> Jun 29, 2021</td></tr>
-<tr><td> Discussion </td><td> https://github.com/conda-forge/conda-forge-enhancement-proposals/pull/6 </td></tr>
+<tr><td> Updated </td><td> Jun 30, 2021</td></tr>
+<tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/1 </td></tr>
 <tr><td> Implementation </td><td> (listed below) </td></tr>
 </table>
 
