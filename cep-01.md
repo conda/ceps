@@ -123,6 +123,12 @@ included if appropriate for the proposal include.
 
 A final **Copyright** section is also required.
 
+## Pronunciation
+
+CEP is to be pronounced `/sep/`.
+
+If you have doubts about how to actually pronounce it, here you have a reference (we accept UK and US pronunciations): https://dictionary.cambridge.org/dictionary/english/cep
+
 ## References
 
 Much of this document was adapted from [CFEP 1 - Purpose and Guidelines](https://github.com/conda-forge/cfep/blob/master/cfep-01.md) and
