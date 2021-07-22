@@ -4,7 +4,7 @@
 <tr><td> Author(s) </td><td> Jannis Leidel &lt;jleidel@anaconda.com&gt;</td></tr>
 <tr><td> Created </td><td> Jul 20, 2021</td></tr>
 <tr><td> Updated </td><td> Jul 22, 2021</td></tr>
-<tr><td> Discussion </td><td> https://github.com/conda/ceps/pulls/XX </td></tr>
+<tr><td> Discussion </td><td> https://github.com/conda/ceps/pulls/2 </td></tr>
 <tr><td> Implementation </td><td> NA </td></tr>
 </table>
 
