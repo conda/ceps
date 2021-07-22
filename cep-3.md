@@ -16,16 +16,16 @@ modern solver based on [libsolv]. The result was the basis for the
 alternative Conda implementation called [Mamba].
 
 The intention of this CEP is to propose an experimental feature for
-Conda to add support for solver used in [Mamba], based on the plugin
+Conda to add support for the solver used in [Mamba], based on the plugin
 architecture proposed in [CEP 2].
 
 ## Motivation
 
 Conda's functionality and usability is predicated on the runtime
 characteristics of its low-level dependency resolver since it's a
-major part of its architecture -- next to the general CLI code
-infrastructure, environment management and the handling of repo
-and channel data.
+major part of its architecture -- next to the code infrastructure
+for the command line interface, the environment management and
+the handling of repo and channel data.
 
 Speed, accuracy, debuggability and other impacts on the user
 experience are all heavily reliant on the underlying functionality of the
@@ -45,7 +45,7 @@ been worked on by community members.
 ## Specificaton
 
 Conda contains a solver registry in the `conda.resolve` module that
-must be extended to using the plugin architecture mentioned in CEP 2.
+must be extended to using the plugin architecture specified in CEP 2.
 
 Conda currently (4.10.x) supports three solvers:
 
@@ -55,16 +55,19 @@ Conda currently (4.10.x) supports three solvers:
 
 Depending on the outcome of [CEP 2], the existing solver registry should
 be replaced by a mechanism to extend the registry using Conda "plugins",
-which are defined as separately installed and maintained packages.
+which are intended to be distributed as separately installed and maintained
+packages but can also be included in the main Conda project.
 
 The default choice for the solver registry must stay the same as long
 as the Mamba solver plugin is marked as experimental. Only after
 considerable functional and integration testing to verify the performance
-and solving improvements, it would be considered to be enabled as the
+and solving improvements, it could be considered to be enabled as the
 default -- in a new major version of Conda.
 
-The metrics to consider the experiment to be successful are to be
-determined as part of the work on this CEP.
+The metrics that define the success of this experiment are to be determined
+as part of the work on this CEP in coordination with the work on a
+separate CEP for the minimum viable solving behavior and the related
+test suite.
 
 ## Backwards Compatibility
 
@@ -73,9 +76,9 @@ already supported solvers, it's to be expected that Mamba's solver will
 also produce slightly different solutions, depending to the requested
 set of dependencies.
 
-One prerequisite to implementing this CEP is it therefor to provide a
+One prerequisite to implementing this CEP is therefor to provide a
 list of essential dependency solutions in the form of an automatic test
-suite of expected solutions and a prose documentation of the minimal
+suite of expected solutions and a prose documentation of the minimum
 viable solving behavior. Both will be the basis to determine the success
 integration success of the Mamba solver to secure backward compatible
 at a high degree.
