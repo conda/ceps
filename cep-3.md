@@ -28,7 +28,7 @@ for the command line interface, the environment management and
 the handling of repo and channel data.
 
 Speed, accuracy, debuggability and other impacts on the user
-experience are all heavily reliant on the underlying functionality of the
+experience are heavily reliant on the underlying functionality of the
 solver and Conda's ability to interpret and communicate it to the user.
 For example long running calls of the Conda install command to resolve
 complex environments and dependency trees directly impacts users'
@@ -45,7 +45,7 @@ been worked on by community members.
 ## Specificaton
 
 Conda contains a solver registry in the `conda.resolve` module that
-must be extended to using the plugin architecture specified in CEP 2.
+must be extended to use the plugin architecture specified in CEP 2.
 
 Conda currently (4.10.x) supports three solvers:
 
@@ -79,9 +79,8 @@ set of dependencies.
 One prerequisite to implementing this CEP is therefor to provide a
 list of essential dependency solutions in the form of an automatic test
 suite of expected solutions and a prose documentation of the minimum
-viable solving behavior. Both will be the basis to determine the success
-integration success of the Mamba solver to secure backward compatible
-at a high degree.
+viable solving behavior. Both will be the basis to determine the integration
+success of the Mamba solver to secure backward compatibility at a high degree.
 
 Any potential backward incompatibilities discovered as part of this
 work require formal documentation to be shared with the Conda users
