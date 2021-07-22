@@ -55,7 +55,7 @@ or as part of a Conda community meeting is the best way to go about this.
 
 Once the champion has asked the Conda community as to whether an idea
 has any chance of acceptance, a draft CEP should be written following the
-template in [CEP-00](cep-00.md) and described below.
+template in [CEP 0](cep-0.md) and described below.
 
 While working on the CEP prior to submission please set its Status to Draft.
 
@@ -122,6 +122,12 @@ included if appropriate for the proposal include.
     * Reference -- Any references used in the design of the CEP.
 
 A final **Copyright** section is also required.
+
+## Pronunciation
+
+CEP is to be pronounced `/sep/`.
+
+If you have doubts about how to actually pronounce it, here you have a reference (we accept UK and US pronunciations): https://dictionary.cambridge.org/dictionary/english/cep
 
 ## References
 
