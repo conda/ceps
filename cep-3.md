@@ -102,6 +102,7 @@ solver.
 [pysat]: https://github.com/pysathq/pysat
 [Mamba]: https://github.com/mamba-org/mamba
 [PicoSAT]: http://fmv.jku.at/picosat/
+[Conda]: https://docs.conda.io/projects/conda/
 
 ## Copyright
 
