@@ -1,7 +1,7 @@
 
 <table>
 <tr><td> Title </td><td> Add plugin architecture to Conda </td>
-<tr><td> Status </td><td> Draft </td></tr>
+<tr><td> Status </td><td> Accepted </td></tr>
 <tr><td> Author(s) </td><td> Jannis Leidel <jleidel@anaconda.com></td></tr>
 <tr><td> Created </td><td> Jun 29, 2021</td></tr>
 <tr><td> Updated </td><td> Jun 30, 2021</td></tr>
