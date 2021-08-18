@@ -17,7 +17,7 @@ Note that there will be a few proposals within this one ... we shall call them "
 
 ## Changes that could be made
 
-1. Adding emoticons to PRs to quickly show what the intent of it is. 🛠️ for refactor, 🐛 for bug fix, etc (examples [here](https://gitmoji.dev/))
+1. Adding emoticons to PRs to quickly show what the intent of it is. 🛠️ for refactor, 🐛 for bug fix, etc (examples [gitmoji](https://gitmoji.dev/))
 1. Enforcing linting on PRs
 1. Make use of the "Discussions" tab to add and facilitate conversations and help
 1. PR template. No more guessing what it should look like or assuming everyone will know it  
@@ -40,6 +40,7 @@ Other relevant sections of the proposal.  Common sections include:
     * FAQ -- Frequently asked questions (and answers to them).
     * Resolution -- A short summary of the decision made by the community.
     * Reference -- Any references used in the design of the CEP.
+
 
 ## Copyright
 
