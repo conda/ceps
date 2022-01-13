@@ -1,6 +1,6 @@
 <table>
 <tr><td> Title </td><td> Constructor creates signed installers </td>
-<tr><td> Status </td><td> Draft </td></tr>
+<tr><td> Status </td><td> Proposed </td></tr>
 <tr><td> Author(s) </td><td> Steve Croce &lt;scroce@anaconda.com&gt;</td></tr>
 <tr><td> Created </td><td> Dec 21, 2021</td></tr>
 <tr><td> Updated </td><td> Jan 12, 2022</td></tr>
