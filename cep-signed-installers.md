@@ -10,7 +10,7 @@
 
 ## Abstract
 
-A standard practice (among many) to provide secure software executables and installers is code signing. Both Microsoft and Apple have solutions to this for the Windows and MacOS operating systems, respectively, and in both cases the default operating system behavior is to enforce that only signed/trusted applications can run. To address this requirement for conda-based installers, Anaconda and others, use a post-processing step to sign the installers they distribute. However, it would be beneficial to software security worldwide if Constructor had the ability to automate the signing process for Windows and MacOS, using a provided certificate.
+A standard practice (among many) to provide secure software executables and installers is code signing. Both Microsoft and Apple have solutions to this for the Windows and MacOS operating systems, respectively, and in both cases the default operating system behavior is to enforce that only signed/trusted applications can run. To address this requirement for conda-based installers, Anaconda, and others use a post-processing step to sign the installers they distribute. However, it would be beneficial to software security worldwide if Constructor had the ability to automate the signing process for Windows and MacOS, using a provided certificate.
 
 ## Motivation
 
