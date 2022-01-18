@@ -1,6 +1,6 @@
 <table>
 <tr><td> Title </td><td> Authentication support in conda </td>
-<tr><td> Status </td><td> Draft </td></tr>
+<tr><td> Status </td><td> Proposed </td></tr>
 <tr><td> Author(s) </td><td> Steve Croce &lt;scroce@anaconda.com&gt;</td></tr>
 <tr><td> Created </td><td> Dec 29, 2021</td></tr>
 <tr><td> Updated </td><td> Jan 12, 2022</td></tr>
@@ -10,15 +10,15 @@
 
 ## Abstract
 
-An integrated and pluggable authentication mechanism should be added to conda that allows conda to handle the login/authentication with a repo, securely store any keys/tokens/secrets, then provide credentials with repo requests. Though a reference implementation (e.g. HTTP basic authentication) should be created as part of the initial work, the authentication system should be pluggable to support other authentication mechanisms.
+An integrated and pluggable authentication mechanism should be added to conda that allows conda to handle login/authentication with a repo, securely store any keys/tokens/secrets, then provide credentials with repo requests. Though a reference implementation (e.g. HTTP basic authentication) should be created as part of the initial work, the authentication system should be pluggable to support other authentication mechanisms.
 
 ## Motivation
 
 The need for authenticated access to a repository is well established and numerous products from Anaconda alone provide this feature today. However, each product handles authenticated access to repos slightly differently (see references 1-4), so there are numerous additional commands and tools used to handle the login, token management, and repo access portions.
 
-The ability to send credentials along with repo requests is also a common request within the conda's Github issues (see references 5-7). There are workarounds for basic auth (credentials in repo URL, .netrc file), but no complete and secure solution that enables conda users to connect to protected repos.
+The ability to send credentials along with repo requests is also a common request within conda's Github issues (see references 5-7). There are workarounds for basic auth (credentials in repo URL, .netrc file), but no complete and secure solution that enables conda users to connect to protected repos.
 
-Finally, there is no common mechanism for users to create their own secured repos, outside of anaconda.org. Built-in authentication in conda would lower the bar and enable more users to create a protected repository.
+Finally, there is no common mechanism for users to create their own secure repos, outside of anaconda.org. Built-in authentication in conda would lower the bar and enable more users to create a protected repository.
 
 ## Specification
 
@@ -33,13 +33,13 @@ This enhancement should focus on three main capabilities:
 In the case of basic auth, an example flow would be:
 
 1. User adds a new channel along with the credentials to access it. Proposed options for providing credentials:
-  - retrieved from environment variables
-  - set in a configuration file, like `.condarc`, or separate new file that specifies auth type and credentials per channel.
-  - a new conda command that adds a channel (e.g. `conda login <channel>`) with a prompt for credentials when trying to log in.
+    - retrieved from environment variables
+    - set in a configuration file, like `.condarc`, or separate new file that specifies auth type and credentials per channel.
+    - a new conda command that adds a channel (e.g. `conda login <channel>`) with a prompt for credentials when trying to log in.
 2. Credentials are stored along with channel configuration in a secure way such that the user only needs to enter credentials again if the credentials change, or the user has logged out/removed the credentials from conda.
 3. User performs a conda command (e.g. `conda install`) the command proceed without user intervention to provide credentials.
-  - When performing a conda command that connects to an authenticated repo, conda determines whether credentials have been provided for that repo and attaches them to the request
-  - If auth fails, retries/reenter credentials could be attempted
+    - When performing a conda command that connects to an authenticated repo, conda determines whether credentials have been provided for that repo and attaches them to the request
+    - If auth fails, retries/reenter credentials could be attempted
 4. Command completes and conda reports back any auth issues in the process
 
 ### Design Goals
