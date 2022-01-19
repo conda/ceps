@@ -1,9 +1,9 @@
 <table>
-<tr><td> Title </td><td> conda-build creates .conda packages </td>
-<tr><td> Status </td><td> Draft </td></tr>
+<tr><td> Title </td><td> Improved support for .conda packages in conda-build </td>
+<tr><td> Status </td><td> Proposed </td></tr>
 <tr><td> Author(s) </td><td> Steve Croce &lt;scroce@anaconda.com&gt;</td></tr>
 <tr><td> Created </td><td> Dec 29, 2021</td></tr>
-<tr><td> Updated </td><td> Jan 12, 2022</td></tr>
+<tr><td> Updated </td><td> Jan 18, 2022</td></tr>
 <tr><td> Discussion </td><td> NA </td></tr>
 <tr><td> Implementation </td><td> To be implemented </td></tr>
 </table>
@@ -16,13 +16,13 @@ The `.conda` package format has been in use within the conda ecosystem for years
 
 Today, conda-build includes functionality to create `.conda` packages if:
 
-- in package's meta.yaml, output `type` field set to `conda_v2` *OR*
+- in a package's meta.yaml, output `type` field set to `conda_v2` *OR*
 - in .condarc, `pkg_format` is set to 2
 
 The proposal is to:
 
-- Expand the `pkg_format` setting in the .condarc to accept a list of formats to build at once.
-- Expand the conda_build_config.yaml with a setting to define package format and accept a list of formats.
+- Expand the `pkg_format` setting in the .condarc to accept a list of formats to build.
+- Expand the conda_build_config.yaml with a setting to provide package format(s) and accept a list of formats.
 - Improve conda-build's documentation for the package format and how to create it
 
 A topic for discussion is whether default behavior should changed at some point to build both `.tar.bz2` and `.conda`, and the appropriate timeline to do so. This could help improve adoption and support of the `.conda` format.
