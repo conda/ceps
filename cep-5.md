@@ -25,7 +25,7 @@ Below is a table comparing the various package repositories supported by conda-s
 <tr><td> **rpm** </td><td> Yes </td><td> No </td></tr>
 </table>
 
-**Motivation**
+## Motivation
 
 conda-skeleton is poorly maintained and is deep integrated with conda-build. This makes it harder to make changes and improvements to conda-skeleton without breaking something in conda-build itself. Grayskull is a community-developed conda recipe generator. It is a standalone tool and is a major improvement upon conda-skeleton.
 
@@ -35,7 +35,7 @@ conda-skeleton is poorly maintained and is deep integrated with conda-build. Thi
 
 The Grayskull codebase is highly modular and hence easy to understand, follow and maintain.
 
-**Backwards Compatibility**
+## Backwards Compatibility
 
 The proposed change will not break existing packages or workflows, since backwards compatibility will be maintained.
 
