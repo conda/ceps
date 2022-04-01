@@ -29,7 +29,7 @@ Below is a table comparing the various package repositories supported by conda-s
 **Motivation**
 Why the proposed change is needed.
 
-conda-skeleton is poorly maintained and is deep integrated with conda-build. This makes it harder to make changes and improvements to conda-skeleton without breaking something in conda-build itself. Grayskull is community developed conda recipe generator. It is a stand alone tool and is a major improvement upon conda-skeleton.
+conda-skeleton is poorly maintained and is deep integrated with conda-build. This makes it harder to make changes and improvements to conda-skeleton without breaking something in conda-build itself. Grayskull is a community-developed conda recipe generator. It is a standalone tool and is a major improvement upon conda-skeleton.
 
   * Generates recipes faster than conda-skeleton (conda-skeleton generates Pytest recipe in 31 sec, whereas Grayskull generates it in 4 sec)
   * Detects noarch:python, conda-skeleton does not.
