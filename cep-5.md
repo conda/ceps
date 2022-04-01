@@ -21,7 +21,7 @@ Below is a table comparing the various package repositories supported by conda-s
 <tr><td> **Package Repository** </td><td> **Supported by conda-skeleton** </td><td> **Supported by Grayskull** </td>
 <tr><td> **PyPI** </td><td> Yes </td><td> Yes </td></tr>
 <tr><td> **CRAN** </td><td> Yes</td><td> WIP </td></tr>
-<tr><td> **CPAN** </td><td> Yes </td></td> No </td></tr>
+<tr><td> **CPAN** </td><td> Yes </td><td> No </td></tr>
 <tr><td> **Luarocks** </td><td> Yes </td><td> No </td></tr>
 <tr><td> **rpm** </td><td> Yes </td><td> No </td></tr>
 </table>
