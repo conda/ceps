@@ -38,9 +38,8 @@ conda-skeleton is poorly maintained and is deep integrated with conda-build. Thi
 The Grayskull codebase is highly modular and hence easy to understand, follow and maintain.
 
 **Backwards Compatibility**
-Will the proposed change break existing packages or workflows
 
-Backwards compatibility is maintained.
+The proposed change will not break existing packages or workflows, since backwards compatibility will be maintained.
 
 
 * FAQ -- Frequently asked questions (and answers to them).
