@@ -11,9 +11,7 @@
 
 conda-skeleton, the conda recipe generator, unfortunately is not well maintained. It is also deeply integrated with conda build itself. Grayskull, a community innovation, on the other hand is a stand alone conda recipe generator. Migrating away from conda-skeleton and adopting Grayskull as the de facto conda recipe generator would allow easy maintainence and faster generation of recipes.
 
-## Other sections
-
-**Specification**
+## Specification
 Grayskull presently supports the generation of recipes from PyPI and Python packages on GitHub. To make the migration from conda-skeleton to Grayskull, it is required to add more package origins to Grayskull. Adding R support to Grayskull is already a work in progress.
 Below is a table comparing the various package repositories supported by conda-skeleton and Grayskull for recipe generation.
 
@@ -26,9 +24,7 @@ Below is a table comparing the various package repositories supported by conda-s
 <tr><td> **rpm** </td><td> Yes </td><td> No </td></tr>
 </table>
 
-**Motivation**
-Why the proposed change is needed.
-
+## Motivation
 conda-skeleton is poorly maintained and is deep integrated with conda-build. This makes it harder to make changes and improvements to conda-skeleton without breaking something in conda-build itself. Grayskull is community developed conda recipe generator. It is a stand alone tool and is a major improvement upon conda-skeleton.
 
   * Generates recipes faster than conda-skeleton (conda-skeleton generates Pytest recipe in 31 sec, whereas Grayskull generates it in 4 sec)
@@ -37,9 +33,7 @@ conda-skeleton is poorly maintained and is deep integrated with conda-build. Thi
 
 The Grayskull codebase is highly modular and hence easy to understand, follow and maintain.
 
-**Backwards Compatibility**
-Will the proposed change break existing packages or workflows
-
+## Backwards Compatibility
 Backwards compatibility is maintained.
 
 
