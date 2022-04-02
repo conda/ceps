@@ -10,15 +10,15 @@
 
 ## Abstract
 
-Conda downloads a per-channel `repodata.json`, a file listing all available packages, when it changes, but a typical `repodata.json` update only adds a handful of packages. If conda could download just the changes it would save bandwidth and time. This document outlines a `repodata-patch.json` containing a list of patches needed to bring recent versions of `repodata.json` up to date with the most current version. If it has not been too long since the last complete `repodata.json` was fetch, conda can download a tiny file to bring the user up to date.
+Conda downloads a per-channel `repodata.json`, a file listing all available packages, when it changes, but a typical `repodata.json` update only adds a handful of packages. If conda could download just the changes it would save bandwidth and time. This document outlines a `repodata-patch.json` containing a list of patches needed to bring recent versions of `repodata.json` up to date with the most current version. If it has not been too long since the last complete `repodata.json` was fetched, conda can download a tiny file to bring the user up to date.
 
-## Specification
+## Narrative
 
-When re-indexing a conda repository, also update a file `repodata-patch.json` containing a relative url to the target repodata; a hash of the most recent complete `repodata.json` and zero or more RFC 6902 Json Patch documents listed from newest to oldest. Each patch is accompanied by a hash `from` of the older version of the file, and a hash `to` of the newer version of the file. After inserting a new patch, discard the oldest patches to maintain `repodata-patch.json` at a useful size, perhaps no more than 10% of the size of the full file.
+When re-indexing a conda repository, also update a file `repodata-patch.json` containing a url to the target repodata; a hash of the most recent complete `repodata.json` and zero or more RFC 6902 Json Patch documents listed from newest to oldest. Each patch is accompanied by a hash `from` of the older version of the file, and a hash `to` of the newer version of the file. After inserting a new patch, discard the oldest patches to maintain `repodata-patch.json` at a useful size, perhaps no more than 10% of the size of the full file.
 
 When updating metadata, look for a remote `repodata-patch.json` having a newer `Last-Modified` date compared to `repodata.json`. Download using standard HTTP caching rules.
 
-To apply patches, take the hash of the most recent complete `repodata.json`. Follow the list of patches in `repodata-patch.json` from the first one whose `to` matches `latest`, to the next one whose `to` matches the more recent `from` and so on, pushing these onto a stack until a patch with a `from` hash matching the cached, outdated `repodata.json` is found. If the desired `from` hash is found, pop each patch off the stack applying them in turn to the outdated `repodata.json`. The result is logically equal to the latest `repodata.json`. Since Json Patch does not preserve formatting, the new `repodata.json` cannot be hashed unless it is normalized and re-serialized, but it can be considered to have the `latest` hash for purposes of incremental updates.
+To apply patches, take the `BLAKE2(256)` hash of the most recent complete `repodata.json`. Follow the list of patches in `repodata-patch.json` from the first one whose `to` matches `latest`, to the next one whose `to` matches the more recent `from` and so on, pushing these onto a stack until a patch with a `from` hash matching the cached, outdated `repodata.json` is found. If the desired `from` hash is found, pop each patch off the stack applying them in turn to the outdated `repodata.json`. The result is logically equal to the latest `repodata.json`. Since Json Patch does not preserve formatting, the new `repodata.json` cannot be hashed unless it is normalized and re-serialized, but it can be considered to have the `latest` hash for purposes of incremental updates.
 
 If the desired hash is not found, download the complete `repodata.json` as before.
 
@@ -138,6 +138,8 @@ An example of two patches against `repodata.json` adding a few packages to this 
 
 In a realistic test, a ~1.3MB (225kB compressed using standard `Content-Encoding: gzip`) patch set represented three months of changes to Anaconda's `main/linux-64` channel; so users who `conda install` more than once a season would be able to download 225kB instead of 3.7MB.
 
+The patches took about 2 seconds each to create and are faster to apply.
+
 ## Alternatives
 
 JSON Merge Patch is simpler, but does not allow the `null` values occasionally used in `repodata.json`.
@@ -147,6 +149,7 @@ Textual diff + patch would work, but `conda` needs the data and not the formatti
 ## Reference
 
 * JSON Patch https://datatracker.ietf.org/doc/html/rfc6902
+* Rust implementation https://github.com/dholth/jdiff
 
 ## Copyright
 
