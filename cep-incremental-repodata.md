@@ -181,15 +181,28 @@ The patches took about 2 seconds each to create and are faster to apply.
 8b9c825f33cc68354f131dd810a068256e34153b7335619eeb187b51a54c7118
 ```
 
-The `.jlap` format allows clients to fetch the newest patches with a single HTTP Range request. It consists of a leading checksum, any number of lines of the elements of the `"patches"` array and a `"metadata"` line in the [JSON Lines](https://jsonlines.readthedocs.io/en/latest/) format, and a trailing checksum.
+The `.jlap` format allows clients to fetch the newest patches with a single HTTP
+Range request. It consists of a leading checksum, any number of lines of the
+elements of the `"patches"` array and a `"metadata"` line in the [JSON
+Lines](https://jsonlines.readthedocs.io/en/latest/) format, and a trailing
+checksum.
 
-The checksums are constructed in such a way that the trailing checksum can be re-verified without re-reading (or retaining) the beginning of the file, if the client remembers an intermediate checksum.
+The checksums are constructed in such a way that the trailing checksum can be
+re-verified without re-reading (or retaining) the beginning of the file, if the
+client remembers an intermediate checksum.
 
-When `repodata.json` changes, the server wil truncate the `metadata` line, appending new patches, a new metadata line and a new trailing checksum.
+When `repodata.json` changes, the server wil truncate the `"metadata"` line,
+appending new patches, a new metadata line and a new trailing checksum.
 
-When the client wants new data, it issues a single HTTP Range request from the bytes offset of the beginning of the penultimate `"metadata"` line, to the end of the file (`Range: bytes=<offset>-`), and re-verifies the trailing checksum. If the trailing checksum does not match the computed checksum then it must re-fetch the entire file; otherwise, it may apply the new patches.
+When the client wants new data, it issues a single HTTP Range request from the
+bytes offset of the beginning of the penultimate `"metadata"` line, to the end
+of the file (`Range: bytes=<offset>-`), and re-verifies the trailing checksum.
+If the trailing checksum does not match the computed checksum then it must
+re-fetch the entire file; otherwise, it may apply the new patches.
 
-If the `.jlap` file represents part of a stream (earlier lines have been discarded) then the leading checksum is an intermediate checksum from that stream. Otherwise the leading checksum is all `0`'s.
+If the `.jlap` file represents part of a stream (earlier lines have been
+discarded) then the leading checksum is an intermediate checksum from that
+stream. Otherwise the leading checksum is all `0`'s.
 
 ## Alternatives
 
