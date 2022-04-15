@@ -3,7 +3,7 @@
 <tr><td> Status </td><td> Draft </td></tr>
 <tr><td> Author(s) </td><td> Daniel Holth &lt;dholth@gmail.com | dholth@anaconda.com&gt;</td></tr>
 <tr><td> Created </td><td> Mar 30, 2022</td></tr>
-<tr><td> Updated </td><td> Mar 30, 2022</td></tr>
+<tr><td> Updated </td><td> Apr 14, 2022</td></tr>
 <tr><td> Discussion </td><td> NA </td></tr>
 <tr><td> Implementation </td><td> NA </td></tr>
 </table>
@@ -171,6 +171,26 @@ a season would be able to download 225kB instead of 3.7MB.
 
 The patches took about 2 seconds each to create and are faster to apply.
 
+## JSON Lines With Leading and Trailing Checksums
+
+```
+0000000000000000000000000000000000000000000000000000000000000000
+{"to": "af99a2269795b91aee909eebc6b71a127f8001475c67c2345c96253b97378b21", "from": "af99a2269795b91aee909eebc6b71a127f8001475c67c2345c96253b97378b21", "patch": []}
+...
+{"url": "", "latest": "af99a2269795b91aee909eebc6b71a127f8001475c67c2345c96253b97378b21", "headers": {"date": "Thu, 14 Apr 2022 17:24:36 GMT", "last-modified": "Tue, 28 May 2019 02:01:41 GMT"}}
+8b9c825f33cc68354f131dd810a068256e34153b7335619eeb187b51a54c7118
+```
+
+The `.jlap` format allows clients to fetch the newest patches with a single HTTP Range request. It consists of a leading checksum, any number of lines of the elements of the `"patches"` array and a `"metadata"` line in the [JSON Lines](https://jsonlines.readthedocs.io/en/latest/) format, and a trailing checksum.
+
+The checksums are constructed in such a way that the trailing checksum can be re-verified without re-reading (or retaining) the beginning of the file, if the client remembers an intermediate checksum.
+
+When `repodata.json` changes, the server wil truncate the `metadata` line, appending new patches, a new metadata line and a new trailing checksum.
+
+When the client wants new data, it issues a single HTTP Range request from the bytes offset of the beginning of the penultimate `"metadata"` line, to the end of the file (`Range: bytes=<offset>-`), and re-verifies the trailing checksum. If the trailing checksum does not match the computed checksum then it must re-fetch the entire file; otherwise, it may apply the new patches.
+
+If the `.jlap` file represents part of a stream (earlier lines have been discarded) then the leading checksum is an intermediate checksum from that stream. Otherwise the leading checksum is all `0`'s.
+
 ## Alternatives
 
 JSON Merge Patch is simpler, but does not allow the `null` values occasionally
@@ -183,6 +203,7 @@ formatting.
 
 * JSON Patch https://datatracker.ietf.org/doc/html/rfc6902
 * Rust implementation https://github.com/dholth/jdiff
+* Server and client implementation https://github.com/dholth/repodata-fly
 
 ## Copyright
 
