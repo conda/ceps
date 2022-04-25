@@ -11,10 +11,10 @@
 
 ## Abstract
 
-In order to better facilitate better communicate between users of `conda` and channel owners, we wish to 
+In order to facilitate better communication between users of `conda` and channel owners, we want to 
 implement a notification feature.
 Specifically, this feature will give channel owners the ability to send users a small message (about the size 
-of a single Twitter post). How often this message displays will be set by channel owners,
+of a single Twitter post). How often this message displays will be set by channel owners
 and will be displayed for each channel a user is actively using (i.e. everything under "channels" in a
 user's `.condarc`).
 
@@ -28,9 +28,11 @@ The messages may contain but are not limited to the following use cases:
 
 ## Specification
 
-### When will show this message?
+The specification is described below via a question-answer format.
 
-The notification message will be limited to only appearing on the following commands:
+### When will this message be shown?
+
+The notification message will appear while running the following commands:
 
 - `create`
 - `env create`
@@ -41,7 +43,7 @@ The notification message will be limited to only appearing on the following comm
 
 The reasoning behind this decision is that the above commands all retrieve `repodata.json` from the configured
 channels. Simply adding another file request (which is very small and immediately cached) would not add much more
-overhead to the execution of these commands. Additionally, these are commands where the user already expects network
+overhead to the execution of these commands. Additionally, these are commands where our users already expect network
 traffic to occur, so the requirement for having an active internet connection is assumed.
 
 Here's an example of how a notification message may appear while running the `conda create` command:
@@ -67,12 +69,13 @@ Notice [info]:
 
 ```
 
-### How else can the user access this message?
+### How else can our users access this message?
 
-Additionally, because users may wish to see this message on demand, we will add a new sub-command called `motd`
-for doing just that. The following are a couple examples to show exactly how it would function:
+Additionally, because our users may wish to see this message on demand, we will add a new sub-command called `motd` or
+`notices` or `alerts` (exact name is yet to be determined) The following are a couple examples to show exactly how 
+it would function:
 
-**Basic usage:** grabs the MOTD for all current channels:
+**Basic usage:** grabs notifications for all current channels:
 
 ```
 $ conda (alerts|motd|notices)
@@ -90,7 +93,17 @@ Here is another message. It could have info about the latest happenings or blog 
 https://conda-forge.org/
 ```
 
-### What file format will this message have and what will it contain?
+**Show a single channel:** grabs notifications for a single channel:
+
+```
+$ conda (alerts|motd|notices) -c default
+
+Notice [info]:
+This is a test message. It is not very long, and could have a link to a longer post:
+https://example.com/short-link
+```
+
+### What file format will this message have, and what will it contain?
 
 The notification message will be in the JSON file format. This will allow us to not only store the message itself but 
 also metadata about the message, including information about how often the client should display the message (more on 
@@ -134,7 +147,7 @@ The motivation for this CEP came about as channel owners (Anaconda specifically)
 users of their channels. These messages may contain specific notices for particular users (e.g. identified by
 IP address) or general messages for the wider audience of a particular channel.
 
-Additionally, this new notification space can also provide a spot for us to relocate "conda update conda" reminders 
+Additionally, this new notification space can also provide a place for us to relocate `conda update conda` reminders 
 to a more visible spot (at the end of command output versus in the middle of the output). On top of this, other channels
 can use these notifications as a way to share news with their users or "calls for help" in maintaining their channels.
 
@@ -151,7 +164,7 @@ We do not expect any backwards compatibility issues for this new feature.
 ## Alternatives
 
 - **Show MOTD at the beginning of environment activation** This was deemed a little too intrusive/annoying.
-- **Show MOTD at the beginning of command output** Users may miss this if place here, especially for commands
+- **Show MOTD at the beginning of command output** Users may miss this if placed here, especially for commands
   with lots of output
 
 
