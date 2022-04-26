@@ -137,7 +137,7 @@ Detailed overview of the JSON fields:
 
 ### How often will these messages appear?
 
-How often the messages appears will be configurable by the channel owners and the client. This will be accomplished by 
+How often the messages appear will be configurable by the channel owners and the client. This will be accomplished by 
 the expiry field in the `notifications.json` file itself, but the client will the have ultimate say over whether this
 message is displayed. We will provide clients with a setting to permanently disable these messages in their `.condarc`
 files:
