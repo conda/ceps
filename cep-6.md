@@ -65,15 +65,14 @@ Solving environment: done
 Notice [info]:
 > Here is a message to the user
 > Here is a link they could click: https://example.com/link-name
-> To see the message again, run `conda motd`
+> To see the message again, run `conda alert`
 
 ```
 
 ### How else can our users access this message?
 
-Additionally, because our users may wish to see this message on demand, we will add a new sub-command called `motd` or
-`notices` or `alerts` (exact name is yet to be determined) The following are a couple examples to show exactly how 
-it would function:
+Additionally, because our users may wish to see this message on demand, we will add a new sub-command called `alerts`. 
+The following are a couple examples to show exactly how it would function:
 
 **Basic usage:** grabs notifications for all current channels:
 
@@ -161,6 +160,7 @@ can use these notifications as a way to share news with their users or "calls fo
 
 TBD
 
+
 ## Backwards Compatibility
 
 We do not expect any backwards compatibility issues for this new feature.
@@ -168,8 +168,8 @@ We do not expect any backwards compatibility issues for this new feature.
 
 ## Alternatives
 
-- **Show MOTD at the beginning of environment activation** This was deemed a little too intrusive/annoying.
-- **Show MOTD at the beginning of command output** Users may miss this if placed here, especially for commands
+- **Show notifications at the beginning of environment activation** This was deemed a little too intrusive/annoying.
+- **Show notifications at the beginning of command output** Users may miss this if placed here, especially for commands
   with lots of output
 
 
