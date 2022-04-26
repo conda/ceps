@@ -78,7 +78,7 @@ it would function:
 **Basic usage:** grabs notifications for all current channels:
 
 ```
-$ conda (alerts|motd|notices)
+$ conda alerts
 
 Channel: defaults
 
@@ -96,7 +96,7 @@ https://conda-forge.org/
 **Show a single channel:** grabs notifications for a single channel:
 
 ```
-$ conda (alerts|motd|notices) -c default
+$ conda alerts -c default
 
 Notice [info]:
 This is a test message. It is not very long, and could have a link to a longer post:
@@ -109,33 +109,38 @@ The notification message will be in the JSON file format. This will allow us to 
 also metadata about the message, including information about how often the client should display the message (more on 
 this in the next section).
 
-Here's an example of the `notifications.json` file which will be stored alongside files such as `repodata.json` on the
-channel servers:
+Here's an example of the `notifications.json` file which will be stored in the root of the channel directory structure.
 
 ```json
 {
   "notifications": [
     {
+      "id": "1cd1d8e5-d96c-42d1-9c29-e8120ad80823",
       "message": "Here is an example message that will be displayed to users",
       "level": "info",
-      "created_at": "2022-05-01 00:00:00",
-      "show_again": "7 days"
+      "created_at": "2022-04-26T11:50:34+00:00",
+      "expiry": 604800
     }
   ]
 }
 ```
 
-### How often will this message appear?
+Detailed overview of the JSON fields:
 
-How often the message appears will be configurable by the channel owners. This will be accomplished by several fields
-within the `notifications.json` file itself.  They are as follows:
+- **notifications** [Array] holds zero or more notifications that will be displayed to the client.
+  - **id** [String] unique ID for the message itself. UUIDs are preferred, but there is no required format.
+  - **message** [String] message that gets displayed to users.
+  - **level** [String] one of (info|warning|error). These will let our users know the category of the message
+    and will also allow the client to apply different formatting rules (e.g. text color).
+  - **created_at** [String] ISO 8601 formatted timestamp showing the creation time of the message.
+  - **expiry** [Number] a number specifying how long in seconds the message is valid for.
 
-- **created_at** Lets `conda` know how the old the message is
-- **show_again** plain english explanation of when to check for a new message; combining this with the previous field
-  allows us to know when to refresh our cache.
+### How often will these messages appear?
 
-The client will also have ultimate say over whether this message is displayed. We will provide clients with a setting
-to permanently disable these messages in their `.condarc` files:
+How often the messages appears will be configurable by the channel owners and the client. This will be accomplished by 
+the expiry field in the `notifications.json` file itself, but the client will the have ultimate say over whether this
+message is displayed. We will provide clients with a setting to permanently disable these messages in their `.condarc`
+files:
 
 ```yaml
 display_notifications: false
