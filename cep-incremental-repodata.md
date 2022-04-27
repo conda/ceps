@@ -10,25 +10,57 @@
 
 ## Abstract
 
-`conda install` and other conda commands must download the entire per-channel `repodata.json`, a file listing all available packages, if it has changed, but a typical `repodata.json` update only adds a fraction of the total number of packages. If conda could download just the changes it would save bandwidth and time. This document outlines a system to bring `repodata.json` up to date by applying patches between successive versions. If it has not been too long since the last complete `repodata.json` was fetched, `conda` can download a tiny file to bring the user up to date.
+`conda install` and other conda commands must download the entire per-channel
+`repodata.json`, a file listing all available packages, if it has changed, but a
+typical `repodata.json` update only adds a fraction of the total number of
+packages. If conda could download just the changes it would save bandwidth and
+time. This document outlines a system to bring `repodata.json` up to date by
+applying patches between successive versions. If it has not been too long since
+the last complete `repodata.json` was fetched, `conda` can download a tiny file
+to bring the user up to date.
 
 ## Narrative
 
-When re-indexing a conda repository, also update a line-delimited file `repodata.jlap` containing a leading checksum; zero or more RFC 6902 JSON Patch documents listed from oldest to newest, one per line; a metadata line with a hash of the most recent complete `repodata.json`; and a trailing checksum.
+When re-indexing a conda repository, also update a line-delimited file
+`repodata.jlap` containing a leading checksum; zero or more RFC 6902 JSON Patch
+documents listed from oldest to newest, one per line; a metadata line with a
+hash of the most recent complete `repodata.json`; and a trailing checksum.
 
-The `repodata.jlap` format has a leading and trailing checksum. The server adds patches to `repodata.jlap` by truncating the trailing checksum and metadata, appending new patches, a new metadata line, and a new trailing checksum. The client receives the newest patches in a single round trip by requesting `Range: bytes={offset of start of local metadata line}-` until the end of the remote file.
+The `repodata.jlap` format has a leading and trailing checksum. The server adds
+patches to `repodata.jlap` by truncating the trailing checksum and metadata,
+appending new patches, a new metadata line, and a new trailing checksum. The
+client receives the newest patches in a single round trip by requesting `Range:
+bytes={offset of start of local metadata line}-` until the end of the remote
+file.
 
-The checksum is constructed so that by saving an intermediate checksum, the client can verify new patches even if it has discarded earlier, consumed patches. If the trailing checksum does not match the local computed checksum, then the file was corrupted or the server has begun a new patch series; re-download the remote `.jlap` from the beginning.
+The checksum is constructed so that by saving an intermediate checksum, the
+client can verify new patches even if it has discarded earlier, consumed
+patches. If the trailing checksum does not match the local computed checksum,
+then the file was corrupted or the server has begun a new patch series;
+re-download the remote `.jlap` from the beginning.
 
-`repodata.json` versions are identified by a hash of their verbatim contents. Each patch is accompanied by a hash `from` an older version of the file, and a hash `to` of a newer version of the file.
+`repodata.json` versions are identified by a hash of their verbatim contents.
+Each patch is accompanied by a hash `from` an older version of the file, and a
+hash `to` of a newer version of the file.
 
-To apply patches, take the `BLAKE2(256)` hash of the most recent complete `repodata.json`. Follow the list of patches in `repodata.jlap` from the first one whose `to` matches `latest`, to the next one whose `to` matches the more recent `from` and so on, pushing these onto a stack until a patch is found whose `from` hash matches the local `repodata.json`. If the desired `from` hash is found, pop each patch off the stack, applying them in turn to the outdated `repodata.json`. The result is logically equal to the latest `repodata.json`.
+To apply patches, take the `BLAKE2(256)` hash of the most recent complete
+`repodata.json`. Follow the list of patches in `repodata.jlap` from the first
+one whose `to` matches `latest`, to the next one whose `to` matches the more
+recent `from` and so on, pushing these onto a stack until a patch is found whose
+`from` hash matches the local `repodata.json`. If the desired `from` hash is
+found, pop each patch off the stack, applying them in turn to the outdated
+`repodata.json`. The result is logically equal to the latest `repodata.json`.
 
-Since JSON Patch does not preserve formatting, the new `repodata.json` will not hash equal to `latest` unless it is sorted and re-serialized, with the `json.dump(...)` settings used in `conda-build index`. Otherwise it should be considered to have the `latest` hash for purposes of incremental updates.
+Since JSON Patch does not preserve formatting, the new `repodata.json` will not
+hash equal to `latest` unless it is sorted and re-serialized, with the
+`json.dump(...)` settings used in `conda-build index`. Otherwise it should be
+considered to have the `latest` hash for purposes of incremental updates.
 
-If the desired hash is not found in the `repodata.jlap` patch set, download the complete `repodata.json` as before.
+If the desired hash is not found in the `repodata.jlap` patch set, download the
+complete `repodata.json` as before.
 
-An example of a patche against conda-forge `repodata.json`, adding packages to this ~170MB (23MB compressed) file:
+An example of a patche against conda-forge `repodata.json`, adding packages to
+this ~170MB (23MB compressed) file:
 
 ```
 0000000000000000000000000000000000000000000000000000000000000000
@@ -38,9 +70,13 @@ An example of a patche against conda-forge `repodata.json`, adding packages to t
 716c483577e3a3f99a47db5a395f41598c5c5af6b7beaf95601ec8308f4d263d
 ```
 
-The penultimate metadata line may include response headers for its corresponding `repodata.json`.
+The penultimate metadata line may include response headers for its corresponding
+`repodata.json`.
 
-When downloading new patches, a local cache service logs the number of lines, and number of bytes added, which is greater than the `Content-Encoding: gzip` compressed bytes transferred. (Ideally the feature would be integrated into `conda` itself instead of going through a local cache server):
+When downloading new patches, a local cache service logs the number of lines,
+and number of bytes added, which is greater than the `Content-Encoding: gzip`
+compressed bytes transferred. (Ideally the feature would be integrated into
+`conda` itself instead of going through a local cache server):
 
 ```
 206 1517572 https://repodata.fly.dev/conda.anaconda.org/conda-forge/linux-64/repodata.jlap {'accept-ranges': 'bytes', 'content-encoding': 'gzip', 'content-range': 'bytes 2978004-4495575/4495576', 'content-type': 'text/plain; charset=utf-8', 'last-modified': 'Tue, 26 Apr 2022 18:15:13 GMT', 'date': 'Wed, 27 Apr 2022 00:23:05 GMT', 'transfer-encoding': 'chunked', 'server': 'Fly/f71cab89 (2022-04-21)', 'via': '1.1 fly.io', 'fly-request-id': '01G1M6CVSF3Q4MF33QSRMG7B3D-iad'}
@@ -48,7 +84,7 @@ Append 2978004-4495576 (135 lines)
 Was 2978219, now 4495576 bytes, delta 1517357
 serve ~/.cache/repodata-proxy/conda.anaconda.org/conda-forge/linux-64/repodata.json.gz
 
-Apply 134 patches 0575ec9555ea4f05… -> 0575ec9555ea4f05…...
+Apply 134 patches 0575ec9555ea4f05… → 0575ec9555ea4f05…...
 0575ec9555ea4f05… → 42e4827f62bb860e…, 173 steps
 42e4827f62bb860e… → 54506a213ba69d8f…, 2 steps
 54506a213ba69d8f… → 9034f593d5dd3caa…, 18 steps
@@ -191,7 +227,24 @@ The times are from PyPy running on an older Intel(R) Core(TM) i7-5500U laptop.
 
 ## Summary
 
-The proposed system saves bandwith when a locally cached `repodata.json` is known by the patch server, with a very concise client implementation. After the first update, subsequent updates fetch only the newest information using a single round trip to the server.
+The proposed system saves bandwith when a locally cached `repodata.json` is
+known by the patch server, with a very concise client implementation. After the
+first update, subsequent updates fetch only the newest information using a
+single round trip to the server.
+
+## Alternatives
+
+JSON Merge Patch is simpler but does not allow the `null` values occasionally
+used in `repodata.json`.
+
+Textual diff + patch would work, but `conda` needs the data and not the
+formatting.
+
+`zchunk` is a compression format used in Fedora, implemented in C. It splits
+files into independently compressed chunks, transferring changed chunks on
+update. It is generic on bytes. The server does not have to keep a history of
+older versions. The web server should support multipart Range requests, not true
+of s3, probably OK for CDN.
 
 ## JSON Lines With Leading and Trailing Checksums
 
@@ -225,15 +278,6 @@ re-fetch the entire file; otherwise, it may apply the new patches.
 If the `.jlap` file represents part of a stream (earlier lines have been
 discarded) then the leading checksum is an intermediate checksum from that
 stream. Otherwise the leading checksum is all `0`'s.
-
-## Alternatives
-
-JSON Merge Patch is simpler but does not allow the `null` values occasionally used in `repodata.json`.
-
-Textual diff + patch would work, but `conda` needs the data and not the formatting.
-
-`zchunk` is a compression format used in Fedora, implemented in C. It splits files into independently compressed chunks, transferring changed chunks on update. It is generic on bytes. The server does not have to keep a history of older versions.
-
 ## Reference
 
 * JSON Patch https://datatracker.ietf.org/doc/html/rfc6902
