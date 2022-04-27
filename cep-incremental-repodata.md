@@ -278,6 +278,7 @@ re-fetch the entire file; otherwise, it may apply the new patches.
 If the `.jlap` file represents part of a stream (earlier lines have been
 discarded) then the leading checksum is an intermediate checksum from that
 stream. Otherwise the leading checksum is all `0`'s.
+
 ## Reference
 
 * JSON Patch https://datatracker.ietf.org/doc/html/rfc6902
