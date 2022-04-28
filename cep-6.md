@@ -24,7 +24,7 @@ The messages may contain but are not limited to the following use cases:
 - How to sponsor, volunteer or help out a particular channel
 - Warnings about a breach of TOS while using a particular channel
 - Status updates about the stability of the channel
-
+- Announcements for planned security releases
 
 ## Specification
 
@@ -36,10 +36,10 @@ The notification message will appear while running the following commands:
 
 - `create`
 - `env create`
-- `install`
-- `update`
 - `env update`
+- `install`
 - `search`
+- `update`
 
 The reasoning behind this decision is that the above commands all retrieve `repodata.json` from the configured
 channels. Simply adding another file request (which is very small and immediately cached) would not add much more
@@ -62,7 +62,7 @@ Solving environment: done
 
 ... (output truncated)
 
-Notice [info]:
+Channel notices (info):
 > Here is a message to the user
 > Here is a link they could click: https://example.com/link-name
 > To see the message again, run `conda alerts`
@@ -71,7 +71,7 @@ Notice [info]:
 
 ### How else can our users access this message?
 
-Additionally, because our users may wish to see this message on demand, we will add a new sub-command called `alerts`. 
+Additionally, because our users may wish to see this message on demand, we will add a new sub-command called `notices`. 
 The following are a couple examples to show exactly how it would function:
 
 **Basic usage:** grabs notifications for all current channels:
@@ -132,7 +132,7 @@ Detailed overview of the JSON fields:
   - **level** [String] one of (info|warning|error). These will let our users know the category of the message
     and will also allow the client to apply different formatting rules (e.g. text color).
   - **created_at** [String] ISO 8601 formatted timestamp showing the creation time of the message.
-  - **expiry** [Number] a number specifying how long in seconds the message is valid for.
+  - **expiry** [Number] starting at `created_at`, a number specifying how long in seconds the message is valid for.
 
 ### How often will these messages appear?
 
@@ -153,7 +153,7 @@ IP address) or general messages for the wider audience of a particular channel.
 
 Additionally, this new notification space can also provide a place for us to relocate `conda update conda` reminders 
 to a more visible spot (at the end of command output versus in the middle of the output). On top of this, other channels
-can use these notifications as a way to share news with their users or "calls for help" in maintaining their channels.
+can use these notifications as a way to share news with their users or requests for help in maintaining their channels.
 
 
 ## Rationale
