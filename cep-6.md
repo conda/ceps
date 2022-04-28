@@ -65,7 +65,7 @@ Solving environment: done
 Notice [info]:
 > Here is a message to the user
 > Here is a link they could click: https://example.com/link-name
-> To see the message again, run `conda alert`
+> To see the message again, run `conda alerts`
 
 ```
 
