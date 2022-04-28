@@ -142,7 +142,7 @@ message is displayed. We will provide clients with a setting to permanently disa
 files:
 
 ```yaml
-display_notifications: false
+display_alerts: false
 ```
 
 ## Motivation
