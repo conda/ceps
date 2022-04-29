@@ -1,5 +1,5 @@
 <table>
-    <tr><td> Title </td><td>Add Channel Notifications to conda</td>
+    <tr><td> Title </td><td>Add Channel Notices to conda</td>
     <tr><td> Status </td><td>Draft</td></tr>
     <tr><td> Author(s) </td><td>Travis Hathaway &lt;thathaway@anaconda.com&gt;</td></tr>
     <tr><td> Created </td><td> Apr 21, 2022</td></tr>
@@ -63,10 +63,12 @@ Solving environment: done
 ... (output truncated)
 
 Channel notices (info):
-> Here is a message to the user
-> Here is a link they could click: https://example.com/link-name
-> To see the message again, run `conda alerts`
 
+  Here is a message to the user
+  Here is a link they could click: https://example.com/link-name
+  To see the message again, run `conda notices`
+
+End of channel notices
 ```
 
 ### How else can our users access this message?
@@ -74,30 +76,30 @@ Channel notices (info):
 Additionally, because our users may wish to see this message on demand, we will add a new sub-command called `notices`. 
 The following are a couple examples to show exactly how it would function:
 
-**Basic usage:** grabs notifications for all current channels:
+**Basic usage:** grabs notices for all current channels:
 
 ```
-$ conda alerts
+$ conda notices
 
 Channel: defaults
 
-Notice [info]:
+Notices [info]:
 This is a test message. It is not very long, and could have a link to a longer post:
 https://example.com/short-link
 
 Channel: conda-forge
 
-Notice [info]:
+Notices [info]:
 Here is another message. It could have info about the latest happenings or blog posts from conda-forge:
 https://conda-forge.org/
 ```
 
-**Show a single channel:** grabs notifications for a single channel:
+**Show a single channel:** grabs notices for a single channel:
 
 ```
-$ conda alerts -c default
+$ conda notices -c defaults
 
-Notice [info]:
+Notices [info]:
 This is a test message. It is not very long, and could have a link to a longer post:
 https://example.com/short-link
 ```
@@ -108,17 +110,18 @@ The notification message will be in the JSON file format. This will allow us to 
 also metadata about the message, including information about how often the client should display the message (more on 
 this in the next section).
 
-Here's an example of the `notifications.json` file which will be stored in the root of the channel directory structure.
+Here's an example of the `notices.json` file which will be stored in the root of the channel directory structure.
 
 ```json
 {
-  "notifications": [
+  "notices": [
     {
       "id": "1cd1d8e5-d96c-42d1-9c29-e8120ad80823",
       "message": "Here is an example message that will be displayed to users",
       "level": "info",
       "created_at": "2022-04-26T11:50:34+00:00",
-      "expiry": 604800
+      "expiry": 604800,
+      "interval": 604800
     }
   ]
 }
@@ -126,23 +129,25 @@ Here's an example of the `notifications.json` file which will be stored in the r
 
 Detailed overview of the JSON fields:
 
-- **notifications** [Array] holds zero or more notifications that will be displayed to the client.
+- **notices** [Array] holds zero or more notices that will be displayed to the client.
   - **id** [String] unique ID for the message itself. UUIDs are preferred, but there is no required format.
   - **message** [String] message that gets displayed to users.
-  - **level** [String] one of (info|warning|error). These will let our users know the category of the message
+  - **level** [String] one of (info|warning|critical). These will let our users know the category of the message
     and will also allow the client to apply different formatting rules (e.g. text color).
   - **created_at** [String] ISO 8601 formatted timestamp showing the creation time of the message.
   - **expiry** [Number] starting at `created_at`, a number specifying how long in seconds the message is valid for.
+  - **interval** [Number] starting from the modified time of a cache file, the time in seconds specifying how often
+    this is shown to the user.
 
 ### How often will these messages appear?
 
 How often the messages appear will be configurable by the channel owners and the client. This will be accomplished by 
-the expiry field in the `notifications.json` file itself, but the client will the have ultimate say over whether this
+the expiry field in the `notices.json` file itself, but the client will the have ultimate say over whether this
 message is displayed. We will provide clients with a setting to permanently disable these messages in their `.condarc`
 files:
 
 ```yaml
-display_alerts: false
+display_notices: false
 ```
 
 ## Motivation
@@ -153,7 +158,7 @@ IP address) or general messages for the wider audience of a particular channel.
 
 Additionally, this new notification space can also provide a place for us to relocate `conda update conda` reminders 
 to a more visible spot (at the end of command output versus in the middle of the output). On top of this, other channels
-can use these notifications as a way to share news with their users or requests for help in maintaining their channels.
+can use these notices as a way to share news with their users or requests for help in maintaining their channels.
 
 
 ## Rationale
@@ -168,9 +173,22 @@ We do not expect any backwards compatibility issues for this new feature.
 
 ## Alternatives
 
-- **Show notifications at the beginning of environment activation** This was deemed a little too intrusive/annoying.
-- **Show notifications at the beginning of command output** Users may miss this if placed here, especially for commands
+- **Show notices at the beginning of environment activation:** This was deemed too intrusive/annoying.
+- **Show notices at the beginning of command output:** Users may miss this if placed here, especially for commands
   with lots of output
+- **Message in an HTTP header when retrieving any file from the repository:** This would be a better option for some kinds 
+  of messages, like download rate limiting or other blocks due to abuse, since it could be turned on by a rule in a CDN.
+  However, this use case is probably better addressed by having a standard way for conda to display errors on the 
+  console from HTTP status codes like 429 (Too Many Requests) and 403 (Forbidden). Additionally, serving custom headers
+  is challenging unless the repository owner has more control over the web server than is usually given by services 
+  like Github Pages.
+- **Add notices to the repodata.json file:** The repodata.json file is already being fetched, so adding some
+  notices would reduce the number of requests. However, the repodata.json file is way too big already, so it 
+  would require clients to download a fairly large file before even being able to show the notification.
+- **Create a generic metadata.json file containing a notices key:** This could be appealing for
+  creating a space for other kinds of channel metadata, but in order to keep things as simple as possible at the moment
+  it makes more sense to put these in their own file. Plus, it allows more flexibility for dynamic routing options
+  to this file if that becomes necessary in the future.
 
 
 ## References
