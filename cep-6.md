@@ -138,6 +138,10 @@ Detailed overview of the JSON fields:
   - **expiry** [Number] starting at `created_at`, a number specifying how long in seconds the message is valid for.
   - **interval** [Number] starting from the modified time of a cache file, the time in seconds specifying how often
     this is shown to the user.
+  - **arch** Optional[String] allows messages to be targeted to users of a certain architecture.
+    - Example value: `win-64`, `linux-64`, etc.
+  - **conda_version** Optional[String] allows messages to be targeted to users of a certain `conda` version.
+    - Example value: `4.12.0`
 
 ### How often will these messages appear?
 
@@ -178,7 +182,7 @@ We do not expect any backwards compatibility issues for this new feature.
   with lots of output
 - **Message in an HTTP header when retrieving any file from the repository:** This would be a better option for some kinds 
   of messages, like download rate limiting or other blocks due to abuse, since it could be turned on by a rule in a CDN.
-  However, this use case is probably better addressed by having a standard way for conda to display errors on the 
+  However, this use case is probably better addressed by having a standard way for `conda` to display errors on the 
   console from HTTP status codes like 429 (Too Many Requests) and 403 (Forbidden). Additionally, serving custom headers
   is challenging unless the repository owner has more control over the web server than is usually given by services 
   like Github Pages.
