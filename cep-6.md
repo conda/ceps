@@ -62,7 +62,7 @@ Solving environment: done
 
 ... (output truncated)
 
-Channel notices (info):
+Channel (defaults) notices [info]:
 
   Here is a message to the user
   Here is a link they could click: https://example.com/link-name
@@ -81,15 +81,11 @@ The following are a couple examples to show exactly how it would function:
 ```
 $ conda notices
 
-Channel: defaults
-
-Notices [info]:
+Channel (defaults) notices [info]:
 This is a test message. It is not very long, and could have a link to a longer post:
 https://example.com/short-link
 
-Channel: conda-forge
-
-Notices [info]:
+Channel (conda-forge) notices [info]:
 Here is another message. It could have info about the latest happenings or blog posts from conda-forge:
 https://conda-forge.org/
 ```
@@ -99,7 +95,7 @@ https://conda-forge.org/
 ```
 $ conda notices -c defaults
 
-Notices [info]:
+Channel (defaults) notices [info]:
 This is a test message. It is not very long, and could have a link to a longer post:
 https://example.com/short-link
 ```
