@@ -111,7 +111,7 @@ also produce slightly different solutions, depending to the requested
 set of dependencies.
 
 To guarantee an acceptable degree of backwards compatibility with
-`conda`'s behavior, we did our best to make the experimental solver
+`conda`'s behavior, we need to make the experimental solver
 comply with the existing `conda` integration test suite.
 
 Any potential backward incompatibilities discovered as part of this
