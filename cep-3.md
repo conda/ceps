@@ -1,5 +1,5 @@
 <table>
-<tr><td> Title </td><td> Using the Mamba solver in Conda </td>
+<tr><td> Title </td><td> Using the Mamba solver in conda </td>
 <tr><td> Status </td><td> Draft </td></tr>
 <tr><td> Author(s) </td>
     <td>
@@ -18,10 +18,10 @@
 [Conda]'s current default dependency solver based on [pycosat] has a number
 of downsides that led to community efforts writing a faster and more
 modern solver based on [libsolv]. The result was the basis for the
-alternative Conda implementation called [Mamba].
+alternative conda implementation called [Mamba].
 
 The intention of this CEP is to propose an experimental feature for
-Conda to add support for the solver used in [Mamba], eventually
+conda to add support for the solver used in [Mamba], eventually
 based on the plugin architecture proposed in [CEP 2].
 
 ## Motivation
@@ -34,17 +34,17 @@ the handling of repo and channel data.
 
 Speed, accuracy, debuggability and other impacts on the user
 experience are heavily reliant on the underlying functionality of the
-solver and Conda's ability to interpret and communicate it to the user.
-For example long running calls of the Conda install command to resolve
+solver and conda's ability to interpret and communicate it to the user.
+For example long running calls of the `conda install` command to resolve
 complex environments and dependency trees directly impacts users'
 real world experience of the package manager.
 
 In addition, there is a wide-ranging proliferation of community efforts
-to improve the usability issues with Conda outside the regular Conda
+to improve the usability issues with conda outside the regular conda
 code project which makes it harder to retain a consistent technical
 and community roadmap. As such the experimental integration of the Mamba
 solver is to be considered but the first step to affect lasting change
-in the Conda community and recognize the innovative solutions that have
+in the conda community and recognize the innovative solutions that have
 been worked on by community members.
 
 ## Specification
@@ -96,7 +96,7 @@ The default choice for the solver class must stay the same as long
 as the Mamba solver plugin is marked as experimental. Only after
 considerable functional and integration testing to verify the performance
 and solving improvements, it could be considered as a default candidate
--- and only in a new major version of Conda.
+-- and only in a new major version of conda.
 
 The metrics that define the success of this experiment are to be determined
 as part of the work on this CEP in coordination with the work on a
@@ -115,7 +115,7 @@ To guarantee an acceptable degree of backwards compatibility with
 comply with the existing `conda` integration test suite.
 
 Any potential backward incompatibilities discovered as part of this
-work require formal documentation to be shared with the Conda users
+work require formal documentation to be shared with the conda users
 and also inform the decision making around the status as an experimental
 solver.
 
@@ -128,11 +128,11 @@ CEP, yet to be drafted.
 
 ## Reference
 
-- [Conda]: the Conda package manager
-- [CEP 2]: Add plugin architecture to Conda
+- [conda]: the conda package manager
+- [CEP 2]: Add plugin architecture to conda
 - [Libsolv]: the SAT solver that Mamba uses behind the scenes
 - [PicoSAT]: the SAT solver wrapped by [pycosat]
-- [Mamba]: the Conda community reimplementation
+- [Mamba]: the conda community reimplementation
 - [conda-libmamba-solver]: The experimental libmamba solver
   integrations, packaged separately
 
@@ -144,7 +144,7 @@ CEP, yet to be drafted.
 [pysat]: https://github.com/pysathq/pysat
 [Mamba]: https://github.com/mamba-org/mamba
 [PicoSAT]: http://fmv.jku.at/picosat/
-[Conda]: https://docs.conda.io/projects/conda/
+[conda]: https://docs.conda.io/projects/conda/
 [conda-libmamba-solver]: https://github.com/conda-incubator/conda-libmamba-solver
 
 ## Copyright
