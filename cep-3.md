@@ -70,10 +70,10 @@ sending the list of required `MatchSpec` objects to the underlying
 `conda.resolve.Resolve` instance.
 
 The `Resolve` class is too tied to the `Clauses` class, and some of its
-abstractions do not hold true for `libsolv`. As a result, we decided to
-operate at the `Solver` level. We subclassed `Solver` and replaced its
+abstractions do not hold true for `libsolv`. As a result, we need to
+operate at the `Solver` level. We have to subclass `Solver` and replace its
 `Solver.solve_final_state()` method, which only requires us to return an
-iterable of `PackageRecord` objects that is then diff'd with the initial
+iterable of `PackageRecord` objects that is then diffed with the initial
 environment state and turned into a transaction by the other methods in
 the base class.
 
