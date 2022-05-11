@@ -77,15 +77,15 @@ iterable of `PackageRecord` objects that is then diffed with the initial
 environment state and turned into a transaction by the other methods in
 the base class.
 
-The resulting subclass lives now in a separate project
+The resulting subclass would live in a separate project
 [conda-libmamba-solver] and only depends on `libmambapy` (Mamba's
-library) and `conda` itself. To enable the experimental solver, we added
-a new key to the `Context` class (`experimental_solver`) and a
+Python wrapper) and `conda` itself. To enable the experimental solver,
+we add a new key to the `Context` class (`experimental_solver`) and a
 command-line flag (`--experimental-solver`), which can take any of the
 values added to a new `Enum` in `conda.base.constants`
-(`ExperimentalSolverChoice`). The adequate solver class is returned by a
-helper function added to `conda.core.solve` (`_get_solver_class()`) once
-the `context` has been initialized.
+(`ExperimentalSolverChoice`). The adequate solver class would be
+returned by a helper function added to `conda.core.solve`
+(`_get_solver_class()`) once the `context` has been initialized.
 
 > In a way, this means that the new solver class is _pre-registered_ as
 > a plugin, but must be installed separately. In the future, when the
