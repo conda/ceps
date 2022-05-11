@@ -69,7 +69,7 @@ collecting the index metadata, prefix state and other variables before
 sending the list of required `MatchSpec` objects to the underlying
 `conda.resolve.Resolve` instance.
 
-The `Resolve` class its too tied to the `Clauses` class, and some of its
+The `Resolve` class is too tied to the `Clauses` class, and some of its
 abstractions do not hold true for `libsolv`. As a result, we decided to
 operate at the `Solver` level. We subclassed `Solver` and replaced its
 `Solver.solve_final_state()` method, which only requires us to return an
