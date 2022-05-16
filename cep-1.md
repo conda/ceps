@@ -34,7 +34,7 @@ history is a historic record of the proposed change.
 # Workflow
 
 The CEP process begins with an idea for a change in how the Conda project
-works. Theses change can be technical or address the social aspects of the
+works. These changes can be technical or address the social aspects of the
 project. Small changes often do not need a CEP and can be discussed on the
 [conda issue tracker](https://github.com/conda/conda/issues).
 
@@ -53,17 +53,17 @@ A discussion on the
 [conda-forge mailing list](https://groups.google.com/forum/#!forum/conda-forge),
 or as part of a Conda community meeting is the best way to go about this.
 
-Once the champion has asked the Conda community as to whether an idea
+Once the champion has asked the Conda community whether an idea
 has any chance of acceptance, a draft CEP should be written following the
 template in [CEP 0](cep-0.md) and described below.
 
-While working on the CEP prior to submission please set its Status to Draft.
+While working on the CEP prior to submission please set its status to *draft*.
 
 ## Submission
 
 Once complete, this draft should be submitted as a pull request to the
-[conda/ceps](https://github.com/conda/ceps) repository with the Status
-changed to Proposed. At this point, members of the Conda community will
+[conda/ceps](https://github.com/conda/ceps) repository with the status
+changed to *proposed*. At this point, members of the Conda community will
 review the submission.
 
 ## Review
@@ -76,17 +76,17 @@ proposal as recommended by the community.
 
 ## Resolution
 
-All CEPs will be resolved as either *Rejected*, *Accepted* or *Deferred*
+All CEPs will be resolved as either *rejected*, *accepted* or *deferred*
 depending on the consensus of the community. Once the community has reached a
-consensus, a Conda maintainer will update the Status of proposal, add a
+consensus, a Conda maintainer will update the status of proposal, add a
 link to the discussion in the table and, regardless of the resolution, merge
 the pull request with these updates.
 
 ## CEP Maintenance
 
-For *Rejected* CEPs, no modifications are made after the pull request is merged.
+For *rejected* CEPs, no modifications are made after the pull request is merged.
 *Accepted* CEPs should be updated with a link to the pull request(s) of the
-implementation and the status changed to *Implemented* when the proposed
+implementation and the status changed to *implemented* when the proposed
 changes have been implemented. *Deferred* CEPs can be re-submitted in a new
 pull request if the circumstances that justified deferring instead of
 accepting or rejecting have changed.
@@ -105,7 +105,7 @@ All CEPs should begin with a top level table with the following information:
 <tr><td> Implementation </td><td> link to the PR for the implementation, NA if not available </td></tr>
 </table>
 
-This table should be followed by a **Abstract** section and then
+This table should be followed by an **abstract** section and then
 additional sections as needed by the proposal. Some section that may be
 included if appropriate for the proposal include.
 
@@ -121,13 +121,13 @@ included if appropriate for the proposal include.
     * Resolution -- A short summary of the decision made by the community.
     * Reference -- Any references used in the design of the CEP.
 
-A final **Copyright** section is also required.
+A final **copyright** section is also required.
 
 ## Pronunciation
 
 CEP is to be pronounced `/sep/`.
 
-If you have doubts about how to actually pronounce it, here you have a reference (we accept UK and US pronunciations): https://dictionary.cambridge.org/dictionary/english/cep
+If you still have doubts about how to actually pronounce it, here is a reference (we accept UK and US pronunciations): https://dictionary.cambridge.org/dictionary/english/cep
 
 ## References
 
