@@ -13,7 +13,7 @@
 In order to promote transparency and certainty about how long a specific version of conda will be
 supported, this CEP will introduce an official policy spelling this out. Using 
 statistics collected about current conda usage, this CEP will also help the community figure out where
-we want to draw the line on version support.
+we currently want to draw the line on version support.
 
 ## Specification
 
