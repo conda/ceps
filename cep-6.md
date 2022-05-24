@@ -38,7 +38,6 @@ The notification message will appear while running the following commands:
 - `env create`
 - `env update`
 - `install`
-- `search`
 - `update`
 
 The reasoning behind this decision is that the above commands all retrieve `repodata.json` from the configured
@@ -62,13 +61,12 @@ Solving environment: done
 
 ... (output truncated)
 
-Channel (defaults) notices [info]:
 
-  Here is a message to the user
-  Here is a link they could click: https://example.com/link-name
-  To see the message again, run `conda notices`
-
-End of channel notices
+Channel "defaults" has the following notices:
+  [info] -- Tue May 10 11:50:34 2022
+  This is a test message. It is not very long, and could have a link to a longer post:
+  https://example.com/short-link
+  
 ```
 
 ### How else can our users access this message?
@@ -81,13 +79,17 @@ The following are a couple examples to show exactly how it would function:
 ```
 $ conda notices
 
-Channel (defaults) notices [info]:
-This is a test message. It is not very long, and could have a link to a longer post:
-https://example.com/short-link
+Retrieving notices: done
 
-Channel (conda-forge) notices [info]:
-Here is another message. It could have info about the latest happenings or blog posts from conda-forge:
-https://conda-forge.org/
+Channel "defaults" has the following notices:
+  [info] -- Tue May 10 11:50:34 2022
+  This is a test message. It is not very long, and could have a link to a longer post:
+  https://example.com/short-link
+
+Channel "conda-forge" has the following notices:
+  [info] -- Tue May 10 11:50:34 2022
+  Here is another message. It could have info about the latest happenings or blog posts from conda-forge:
+  https://conda-forge.org/
 ```
 
 **Show a single channel:** grabs notices for a single channel:
@@ -95,9 +97,10 @@ https://conda-forge.org/
 ```
 $ conda notices -c defaults
 
-Channel (defaults) notices [info]:
-This is a test message. It is not very long, and could have a link to a longer post:
-https://example.com/short-link
+Channel "defaults" has the following notices:
+  [info] -- Tue May 10 11:50:34 2022
+  This is a test message. It is not very long, and could have a link to a longer post:
+  https://example.com/short-link
 ```
 
 ### What file format will this message have, and what will it contain?
@@ -117,7 +120,6 @@ Here's an example of the `notices.json` file which will be stored in the root of
       "level": "info",
       "created_at": "2022-04-26T11:50:34+00:00",
       "expiry": 604800,
-      "interval": 604800
     }
   ]
 }
@@ -132,12 +134,6 @@ Detailed overview of the JSON fields:
     and will also allow the client to apply different formatting rules (e.g. text color).
   - **created_at** [String] ISO 8601 formatted timestamp showing the creation time of the message.
   - **expiry** [Number] starting at `created_at`, a number specifying how long in seconds the message is valid for.
-  - **interval** [Number] starting from the modified time of a cache file, the time in seconds specifying how often
-    this is shown to the user.
-  - **arch** Optional[String] allows messages to be targeted to users of a certain architecture.
-    - Example value: `win-64`, `linux-64`, etc.
-  - **conda_version** Optional[String] allows messages to be targeted to users of a certain `conda` version.
-    - Example value: `4.12.0`
 
 ### How often will these messages appear?
 
@@ -147,7 +143,8 @@ message is displayed. We will provide clients with a setting to permanently disa
 files:
 
 ```yaml
-display_notices: false
+# Zero messages will be displayed while running commands such as "install", "update", etc.
+number_channel_notices: 0
 ```
 
 ## Motivation
@@ -216,13 +213,26 @@ npm notice Run npm install -g npm@8.7.0 to update!
 npm notice
 ```
 
-## Sample Implementation
+## Implementation
 
-*PR Coming soon!*
+Pull request to the full implementation:
+
+https://github.com/conda/conda/pull/11462
+
+Please add any implementation related suggestions for improvements to this pull request.
 
 ## FAQ
 
-TBD
+### How often will I see notices?
+
+Notices will be shown however often channel owners would like. Users will also be able to disable channel
+notices completely in order to never see them during normal operation.
+
+### Is this opt-in or opt-out?
+
+Users will automatically be opted in to these feature. They will have the ability to turn it off via
+a configuration parameter.
+
 
 ## Resolution
 
