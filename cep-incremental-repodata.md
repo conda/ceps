@@ -13,7 +13,7 @@
 `conda install` and other conda commands must download the entire per-channel
 `repodata.json`, a file listing all available packages, if it has changed, but a
 typical `repodata.json` update only adds a fraction of the total number of
-packages. If conda could download just the changes it would save bandwidth and
+packages. If conda could download just the changes, it would save bandwidth and
 time. This document outlines a system to bring `repodata.json` up to date by
 applying patches between successive versions. If it has not been too long since
 the last complete `repodata.json` was fetched, `conda` can download a tiny file
@@ -53,13 +53,13 @@ found, pop each patch off the stack, applying them in turn to the outdated
 
 Since JSON Patch does not preserve formatting, the new `repodata.json` will not
 hash equal to `latest` unless it is sorted and re-serialized, with the
-`json.dump(...)` settings used in `conda-build index`. Otherwise it should be
+`json.dump(...)` settings used in `conda-build index`. Otherwise, it should be
 considered to have the `latest` hash for purposes of incremental updates.
 
 If the desired hash is not found in the `repodata.jlap` patch set, download the
 complete `repodata.json` as before.
 
-An example of a patche against conda-forge `repodata.json`, adding packages to
+An example of a patch against conda-forge `repodata.json`, adding packages to
 this ~170MB (23MB compressed) file:
 
 ```
@@ -73,10 +73,10 @@ this ~170MB (23MB compressed) file:
 The penultimate metadata line may include response headers for its corresponding
 `repodata.json`.
 
-When downloading new patches, a local cache service logs the number of lines,
-and number of bytes added, which is greater than the `Content-Encoding: gzip`
-compressed bytes transferred. (Ideally the feature would be integrated into
-`conda` itself instead of going through a local cache server):
+When downloading new patches, a local cache service logs the number of lines and
+number of bytes added (not the `Content-Encoding: gzip` compressed bytes
+transferred). Eventually the feature would be integrated into `conda` instead of
+using a local cache service:
 
 ```
 206 1517572 https://repodata.fly.dev/conda.anaconda.org/conda-forge/linux-64/repodata.jlap {'accept-ranges': 'bytes', 'content-encoding': 'gzip', 'content-range': 'bytes 2978004-4495575/4495576', 'content-type': 'text/plain; charset=utf-8', 'last-modified': 'Tue, 26 Apr 2022 18:15:13 GMT', 'date': 'Wed, 27 Apr 2022 00:23:05 GMT', 'transfer-encoding': 'chunked', 'server': 'Fly/f71cab89 (2022-04-21)', 'via': '1.1 fly.io', 'fly-request-id': '01G1M6CVSF3Q4MF33QSRMG7B3D-iad'}
@@ -267,17 +267,17 @@ re-verified without re-reading (or retaining) the beginning of the file, if the
 client remembers an intermediate checksum.
 
 When `repodata.json` changes, the server wil truncate the `"metadata"` line,
-appending new patches, a new metadata line and a new trailing checksum.
+appending new patches, a new metadata line, and a new trailing checksum.
 
 When the client wants new data, it issues a single HTTP Range request from the
 bytes offset of the beginning of the penultimate `"metadata"` line, to the end
 of the file (`Range: bytes=<offset>-`), and re-verifies the trailing checksum.
-If the trailing checksum does not match the computed checksum then it must
+If the trailing checksum does not match the computed checksum, then it must
 re-fetch the entire file; otherwise, it may apply the new patches.
 
 If the `.jlap` file represents part of a stream (earlier lines have been
-discarded) then the leading checksum is an intermediate checksum from that
-stream. Otherwise the leading checksum is all `0`'s.
+discarded), then the leading checksum is an intermediate checksum from that
+stream. Otherwise, the leading checksum is all `0`'s.
 
 ## Reference
 
