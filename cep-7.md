@@ -10,12 +10,12 @@
 
 ## Abstract
 
-Decisions for which Python versions we support are currently made adhoc and in a manner
+Decisions for which Python versions we support are currently made ad hoc and in a manner
 which is not easily predicted by the conda community. In order for this to be a more organized
 process and to provide greater transparency, this document outlines the procedures we take to
 add support for newer CPython versions and how we drop support for older versions. Additionally,
 this document outlines our official schedule for when we add support and begin testing for new
-versions as well as when we drop support and stop testing for older version.
+versions as well as when we drop support and stop testing for older versions.
 
 ## Specification
 
