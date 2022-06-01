@@ -160,7 +160,16 @@ can use these notices as a way to share news with their users or requests for he
 
 ## Rationale
 
-TBD
+In order to keep this feature as a simple as possible and reduce the number of moving parts, we choose to serve
+messages via a flat JSON file on the server. The client is responsible for caching these messages which helps
+to reduce the number of HTTP requests that it has to make. In designing such a system, it is our goal to keep
+the code complexity to a minimum while still affording as much flexibility as possible. In the future, certain
+channels may choose to dynamically serve this JSON file and this specification allows for that.
+
+The other consideration was keeping these messages to a minimum for our users and allowing them to easily disable
+these messages if they do not want to see them while running commands such as "install" or "create". Although
+we feel these messages are important for users to see, we also do not want to clutter their terminal output. 
+Ultimately, this is why we are choosing to turn this on by default but are also providing a way to disable it.
 
 
 ## Backwards Compatibility
