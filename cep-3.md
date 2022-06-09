@@ -1,6 +1,6 @@
 <table>
 <tr><td> Title </td><td> Using the Mamba solver in conda </td>
-<tr><td> Status </td><td> Draft </td></tr>
+<tr><td> Status </td><td> Accepted </td></tr>
 <tr><td> Author(s) </td>
     <td>
         Jannis Leidel &lt;jleidel@anaconda.com&gt;,
