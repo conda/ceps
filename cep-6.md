@@ -118,8 +118,8 @@ Here's an example of the `notices.json` file which will be stored in the root of
       "id": "1cd1d8e5-d96c-42d1-9c29-e8120ad80823",
       "message": "Here is an example message that will be displayed to users",
       "level": "info",
-      "created_at": "2022-04-26T11:50:34+00:00",
-      "expiry": 604800,
+      "created_at": "2022-04-21T11:50:34+00:00",
+      "expires_at": "2022-04-22T00:00:00+00:00"
     }
   ]
 }
@@ -133,14 +133,16 @@ Detailed overview of the JSON fields:
   - **level** [String] one of (info|warning|critical). These will let our users know the category of the message
     and will also allow the client to apply different formatting rules (e.g. text color).
   - **created_at** [String] ISO 8601 formatted timestamp showing the creation time of the message.
-  - **expiry** [Number] starting at `created_at`, a number specifying how long in seconds the message is valid for.
+  - **expires_at** [String] ISO 8601 formatted timestamp showing the expiration time of the message.
 
 ### How often will these messages appear?
 
-How often the messages appear will be configurable by the channel owners and the client. This will be accomplished by 
-the expiry field in the `notices.json` file itself, but the client will the have ultimate say over whether this
-message is displayed. We will provide clients with a setting to permanently disable these messages in their `.condarc`
-files:
+How often these messages appear will be configurable by the channel owners and the client. This will be accomplished by 
+the `expires_at` field in the `notices.json` file itself. When a message has expired, it will trigger a refresh from the
+server at which point it will show new messages if there are any.
+
+The client will the have ultimate say over whether these messages are displayed. We will provide clients with a setting
+to permanently disable these messages in their `.condarc` files:
 
 ```yaml
 # Zero messages will be displayed while running commands such as "install", "update", etc.
