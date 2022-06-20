@@ -1,11 +1,11 @@
 <table>
     <tr><td> Title </td><td>Add Channel Notices to conda</td>
-    <tr><td> Status </td><td>Draft</td></tr>
+    <tr><td> Status </td><td>Accepted</td></tr>
     <tr><td> Author(s) </td><td>Travis Hathaway &lt;thathaway@anaconda.com&gt;</td></tr>
     <tr><td> Created </td><td> Apr 21, 2022</td></tr>
     <tr><td> Updated </td><td> Aug 21, 2022</td></tr>
-    <tr><td> Discussion </td><td>NA</td></tr>
-    <tr><td> Implementation </td><td>NA</td></tr>
+    <tr><td> Discussion </td><td>https://github.com/conda-incubator/ceps/pull/19</td></tr>
+    <tr><td> Implementation </td><td>https://github.com/conda/conda/pull/11462</td></tr>
 </table>
 
 
@@ -244,10 +244,18 @@ notices completely in order to never see them during normal operation.
 Users will automatically be opted in to these feature. They will have the ability to turn it off via
 a configuration parameter.
 
-
 ## Resolution
 
-TBD
+This was a standard, non-timed-out vote.
+
+- Among [Steering Council members](https://github.com/conda-incubator/governance/blob/69f3ce97b3b3e7001bf6bdece7d544f2dea3a633/steering.csv) there are 15 "yes", 0 "no", and no abstentions.
+- No [Emeritus Steering member](https://github.com/conda-incubator/governance/blob/69f3ce97b3b3e7001bf6bdece7d544f2dea3a633/emeritus.csv) voted.
+
+This vote **has reached quorum** (15 + 0 = 15 which is at least [60%](https://github.com/conda-incubator/governance/tree/69f3ce97b3b3e7001bf6bdece7d544f2dea3a633#enhancement-proposal-approval) of 21).
+
+It **has also passed** since it recorded 15 "yes" votes and 0 "no" votes giving 15/15 which is greater than [60%](https://github.com/conda-incubator/governance/tree/69f3ce97b3b3e7001bf6bdece7d544f2dea3a633#enhancement-proposal-approval) of 15.
+
+It should be noted that [multiple](https://github.com/conda-incubator/ceps/pull/19#discussion_r893667925) [requests](https://github.com/conda-incubator/ceps/pull/19#pullrequestreview-1006170777) [for change](https://github.com/conda-incubator/ceps/pull/19#pullrequestreview-1008320119) were recorded in the pull request about minor implementation details that do not invalidate the previous votes. The author [made the requested change](https://github.com/conda-incubator/ceps/pull/19#issuecomment-1156335851).
 
 ## Copyright
 
