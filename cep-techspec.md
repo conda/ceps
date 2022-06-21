@@ -58,6 +58,17 @@ instance of a package artifact, usually a `.tar.bz2` or a `.conda` file. The con
 package records in their `repodata.json` files. Check the [repodata record schema][repodata-record]
 and the [`PackageRecord` classes][packagerecord] for more details.
 
+The most important fields are:
+
+* `name`, `version` and `build`: these three strings are used to fully identify the package record.
+* `depends`: list of match specifications the package record requires in order to run.
+* `constrains`: list of match specifications that impose restraints on non-required packages
+  installed in the same environment.
+* `track_features`: list of arbitrary strings used to de-prioritize variants of a package record
+  (the more items in this list, the more de-prioritized the package record gets).
+* `sha256`: unique hash of the file.
+* `subdir`: platform this package has been built for (including `noarch`).
+
 #### Match specification
 
 Also known as _match spec_. A domain-specific language to query conda channels for one or more
@@ -71,7 +82,7 @@ environment. It can optionally list channels and the name of the environment to 
 Interestingly, it also supports some `pip` interfacing: the file can detail which PyPI packages
 should be installed in the environment too.
 
-#### Lock file
+#### Lock file
 
 A file that defines a list of package records so a conda environment can be created
 deterministically, without using match specs (which requires invoking a solver). There are two types
@@ -92,9 +103,109 @@ Conda environments can mark some of the installed packages as "pinned", meaning 
 changes are constrained in some way. To do so, a plain text file can list the packages and their
 restraints in a `conda-meta/pinned` file. Pinnings can be overriden under certain circumstances.
 
-### Creation of conda environments
+<!------------------------------------>
+<!-- Creation of conda environments -->
+<!------------------------------------>
+
+### Adding packages to conda environments
+
+A conda environment is usually populated by linking or unpacking the contents of conda packages. As
+a result, the input data is a list of package records that need to be extracted and linked.
+However, the user rarely specifies the list of package records directly. Instead, they usually ask
+for a list of match specs, which is then turned into a list of package records by the tool. Once
+a list of package records is available, the tool can proceed to download, extract, link and run all
+the post-creation tasks.
+
+#### From match specifications to package records
+
+This is the most common way of interacting with conda environments. The user will provide a list
+of match specifications and the tool will have to process that query to provide a list of package
+records; usually by relying on a solver.
+
+##### Default behaviour (no flags)
+
+1. When a match specification is requested, the tool must be able to choose the most adequate
+   package records for the requested package and its full dependency tree.
+1. Package records can also include a `constrains` list. The solution needs to account for the
+   relevant ones.
+1. The solution of package records need to be optimized for the following criteria:
+    * Prefer packages from channels higher in priority
+    * Maximize their versions and build numbers
+    * Minimize the number of `track_features` items
+    * Prefer _arch_-specific packages over `noarch`
+    * Maximize the timestamps, if needed
+    * Minimize the total number of packages needed
+1. The [`MatchSpec` syntax][matchspec-class] can be used to further constrain the packages that can
+   be considered candidates for the solution.
+1. If a match specification includes a channel, the corresponding package record must come from
+   that channel.
+   <!-- ^ JRG: What about their dependencies? I guess it's "unspecified"? -->
+1. The explicitly requested match specifications must be recorded in `conda-meta/history`.
+1. In already existing environments, solutions that minimize the number of changes to the installed
+   packages are preferred by default. Conda's implementation achieves this by:
+    * Minimizing the package record changes in the solver
+    * Respecting the match specifications annotated in `conda-meta/history` as much as possible
+1. If a package is marked as "pinned":
+    * When a name-only match specification is requested:
+      * The pinned specification takes precedence.
+      * However, if the match specification is recorded in history, the history expression is used
+        instead.
+    * When the user explicitly requests a match specification with a different version, the
+      user-specified match specification takes precedence, regardless the history contents.
+1. Package names included in the "aggressive update list" are always added to the list of match
+   specifications. In other words, the solver will always try to update them.
+
+##### Subcommand-depending behaviour
+
+1. The default behaviour detailed above is followed by `create` (new environments only) and
+  `install` (new and existing environments).
+1. The `update` subcommand has some particularities:
+    * It can only operate on existing environments
+    * It only accepts name-only specifications
+    * It will always try to install the latest version available for the specified package name, if
+      allowed by constraints of the environment. To do so, already installed packages might be
+      updated. In constrast, `
+
+##### Flag-depending behaviour
+
+Flags that modify the list of match specifications passed to the solver:
+
+* `--update-all`: All installed packages are added to the list of match specifications, with no
+  version restraint.
+* `--update-deps`: Dependencies of explicitly requested packages will be explicitly added to the
+  list of match specifications.
+* `--freeze-installed`, `--no-update-deps`: Packages already present in the environment will be
+  included in the list of match specifications, pinned to their respective installed versions.
+* `--no-pin`, `--ignore-pinned`: Packages marked as pinned will no longer receive any special
+  treatment.
+
+Flags that affect the returned solution only change the list of package records returned by the
+solver:
+* `--no-deps`: post-solve flag that will filter out the dependencies of the explicitly requested
+  packages, leaving them unchanged in the environment if applicable.
+* `--only-deps`: post-solve flag that will filter out the explicitly requested packages from the
+  final solution, installing only the dependencies added by these, if applicable.
+
+
+#### From package records to conda environment
+
+##### Empty list
+
+##### One or more package records
+
+#### Post-creation tasks
+
+<!------------------------------------>
+<!-- Deletion of conda environments -->
+<!------------------------------------>
 
 ### Deletion of conda environments
+
+#### From package names
+
+#### Forced removal
+
+#### Post-deletion tasks
 
 ## References
 
