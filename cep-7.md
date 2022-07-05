@@ -3,7 +3,7 @@
 <tr><td> Status </td><td> Draft </td></tr>
 <tr><td> Author(s) </td><td> Katherine Kinnaman &lt;kkinnaman@anaconda.com&gt;</td></tr>
 <tr><td> Created </td><td> Jun 28, 2022</td></tr>
-<tr><td> Updated </td><td> Jun 28, 2022</td></tr>
+<tr><td> Updated </td><td> July 5, 2022</td></tr>
 <tr><td> Discussion </td><td> NA </td></tr>
 <tr><td> Implementation </td><td> NA </td></tr>
 </table>
@@ -14,7 +14,7 @@ The capitalization conventions for conda need to be decided and written down wit
 
 ## Specification
 
-This change will only affect the text of the conda docs, so shouldn't need any special technical considerations. 
+Conda should be lowercase except when used at the beginning of a sentence. When speaking about the command, code formatting should be used (i.e. `conda`)
 
 ## Motivation
 
@@ -22,13 +22,11 @@ The capitalization of C/conda can be inconsistent. It should be formally decided
 
 ## Alternatives
 
-- Conda should be lowercase except when used at the beginning of a sentence. When speaking about the command, code formatting should be used (i.e. `conda`)
-
-- Conda should be capitalized when speaking about the organization/product and lowercase, with code formatting, when discussing the command
+Conda should be capitalized when speaking about the organization/product and lowercase, with code formatting (i.e. `conda`), when discussing the command. This option was rejected because it is more complex and also because most references to conda in the Anaconda and conda documentation use lowercase.
 
 ## Sample Implementation
 
-TBD
+Conda is a package manager. To use the conda package manager to install a package, use `conda install package` in your command line interface.
 
 ## Copyright
 
