@@ -14,7 +14,7 @@ Describes a release cadence for all future `conda` versions starting with `22.9.
 
 ## Specification
 
-We propose a bimonthly (every two months) release schedule where the tagging/release occurs during the week (per ISO 8601, Monday through Sunday) of second Monday of the month.
+We propose a bimonthly (every two months) release schedule where the tagging/release occurs during the week (per ISO 8601, Monday through Thursday) of second Monday of the month.
 
 In a nod to our many different kinds of users we will propose a deprecation policy (to be defined in a later CEP) that allows for a slower adoption rate (i.e. users could update every 3-4 months instead).
 
