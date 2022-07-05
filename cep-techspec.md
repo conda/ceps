@@ -127,7 +127,9 @@ This is the most common way of interacting with conda environments. The user wil
 of match specifications and the tool will have to process that query to provide a list of package
 records; usually by relying on a solver.
 
-![Diagram of the specs preparation logic in conda][data/techspec-prepare-logic.png]
+> ![Diagram of the specs preparation logic in conda](data/techspec-prepare-logic.png)
+>
+> Figure 1. Diagram of the specs preparation logic in conda. Read from top to bottom.
 
 ##### Default behaviour (no flags)
 
