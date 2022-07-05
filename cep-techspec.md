@@ -127,6 +127,8 @@ This is the most common way of interacting with conda environments. The user wil
 of match specifications and the tool will have to process that query to provide a list of package
 records; usually by relying on a solver.
 
+![Diagram of the specs preparation logic in conda][data/techspec-prepare-logic.png]
+
 ##### Default behaviour (no flags)
 
 1. When a match specification is requested, the tool must be able to choose the most adequate
@@ -178,6 +180,9 @@ records; usually by relying on a solver.
    -->
 1. If `conda` is present in the environment, the solver must not provide a solution that results in
    a version downgrade, unless explicitly asked by the user.
+1. For new environments, packages listed under `create_default_packages` are added to the list of
+   match specs as if they had been added explicitly by the user. If the user already specified one
+   or more of those packages, user-specified specs take precedence.
 
 ##### Subcommand-depending behaviour
 
@@ -215,6 +220,7 @@ Flags that modify the list of match specifications passed to the solver:
   version restraint, if not directly specified by the user already. Records matching in history will
   use the historic spec.
 * `--no-pin`: Packages marked as pinned will no longer receive any special treatment.
+* `--no-default-packages`: Do not add the packages configured as `create_default_packages`.
 
 > Note: When no flags are used, `conda install` and `conda remove` will try to solve the request
 > with `--freeze-installed` first. If not solvable, then it will default to `--update-specs`. If
