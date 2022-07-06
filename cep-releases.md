@@ -10,7 +10,7 @@
 
 ## Abstract
 
-Describes a release cadence for all future `conda` versions starting with `22.9.0`.
+Describes a release cadence for all future `conda` versions starting with `22.7.0`.
 
 ## Specification
 
@@ -26,29 +26,34 @@ These objectives will be aided in the adoption of [CalVer](https://calver.org/):
 This scheme will start with the July 2022 release of 22.7.0.
 
 This will result in the following regular release schedule:
-- 22.7.0: 2022-07-11
-- 22.9.0: 2022-09-12 (9 weeks of development)
-- 22.11.0: 2022-11-14 (9 weeks)
-- 23.1.0: 2023-01-09 (8 weeks)
-- 23.3.0: 2023-03-13 (9 weeks)
-- 23.5.0: 2023-05-08 (8 weeks)
-- 23.7.0: 2023-07-10 (9 weeks)
-- 23.9.0: 2023-09-11 (8 weeks)
-- ...
+
+| Version | Release Week | Weeks of Development |
+|---|---|---|
+| 22.7.0 | 2022-07-11 | |
+| 22.9.0 | 2022-09-12 | 9 weeks |
+| 22.11.0 | 2022-11-14 | 9 weeks |
+| 23.1.0 | 2023-01-09 | 8 weeks |
+| 23.3.0 | 2023-03-13 | 9 weeks |
+| 23.5.0 | 2023-05-08 | 8 weeks |
+| 23.7.0 | 2023-07-10 | 9 weeks |
+| 23.9.0 | 2023-09-11 | 8 weeks |
+| ... | ... | ... |
 
 Despite following a bimonthly release schedule we will permit releases to occur at any time between the regular releases for hotfixes, security releases, or other high priority changes that require immediate release.
 
 So it's entirely feasible to see the following releases:
 
-- 22.7.0 (regular release)
-- 22.7.1
-- 22.7.2
-- 22.8.0
-- 22.9.0 (regular release)
-- 22.9.1
-- 22.10.0
-- 22.10.1
-- ...
+| Version | |
+|---|---|
+| 22.7.0 | regular release |
+| 22.7.1 | |
+| 22.7.2 | |
+| 22.8.0 | |
+| 22.9.0 | regular release |
+| 22.9.1 | |
+| 22.10.0 | |
+| 22.10.1 | |
+| ... | |
 
 ## Motivation
 
