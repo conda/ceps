@@ -33,8 +33,8 @@ _my_plugin.py_
 import conda.plugins
 
 
-@conda.plugins.hookimpl
-def conda_cli_register_subcommands():
+@conda.plugins.register
+def conda_subcommands():
     ...
 ```
 
@@ -96,6 +96,7 @@ The method of how these plugins will be shared/distributed is currently undecide
 
 - [`pluggy` Documentation](https://pluggy.readthedocs.io/en/stable/index.html)
 - [CEP 2: "Add plugin architecture to conda"](https://github.com/conda-incubator/ceps/blob/main/cep-2.md)
+- [`conda` Issue #11112: Introduce a Plugin System](https://github.com/conda/conda/issues/11112)
 
 ## Copyright
 
