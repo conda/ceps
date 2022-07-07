@@ -41,18 +41,24 @@ This will result in the following regular release schedule:
 
 Despite following a bimonthly release schedule we will permit releases to occur at any time between the regular releases for hotfixes, security releases, or other high priority changes that require immediate release.
 
+To distinguish between the bimonthly release schedule and other optional releases the following release types are defined:
+
+- **regular release**: this is the bimonthly release
+- **optional release**: releases that may occur on the alternating months from regular releases
+- **hotfix release**: extra releases that may occur during any month to patch an earlier release (whether a regular or optional release)
+
 So it's entirely feasible to see the following releases:
 
-| Version | |
+| Version | Release Type |
 |---|---|
-| 22.7.0 | regular release |
-| 22.7.1 | |
-| 22.7.2 | |
-| 22.8.0 | |
-| 22.9.0 | regular release |
-| 22.9.1 | |
-| 22.10.0 | |
-| 22.10.1 | |
+| 22.7.0 | regular |
+| 22.7.1 | hotfix |
+| 22.7.2 | hotfix |
+| 22.8.0 | optional |
+| 22.9.0 | regular |
+| 22.9.1 | hotfix |
+| 22.10.0 | optional |
+| 22.10.1 | hotfix |
 | ... | |
 
 ## Motivation
