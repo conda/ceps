@@ -20,7 +20,7 @@ The capitalization of C/conda can be inconsistent. It should be formally decided
 
 Conda should be written in lowercase, whether in reference to the tool, ecosystem, packages, or organization. References to the conda command should use code formatting (i.e. `conda`). If the use of conda is not a command and if conda is at the beginning of a sentence, conda should be uppercase.
 
-The standard will be written down in the conda README, as well as in the (Ways to contribute)[https://docs.conda.io/projects/conda/en/latest/dev-guide/contributing.html#ways-to-contribute] section of the conda Developer Guide. These will serve as easy places for PR editors to point, if necessary, but as most people use these conventions already, this standard should not need to be announced heavily.
+The standard will be written down in the conda README, as well as in the [Ways to contribute](https://docs.conda.io/projects/conda/en/latest/dev-guide/contributing.html#ways-to-contribute) section of the conda Developer Guide. These will serve as easy places for PR editors to point, if necessary, but as most people use these conventions already, this standard should not need to be announced heavily.
 
 ## Examples
 
@@ -42,7 +42,7 @@ Titles and headers should use the same capitalization and formmating standards a
 
 ### In links
 
-Links should use the same capitalization conventions as sentences. Because the conda docs currently used re-structured text (RST) as a markup language, and (RST does not support nexted inline markup)[https://docutils.sourceforge.io/FAQ.html#is-nested-inline-markup-possible], documentation writers should avoid using code backtick formatting inside links.
+Links should use the same capitalization conventions as sentences. Because the conda docs currently used re-structured text (RST) as a markup language, and [RST does not support nexted inline markup](https://docutils.sourceforge.io/FAQ.html#is-nested-inline-markup-possible), documentation writers should avoid using code backtick formatting inside links.
 
 ## Alternatives
 
