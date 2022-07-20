@@ -12,6 +12,9 @@
 
 This CEP describes a deprecation schedule to properly warn about upcoming removals from the codebase. This policy expands on ideas and terminology defined in the Conda Release Schedule (CEP-?).
 
+> **Note**
+> This CEP is only applicable for projects that have adopted the Conda Release Schedule (CEP-?).
+
 ## Specification
 
 We propose a deprecation schedule that is slower than the Conda Release Schedule (CEP-?). This is in acknowledgment of our diverse user groups (e.g. everything from per user per machine installs to multi-user installs on shared clusters).
