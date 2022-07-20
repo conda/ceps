@@ -10,22 +10,20 @@
 
 ## Abstract
 
-Describes a release cadence for all future `conda` versions starting with `22.7.0`.
+This CEP describes a release cadence for all future `conda` versions starting with `22.7.0`.
 
 ## Specification
 
-We propose regularly scheduled bimonthly (every two months) releases where the tagging/release occurs during the week (per ISO 8601, Monday through Thursday) of second Monday of the month.
+We propose regularly scheduled bi-monthly (every two months) releases where the tagging/release occurs during the week (per ISO 8601, Monday through Thursday) of the second Monday of the month.
 
-In a nod to our many different kinds of users we will propose a deprecation policy (to be defined in a later CEP) that allows for a slower adoption rate (i.e. users could update every 3-4 months instead).
+In a nod to our many different kinds of users, we will also propose a deprecation policy (to be defined in a later CEP) that allows for a slower adoption rate (i.e., users could update every 3-4 months instead).
 
-These objectives will be aided in the adoption of [CalVer](https://calver.org/):
+To accomplish better, more predictable versioning, we will adopt [CalVer](https://calver.org/):
 - `YY`: the major version will be the shortened year (22+)
 - `MM`: the minor version will be the shortened month (1-12)
 - `MICRO`: the micro/patch version is reset to zero every month and incremented for every additional release that occurs during that month (0+)
 
-This scheme will start with the July 2022 release of 22.7.0.
-
-This will result in the following regular release schedule:
+This scheme will start with the July 2022 release of 22.7.0, resulting in the following regular release schedule:
 
 | Version | Release Week |
 |---|---|
@@ -40,15 +38,15 @@ This will result in the following regular release schedule:
 | ... | ... |
 
 > **Note**
-> Despite following a bimonthly release schedule we will permit releases to occur at any time between regular releases for hotfixes, security releases, or other high priority changes that require immediate release.
+> Despite following a bimonthly release schedule, we will permit releases to occur at any time between regular releases for hotfixes, security releases, or other high-priority changes that require immediate release.
 
-To distinguish between the bimonthly release schedule and other optional releases the following release types are defined:
+To distinguish between the bi-monthly release schedule and other optional releases, we define the following release types:
 
-- **regular release**: this is the regularly schedule bimonthly release
-- **optional release**: releases that may occur on the alternating months from regular releases
-- **hotfix release**: extra releases that may occur during any month to patch an earlier release of the same month (whether a regular or optional release)
+- **Regular release**: the regularly scheduled bi-monthly release
+- **Optional release**: releases that may occur on alternating months from regular releases
+- **Hotfix release**: extra releases that may occur during any month to patch an earlier release of the same month (whether a regular or optional release)
 
-So it's entirely feasible to see the following releases:
+So, it's entirely feasible to see the following releases:
 
 | Version | Release Type |
 |---|---|
@@ -64,18 +62,20 @@ So it's entirely feasible to see the following releases:
 
 ## Motivation
 
-Remove ambiguity/maintainer guesswork of when and what warrants a release.
+Our goal with this CEP is to remove ambiguity/maintainer guesswork of when and what warrants a release.
 
 ## Backwards Compatibility
 
 Adopting this release schedule does not break any existing processes or schemes.
 
-We will entirely sidestep and avoid any confusion regarding years of rumored changes slated to be included in a `conda` 5 release since we won't even attain a 5 release with this new scheme. This is not to say that these desired changes wont occur, but rather that its unrealistic for all of these changes to be successfully (and safely) rolled out in a single release.
+We will eliminate confusion regarding years of rumored changes slated for a `conda 5.0` release since we will skip from `conda 4.13.0` to `conda 22.7.0`. Avoiding `conda 5.0` is not to say that these changes won't occur, but instead that it's unrealistic for these changes to be successfully (and safely) rolled out in a single release.
+
+Finally, since `SemVer` is semantically interchangeable with `CalVer` and we propose switching from version 4.13.0 to 22.7.0, both version parsing and version ordering will be unaffected.
 
 ## Alternatives
 
 1. Do nothing. Continue with ad hoc releases.
-    - Rejected for being too inconsistent and difficult for planning.
+    - Rejected for being too inconsistent and challenging for roadmap/planning purposes.
 2. Follow a monthly schedule.
     - Rejected for being too fast for maintainers and multi-user installs.
 3. Follow a quarterly schedule.
