@@ -10,13 +10,13 @@
 
 ## Abstract
 
-Describes a deprecation schedule to properly warn about upcoming removals from the codebase. This policy expands on ideas and terminology defined in the Conda Release Schedule (CEP-?).
+This CEP describes a deprecation schedule to properly warn about upcoming removals from the codebase. This policy expands on ideas and terminology defined in the Conda Release Schedule (CEP-?).
 
 ## Specification
 
 We propose a deprecation schedule that is slower than the Conda Release Schedule (CEP-?). This is in acknowledgment of our diverse user groups (e.g. everything from per user per machine installs to multi-user installs on shared clusters).
 
-We define a new type of release, deprecation release, to augment the regular release. A deprecation release occurs three (3) times every year in January, May, and September:
+We define a new type of release, a deprecation release, to augment regular releases. A deprecation release occurs three (3) times every year in January, May, and September:
 
 | Version | Release Type |
 |---|---|
@@ -35,12 +35,12 @@ We define a new type of release, deprecation release, to augment the regular rel
 
 All deprecations will need to transition through three (3) states:
 
-1. **pending deprecation**: when a feature is marked for future deprecation
-    - any feature can be marked as *pending deprecation* in **any release**
-2. **deprecated**: when a feature is marked for future removal
-    - all *pending deprecations* that have been through at least one (1+) **regular release** (3-6 months after being marked as *pending deprecation*) are relabeled as *deprecated* in the next **deprecation release**
-3. **removed**: when a feature is removed from the codebase
-    - all *deprecations* are removed in the next **deprecation release**
+1. **Pending deprecation**: when a feature is marked for future deprecation
+    - Any feature can be marked as *pending deprecation* in **any release**
+2. **Deprecated**: when a feature is marked for future removal
+    - All *pending deprecations* that have been through at least one (1+) **regular release** (3-6 months after being marked as *pending deprecation*) are relabeled as *deprecated* in the next **deprecation release**
+3. **Removed**: when a feature is removed from the codebase
+    - All *deprecations* are removed in the next **deprecation release**
 
 This would result in the following schedule:
 
@@ -125,11 +125,11 @@ gantt
     Removed     :milestone, 2024-09
 ```
 
-Occasionally there may be code changes that warrant a longer deprecation schedule. If that occurs the deprecation warning will clearly specify that a deviation is occurring and what the expected schedule will be instead.
+Occasionally, there may be changes to the codebase that warrant a longer deprecation schedule. If that occurs, the deprecation warning will clearly specify that a deviation is occurring and what the expected schedule will be instead.
 
 ## Motivation
 
-Help prevent unexpected breakage of downstream tooling as the codebase evolves.
+This CEP will help prevent unexpected breakage of downstream tooling as the codebase evolves.
 
 ## Backwards Compatibility
 
@@ -139,7 +139,7 @@ This is backwards compatible and will also encourage better backwards compatibil
 
 1. Ad hoc deprecations.
    - Unpredictable and unreliable.
-2. Mark as **pending deprecation** in one release, mark as a **deprecation** the next release, and **remove** in third release.
+2. Mark as **pending deprecation** in one release, mark as a **deprecated** in the next release, and **remove** in third release.
    - Rejected for being too rapid given the sprawling ecosystem and unknown number of downstream applications.
 
 ## Resolution
