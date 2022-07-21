@@ -19,15 +19,15 @@ This CEP describes a deprecation schedule to properly warn about upcoming remova
 
 We propose a deprecation schedule that is slower than the Conda Release Schedule (CEP-?). This is in acknowledgment of our diverse user groups (e.g. everything from per user per machine installs to multi-user installs on shared clusters).
 
-We define a new type of release, a deprecation release, to augment regular releases. A deprecation release occurs three (3) times every year in January, May, and September:
+We define a new type of release, a deprecation release, to augment regular releases. A deprecation release occurs twice every year in March and September:
 
 | Version | Release Type |
 |---|---|
-| `YY.1.0` | regular, **deprecation** |
+| `YY.1.0` | regular |
 | `YY.2.0` | optional |
-| `YY.3.0` | regular |
+| `YY.3.0` | regular, **deprecation** |
 | `YY.4.0` | optional |
-| `YY.5.0` | regular, **deprecation** |
+| `YY.5.0` | regular |
 | `YY.6.0` | optional |
 | `YY.7.0` | regular |
 | `YY.8.0` | optional |
@@ -41,7 +41,7 @@ All deprecations will need to transition through three (3) states:
 1. **Pending deprecation**: when a feature is marked for future deprecation
     - Any feature can be marked as *pending deprecation* in **any release**
 2. **Deprecated**: when a feature is marked for future removal
-    - All *pending deprecations* that have been through at least one (1+) **regular release** (3-6 months after being marked as *pending deprecation*) are relabeled as *deprecated* in the next **deprecation release**
+    - All *pending deprecations* that have been through at least one (2+) **regular release** (4-9 months after being marked as *pending deprecation*) are relabeled as *deprecated* in the next **deprecation release**
 3. **Removed**: when a feature is removed from the codebase
     - All *deprecations* are removed in the next **deprecation release**
 
@@ -51,81 +51,74 @@ This would result in the following schedule:
 gantt
     dateFormat  YYYY-MM
     axisFormat YY.%_m
-    title       January-April Deprecations
+    title       June-November (YX.6-YX.11) Pending → March (YY.3) Deprecations → September (YY.9) Removals
 
-   section Jan
-    Pending     :           2023-01, 2023-05
-    Deprecated  :active,    2023-05, 2023-09
-    Removed     :milestone, 2023-09
+    section Jun
+    Pending     :           2023-06, 2024-03
+    Deprecated  :active,    2024-03, 2024-09
+    Removed     :milestone, 2024-09
 
-    section Feb
-    Pending     :           2023-02, 2023-05
-    Deprecated  :active,    2023-05, 2023-09
-    Removed     :milestone, 2023-09
+    section Jul
+    Pending     :           2023-07, 2024-03
+    Deprecated  :active,    2024-03, 2024-09
+    Removed     :milestone, 2024-09
 
-    section Mar
-    Pending     :           2023-03, 2023-09
-    Deprecated  :active,    2023-09, 2024-01
-    Removed     :milestone, 2024-01
+    section Aug
+    Pending     :           2023-08, 2024-03
+    Deprecated  :active,    2024-03, 2024-09
+    Removed     :milestone, 2024-09
 
-    section Apr
-    Pending     :           2023-04, 2023-09
-    Deprecated  :active,    2023-09, 2024-01
-    Removed     :milestone, 2024-01
+    section Sep
+    Pending     :           2023-09, 2024-03
+    Deprecated  :active,    2024-03, 2024-09
+    Removed     :milestone, 2024-09
+
+    section Oct
+    Pending     :           2023-10, 2024-03
+    Deprecated  :active,    2024-03, 2024-09
+    Removed     :milestone, 2024-09
+
+    section Nov
+    Pending     :           2023-11, 2024-03
+    Deprecated  :active,    2024-03, 2024-09
+    Removed     :milestone, 2024-09
 ```
 
 ```mermaid
 gantt
     dateFormat  YYYY-MM
     axisFormat YY.%_m
-    title       May-August Deprecations
+    title       December-May (YX.12-YY.5) Pending → September (YY.9) Removals → March (YZ.3) Deprecations
+
+    section Dec
+    Pending     :           2022-12, 2023-09
+    Deprecated  :active,    2023-09, 2024-03
+    Removed     :milestone, 2024-03
+
+    section Jan
+    Pending     :           2023-01, 2023-09
+    Deprecated  :active,    2023-09, 2024-03
+    Removed     :milestone, 2024-03
+
+    section Feb
+    Pending     :           2023-02, 2023-09
+    Deprecated  :active,    2023-09, 2024-03
+    Removed     :milestone, 2024-03
+
+    section Mar
+    Pending     :           2023-03, 2023-09
+    Deprecated  :active,    2023-09, 2024-03
+    Removed     :milestone, 2024-03
+
+    section Apr
+    Pending     :           2023-04, 2023-09
+    Deprecated  :active,    2023-09, 2024-03
+    Removed     :milestone, 2024-03
 
     section May
     Pending     :           2023-05, 2023-09
-    Deprecated  :active,    2023-09, 2024-01
-    Removed     :milestone, 2024-01
-
-    section Jun
-    Pending     :           2023-06, 2023-09
-    Deprecated  :active,    2023-09, 2024-01
-    Removed     :milestone, 2024-01
-
-    section Jul
-    Pending     :           2023-07, 2024-01
-    Deprecated  :active,    2024-01, 2024-05
-    Removed     :milestone, 2024-05
-
-    section Aug
-    Pending     :           2023-08, 2024-01
-    Deprecated  :active,    2024-01, 2024-05
-    Removed     :milestone, 2024-05
-```
-
-```mermaid
-gantt
-    dateFormat YYYY-MM
-    axisFormat YY.%_m
-    title      September-December Deprecations
-
-    section Sep
-    Pending     :           2023-09, 2024-01
-    Deprecated  :active,    2024-01, 2024-05
-    Removed     :milestone, 2024-05
-
-    section Oct
-    Pending     :           2023-10, 2024-01
-    Deprecated  :active,    2024-01, 2024-05
-    Removed     :milestone, 2024-05
-
-    section Nov
-    Pending     :           2023-11, 2024-05
-    Deprecated  :active,    2024-05, 2024-09
-    Removed     :milestone, 2024-09
-
-    section Dec
-    Pending     :           2023-12, 2024-05
-    Deprecated  :active,    2024-05, 2024-09
-    Removed     :milestone, 2024-09
+    Deprecated  :active,    2023-09, 2024-03
+    Removed     :milestone, 2024-03
 ```
 
 Occasionally, there may be changes to the codebase that warrant a longer deprecation schedule. If that occurs, the deprecation warning will clearly specify that a deviation is occurring and what the expected schedule will be instead.
