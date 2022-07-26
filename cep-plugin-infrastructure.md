@@ -1,7 +1,8 @@
 <table>
 <tr><td> Title </td><td> Implement initial conda plugin mechanism </td>
 <tr><td> Status </td><td> Draft  </td></tr>
-<tr><td> Author(s) </td><td> Bianca Henderson, Jannis Leidel </td></tr>
+<tr><td> Author(s) </td><td> Bianca Henderson &lt;bhenderson@anaconda.com&gt;</td></tr>
+<tr><td> </td><td>Jannis Leidel &lt;jleidel@anaconda.com&gt; </td></tr>
 <tr><td> Created </td><td> July 5, 2022 </td></tr>
 <tr><td> Updated </td><td> July 6, 2022 </td></tr>
 <tr><td> Discussion </td><td>https://github.com/conda-incubator/ceps/pull/32</td></tr>
@@ -13,6 +14,8 @@
 In order to enable customization and extra features that are compatible with and discoverable by `conda` (but do not necessarily ship as a default part of the `conda` codebase), we would like to implement an official `conda` plugin mechanism.
 
 A plugin mechanism in `conda` would provide many benefits, including (but not limited to) the coverage of underserved use cases, the added ability to extend `conda` internals via official APIs, as well as lowering the barrier of entry for contributions from other stakeholders in the `conda` community and ecosystem.
+
+The [initial proposal to add this plugin architecture](https://github.com/conda-incubator/ceps/blob/main/cep-2.md) has been [officially approved](https://github.com/conda-incubator/ceps/issues/23); this current CEP will discuss the specific way that the plugin mechanism will actually be implemented.
 
 
 ## Specification
