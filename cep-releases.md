@@ -1,10 +1,11 @@
 <table>
 <tr><td> Title </td><td> Conda Release Schedule </td>
 <tr><td> Status </td><td> Draft </td></tr>
-<tr><td> Author(s) </td><td> Ken Odegard &lt;kodegard@anaconda.com&gt; </td></tr>
+<tr><td> Author(s) </td>
+<td> Ken Odegard &lt;kodegard@anaconda.com&gt;, Jannis Leidel &lt;jleidel@anaconda.com&gt; </td></tr>
 <tr><td> Created </td><td> May 20, 2022 </td></tr>
 <tr><td> Updated </td><td> July 20, 2022 </td></tr>
-<tr><td> Discussion </td><td> NA </td></tr>
+<tr><td> Discussion </td><td> https://github.com/conda-incubator/ceps/pull/26 </td></tr>
 <tr><td> Implementation </td><td> NA </td></tr>
 </table>
 
