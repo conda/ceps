@@ -4,14 +4,14 @@
 <tr><td> Author(s) </td>
 <td> Ken Odegard &lt;kodegard@anaconda.com&gt;, Jannis Leidel &lt;jleidel@anaconda.com&gt; </td></tr>
 <tr><td> Created </td><td> May 20, 2022 </td></tr>
-<tr><td> Updated </td><td> July 20, 2022 </td></tr>
+<tr><td> Updated </td><td> August 1, 2022 </td></tr>
 <tr><td> Discussion </td><td> https://github.com/conda-incubator/ceps/pull/26 </td></tr>
 <tr><td> Implementation </td><td> NA </td></tr>
 </table>
 
 ## Abstract
 
-This CEP describes a release cadence for all future `conda` versions starting with `22.7.0`.
+This CEP describes a release cadence for all future `conda` versions starting with `22.9.0`.
 
 ## Specification
 
@@ -24,11 +24,10 @@ To accomplish better, more predictable versioning, we will adopt [CalVer](https:
 - `MM`: the minor version will be the shortened month (1-12)
 - `MICRO`: the micro/patch version is reset to zero every month and incremented for every additional release that occurs during that month (0+)
 
-This scheme will start with the July 2022 release of 22.7.0, resulting in the following regular release schedule:
+This scheme will start with the September 2022 release of 22.9.0, resulting in the following regular release schedule:
 
 | Version | Release Week |
 |---|---|
-| 22.7.0 | 2022-07-11 |
 | 22.9.0 | 2022-09-12 |
 | 22.11.0 | 2022-11-14 |
 | 23.1.0 | 2023-01-09 |
@@ -51,14 +50,14 @@ So, it's entirely feasible to see the following releases:
 
 | Version | Release Type |
 |---|---|
-| 22.7.0 | regular |
-| 22.7.1 | hotfix |
-| 22.7.2 | hotfix |
-| 22.8.0 | optional |
-| 22.8.1 | hotfix |
 | 22.9.0 | regular |
+| 22.9.1 | hotfix |
+| 22.9.2 | hotfix |
 | 22.10.0 | optional |
 | 22.10.1 | hotfix |
+| 22.11.0 | regular |
+| 22.12.0 | optional |
+| 22.12.1 | hotfix |
 | ... | ... |
 
 ## Motivation
@@ -69,9 +68,9 @@ Our goal with this CEP is to remove ambiguity/maintainer guesswork of when and w
 
 Adopting this release schedule does not break any existing processes or schemes.
 
-We will eliminate confusion regarding years of rumored changes slated for a `conda 5.0` release since we will skip from `conda 4.13.0` to `conda 22.7.0`. Avoiding `conda 5.0` is not to say that these changes won't occur, but instead that it's unrealistic for these changes to be successfully (and safely) rolled out in a single release.
+We will eliminate confusion regarding years of rumored changes slated for a `conda 5.0` release since we will skip from `conda 4.14.0` to `conda 22.9.0`. Avoiding `conda 5.0` is not to say that these changes won't occur, but instead that it's unrealistic for these changes to be successfully (and safely) rolled out in a single release.
 
-Finally, since `SemVer` is semantically interchangeable with `CalVer` and we propose switching from version 4.13.0 to 22.7.0, both version parsing and version ordering will be unaffected.
+Finally, since `SemVer` is semantically interchangeable with `CalVer` and we propose switching from `conda 4.14.0` to `conda 22.9.0`, both version parsing and version ordering will be unaffected.
 
 ## Alternatives
 
