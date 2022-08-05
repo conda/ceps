@@ -17,7 +17,6 @@ A plugin mechanism in `conda` would provide many benefits, including (but not li
 
 The [initial proposal to add this plugin architecture](https://github.com/conda-incubator/ceps/blob/main/cep-2.md) has been [officially approved](https://github.com/conda-incubator/ceps/issues/23); this current CEP will discuss the specific way that the plugin mechanism will actually be implemented.
 
-
 ## Specification
 
 Plugins in `conda` will integrate the "hook + entry point" structure by utilizing the [`pluggy`](https://pluggy.readthedocs.io/en/stable/index.html) Python framework. This implementation can be broken down via the following two steps:
