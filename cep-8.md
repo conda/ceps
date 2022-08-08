@@ -60,6 +60,9 @@ So, it's entirely feasible to see the following releases:
 | 22.12.1 | hotfix |
 | ... | ... |
 
+> **Note**
+> In case no or few significant changes have been made since the last release, the conda maintainer team may decide to skip a regular release, as long as the decision is made public and documented in the changelog.
+
 ## Motivation
 
 Our goal with this CEP is to remove ambiguity/maintainer guesswork of when and what warrants a release.
