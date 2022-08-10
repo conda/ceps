@@ -80,7 +80,7 @@ description = "My conda plugin"
 requires-python = ">=3.7"
 dependencies = ["conda"]
 
-[project.scripts]
+[project.entry-points."conda"]
 my-conda-plugin = "my_plugin.module:function"
 ```
 
