@@ -3,7 +3,7 @@
 <tr><td> Status </td><td> Proposed </td></tr>
 <tr><td> Author(s) </td><td> Jannis Leidel &lt;jleidel@anaconda.com&gt;</td></tr>
 <tr><td> Created </td><td> Jun 29, 2021</td></tr>
-<tr><td> Updated </td><td> Jun 29, 2021</td></tr>
+<tr><td> Updated </td><td> Aug 9 2022</td></tr>
 <tr><td> Discussion </td><td> NA </td></tr>
 <tr><td> Implementation </td><td> NA </td></tr>
 </table>
@@ -128,6 +128,10 @@ A final **copyright** section is also required.
 CEP is to be pronounced `/sep/`.
 
 If you still have doubts about how to actually pronounce it, here is a reference (we accept UK and US pronunciations): https://dictionary.cambridge.org/dictionary/english/cep
+
+## Conda capitalization standards
+
+For the capitalization standards for conda, see the [README](https://github.com/conda-incubator/ceps/blob/main/README.md).
 
 ## References
 
