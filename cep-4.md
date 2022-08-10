@@ -115,7 +115,7 @@ Ultimately, `pluggy` was decided on as the ideal framework for this project due 
 
 ## Implementation
 
-The [pull request for the initial `conda` plugin mechanism implementation](https://github.com/conda/conda/pull/11462) includes extensive documentation as well as a tutorial on how to implement a basic custom subcommand. Please add any implementation-related suggestions directly to this pull request.
+The [pull request for the initial `conda` plugin mechanism implementation](https://github.com/conda/conda/pull/11435) includes extensive documentation as well as a tutorial on how to implement a basic custom subcommand. Please add any implementation-related suggestions directly to this pull request.
 
 The method of how these plugins will be shared/distributed is currently undecided and will be discussed in a future CEP.
 
