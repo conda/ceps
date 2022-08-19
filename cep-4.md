@@ -39,9 +39,32 @@ def conda_subcommands():
     ...
 ```
 
-### Entry point namespace utilizing a `setup.py` file
+### Packaging via a `pyproject.toml` file
 
-Below is an example of an entry point namespace for the custom plugin function, decorated with the plugin hook shown above:
+
+Below is an example that configures `setuptools` using a `pyproject.toml` file (note that the `setup.py` file is optional if a `pyproject.toml` file is defined):
+
+_pyproject.toml_
+```toml
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "my-conda-plugin"
+version = "1.0.0"
+description = "My conda plugin"
+requires-python = ">=3.7"
+dependencies = ["conda"]
+
+[project.entry-points."conda"]
+my-conda-plugin = "my_plugin"
+```
+
+
+### Packaging via a `setup.py` file
+
+Below is an example of an entry point namespace for the custom plugin function, decorated with the plugin hook shown in the "Hook" section above:
 
 _setup.py_
 ```python
@@ -53,35 +76,6 @@ setup(
     entry_points={"conda": ["my-conda-plugin = my_plugin"]},
     py_modules=["my_plugin"],
 )
-```
-
-### Packaging via a `pyproject.toml` file
-
-
-Below is a different packaging example that configures `setuptools` using a `pyproject.toml` file:
-
-_setup.py_
-```python
-import setuptools
-
-if __name__ == "__main__":
-    setuptools.setup()
-```
-
-_pyproject.toml_
-```toml
-[build-system]
-requires = ["setuptools", "setuptools-scm"]
-build-backend = "setuptools.build_meta"
-
-[project]
-name = "my-conda-plugin"
-description = "My conda plugin"
-requires-python = ">=3.7"
-dependencies = ["conda"]
-
-[project.entry-points."conda"]
-my-conda-plugin = "my_plugin.module:function"
 ```
 
 
