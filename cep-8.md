@@ -88,7 +88,7 @@ Finally, since `SemVer` is semantically interchangeable with `CalVer` and we pro
 
 This was a standard, non-timed-out vote.
 
-- Among [Steering Council members](https://github.com/conda-incubator/governance/blob/eaf59a5779dc1f678bee4453ceb92fd733e7306a/steering.csv) there are 15 "yes", 0 "no", and no abstentions.
+- Among [Steering Council members](https://github.com/conda-incubator/governance/blob/eaf59a5779dc1f678bee4453ceb92fd733e7306a/steering.csv) there are 10 "yes", 0 "no", and no abstentions.
 - No [Emeritus Steering member](https://github.com/conda-incubator/governance/blob/eaf59a5779dc1f678bee4453ceb92fd733e7306a/emeritus.csv) voted.
 
 This vote has reached quorum (10 + 0 = 10 which is at least 60% of 16).
