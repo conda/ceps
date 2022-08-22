@@ -1,10 +1,10 @@
 <table>
 <tr><td> Title </td><td> Conda Release Schedule </td>
-<tr><td> Status </td><td> Draft </td></tr>
+<tr><td> Status </td><td> Accepted </td></tr>
 <tr><td> Author(s) </td>
 <td> Ken Odegard &lt;kodegard@anaconda.com&gt;, Jannis Leidel &lt;jleidel@anaconda.com&gt; </td></tr>
 <tr><td> Created </td><td> May 20, 2022 </td></tr>
-<tr><td> Updated </td><td> August 1, 2022 </td></tr>
+<tr><td> Updated </td><td> August 22, 2022 </td></tr>
 <tr><td> Discussion </td><td> https://github.com/conda-incubator/ceps/pull/26 </td></tr>
 <tr><td> Implementation </td><td> NA </td></tr>
 </table>
@@ -86,7 +86,16 @@ Finally, since `SemVer` is semantically interchangeable with `CalVer` and we pro
 
 ## Resolution
 
-This section contains the final decision on this issue.
+This was a standard, non-timed-out vote.
+
+- Among [Steering Council members](https://github.com/conda-incubator/governance/blob/eaf59a5779dc1f678bee4453ceb92fd733e7306a/steering.csv) there are 15 "yes", 0 "no", and no abstentions.
+- No [Emeritus Steering member](https://github.com/conda-incubator/governance/blob/eaf59a5779dc1f678bee4453ceb92fd733e7306a/emeritus.csv) voted.
+
+This vote has reached quorum (10 + 0 = 10 which is at least 60% of 16).
+
+It has also passed since it recorded 10 "yes" votes and 0 "no" votes giving 10/10 which is greater than 60% of 15.
+
+It should be noted that a request for change was recorded in the pull request about minor implementation details that do not invalidate the previous votes. The author made the requested change.
 
 ## Reference
 
