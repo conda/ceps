@@ -1,23 +1,27 @@
 <table>
 <tr><td> Title </td><td> Conda Deprecation Schedule </td>
 <tr><td> Status </td><td> Draft </td></tr>
-<tr><td> Author(s) </td><td> Ken Odegard &lt;kodegard@anaconda.com&gt; </td></tr>
+<tr><td> Author(s) </td><td> Ken Odegard &lt;kodegard@anaconda.com&gt;, Jannis Leidel &lt;jleidel@anaconda.com&gt;, Travis Hathaway &lt;thathaway@anaconda.com&gt; </td></tr>
 <tr><td> Created </td><td> May 20, 2022 </td></tr>
-<tr><td> Updated </td><td> July 20, 2022 </td></tr>
+<tr><td> Updated </td><td> September 20, 2022 </td></tr>
 <tr><td> Discussion </td><td> NA </td></tr>
 <tr><td> Implementation </td><td> NA </td></tr>
 </table>
 
+<!-- links -->
+[cep8]: https://github.com/conda-incubator/ceps/blob/main/cep-8.md
+[django]: https://docs.djangoproject.com/en/dev/internals/release-process/#deprecation-policy
+
 ## Abstract
 
-This CEP describes a deprecation schedule to properly warn about upcoming removals from the codebase. This policy expands on ideas and terminology defined in the Conda Release Schedule (CEP-?).
+This CEP describes a deprecation schedule to properly warn about upcoming removals from the codebase. This policy expands on ideas and terminology defined in the [Conda Release Schedule (CEP-8)][cep8].
 
 > **Note**
-> This CEP is only applicable for projects that have adopted the Conda Release Schedule (CEP-?).
+> This CEP is only applicable for projects that have adopted the [Conda Release Schedule (CEP-8)][cep8].
 
 ## Specification
 
-We propose a deprecation schedule that is slower than the Conda Release Schedule (CEP-?). This is in acknowledgment of our diverse user groups (e.g. everything from per user per machine installs to multi-user installs on shared clusters).
+We propose a deprecation schedule that is slower than the [Conda Release Schedule (CEP-8)][cep8]. This is in acknowledgment of our diverse user groups (e.g. everything from per user per machine installs to multi-user installs on shared clusters).
 
 We define a new type of release, a deprecation release, to augment regular releases. A deprecation release occurs twice every year in March and September:
 
@@ -41,7 +45,7 @@ All deprecations will need to transition through three (3) states:
 1. **Pending deprecation**: when a feature is marked for future deprecation
     - Any feature can be marked as *pending deprecation* in **any release**
 2. **Deprecated**: when a feature is marked for future removal
-    - All *pending deprecations* that have been through at least one (2+) **regular release** (4-9 months after being marked as *pending deprecation*) are relabeled as *deprecated* in the next **deprecation release**
+    - All *pending deprecations* that have been through at least two (2+) **regular release** (4-9 months after being marked as *pending deprecation*) are relabeled as *deprecated* in the next **deprecation release**
 3. **Removed**: when a feature is removed from the codebase
     - All *deprecations* are removed in the next **deprecation release**
 
@@ -144,7 +148,7 @@ This section contains the final decision on this issue.
 
 ## Reference
 
-- [Django's Deprecation Policy](https://docs.djangoproject.com/en/dev/internals/release-process/#deprecation-policy)
+- [Django's Deprecation Policy][django]
 
 ## Copyright
 
