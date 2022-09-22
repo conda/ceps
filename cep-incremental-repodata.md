@@ -3,7 +3,7 @@
 <tr><td> Status </td><td> Draft </td></tr>
 <tr><td> Author(s) </td><td> Daniel Holth &lt;dholth@gmail.com | dholth@anaconda.com&gt;</td></tr>
 <tr><td> Created </td><td> Mar 30, 2022</td></tr>
-<tr><td> Updated </td><td> Apr 26, 2022</td></tr>
+<tr><td> Updated </td><td> Sep 22, 2022</td></tr>
 <tr><td> Discussion </td><td> NA </td></tr>
 <tr><td> Implementation </td><td> https://github.com/dholth/repodata-fly </td></tr>
 </table>
@@ -228,9 +228,9 @@ The times are from PyPy running on an older Intel(R) Core(TM) i7-5500U laptop.
 ## Summary
 
 The proposed system saves bandwith when a locally cached `repodata.json` is
-known by the patch server, with a very concise client implementation. After the
-first update, subsequent updates fetch only the newest information using a
-single round trip to the server.
+known by the patch server, with a concise client implementation. After the first
+update, subsequent updates fetch only the newest information using a single
+round trip to the server.
 
 ## Alternatives
 
@@ -248,14 +248,6 @@ of s3, probably OK for CDN.
 
 ## JSON Lines With Leading and Trailing Checksums
 
-```
-0000000000000000000000000000000000000000000000000000000000000000
-{"to": "af99a2269795b91aee909eebc6b71a127f8001475c67c2345c96253b97378b21", "from": "af99a2269795b91aee909eebc6b71a127f8001475c67c2345c96253b97378b21", "patch": []}
-...
-{"url": "", "latest": "af99a2269795b91aee909eebc6b71a127f8001475c67c2345c96253b97378b21", "headers": {"date": "Thu, 14 Apr 2022 17:24:36 GMT", "last-modified": "Tue, 28 May 2019 02:01:41 GMT"}}
-8b9c825f33cc68354f131dd810a068256e34153b7335619eeb187b51a54c7118
-```
-
 The `.jlap` format allows clients to fetch the newest patches with a single HTTP
 Range request. It consists of a leading checksum, any number of lines of the
 elements of the `"patches"` array and a `"metadata"` line in the [JSON
@@ -266,8 +258,9 @@ The checksums are constructed in such a way that the trailing checksum can be
 re-verified without re-reading (or retaining) the beginning of the file, if the
 client remembers an intermediate checksum.
 
-When `repodata.json` changes, the server wil truncate the `"metadata"` line,
-appending new patches, a new metadata line, and a new trailing checksum.
+When `repodata.json` changes, the server wil truncate the next-to-last
+`"metadata"` line, appending new patches, a new metadata line, and a new
+trailing checksum.
 
 When the client wants new data, it issues a single HTTP Range request from the
 bytes offset of the beginning of the penultimate `"metadata"` line, to the end
@@ -278,6 +271,97 @@ re-fetch the entire file; otherwise, it may apply the new patches.
 If the `.jlap` file represents part of a stream (earlier lines have been
 discarded), then the leading checksum is an intermediate checksum from that
 stream. Otherwise, the leading checksum is all `0`'s.
+
+### Payload
+
+Conda will expect a `.jlap` file to contain 0 or more patch objects followed by
+a single metadata object.
+
+Patch objects give the difference between two versions of `repodata.json` or
+`current_repodata.json`, identified by a `BLAKE2-256` digest.
+
+```python
+current_digest = hashlib.blake2b(current_repodata_bytes, digest_size=32).digest()
+previous_digest = blake2b(previous_repodata_bytes, digest_size=32).digest()
+
+{
+    "to": current_digest.hex()
+    "from": previous_digest.hex(),
+    "patch": [] # RFC 6902 JSON Patch
+}
+```
+
+The metadata object gives the digest of the latest version, and any other metadata especially the `url`.
+
+```python
+{ "url": "repodata.json", "latest": latest_digest.hex() }
+```
+
+The patch generator is not smart, so the client must check that there is a path
+between the local version of `repodata.json` and the `latest` digest in the
+`.jlap` file. If there is none, fall back to downloading a complete
+`repodata.json`; hash it; and look for its hash in a future `.jlap`.
+
+### Computing checksums for `JLAP version 1`
+
+This short `.jlap` file represents the end of a larger stream.
+
+0. `ea3f3b1853071a4b1004b9f33594938b01e01cc8ca569f20897e793c35037de4`
+1. `{"to": "20af8f45bf8bc15e404bea61f608881c2297bee8a8917bee1de046da985d6d89", "from": "4324630c4aa09af986e90a1c9b45556308a4ec8a46cee186dd7013cdd7a251b7", "patch": [{"op": "add", "path": "/packages/snowflake-snowpark-python-0.10.0-py38hecd8cb5_0.tar.bz2", "value": {"build": "py38hecd8cb5_0", "build_number": 0, "constrains": ["pandas >1,<1.4"], "depends": ["cloudpickle >=1.6.0,<=2.0.0", "python >=3.8,<3.9.0a0", "snowflake-connector-python >=2.7.12", "typing-extensions >=4.1.0"], "license": "Apache-2.0", "license_family": "Apache", "md5": "91fc7aac6ea0c4380a334b77455b1454", "name": "snowflake-snowpark-python", "sha256": "3cbfed969c8702673d1b281e8dd7122e2150d27f8963d1d562cd66b3308b0b31", "size": 359503, "subdir": "osx-64", "timestamp": 1663585464882, "version": "0.10.0"}}, {"op": "add", "path": "/packages.conda/snowflake-snowpark-python-0.10.0-py38hecd8cb5_0.conda", "value": {"build": "py38hecd8cb5_0", "build_number": 0, "constrains": ["pandas >1,<1.4"], "depends": ["cloudpickle >=1.6.0,<=2.0.0", "python >=3.8,<3.9.0a0", "snowflake-connector-python >=2.7.12", "typing-extensions >=4.1.0"], "license": "Apache-2.0", "license_family": "Apache", "md5": "7353a428613fa62f4c8ec9b5a1e4f16d", "name": "snowflake-snowpark-python", "sha256": "e3b5fa220262e23480d32a883b19971d1bd88df33eb90e9556e2a3cfce32b0a4", "size": 316623, "subdir": "osx-64", "timestamp": 1663585464882, "version": "0.10.0"}}]}`
+2. `{"url": "repodata.json", "latest": "20af8f45bf8bc15e404bea61f608881c2297bee8a8917bee1de046da985d6d89"}`
+3. `c540a2ab0ab4674dada39063205a109d26027a55bd8d7a5a5b711be03ffc3a9d`
+
+Line `0` is called the initialization vector. It is 32 bytes encoded as
+64-character hexademical string, all lowercase.
+
+Lines `1..2` are the payload, and line `3` is the trailing checksum.
+
+* If the `.jlap` specification is revised, line `0` will contain a space
+  `chr(32)` and a version identifier. The decoder should stop with a `Not JLAP
+  1` error message.
+
+`BLAKE2_256` is the 512-bit `BLAKE2b` hash function with 32 bytes, or 256 bits
+output. It is a fast keyed hash, available in Python as `hashlib.blake2b(data,
+key=key, digest_size=32)`
+
+Given an `N`-line `.jlap` file,
+
+Let `lines[0..N-1]` = an array of each line of the file, without the `\n`
+terminators.
+
+The checksum of `lines[0]` is
+
+`checksum(0) = bytes.fromhex(lines[0])`
+
+The checksum of `lines[1..N-1]` is
+
+`checksum(n) = BLAKE2-256(lines[n], key=checksum(lines[n-1])`
+
+The checksum is 32 binary bytes, not hexadecimal.
+
+In Python,
+
+```python
+def BLAKE2_256(data: bytes, key: bytes) -> bytes:
+    return blake2b(data, key=key, digest_size=32).digest()
+
+def checksum(n: int) -> bytes:
+    if n == 0:
+        return bytes.fromhex(lines[0])
+    else:
+        return BLAKE2_256(lines[n], key=checksum(lines[n-1])
+```
+
+The last line is the hex-encoded checksum of the next-to-last line,
+`checksum(N-2).hex()`, and is used to verify the integrity of the file. The last
+line must not end with `\n`.
+
+```python
+if bytes(checksum(N-2)).hex() == lines[N-1]:
+    valid = True
+else:
+    raise ValueError("Invalid")
+```
 
 ## Reference
 
