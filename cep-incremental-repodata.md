@@ -88,7 +88,7 @@ Serialize 1.36s
 
 ## Summary
 
-The proposed system saves bandwith when a locally cached `repodata.json` is
+The proposed system saves bandwith when a locally-cached `repodata.json` is
 known by the patch server, with a concise client implementation. After the first
 update, subsequent updates fetch only the newest information using a single
 round trip to the server.
@@ -104,8 +104,8 @@ formatting.
 `zchunk` is a compression format used in Fedora, implemented in C. It splits
 files into independently compressed chunks, transferring changed chunks on
 update. It is generic on bytes. The server does not have to keep a history of
-older versions. The web server should support multipart Range requests, not true
-of s3, probably OK for CDN.
+older versions. The web server should support multipart Range requests. (Not
+true of s3, but probably OK for CDN.)
 
 ## JSON Lines With Leading and Trailing Checksums
 
