@@ -209,9 +209,9 @@ def BLAKE2_256(data: bytes, key: bytes) -> bytes:
 
 def checksum(n: int) -> bytes:
     if n == 0:
-        return bytes.fromhex(lines[0])
+        return bytes.fromhex(lines[0].decode("utf-8"))
     else:
-        return BLAKE2_256(lines[n], key=checksum(lines[n-1]))
+        return BLAKE2_256(lines[n], key=checksum(n - 1))
 ```
 
 The last line is the hex-encoded checksum of the next-to-last line,
@@ -219,10 +219,12 @@ The last line is the hex-encoded checksum of the next-to-last line,
 line must not end with `\n`.
 
 ```python
-if bytes(checksum(N-2)).hex() == lines[N-1]:
+if bytes(checksum(N - 2)).hex() == lines[N - 1].decode("utf-8"):
     valid = True
 else:
-    raise ValueError("Invalid")
+    raise ValueError(
+        "Invalid", bytes(checksum(N - 2)).hex(), lines[N - 1].decode("utf-8")
+    )
 ```
 
 ## Reference
