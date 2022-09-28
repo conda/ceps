@@ -153,7 +153,7 @@ previous_digest = hashlib.blake2b(previous_repodata_bytes, digest_size=32).diges
 ```
 
 The metadata object gives the digest of the latest version, and any other
-metadata especially the `url`.
+metadata, especially the `url`.
 
 ```python
 { "url": "repodata.json", "latest": latest_digest.hex() }
@@ -161,8 +161,8 @@ metadata especially the `url`.
 
 The patch generator is not smart, so the client must check that there is a path
 between the local version of `repodata.json` and the `latest` digest in the
-`.jlap` file. If there is none, fall back to downloading a complete
-`repodata.json`; hash it; and look for its hash in a future `.jlap`.
+`.jlap` file. If there is none, the client falls back to downloading a complete
+`repodata.json`; hashes it; and looks for its hash in a future `.jlap`.
 
 ### Computing checksums for `JLAP version 1`
 
