@@ -132,16 +132,16 @@ Occasionally, there may be changes to the codebase that warrant a longer depreca
 
 ### Disputing a Deprecation
 
-The **pending deprecation** state is also a commenting period whereby disputes for the deprecation may be raised.
+The **pending deprecation** state is also a comment period whereby disputes for the deprecation may be raised.
 
-To raise a dispute open an issue on the relevant repository with the following details:
+To raise a dispute, open an issue on the relevant repository with the following details:
 
 1. Which **pending deprecation** feature to dispute
 2. Details and explanation for why the **pending deprecation** shouldn't proceed
 
-It's then up to the repository maintainers to engage in the discussion, resolve concerns, or ultimately revert the **pending deprecation** status.
+It's up to the repository maintainers to engage in the discussion, resolve concerns, or ultimately revert the **pending deprecation** status.
 
-Should the dispute reach an impasse it will be elevated to the steering council for a vote following the [standard voting procedure of an enhancement proposal][voting].
+Should the dispute reach an impasse, the steering council must vote on the resolution following the [standard voting procedure of an enhancement proposal][voting].
 
 ## Motivation
 
