@@ -11,6 +11,7 @@
 <!-- links -->
 [cep8]: https://github.com/conda-incubator/ceps/blob/main/cep-8.md
 [django]: https://docs.djangoproject.com/en/dev/internals/release-process/#deprecation-policy
+[voting]: https://github.com/conda-incubator/governance#enhancement-proposal-approval
 
 ## Abstract
 
@@ -44,8 +45,10 @@ All deprecations will need to transition through three (3) states:
 
 1. **Pending deprecation**: when a feature is marked for future deprecation
     - Any feature can be marked as *pending deprecation* in **any release**
+    - This state is also a comment period where community concerns or disputes may be raised, see [Disputing a Deprecation](#disputing-a-deprecation)
 2. **Deprecated**: when a feature is marked for future removal
     - All *pending deprecations* that have been through at least two (2+) **regular release** (4-9 months after being marked as *pending deprecation*) are relabeled as *deprecated* in the next **deprecation release**
+    - This state is considered final, the deprecation **will** occur, disputes are no longer possible, see [Disputing a Deprecation](#disputing-a-deprecation)
 3. **Removed**: when a feature is removed from the codebase
     - All *deprecations* are removed in the next **deprecation release**
 
@@ -126,6 +129,19 @@ gantt
 ```
 
 Occasionally, there may be changes to the codebase that warrant a longer deprecation schedule. If that occurs, the deprecation warning will clearly specify that a deviation is occurring and what the expected schedule will be instead.
+
+### Disputing a Deprecation
+
+The **pending deprecation** state is also a commenting period whereby disputes for the deprecation may be raised.
+
+To raise a dispute open an issue on the relevant repository with the following details:
+
+1. Which **pending deprecation** feature to dispute
+2. Details and explanation for why the **pending deprecation** shouldn't proceed
+
+It's then up to the repository maintainers to engage in the discussion, resolve concerns, or ultimately revert the **pending deprecation** status.
+
+Should the dispute reach an impasse it will be elevated to the steering council for a vote following the [standard voting procedure of an enhancement proposal][voting].
 
 ## Motivation
 
