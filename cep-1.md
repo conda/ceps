@@ -10,38 +10,38 @@
 
 # Abstract
 
-CEPs are the manner in which the Conda project community suggests changes
+CEPs are the manner in which the conda project community suggests changes
 to the software project, and outlines how the suggested changes are reviewed.
 This document provides details on what a CEP is, how to author one,
 and the workflow used to review these proposals.
 
 # What is a CEP
 
-CEP stands for Conda Enhancement Proposal. A CEP is a document which
+CEP stands for "Conda Enhancement Proposal". A CEP is a document which
 outlines a suggested change to how the project works. These changes may be
 technical in manner or may deal with social aspects of the project including
 governance and conduct. The CEP should provide a concise description of the
 proposed change as well as the rationale for the change.
 
 CEPs are intended to be the primary mechanism for proposing major changes to
-how Conda works and for documenting both the changes themselves and the
+how conda works and for documenting both the changes themselves and the
 decision making process.
 
 CEPs are maintained as text files using Markdown for formatting in the
 [conda/ceps](https://github.com/conda/ceps) repository. Their revision
-history is a historic record of the proposed change.
+history is a historical record of the proposed change.
 
 # Workflow
 
-The CEP process begins with an idea for a change in how the Conda project
+The CEP process begins with an idea for a change in how the conda project
 works. These changes can be technical or address the social aspects of the
 project. Small changes often do not need a CEP and can be discussed on the
 [conda issue tracker](https://github.com/conda/conda/issues).
 
 More involved or controversial changes should be submitted as CEPs.
 When it is unclear if a change requires a CEP, ask in a ticket in the
-Conda issue tracker and the Conda core team should be able to provide
-guidance. The Conda core team may solicit CEPs on topics of
+conda issue tracker, and the conda core team should be able to provide
+guidance. The conda core team may solicit CEPs on topics of
 concern to the community. CEPs should focus on a single issue; broad changes
 should be split into multiple well-focused CEPs.
 
@@ -51,25 +51,25 @@ follow the discussion on the pull request, and answer questions. Before
 beginning to write a proposal, it is best to ascertain if the idea is CEP-able.
 A discussion on the
 [conda-forge mailing list](https://groups.google.com/forum/#!forum/conda-forge),
-or as part of a Conda community meeting is the best way to go about this.
+or as part of a conda community meeting, is the best way to go about this.
 
-Once the champion has asked the Conda community whether an idea
+Once the champion has asked the conda community whether an idea
 has any chance of acceptance, a draft CEP should be written following the
 template in [CEP 0](cep-0.md) and described below.
 
-While working on the CEP prior to submission please set its status to *draft*.
+While working on the CEP prior to submission, please set its status to *draft*.
 
 ## Submission
 
 Once complete, this draft should be submitted as a pull request to the
 [conda/ceps](https://github.com/conda/ceps) repository with the status
-changed to *proposed*. At this point, members of the Conda community will
+changed to *proposed*. At this point, members of the conda community will
 review the submission.
 
 ## Review
 
 CEP review will begin once a pull request has been made. All members of the
-Conda community are welcome and encouraged to participate in the review
+conda community are welcome and encouraged to participate in the review
 of CEPs in a civil and respectful manner. The CEP champion(s) should be
 prepared to answer questions on the proposal and make updates to the
 proposal as recommended by the community.
@@ -78,7 +78,7 @@ proposal as recommended by the community.
 
 All CEPs will be resolved as either *rejected*, *accepted* or *deferred*
 depending on the consensus of the community. Once the community has reached a
-consensus, a Conda maintainer will update the status of proposal, add a
+consensus, a conda maintainer will update the status of the proposal, add a
 link to the discussion in the table and, regardless of the resolution, merge
 the pull request with these updates.
 
@@ -137,7 +137,7 @@ For the capitalization standards for conda, see the [README](https://github.com/
 
 Much of this document was adapted from [CFEP 1 - Purpose and Guidelines](https://github.com/conda-forge/cfep/blob/master/cfep-01.md) and
 [PEP 1 -- PEP Purpose and Guidelines](https://www.python.org/dev/peps/pep-0001/), both have been placed in the public domain.
-The [IPEPs: IPython Enhancement Proposals](https://github.com/ipython/ipython/wiki/IPEPs:-IPython-Enhancement-Proposals) was also referenced for inspiration.
+The [IPEPs: IPython Enhancement Proposals](https://github.com/ipython/ipython/wiki/IPEPs:-IPython-Enhancement-Proposals) were also referenced for inspiration.
 
 ## Copyright
 

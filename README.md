@@ -3,7 +3,7 @@
 [Conda](https://docs.conda.io/) is an Open Source project with a diverse and wide-ranging ecosystem.
 
 To better allow community members to provide feedback and proposals
-for Conda's implementation, all major changes should be submitted as
+for conda's implementation, all major changes should be submitted as
 **Conda Enhancement Proposals (CEP)**.
 
 ## References
@@ -31,12 +31,12 @@ A template for new CEPs is given in [CEP 0](https://github.com/conda/ceps/blob/m
 
 #### In sentences
 
-Beginning a sentence: 
+Beginning a sentence:
 
-- Conda is an open-source package and environment management system. 
+- Conda is an open-source package and environment management system.
 - `conda install` can be used to install packages.
 
-Conda in the middle of a sentence: 
+Conda in the middle of a sentence:
 
 - If a newer version of conda is available, you can use `conda update conda` to update to that version.
 - You can find conda packages within conda channels. The `conda` command can search these channels.
