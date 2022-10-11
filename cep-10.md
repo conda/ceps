@@ -232,6 +232,7 @@ else:
 
 * JSON Patch https://datatracker.ietf.org/doc/html/rfc6902
 * Server and client implementation in Python https://github.com/dholth/repodata-fly
+* Example code [cep-10.py](./cep-10.py)
 
 ## Copyright
 
