@@ -1,10 +1,10 @@
 <table>
 <tr><td> Title </td><td> Conda Deprecation Schedule </td>
-<tr><td> Status </td><td> Draft </td></tr>
+<tr><td> Status </td><td> Accepted </td></tr>
 <tr><td> Author(s) </td><td> Ken Odegard &lt;kodegard@anaconda.com&gt;, Jannis Leidel &lt;jleidel@anaconda.com&gt;, Travis Hathaway &lt;thathaway@anaconda.com&gt; </td></tr>
 <tr><td> Created </td><td> May 20, 2022 </td></tr>
 <tr><td> Updated </td><td> September 20, 2022 </td></tr>
-<tr><td> Discussion </td><td> NA </td></tr>
+<tr><td> Discussion </td><td> https://github.com/conda-incubator/ceps/pull/27 </td></tr>
 <tr><td> Implementation </td><td> NA </td></tr>
 </table>
 
