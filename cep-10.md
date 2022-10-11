@@ -53,8 +53,9 @@ found, pop each patch off the stack, applying them in turn to the outdated
 
 Since JSON Patch does not preserve formatting, the new `repodata.json` will not
 hash equal to `latest` unless it is sorted and re-serialized, with the
-`json.dump(...)` settings used in `conda-build index`. Otherwise, it should be
-considered to have the `latest` hash for purposes of incremental updates.
+normalization settings, if any, used by `conda index` or the `repodata.json`
+generator. Otherwise, the updated local file should be considered to have the
+`latest` hash for purposes of incremental updates.
 
 If the desired hash is not found in the `repodata.jlap` patch set, download the
 complete `repodata.json` as before.
