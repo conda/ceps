@@ -3,7 +3,7 @@
 <tr><td> Status </td><td> Draft </td></tr>
 <tr><td> Author(s) </td><td> Daniel Holth &lt;dholth@gmail.com | dholth@anaconda.com&gt;</td></tr>
 <tr><td> Created </td><td> Mar 30, 2022</td></tr>
-<tr><td> Updated </td><td> Sep 22, 2022</td></tr>
+<tr><td> Updated </td><td> Oct 11, 2022</td></tr>
 <tr><td> Discussion </td><td> NA </td></tr>
 <tr><td> Implementation </td><td> https://github.com/dholth/repodata-fly </td></tr>
 </table>
