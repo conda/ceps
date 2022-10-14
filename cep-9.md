@@ -95,7 +95,7 @@ gantt
 gantt
     dateFormat  YYYY-MM
     axisFormat YY.%_m
-    title       December-May (YX.12-YY.5) Pending → September (YY.9) Removals → March (YZ.3) Deprecations
+    title       December-May (YX.12-YY.5) Pending → September (YY.9) Deprecations → March (YZ.3) Removals
 
     section Dec
     Pending     :           2022-12, 2023-09
