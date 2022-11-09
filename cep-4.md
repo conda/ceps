@@ -6,7 +6,8 @@
 <tr><td> Created </td><td> July 5, 2022 </td></tr>
 <tr><td> Updated </td><td> August 22, 2022 </td></tr>
 <tr><td> Discussion </td><td>https://github.com/conda-incubator/ceps/pull/32</td></tr>
-<tr><td> Implementation </td><td>https://github.com/conda/conda/pull/11960</td></tr>
+<tr><td> Implementation </td><td><ul><li>https://github.com/conda/conda/pull/11435</li>
+<li>https://github.com/conda/conda/pull/11960</li></td></tr>
 </table>
 
 ## Abstract
