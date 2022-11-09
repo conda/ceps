@@ -1,12 +1,13 @@
 <table>
 <tr><td> Title </td><td> Implement initial conda plugin mechanism </td>
-<tr><td> Status </td><td> Accepted  </td></tr>
+<tr><td> Status </td><td> Implemented  </td></tr>
 <tr><td> Author(s) </td><td> Bianca Henderson &lt;bhenderson@anaconda.com&gt;</td></tr>
 <tr><td> </td><td>Jannis Leidel &lt;jleidel@anaconda.com&gt; </td></tr>
 <tr><td> Created </td><td> July 5, 2022 </td></tr>
 <tr><td> Updated </td><td> August 22, 2022 </td></tr>
 <tr><td> Discussion </td><td>https://github.com/conda-incubator/ceps/pull/32</td></tr>
-<tr><td> Implementation </td><td>https://github.com/conda/conda/pull/11435</td></tr>
+<tr><td> Implementation </td><td><ul><li>https://github.com/conda/conda/pull/11435</li>
+<li>https://github.com/conda/conda/pull/11960</li></ul></td></tr>
 </table>
 
 ## Abstract
