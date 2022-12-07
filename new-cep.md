@@ -37,7 +37,7 @@ Highlight backwards compatibility issues here.
 
 ## Alternatives
 
-- Indefinitely support all conda versions ever: not at all sustainable or practical for the development team.
+- **Indefinitely support all conda versions ever:** not at all sustainable or practical for the development team.
 
 
 ## FAQ
