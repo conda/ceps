@@ -27,6 +27,7 @@ class by using what we are calling the "conda session class" hook.
 Plugin authors can either subclass our existing session class or
 write a new class that conforms to the 
 [`requests.Session`][requests-session] API. 
+
 Overriding this session class can either be done for all network 
 requests or on a channel-by-channel basis. The primary
 use case driving this forward is support for better authentication
@@ -126,7 +127,7 @@ we have chosen this class to be replaceable by a plugin hook. We realize
 that by doing so we are forcing plugin authors to comply with implementing
 their own `requests`-like API if they wish to replace it, but we feel that
 given this library's widespread use and good documentation, it is not
-and an unfair ask. Furthermore, the only public method of the 
+an unfair ask. Furthermore, the only public method of the 
 [`requests.Session`][requests-session] class in use in conda is `get`,
 which reduces the complexity of implementing a drop in replacement.
 
