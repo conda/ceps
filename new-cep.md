@@ -27,25 +27,11 @@ write a new class that conforms to the `requests.Session` API.
 Overriding this session class can either be done for all network 
 requests or on a channel-by-channel basis. The primary
 use case driving this forward is support for better authentication
-<<<<<<< HEAD
 handling. In this CEP, we also provide an example implementation 
 in the form of basic HTTP authentication to make our case for such 
 a plugin hook more  compelling. We believe that this hook not only
 serves for better support  various authentication schemes but is 
 flexible enough to handle other use cases in the future.
-||||||| b1cff61
-handling. In this CEP, we also provide an example in the form of basic 
-HTTP authentication to make our case for such a plugin hook more 
-compelling. We believe that this hook not only serves for better support 
-various authentication schemes but is flexible enough to handle other use 
-cases in the future.
-=======
-handling. In this CEP, we also provide an example in the form of basic 
-HTTP authentication to make our case for such a plugin hook more 
-compelling. We believe that this hook not only serves for better support of
-various authentication schemes but is flexible enough to handle other use 
-cases in the future.
->>>>>>> 0d0690dad42e2443c969bc8e972b53564289de4b
 
 ## Specification
 
