@@ -20,7 +20,7 @@ write a new class that conforms to the `requests.Session` API. The primary
 use case driving this forward is support for better authentication
 handling. In this CEP, we also provide an example in the form of basic 
 HTTP authentication to make our case for such a plugin hook more 
-compelling. We believe that this hook not only serves for better support 
+compelling. We believe that this hook not only serves for better support of
 various authentication schemes but is flexible enough to handle other use 
 cases in the future.
 
@@ -34,7 +34,7 @@ subclass the existing `CondaSession` class to make any desired
 customizations.
 
 Below is an example of how a plugin author would use this new hook
-to create a their own custom `CondaSession` class:
+to create their own custom `CondaSession` class:
 
 ```python
 from conda.gateways.connection.session import CondaSession
