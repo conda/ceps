@@ -1,5 +1,5 @@
 <table>
-    <tr><td> Title </td><td> Conda Session Plugin Hook </td>
+    <tr><td> Title </td><td> Conda Transmitter Plugin Hook </td>
     <tr><td> Status </td><td> Draft </td></tr>
     <tr><td> Author(s) </td><td>Travis Hathaway &lt;thathaway@anaconda.com&gt;</td></tr>
     <tr><td> Created </td><td>December 20, 2022</td></tr>
@@ -17,13 +17,16 @@
 
 [conda-session]: https://github.com/conda/conda/blob/4f2f302688cae358f41e842801f724d5864b4ce7/conda/gateways/connection/session.py#L63
 [requests-session]: https://requests.readthedocs.io/en/latest/api/#requests.Session
+[python-requests]: https://requests.readthedocs.io/en/latest
+[conda-deprecation]: https://github.com/conda-incubator/ceps/blob/main/cep-9.md
+[pycurl]: http://pycurl.io
 
 ## Abstract
 
-This CEP introduces a new a plugin hook that will enable customization
-of all network traffic in conda. The way we intend to do this is by
-allowing plugin authors to essentially replace the [`CondaSession`][conda-session]
-class by using what we are calling the "conda session class" hook.
+This CEP introduces the new "conda transmitter" plugin hook that will enable customization
+of all network traffic requests in conda. The way we intend to do this is by
+allowing plugin authors to replace the [`CondaSession`][conda-session]
+class by using the "conda transmitter" hook.
 Plugin authors can either subclass our existing session class or
 write a new class that conforms to the 
 [`requests.Session`][requests-session] API. 
@@ -34,34 +37,40 @@ use case driving this forward is support for better authentication
 handling. In this CEP, we also link to a prototype implementation 
 of a basic HTTP authentication plugin to make our case for such 
 a plugin hook more compelling. We believe that this hook not only
-serves for better support of various authentication schemes but is 
-flexible enough to handle other use cases in the future.
+serves for better support of various authentication schemes right now but
+is flexible enough to handle other use cases in the future.
 
 ## Specification
 
 This new plugin hook will allow plugin authors to completely replace the
 [`CondaSession`][conda-session] class currently defined in conda to handle all network 
 traffic. This can either be done on a per channel basis or for all
-network requests. Plugin authors will have the ability to either define
+network requests. Plugin authors will have the ability to define
 a completely new class as long as it conforms to the 
 [`requests.Session`][requests-session]
 API or simply subclass the existing [`CondaSession`][conda-session] class to make any
 desired customizations.
 
+In order to make it clearer to plugin authors wishing to subclass
+the current [`CondaSession`][conda-session] class, we will be renaming
+it to `CondaRequestsSession` to emphasize that this belongs to the
+requests library. The old name will be deprecated and follow our
+[standard deprecation schedule][conda-deprecation].
+
 Below is an example of how a plugin author would use this new hook
 to create their own custom [`CondaSession`][conda-session] class:
 
 ```python
-from conda.gateways.connection.session import CondaSession
-from conda.plugins import hookimpl, CondaSessionClass
+from conda.gateways.connection.session import CondaRequestsSession
+from conda.plugins import hookimpl, CondaTransmitter
 
 
-PLUGIN_NAME = "custom_conda_session"
+PLUGIN_NAME = "custom_transmitter"
 
 
-class CustomCondaSession(CondaSession):
+class CustomSession(CondaRequestsSession):
     """
-    Our custom CondaSession class which defines an additional class
+    Our custom CondaRequestsSession class which defines an additional class
     property
     """
     def __init__(self):
@@ -72,19 +81,23 @@ class CustomCondaSession(CondaSession):
 @hookimpl
 def conda_session_classes(): 
     """
-    Register our custom CondaSession class
+    Register our custom CondaTransmitter class
     """
-    yield CondaSessionClass(
+    yield CondaTransmitter(
         name=PLUGIN_NAME, 
-        session_class=CustomCondaSession
+        session=CustomSession
     )
 ```
+
+### Using the plugin
+
+#### Specifying via configuration files
 
 In order to configure this new plugin, users will either configure it
 globally for conda (i.e. all network requests go through this class):
 
 ```yaml
-network_session_class: custom_conda_session
+transmitter: custom_transmitter
 ```
 
 or on a per channel basis:
@@ -92,32 +105,67 @@ or on a per channel basis:
 ```yaml
 channels:
     - https://my-custom-conda-packages.com:
-        network_session_class: custom_conda_session
+        transmitter: custom_transmitter
 ```
 
 In the latter example, the custom session class will only be used for
 network requests to the configured channel. All other requests will
 use the standard [`CondaSession`][conda-session] class.
 
+#### Specifying via command line or environment variables
+
+This plugin hook can also be specified via the command line:
+
+```bash
+$ conda install --transmitter custom_transmitter pandas
+```
+
+or via environment variables:
+
+```bash
+$ export CONDA_TRANSMITTER=custom_transmitter
+$ conda install pandas
+```
 
 ## Motivation
 
-The primary motivation behind adding this new plugin hook to conda is
-giving plugin authors the ability to support a variety of authentication
-schemes. For example, creating a plugin to handle HTTP basic
-authentication can be created once this plugin is in place.
-Currently, we rely on mechanisms that force users to store their
-credentials in plain text which is undesirable in many environments.
-Additionally, support for more complicated schemes such as OAuth also
-becomes possible with the addition of this plugin hook.
+### Better handling for authentication
 
-Those are just a few examples of authentication schemes this plugin
-would enable conda to support. Because there are many more, it would be
-unfeasible and difficult to maintain each and every one if we decided to
-add these all as custom authentication schemes to conda itself. This is
-the primary reason why we want to create this plugin hook. Furthermore,
-some users may be using non-standard authentication schemes and having
-this plugin hook available to them enables us to support that use case.
+The primary motivation behind this new plugin hook is
+giving plugin authors the ability to support a variety of authentication
+schemes. Currently, conda only supports HTTP basic authentication
+and a custom form of token based authentication that is highly coupled
+with [anaconda.org][https://anaconda.org]. By creating this plugin hook,
+we want to allow for the support of more complicated authentication schemes
+such as OAuth or OpenID. This plugin hook will also allow 
+for the support of future authentication schemes which have not even been
+created yet.
+
+Additionally, this new plugin will allow us to deprecate current mechanisms
+conda uses for storing credentials that we view as undesirable. As it
+currently stands, conda only supports HTTP basic 
+authentication and the aforementioned custom token based authentication.
+In both cases, credentials or tokens either have to be embedded directly
+in the URL itself or stored in plain text. Both of these approaches are
+undesirable and present security risks in many types of environments. By
+handling these authentication schemes in the future via plugins instead
+of in the core of conda, we open up the possibility for designing a more
+secure credential storage workflow that can adapt to a variety of user
+demands.
+
+We also want to leverage the power of our plugins system to shift the
+maintenance burden from the conda development team to third parties
+for providing a diverse ecosystem of authentication related plugins.
+Supporting all of these use cases within conda itself would simply
+be impossible to do given the development team's current capacities.
+
+### Experimentation and performance improvements
+
+Also worth mentioning is the performance improvements that may be had
+by switching out the networking backend. Using this new plugin hook,
+one could for example configure the usage of [PycURL][pycurl] which 
+has additional features and performance benefits over a library
+such as [requests][python-requests].
 
 ## Rationale
 
@@ -130,6 +178,8 @@ given this library's widespread use and good documentation, it is not
 an unfair ask. Furthermore, the only public method of the 
 [`requests.Session`][requests-session] class in use in conda is `get`,
 which reduces the complexity of implementing a drop in replacement.
+Regardless, we recommend that plugin authors support other HTTP
+verbs such as `post`, `put`, `head` and `delete`.
 
 Another reason why we think it is reasonable to target this class
 as being replaceable by a plugin hook is the precedent set by the
@@ -146,7 +196,7 @@ would look like is available here:
 
 The prototype includes the following:
 
-- "conda session class" plugin hook
+- "conda transmitter" plugin hook
 - "conda before action" plugin hook*
 - Working HTTP basic authentication example
 
@@ -158,7 +208,11 @@ this will look and function if added to conda.
 
 ## FAQs
 
-_Any FAQs will go here. Plus add any in the comments of the pull request!_
+- Why did you choose to use requests' Session class as the basis for this plugin hook?
+    - We chose this class because it is a widely used library in Python and has an API which many developers will already be familiar with and comfortable using.
+- What are the expected behavior inherent 3rd party conda session classes?
+    - Thread safety 🔒
+
 
 ## Resolution
 
