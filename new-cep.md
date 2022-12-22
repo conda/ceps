@@ -1,5 +1,5 @@
 <table>
-    <tr><td> Title </td><td> Conda Transmitter Plugin Hook </td>
+    <tr><td> Title </td><td> Conda Fetch Plugin Hook </td>
     <tr><td> Status </td><td> Draft </td></tr>
     <tr><td> Author(s) </td><td>Travis Hathaway &lt;thathaway@anaconda.com&gt;</td></tr>
     <tr><td> Created </td><td>December 20, 2022</td></tr>
@@ -23,10 +23,10 @@
 
 ## Abstract
 
-This CEP introduces the new "conda transmitter" plugin hook that will enable customization
+This CEP introduces the new "conda fetch" plugin hook that will enable customization
 of all network traffic requests in conda. The way we intend to do this is by
 allowing plugin authors to replace the [`CondaSession`][conda-session]
-class by using the "conda transmitter" hook.
+class by using the "conda fetch" hook.
 Plugin authors can either subclass our existing session class or
 write a new class that conforms to the 
 [`requests.Session`][requests-session] API. 
@@ -62,10 +62,10 @@ to create their own custom [`CondaSession`][conda-session] class:
 
 ```python
 from conda.gateways.connection.session import CondaRequestsSession
-from conda.plugins import hookimpl, CondaTransmitter
+from conda.plugins import hookimpl, CondaFetch
 
 
-PLUGIN_NAME = "custom_transmitter"
+PLUGIN_NAME = "custom_fetch"
 
 
 class CustomSession(CondaRequestsSession):
@@ -81,9 +81,9 @@ class CustomSession(CondaRequestsSession):
 @hookimpl
 def conda_session_classes(): 
     """
-    Register our custom CondaTransmitter class
+    Register our custom CondaFetch class
     """
-    yield CondaTransmitter(
+    yield CondaFetch(
         name=PLUGIN_NAME, 
         session=CustomSession
     )
@@ -97,7 +97,7 @@ In order to configure this new plugin, users will either configure it
 globally for conda (i.e. all network requests go through this class):
 
 ```yaml
-transmitter: custom_transmitter
+fetch: custom_fetch
 ```
 
 or on a per channel basis:
@@ -105,7 +105,7 @@ or on a per channel basis:
 ```yaml
 channels:
     - https://my-custom-conda-packages.com:
-        transmitter: custom_transmitter
+        fetch: custom_fetch
 ```
 
 In the latter example, the custom session class will only be used for
@@ -117,13 +117,13 @@ use the standard [`CondaSession`][conda-session] class.
 This plugin hook can also be specified via the command line:
 
 ```bash
-$ conda install --transmitter custom_transmitter pandas
+$ conda install --fetch custom_fetch pandas
 ```
 
 or via environment variables:
 
 ```bash
-$ export CONDA_TRANSMITTER=custom_transmitter
+$ export CONDA_FETCH=custom_fetch
 $ conda install pandas
 ```
 
@@ -196,7 +196,7 @@ would look like is available here:
 
 The prototype includes the following:
 
-- "conda transmitter" plugin hook
+- "conda fetch" plugin hook
 - "conda before action" plugin hook*
 - Working HTTP basic authentication example
 
