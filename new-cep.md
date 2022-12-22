@@ -11,9 +11,11 @@
 ## Abstract
 
 In order to support a variety use cases and extensions to conda's default
-behavior, we propose a set of generic plugin hooks in this CEP. Included will be pre-run and post-run hooks that will allow
+behavior, we propose a set of generic plugin hooks in this CEP. Included will be `pre_run` and `post_run` hooks that will allow
 authors to execute their plugin code before or after conda commands
-run, respectively. We outline several example cases in this CEP and
+run, respectively. Additionally, we introduce the `on_exception` plugin 
+hook that will allow authors to execute when an exception is thrown. 
+For each hook, we outline example cases and
 show exactly how plugin authors will define these new hooks.
 
 ## Specification
