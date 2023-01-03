@@ -24,25 +24,24 @@
 ## Abstract
 
 This CEP introduces the new "conda fetch" plugin hook that will enable customization
-of all network traffic requests in conda. The way we intend to do this is by
-allowing plugin authors to replace the [`CondaSession`][conda-session]
-class by using the "conda fetch" hook.
-Plugin authors can either subclass our existing session class or
-write a new class that conforms to the 
-[`requests.Session`][requests-session] API. 
+of all network requests in conda. The way we intend to do this is by
+giving plugin authors the ability to replace the [`CondaSession`][conda-session]
+class. To customize it, plugin authors can either subclass our existing session 
+class or write a new class that conforms to the [`requests.Session`][requests-session] 
+API. Furthermore, this can either configured on a global level or on a 
+channel-by-channel basis.
 
-Overriding this session class can either be done for all network 
-requests or on a channel-by-channel basis. The primary
-use case driving this forward is support for better authentication
-handling. In this CEP, we also link to a prototype implementation 
-of a basic HTTP authentication plugin to make our case for such 
-a plugin hook more compelling. We believe that this hook not only
-serves for better support of various authentication schemes right now but
-is flexible enough to handle other use cases in the future.
+Our primary motivation for creating this new plugin hook is giving conda the
+ability to better support various authentication schemes (e.g. OAuth or HTTP Basic
+Authentication). Included in this CEP is a link to a fully functional prototype
+illustrating how we intend to enable better HTTP Basic Authentication support
+in conda and to illustrate exactly how this new plugin hook is supposed to work.
+We believe that this hook not only serves for better support of various authentication
+schemes right now but is flexible enough to handle other use cases in the future.
 
 ## Specification
 
-This new plugin hook will allow plugin authors to completely replace the
+The "conda fetch" plugin hook gives plugin authors the ability to completely replace the
 [`CondaSession`][conda-session] class currently defined in conda to handle all network 
 traffic. This can either be done on a per channel basis or for all
 network requests. Plugin authors will have the ability to define
@@ -70,12 +69,11 @@ PLUGIN_NAME = "custom_fetch"
 
 class CustomSession(CondaRequestsSession):
     """
-    Our custom CondaRequestsSession class which defines an additional class
-    property
+    Our custom CondaRequestsSession class which defines an additional attribute
     """
     def __init__(self):
         super().__init__()
-        self.custom_property = 'custom_property'
+        self.custom_attr = "custom_attr"
 
 
 @hookimpl
@@ -133,7 +131,7 @@ $ conda install pandas
 
 The primary motivation behind this new plugin hook is
 giving plugin authors the ability to support a variety of authentication
-schemes. Currently, conda only supports HTTP basic authentication
+schemes. Currently, conda only supports HTTP Basic Authentication
 and a custom form of token based authentication that is highly coupled
 with [anaconda.org][https://anaconda.org]. By creating this plugin hook,
 we want to allow for the support of more complicated authentication schemes
@@ -143,8 +141,8 @@ created yet.
 
 Additionally, this new plugin will allow us to deprecate current mechanisms
 conda uses for storing credentials that we view as undesirable. As it
-currently stands, conda only supports HTTP basic 
-authentication and the aforementioned custom token based authentication.
+currently stands, conda only supports HTTP Basic 
+Authentication and the aforementioned custom token based authentication.
 In both cases, credentials or tokens either have to be embedded directly
 in the URL itself or stored in plain text. Both of these approaches are
 undesirable and present security risks in many types of environments. By
@@ -153,7 +151,7 @@ of in the core of conda, we open up the possibility for designing a more
 secure credential storage workflow that can adapt to a variety of user
 demands.
 
-We also want to leverage the power of our plugins system to shift the
+We also want to leverage the power of our plugin system to shift the
 maintenance burden from the conda development team to third parties
 for providing a diverse ecosystem of authentication related plugins.
 Supporting all of these use cases within conda itself would simply
@@ -176,15 +174,15 @@ that by doing so we are forcing plugin authors to comply with implementing
 their own `requests`-like API if they wish to replace it, but we feel that
 given this library's widespread use and good documentation, it is not
 an unfair ask. Furthermore, the only public method of the 
-[`requests.Session`][requests-session] class in use in conda is `get`,
+[`requests.Session`][requests-session] class currently in use in conda is `get`,
 which reduces the complexity of implementing a drop in replacement.
-Regardless, we recommend that plugin authors support other HTTP
+Regardless, we still recommend that plugin authors support other HTTP
 verbs such as `post`, `put`, `head` and `delete`.
 
 Another reason why we think it is reasonable to target this class
-as being replaceable by a plugin hook is the precedent set by the
-solver hook. The solver hook essentially operates under the same
-principle that if a plugin author wants to override or modify behavior, all
+as being replaceable by a plugin hook is the precedent set by the existing
+solver hook. The solver hook functions very similarly to this hook.
+If a plugin author wants to override or modify solver behavior, all
 they have to do is either extend or replace the `Solver` class.
 
 ## Sample Implementation
@@ -200,7 +198,7 @@ The prototype includes the following:
 - "conda before action" plugin hook*
 - Working HTTP basic authentication example
 
-_*This plugin hook is necessary for making the HTTP basic authentication 
+_*This plugin hook is necessary for making the HTTP Basic Authentication 
 example work and will be introduced in a separate CEP._
 
 You are invited to browse the pull request to get a better picture of how
