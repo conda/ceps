@@ -1,6 +1,6 @@
 <table>
     <tr><td> Title </td><td> Conda Fetch Plugin Hook </td>
-    <tr><td> Status </td><td> Draft </td></tr>
+    <tr><td> Status </td><td> Proposed </td></tr>
     <tr><td> Author(s) </td><td>Travis Hathaway &lt;thathaway@anaconda.com&gt;</td></tr>
     <tr><td> Created </td><td>December 20, 2022</td></tr>
     <tr><td> Updated </td><td>December 20, 2022</td></tr>
