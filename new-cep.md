@@ -133,7 +133,7 @@ The primary motivation behind this new plugin hook is
 giving plugin authors the ability to support a variety of authentication
 schemes. Currently, conda only supports HTTP Basic Authentication
 and a custom form of token based authentication that is highly coupled
-with [anaconda.org][https://anaconda.org]. By creating this plugin hook,
+with [anaconda.org](https://anaconda.org). By creating this plugin hook,
 we want to allow for the support of more complicated authentication schemes
 such as OAuth or OpenID. This plugin hook will also allow 
 for the support of future authentication schemes which have not even been
