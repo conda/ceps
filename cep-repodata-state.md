@@ -33,22 +33,22 @@ Both mamba and conda currently use the same cache folder. If both don't implemen
 
 ### Specification
 
-```json
+```json5
 {
     // we ensure that state.json and .json files are in sync by storing the file
     // last modified time in the state file, as well as the file size
     "file_mtime": {
         // seconds and nanoseconds counted from UNIX timestamp (1970-01-01)
-        "seconds": "<integer>",
-        "nanoseconds": "<integer>"
+        "seconds": INTEGER,
+        "nanoseconds": INTEGER
     },
-    "file_size": "<integer>", // file size in bytes
+    "file_size": INTEGER, // file size in bytes
 
     // The header values as before
-    "url": "<string>",
-    "etag: "<string>",
-    "mod": "<string>",
-    "cache_control": "<string>",
+    "url": STRING,
+    "etag": STRING,
+    "mod": STRING,
+    "cache_control": STRING,
 
     // these are alternative encodings of the repodata.json that 
     // can be used for faster downloading
@@ -60,7 +60,7 @@ Both mamba and conda currently use the same cache folder. If both don't implemen
         // Note: same format as conda TUF spec
         "last_checked": "2023-01-08T11:45:44Z",
         // false = unavailable, true = available
-        "value": false
+        "value": BOOLEAN
     },
     "has_jlap": {
         // same format as `has_zst`
