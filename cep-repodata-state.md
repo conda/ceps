@@ -21,7 +21,7 @@ When conda currently downloads `repodata.json` files from the internet, it store
 - `_mod`: Last-Modified header from server
 - `_cache_control`: Cache-Control header from server
 
-These are stored as three string values. 
+These are stored as three string values.
 
 This is not an ideal approach as it modifies the `repodata.json` file and corrupts e.g. the hash of the file. Also, the repodata files have gotten increasingly large, and parsing these state values can require parsing a large `json` file.
 
@@ -37,12 +37,10 @@ Both mamba and conda currently use the same cache folder. If both don't implemen
 {
     // we ensure that state.json and .json files are in sync by storing the file
     // last modified time in the state file, as well as the file size
-    "file_mtime": {
-        // seconds and nanoseconds counted from UNIX timestamp (1970-01-01)
-        "seconds": INTEGER,
-        "nanoseconds": INTEGER
-    },
-    "file_size": INTEGER, // file size in bytes
+
+    // seconds and nanoseconds counted from UNIX timestamp (1970-01-01)
+    "mtime_ns": INTEGER,
+    "size": INTEGER, // file size in bytes
 
     // The header values as before
     "url": STRING,
@@ -50,7 +48,7 @@ Both mamba and conda currently use the same cache folder. If both don't implemen
     "mod": STRING,
     "cache_control": STRING,
 
-    // these are alternative encodings of the repodata.json that 
+    // these are alternative encodings of the repodata.json that
     // can be used for faster downloading
     // both `has_zst` and `has_jlap` keys are optional but should be kept
     // even if the other data times out or `file_mtime` does not match
@@ -58,17 +56,24 @@ Both mamba and conda currently use the same cache folder. If both don't implemen
         // UTC RFC3999 timestamp of when we last checked wether the file is available or not
         // in this case the `repodata.json.zst` file
         // Note: same format as conda TUF spec
+        // Python's time.time_ns() would be convenient?
         "last_checked": "2023-01-08T11:45:44Z",
         // false = unavailable, true = available
         "value": BOOLEAN
     },
     "has_jlap": {
         // same format as `has_zst`
-    }
+    },
+
+    "jlap": { } // unspecified additional state for jlap when available
 }
 ```
 
 If the `state.json` file_mtime or file_size does not match the `.json` file actual `mtime`, the header values are discarded. However, the `has_zst` or `has_jlap` values are kept as they are independent from the repodata validity on disk.
+
+If the client is tracking `repodata.json.zst` or `repodata.jlap` instead of
+`(current_)?repodata.json`, then `etag`/`mod`/`cache_control` will correspond to
+those remote files, instead of `repodata.json`.
 
 ### Backward compatibility
 
