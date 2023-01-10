@@ -60,9 +60,9 @@ def custom_plugin_pre_command_action():
 
 
 @hookimpl
-def conda_pre_command():
+def conda_pre_commands():
     """
-    Returns our CondaPreCommand class which attaches our ``custom_plugin_pre_command_action``
+    Yields our CondaPreCommand instance which attaches our ``custom_plugin_pre_command_action``
     to the "install" and "create" command.
     """
     yield CondaPreCommand(
@@ -80,9 +80,9 @@ def custom_plugin_post_command_action():
 
 
 @hookimpl
-def conda_post_command():
+def conda_post_commands():
     """
-    Returns our CondaPreCommand class which attaches our ``custom_plugin_post_command_action`` to
+    Yields our CondaPreCommand instance which attaches our ``custom_plugin_post_command_action`` to
     the "install" and "create" command.
     """
     yield CondaPostCommand(
