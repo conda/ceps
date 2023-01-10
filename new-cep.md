@@ -82,7 +82,7 @@ def conda_post_run():
     Returns our CondaPreRun class which attaches our ``custom_plugin_post_run_action`` to
     the "install" and "create" command.
     """
-    yield CondaPreRun(
+    yield CondaPostRun(
         name=f"{PLUGIN_NAME}_post_run",
         action=custom_plugin_post_run_action,
         run_for={"install", "create"}
@@ -119,7 +119,7 @@ def conda_on_exception():
     """
     Returns our CondaOnException class which attaches our ``custom_plugin_on_exception_action``.
     """
-    yield CondaPreRun(
+    yield CondaOnException(
         name=f"{PLUGIN_NAME}_on_exception",
         action=custom_plugin_on_exception_action
     )
