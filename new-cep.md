@@ -10,9 +10,9 @@
 
 ## Abstract
 
-In order to support a variety use of cases and extensions to conda's default
+In order to support a variety of use cases and extensions to conda's default
 behavior, we propose a set of generic plugin hooks in this CEP. Included will 
-be `pre_run` and `post_run` hooks that will allow
+be `pre_commmand` and `post_command` hooks that will allow
 plugin authors to execute their plugin code before or after conda commands
 run, respectively. Additionally, we introduce the `on_exception` plugin 
 hook that will allow plugin authors to execute custom code when an exception is thrown. 
@@ -23,18 +23,18 @@ show exactly how plugin authors will define these new hooks.
 
 This specification calls for the creation of the following three new plugin hooks:
 
-- `pre_run`: runs before the invoked conda command is run
-- `post_run`: runs after the invoked conda command is run
+- `pre_command`: runs before the invoked conda command is run
+- `post_command`: runs after the invoked conda command is run
 - `on_exception`: runs when an exception is raised while a conda command is invoked
 
-Below, we discuss an example showing the use of the `pre_run` and `post_run` hooks together
+Below, we discuss an example showing the use of the `pre_commmand` and `post_command` hooks together
 and an example of the `on_exception` hook.
 
-### `pre_run` and `post_run`
+### `pre_command` and `post_command`
 
-Plugin authors create the `pre_run` and `post_run` hooks by first defining a `conda.plugins.hookimpl`
-decorated function called either `conda_pre_run` or `conda_post_run` which return either a `CondaPreRun` 
-or `CondaPostRun` class, respectively. These classes will both receive the following three properties:
+Plugin authors create the `pre_commmand` and `post_command` hooks by first defining a `conda.plugins.hookimpl`
+decorated function called either `conda_pre_commmand` or `conda_post_command` which return either a `CondaPreCommand` 
+or `CondaPostCommand` class, respectively. These classes will both receive the following three properties:
 
 - `name`: unique name which identifies this plugin hook
 - `action`: a callable which contains the code to be run
@@ -43,13 +43,13 @@ or `CondaPostRun` class, respectively. These classes will both receive the follo
 #### Example
 
 ```python
-from conda.plugins import hookimpl, CondaPreRun, CondaPostRun
+from conda.plugins import hookimpl, CondaPreCommand, CondaPostCommand
 
 
 PLUGIN_NAME = "custom_plugin"
 
 
-def custom_plugin_pre_run_action():
+def custom_plugin_pre_commmand_action():
     """
     Defines our custom pre-run action which simply prints a message.
     """
@@ -57,19 +57,19 @@ def custom_plugin_pre_run_action():
 
 
 @hookimpl
-def conda_pre_run():
+def conda_pre_commmand():
     """
-    Returns our CondaPreRun class which attaches our ``custom_plugin_pre_run_action``
+    Returns our CondaPreCommand class which attaches our ``custom_plugin_pre_commmand_action``
     to the "install" and "create" command.
     """
-    yield CondaPreRun(
-        name=f"{PLUGIN_NAME}_pre_run",
-        action=custom_plugin_pre_run_action,
+    yield CondaPreCommand(
+        name=f"{PLUGIN_NAME}_pre_commmand",
+        action=custom_plugin_pre_commmand_action,
         run_for={"install", "create"}
     )
 
 
-def custom_plugin_post_run_action():
+def custom_plugin_post_command_action():
     """
     Defines our custom post-run action which simply prints a message.
     """
@@ -77,14 +77,14 @@ def custom_plugin_post_run_action():
 
 
 @hookimpl
-def conda_post_run():
+def conda_post_command():
     """
-    Returns our CondaPreRun class which attaches our ``custom_plugin_post_run_action`` to
+    Returns our CondaPreCommand class which attaches our ``custom_plugin_post_command_action`` to
     the "install" and "create" command.
     """
-    yield CondaPostRun(
-        name=f"{PLUGIN_NAME}_post_run",
-        action=custom_plugin_post_run_action,
+    yield CondaPostCommand(
+        name=f"{PLUGIN_NAME}_post_command",
+        action=custom_plugin_post_command_action,
         run_for={"install", "create"}
     )
 ```
@@ -132,7 +132,7 @@ Our immediate motivations for adding these plugin hooks include the following:
 
 ### Better authentication handling
 
-The `pre_run` hook will enable plugin authors to interrupt the normal start up of conda commands.
+The `pre_commmand` hook will enable plugin authors to interrupt the normal start up of conda commands.
 For better authentication handling, this opens the door for either asking the user directly
 for their credentials or retrieving credentials from an OS keyring. These credentials can
 then be stored and used for the duration of the running command and subsequent runs too.
@@ -156,7 +156,7 @@ have many more ideas for how best to utilize these generic plugin hooks.
 
 By introducing a set of generic hooks like the above, we grant plugin authors with quite a bit of
 flexibility for customizing how conda behaves. We believe starting out with a small set of generic
-plugin hooks is best so we do not overwhelm would-be developers. Depending on how much
+plugin hooks is best so that we do not overwhelm would-be conda plugin contributors. Depending on how much
 these plugin hooks are used and whether there is a demand, we may choose add more in the future with a 
 new CEP. For now though, we believe it is best to stick with this narrow selection as we slowly grow
 our plugin ecosystem.
