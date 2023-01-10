@@ -52,11 +52,11 @@ from conda.plugins import hookimpl, CondaPreCommand, CondaPostCommand
 PLUGIN_NAME = "custom_plugin"
 
 
-def custom_plugin_pre_command_action():
+def custom_plugin_pre_command_action(command):
     """
     Defines our custom pre-run action which simply prints a message.
     """
-    print("pre-run action")
+    print(f"pre-run action before {command}")
 
 
 @hookimpl
@@ -72,11 +72,11 @@ def conda_pre_commands():
     )
 
 
-def custom_plugin_post_command_action():
+def custom_plugin_post_command_action(command):
     """
     Defines our custom post-run action which simply prints a message.
     """
-    print("post-run action")
+    print(f"post-run action after {command}")
 
 
 @hookimpl
