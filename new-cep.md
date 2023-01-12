@@ -54,17 +54,17 @@ from conda.plugins import hookimpl, CondaPreCommand, CondaPostCommand
 PLUGIN_NAME = "custom_plugin"
 
 
-def custom_plugin_pre_command_action():
+def custom_plugin_pre_command_action(command):
     """
     Defines our custom pre-run action which simply prints a message.
     """
-    print("pre-run action")
+    print(f"pre-run action before {command}")
 
 
 @hookimpl
-def conda_pre_command():
+def conda_pre_commands():
     """
-    Returns our CondaPreCommand class which attaches our ``custom_plugin_pre_command_action``
+    Yields our CondaPreCommand instance which attaches our ``custom_plugin_pre_command_action``
     to the "install" and "create" command.
     """
     yield CondaPreCommand(
@@ -74,17 +74,17 @@ def conda_pre_command():
     )
 
 
-def custom_plugin_post_command_action():
+def custom_plugin_post_command_action(command):
     """
     Defines our custom post-run action which simply prints a message.
     """
-    print("post-run action")
+    print(f"post-run action after {command}")
 
 
 @hookimpl
-def conda_post_command():
+def conda_post_commands():
     """
-    Returns our CondaPreCommand class which attaches our ``custom_plugin_post_command_action`` to
+    Yields our CondaPreCommand instance which attaches our ``custom_plugin_post_command_action`` to
     the "install" and "create" command.
     """
     yield CondaPostCommand(
