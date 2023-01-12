@@ -9,7 +9,7 @@
 </table>
 
 [conda-pre-invoke-location]: https://github.com/conda/conda/blob/48f51e6c1d412270efbbdb1d9ff571087568b6ea/conda/cli/main.py#L69
-[conda-on-exception-location]: https://github.com/conda/conda/blob/48f51e6c1d412270efbbdb1d9ff571087568b6ea/conda/exceptions.py#L1125
+[conda-exception-handler]: https://github.com/conda/conda/blob/48f51e6c1d412270efbbdb1d9ff571087568b6ea/conda/exceptions.py#L1120
 
 ## Abstract
 
@@ -17,8 +17,9 @@ In order to support a variety of use cases and extensions to conda's default
 behavior, we propose a set of generic plugin hooks in this CEP. Included will 
 be `pre_command` and `post_command` hooks that will allow
 plugin authors to execute their plugin code before or after conda commands
-run, respectively. Additionally, we introduce the `on_exception` plugin 
-hook that will allow plugin authors to execute custom code when an exception is thrown. 
+run, respectively. Additionally, we introduce the `exception_handler` plugin 
+hook that will allow plugin authors to override and extend behavior of the
+existing [`conda.exceptions.ExceptionHandler`][conda-exception-handler] class. 
 For each hook, we outline example use cases and
 show exactly how plugin authors will define these new hooks.
 
@@ -28,10 +29,11 @@ This specification calls for the creation of the following three new plugin hook
 
 - `pre_command`: runs before the invoked conda command is run
 - `post_command`: runs after the invoked conda command is run
-- `on_exception`: runs when an exception is raised while a conda command is invoked
+- `exception_handler`: allows overriding or extending the existing
+  [`conda.exceptions.ExceptionHandler`][conda-exception-handler]
 
-Below, we discuss an example showing the use of the `pre_command` and `post_command` hooks together
-and an example of the `on_exception` hook.
+Below, we discuss an example showing the use of the `pre_command` and `post_command` 
+hooks together and an example of the `exception_handler` hook.
 
 ### `pre_command` and `post_command`
 
@@ -92,39 +94,45 @@ def conda_post_command():
     )
 ```
 
-### `on_exception`
+### `exception_handler`
 
-For the `on_exception` hook, plugin authors begin by defining a `conda.plugins.hookimpl` decorated 
-function called `conda_on_exception`. This function will return the `CondaOnException` class with the
-following attributes:
+For the `exception_handler` hook, plugin authors begin by defining a `conda.plugins.hookimpl` 
+decorated  function called `conda_exception_handler`. This function will return the
+ `CondaExceptionHandler` class with the following attributes:
 
 - `name`: unique name which identifies this plugin hook
-- `action`: a callable which contains the code to be run
+- `handler`: a class that is a subclass of [`conda.exceptions.ExceptionHandler`]
 
 #### Example
 
 ```python
-from conda.plugins import hookimpl, CondaOnException
-
+from conda.exceptions import ExceptionHandler
+from conda.plugins import hookimpl, CondaExceptionHandler
 
 PLUGIN_NAME = "custom_plugin"
 
 
-def custom_plugin_on_exception_action():
-    """
-    Defines our custom on_exception action which simply prints a message.
-    """
-    print("on_exception action")
+class CustomExceptionHandler(ExceptionHandler):
+    """Custom implementation of the ``conda.exceptions.ExceptionHandler``"""
+
+    def handle_exception(self, exc_val, exc_tb):
+        print(
+            "Here's a custom message that will show when" 
+            " an exception is encountered!"
+        )
+
+        super().handle_exception(exc_val, exc_tb)
 
 
 @hookimpl
 def conda_on_exception():
     """
-    Returns our CondaOnException class which attaches our ``custom_plugin_on_exception_action``.
+    Returns our ``CondaExceptionHandler`` class which attaches our 
+    registers our ``
     """
-    yield CondaOnException(
-        name=f"{PLUGIN_NAME}_on_exception",
-        action=custom_plugin_on_exception_action
+    yield CondaExceptionHandler(
+        name=f"{PLUGIN_NAME}_exception_handler",
+        handler=CustomExceptionHandler
     )
 ```
 
@@ -146,23 +154,23 @@ A prototype of how this could function can be found in the following pull reques
 
 ### Better exception logging
 
-The `on_exception` hook will enable plugin authors to provide a better experience for users and
-developers when exceptions are encountered. For example, a plugin could be written to display
-stacktraces in color or even drop you into a debugging console.
+The `exception_handler` hook will enable plugin authors to provide a better experience for
+users and developers when exceptions are encountered. For example, a plugin could be written
+to display stacktraces in color or even drop you into a debugging console.
 
 ### Plus more
 
-The above use cases are just a few possibilities out there. We know that our users and community will
-have many more ideas for how best to utilize these generic plugin hooks.
+The above use cases are just a few possibilities out there. We know that our users and 
+community will have many more ideas for how best to utilize these generic plugin hooks.
 
 ## Rationale
 
 By introducing a set of generic hooks like the above, we grant plugin authors with quite a bit of
 flexibility for customizing how conda behaves. We believe starting out with a small set of generic
-plugin hooks is best so that we do not overwhelm would-be conda plugin authors. Depending on how much
-these plugin hooks are used and whether there is a demand, we may choose add more in the future with a 
-new CEP. For now though, we believe it is best to stick with this narrow selection as we slowly grow
-our plugin ecosystem.
+plugin hooks is best so that we do not overwhelm would-be conda plugin authors. Depending on 
+how much these plugin hooks are used and whether there is a demand, we may choose add more in 
+the future with a new CEP. For now though, we believe it is best to stick with this narrow 
+selection as we slowly grow our plugin ecosystem.
 
 ## FAQ
 
@@ -178,9 +186,15 @@ our plugin ecosystem.
     - All registered `post_command` hooks will be called after the `do_call` call in the
       [`conda.cli.main:main_subshell`][conda-pre-invoke-location] function.
 
-- Where exactly will the `on_exception` hooks be called?
-    - All registered `on_exception` hooks will be called inside the
-      [`conda.exceptions.ExceptionHandler`][conda-on-exception-location] class.
+- Which methods should I override on the exception class to customize behavior?
+    - The primary method will be `handle_exception` but others are available too:
+        - `handle_application_exception` called for:
+            - `CondaError` and it's subclasses
+            - `EnvironmentError`
+            - `MemoryError`
+            - `KeyboardInterrupt`
+            - `SystemExit`
+        - `handle_unexpected_exception` called for all other exceptions
 
 - Will these hooks be available for `conda activate` and `conda deactivate` commands?
     - Initially, no. But, if there is demand for this we will reconsider making these generics
