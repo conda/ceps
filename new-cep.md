@@ -190,7 +190,7 @@ they have to do is either extend or replace the `Solver` class.
 A prototype for what a fully functioning version of this plugin hook
 would look like is available here:
 
-- https://github.com/conda/conda/pull/12139
+- https://github.com/conda/conda/pull/12212
 
 The prototype includes the following:
 
