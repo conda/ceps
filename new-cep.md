@@ -84,7 +84,7 @@ def custom_plugin_post_command_action(command):
 @hookimpl
 def conda_post_commands():
     """
-    Yields our CondaPreCommand instance which attaches our ``custom_plugin_post_command_action`` to
+    Yields our CondaPostCommand instance which attaches our ``custom_plugin_post_command_action`` to
     the "install" and "create" command.
     """
     yield CondaPostCommand(
