@@ -42,6 +42,12 @@ Both mamba and conda currently use the same cache folder. If both don't implemen
     "mtime_ns": INTEGER,
     "size": INTEGER, // file size in bytes
 
+    // most recent remote request e.g. "304 Not Modified", instead
+    // of touching the cached repodata.json file.
+    // compare with `cache_control: max-age=`.
+    // nanosecond-resolution UNIX timestamp.
+    "refresh_ns": INTEGER,
+
     // The header values as before
     "url": STRING,
     "etag": STRING,
@@ -69,7 +75,9 @@ Both mamba and conda currently use the same cache folder. If both don't implemen
 }
 ```
 
-If the `state.json` file_mtime or file_size does not match the `.json` file actual `mtime`, the header values are discarded. However, the `has_zst` or `has_jlap` values are kept as they are independent from the repodata validity on disk.
+If the `state.json` `mtime_ns` or `size` do not match the `.json` file the
+header values are discarded. However, the `has_zst` or `has_jlap` values are kept as
+they are independent from the repodata validity on disk.
 
 If the client is tracking `repodata.json.zst` or `repodata.jlap` instead of
 `(current_)?repodata.json`, then `etag`/`mod`/`cache_control` will correspond to
