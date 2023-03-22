@@ -100,6 +100,7 @@ both the `info.json` and `.json` files. It may or may not additionally lock the
 `.json` file. If the lock fails, neither file is changed.
 
 [A Python implementation](https://github.com/conda/conda/blob/main/conda/gateways/repodata/lock.py)
+[Mamba's LockFile class](https://github.com/mamba-org/mamba/blob/main/libmamba/include/mamba/core/util.hpp#L167)
 
 This minimal scheme only helps to prevent the cache from being corrupted.
 Additional locking would be neded to make it "advisable" to run multiple
