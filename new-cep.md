@@ -143,6 +143,9 @@ selection as we slowly grow our plugin ecosystem.
       for extending conda. We believe the true power of these generics will show when they are 
       combined with existing plugin hooks.
 
+- What is the execution order of the registered plugin hooks?
+    - _TBD_
+
 
 ## Resolution
 
