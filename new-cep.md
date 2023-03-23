@@ -26,8 +26,8 @@ release will be made. Patch releases for conda versions older than the current v
 will not be made.
 
 When a user is using a version older than the current version, we make no guarantees that
-a patches for this release will go out. If bugs are encountered with this particular release
-users will instead be encouraged to upgrade to the most recent release.
+patches for this release will be made. If bugs are encountered with this particular release,
+users will be encouraged to upgrade to the most recent release.
 
 The development team still maintains a commitment to maintain backwards compatibility.
 Any breaking changes will be announced ahead of time and go through our established
@@ -47,8 +47,8 @@ of conda.
 
 ## Rationale
 
-For many projects (more information here: https://endoflife.date), either only 
-the latest version is supported or they have a sliding window of time
+For many projects (more information here: https://endoflife.date), either
+the latest version is supported or the projects have a sliding window of time
 for their supported versions. This window is a guarantee saying that the 
 version in question will be supported for a specific amount of time. For most who
 use a version window, they further specify the types of fixes a version will receive
