@@ -2,7 +2,7 @@
 <tr><td> Title </td><td> Conda Version Support </td>
 <tr><td> Status </td><td> Draft </td></tr>
 <tr><td> Author(s) </td><td> Travis Hathaway &lt;thathaway@anaconda.com&gt;</td></tr>
-<tr><td> Created </td><td> March 23, 2023</td></tr>
+<tr><td> Created </td><td> May 19, 2022</td></tr>
 <tr><td> Updated </td><td> March 23, 2023</td></tr>
 <tr><td> Discussion </td><td>  NA </td></tr>
 <tr><td> Implementation </td><td> NA </td></tr>
