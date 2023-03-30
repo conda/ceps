@@ -2,7 +2,7 @@
 <tr><td> Title </td><td> Conda Version Support </td>
 <tr><td> Status </td><td> Draft </td></tr>
 <tr><td> Author(s) </td><td> Travis Hathaway &lt;thathaway@anaconda.com&gt;</td></tr>
-<tr><td> Created </td><td> March 23, 2023</td></tr>
+<tr><td> Created </td><td> May 19, 2022</td></tr>
 <tr><td> Updated </td><td> March 23, 2023</td></tr>
 <tr><td> Discussion </td><td>  NA </td></tr>
 <tr><td> Implementation </td><td> NA </td></tr>
@@ -12,8 +12,7 @@
 
 This CEP introduces an official version support policy to promote transparency and certainty 
 about which versions of conda are supported. The policy itself states that only the latest
-released version of conda will be supported. Instead of patching previous releases, the core
-development team will only focus its efforts on new and current releases. The implications of
+released version of conda will be supported. Instead of patching previous releases, maintainers will only focus their efforts on new and current releases. The implications of
 this and how this looks will be outlined below.
 
 ## Specification
@@ -29,7 +28,7 @@ When a user is using a version older than the current version, we make no guaran
 patches for this release will be made. If bugs are encountered with this particular release,
 users will be encouraged to upgrade to the most recent release.
 
-The development team still maintains a commitment to maintain backwards compatibility.
+The conda project already commits to maintain backwards compatibility per CEP-9.
 Any breaking changes will be announced ahead of time and go through our established
 [deprecation schedule][deprecation-schedule].
 
@@ -54,19 +53,17 @@ version in question will be supported for a specific amount of time. For most wh
 use a version window, they further specify the types of fixes a version will receive
 as it ages.
 
-For conda, we decided to not pursue supporting a sliding window of versions. Instead,
-we decided to only support the latest version. One reason is that it is relatively easy
-for users to update conda. The second reason is that the development team simply does not
-have the resources available to support more than one version at a time. Adding
-multiple versions that need to be supported would be burdensome and negatively impact
-momentum on future releases.
+For conda, we decided to not pursue a sliding window of supported versions. Instead,
+we opted to only support the latest version. This was decided for a few reasons:
+
+1. This is effectively what conda has already been doing. Very rarely in conda's history has a bugfix or security patch been released for an older version of conda, the standing policy has been to ask users to upgrade to the latest version.
+2. It's relatively easy for users to update conda, so regular updates are highly encouraged.
+3. Supporting multiple versions at any one point in time is burdensome, time consuming, and distracts from other valuable work our maintainers can be focused on instead.
 
 ## Alternatives
 
-- **Indefinitely support all conda versions ever:** not sustainable or practical for the development team.
-- **Support a sliding window of versions:** still not sustainable for the development team
-  because they do not have the resources available to support more than one version at a
-  time.
+- **Indefinitely support all conda versions ever:** not sustainable or practical for our community stakeholders.
+- **Support a sliding window of versions:** also not sustainable or practical for our community stakeholders.
 
 ## FAQ
 
