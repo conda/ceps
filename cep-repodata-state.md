@@ -52,7 +52,7 @@ Both mamba and conda currently use the same cache folder. If both don't implemen
     // The header values as before
     "url": STRING,
     "etag": STRING,
-    "last_modified": STRING,
+    "mod": STRING,
     "cache_control": STRING,
 
     // Hash of the cached-on-disk repodata.json. In Python: hashlib.blake2b(digest_size=32)
@@ -78,7 +78,19 @@ Both mamba and conda currently use the same cache folder. If both don't implemen
         // same format as `has_zst`
     },
 
-    "jlap": { } // unspecified additional state for jlap when available
+    "jlap": {
+        // Intermediate checksum leading the second-to-last line of repodata.jlap
+        "iv": "9448c699e681ee71b4bd524f73a0b690c387df7e9f0ea2bb7ffa24af1c8c27ca",
+        // Offset of the start of the second-to-last line of repodata.jlap in bytes
+        "pos": 4226360,
+        // Last json line of repodata.jlap, before the trailing checksum
+        "footer": {
+            "url": "repodata.json",
+            "latest": "3384620e0f2bf70a418a56db98785dda530b503990e32b68afb11f27e0324d7
+    5"
+        }
+        // Other keys may appear e.g. for debugging
+    }
 }
 ```
 
