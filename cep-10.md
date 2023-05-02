@@ -1,10 +1,10 @@
 <table>
 <tr><td> Title </td><td> Conda Version Support </td>
-<tr><td> Status </td><td> Draft </td></tr>
+<tr><td> Status </td><td> Accepted </td></tr>
 <tr><td> Author(s) </td><td> Travis Hathaway &lt;thathaway@anaconda.com&gt;</td></tr>
 <tr><td> Created </td><td> May 19, 2022</td></tr>
 <tr><td> Updated </td><td> March 23, 2023</td></tr>
-<tr><td> Discussion </td><td>  NA </td></tr>
+<tr><td> Discussion </td><td> https://github.com/conda-incubator/ceps/pull/25 </td></tr>
 <tr><td> Implementation </td><td> NA </td></tr>
 </table>
 
@@ -65,13 +65,16 @@ we opted to only support the latest version. This was decided for a few reasons:
 - **Indefinitely support all conda versions ever:** not sustainable or practical for our community stakeholders.
 - **Support a sliding window of versions:** also not sustainable or practical for our community stakeholders.
 
-## FAQ
-
-_TBD_ (please add questions to the pull request for me to add)
-
 ## Resolution
 
-This section contains the final decision on this issue.
+This was a standard, non-timed-out vote.
+
+- Among [Steering Council](https://github.com/conda-incubator/governance/blob/99471e2e05151f44fe31696677d45b05a428ca66/steering.csv) members there are 10 "yes", 0 "no", and no abstentions.
+- No [Emeritus Steering](https://github.com/conda-incubator/governance/blob/99471e2e05151f44fe31696677d45b05a428ca66/emeritus.csv) member voted.
+
+This vote has reached quorum (10 + 0 = 10 which is at least 60% of 14).
+
+It has also passed since it recorded 10 "yes" votes and 0 "no" votes giving 10/10 which is greater than 60% of 14.
 
 ## Reference
 
