@@ -12,7 +12,8 @@
 
 This CEP introduces an official version support policy to promote transparency and certainty 
 about which versions of conda are supported. The policy itself states that only the latest
-released version of conda will be supported. Instead of patching previous releases, maintainers will only focus their efforts on new and current releases. The implications of
+released version of conda will be supported. Instead of patching previous releases, maintainers
+will only focus their efforts on new and current releases. The implications of
 this and how this looks will be outlined below.
 
 ## Specification
