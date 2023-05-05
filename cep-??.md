@@ -40,6 +40,22 @@ There are four keys that the conda env spec expects:
 
 `dependencies`, `list`, specifying the top-level dependencies that the solver should start with
 - `dependencies` also has an optional dict with the `pip` key that expects a `list` as its value. This key tells the solver to also include the listed dependencies to pull from pypi
+- Each non-pip `dependencies` entry must follow the form expected by the current [MatchSpec](https://github.com/conda/conda/blob/a8e441e3c0e80b0d4e1595579f7d9eaad2b0fb2b/conda/models/match_spec.py#L92) implementation. Some examples of currently supported dependency specs (at least at the time of this CEP):
+```
+Examples:
+    >>> str(MatchSpec(name='foo', build='py2*', channel='conda-forge'))
+    'conda-forge::foo[build=py2*]'
+    >>> str(MatchSpec('foo 1.0 py27_0'))
+    'foo==1.0=py27_0'
+    >>> str(MatchSpec('foo=1.0=py27_0'))
+    'foo==1.0=py27_0'
+    >>> str(MatchSpec('conda-forge::foo[version=1.0.*]'))
+    'conda-forge::foo=1.0'
+    >>> str(MatchSpec('conda-forge/linux-64::foo>=1.0'))
+    "conda-forge/linux-64::foo[version='>=1.0']"
+    >>> str(MatchSpec('*/linux-64::foo>=1.0'))
+    "foo[subdir=linux-64,version='>=1.0']"
+```
 
 `prefix`, `str`, the full path to the environment. It's not clear to me how `name` and `prefix` interact.
 
