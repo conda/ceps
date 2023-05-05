@@ -2,7 +2,14 @@
 <tr><td> Title </td><td> Environment yaml specification </td>
 <tr><td> Status </td><td> Draft </td></tr>
 <!-- <tr><td> Status </td><td> Draft | Proposed | Accepted | Rejected | Deferred | Implemented </td></tr> -->
-<tr><td> Author(s) </td><td> Eric Dill &lt;mail@ericdill.dev&gt;</td></tr>
+<tr><td> Author(s) </td>
+    <td>
+      Eric Dill
+      Marius van Niekerk
+      Jaime Rodríguez-Guerra
+      Albert DeFusco
+    </td>
+</tr>
 <tr><td> Created </td><td> March 28, 2023</td></tr>
 <tr><td> Updated </td><td> NA </td></tr>
 <tr><td> Discussion </td><td> NA </td></tr>
