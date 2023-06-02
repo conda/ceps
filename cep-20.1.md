@@ -164,3 +164,72 @@ requirements:
   build:
     - "{{ compiler('cxx') }}"
 ```
+
+## Examples
+
+### xtensor
+
+Original recipe [found here](https://github.com/conda-forge/xtensor-feedstock/blob/feaa4fd8015f96038168a9d67d69eaf06a36d63f/recipe/meta.yaml).
+
+```yaml
+context:
+  name: xtensor
+  version: 0.24.6
+  sha256: f87259b51aabafdd1183947747edfff4cff75d55375334f2e81cee6dc68ef655
+
+package:
+  name: "{{ name|lower }}"
+  version: "{{ version }}"
+
+source:
+  fn: "{{ name }}-{{ version }}.tar.gz"
+  url: https://github.com/xtensor-stack/xtensor/archive/{{ version }}.tar.gz
+  sha256: "{{ sha256 }}"
+
+build:
+  number: 0
+  sel(win and vc<14):
+    skip: true
+
+requirements:
+  build:
+    - "{{ compiler('cxx') }}"
+    - cmake
+    - sel(unix): make
+  host:
+    - xtl >=0.7,<0.8
+  run:
+    - xtl >=0.7,<0.8
+  run_constrained:
+    - xsimd >=8.0.3,<10
+
+test:
+  commands:
+    sel(unix):
+      - test -d ${PREFIX}/include/xtensor
+      - test -f ${PREFIX}/include/xtensor/xarray.hpp
+      - test -f ${PREFIX}/share/cmake/xtensor/xtensorConfig.cmake
+      - test -f ${PREFIX}/share/cmake/xtensor/xtensorConfigVersion.cmake
+    sel(win):
+      - if not exist %LIBRARY_PREFIX%\include\xtensor\xarray.hpp (exit 1)
+      - if not exist %LIBRARY_PREFIX%\share\cmake\xtensor\xtensorConfig.cmake (exit 1)
+      - if not exist %LIBRARY_PREFIX%\share\cmake\xtensor\xtensorConfigVersion.cmake (exit 1)
+
+about:
+  home: https://github.com/xtensor-stack/xtensor
+  license: BSD-3-Clause
+  license_family: BSD
+  license_file: LICENSE
+  summary: The C++ tensor algebra library
+  description: Multi dimensional arrays with broadcasting and lazy computing
+  doc_url: https://xtensor.readthedocs.io
+  dev_url: https://github.com/xtensor-stack/xtensor
+
+extra:
+  recipe-maintainers:
+    - SylvainCorlay
+    - JohanMabille
+    - wolfv
+    - davidbrochart
+```
+
