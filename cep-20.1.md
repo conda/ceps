@@ -323,7 +323,7 @@ requirements:
 
 test:
   commands:
-    if: unix
+  - if: unix
     then:
       - test -d ${PREFIX}/include/xtensor
       - test -f ${PREFIX}/include/xtensor/xarray.hpp
