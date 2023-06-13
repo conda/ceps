@@ -329,7 +329,7 @@ test:
       - test -f ${PREFIX}/include/xtensor/xarray.hpp
       - test -f ${PREFIX}/share/cmake/xtensor/xtensorConfig.cmake
       - test -f ${PREFIX}/share/cmake/xtensor/xtensorConfigVersion.cmake
-    if: win
+  - if: win
     then:
       - if not exist %LIBRARY_PREFIX%\include\xtensor\xarray.hpp (exit 1)
       - if not exist %LIBRARY_PREFIX%\share\cmake\xtensor\xtensorConfig.cmake (exit 1)
