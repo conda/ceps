@@ -38,25 +38,56 @@ The reason for a new spec are:
 - iron out some inconsistencies around multiple outputs (build vs. build/script
   and more)
 - remove any need for recursive parsing & solving
-- cater to needs for automation and dependency tree analysis via a determinstic format
+- cater to needs for automation and dependency tree analysis via a determinstic
+  format
 
 ## Major differences with conda-build
 
-- no full Jinja2 support: no conditional or `{% set ...` support, only string
+- no full Jinja2 support: no block support `{% set ...` support, only string
   interpolation. Variables can be set in the toplevel "context" which is valid
   YAML (all new features should be native to YAML specs)
-- Jinja string interpolation needs to be quoted at the beginning of a string,
-  e.g. `- "{{ version }}"` in order for it to be valid YAML
-- Selectors use a YAML dictionary style (vs. comments in conda-build). E.g. `-
-  sel(osx): somepkg` instead of `- somepkg  # [osx]`
+- Jinja variable syntax is changed to begin with `${{` so that it becomes valid
+  YAML, e.g. `- ${{ version }}`
+- Selectors use a YAML dictionary with `if / then / else` (vs. comments in
+  conda-build) and are only allowed in lists (dependencies, scripts, ...). The
+  syntax looks like:
+  ```yaml
+  - if: win
+    then: this
+    else: that  # optional
+  ```
+- for inline values, the Jinja ternary operator can be used, e.g. `number: ${{ 0
+  if linux else 100 }}`
 
 ## Selectors
 
-Selectors in the new spec take the following format:
+Selectors in the new spec are only allowed in lists and take an explicit `if /
+then / else` syntax.
 
-`sel(unix): selected_value`
+For example the following `script` section:
 
-This is a valid YAML dictionary. Selector contents are simple boolean
+```yaml
+script:
+  - if: unix
+    then: |
+      # this is the unix script
+  - if: win
+    then: |
+      @rem a script for batch
+```
+
+The same could have been expressed with an `else`:
+
+```yaml
+script:
+  - if: unix
+    then: |
+      # this is the unix script
+    else: |
+      @rem a script for batch
+```
+
+This is a valid YAML dictionary. Selector if statements are simple boolean
 expressions and follow Python syntax. The following selectors are all valid:
 
 ```
@@ -64,6 +95,22 @@ win and arm64
 (osx or linux) and aarch64
 something == "test"
 ```
+
+If the value of a selector statement is a list, it extends the "outer" list. For
+example:
+
+```yaml
+build:
+  - ${{ compiler('cxx') }}
+  - if: unix
+    then:
+      - make
+      - cmake
+      - pkg-config
+```
+
+evaluates for `unix == true` to a list with elements `[${{ compiler('cxx') }},
+make, cmake, pkg-config]`.
 
 ### The cmp function for variant selection
 
@@ -79,10 +126,13 @@ etc
 
 This can be used in a selector like so:
 
-```
+```yaml
 requirements:
   build:
-    - sel(cmp(python, ">=3.6,<3.10")): dataclasses
+    - if: cmp(python, ">=3.6,<3.10")
+      then: dataclasses
+    # The following syntax is also valid and equivalent
+    - ${{ "dataclasses" if cmp(python, ">=3.6,<3.10") }}
 ```
 
 This functionality generalizes and replaces the previous special variables such
@@ -98,21 +148,28 @@ removed.
 
 ```yaml
 source:
-  - sel(not win):
+  - if: not win
+    then:
+      # note that we omit the `-`, both is valid
       url: http://path/to/unix/source
-  - sel(win):
-      url: http://path/to/windows/source
+      sha256: 01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b
+    else:
+      - url: http://path/to/windows/source
+        sha256: 06f961b802bc46ee168555f066d28f4f0e9afdf3f88174c1ee6f9de004fc30a0
 ```
 
 Because the selector is a valid Jinja expression, complicated logic is possible:
 
 ```yaml
 source:
-  - sel(win):
+  - if: win
+    then:
       url: http://path/to/windows/source
-  - sel(unix and cmp(python, "2")):
+  - if: (unix and cmp(python, "2"))
+    then: 
       url: http://path/to/python2/unix/source
-  - sel(unix and cmp(python, "3")):
+  - if: unix and cmp(python, "3")
+    then:
       url: http://path/to/python3/unix/source
 ```
 
@@ -122,15 +179,17 @@ items under a single selector:
 ```yaml
 test:
   commands:
-    - sel(unix):
-      - test -d ${PREFIX}/include/xtensor
-      - test -f ${PREFIX}/include/xtensor/xarray.hpp
-      - test -f ${PREFIX}/lib/cmake/xtensor/xtensorConfig.cmake
-      - test -f ${PREFIX}/lib/cmake/xtensor/xtensorConfigVersion.cmake
-    - sel(win):
-      - if not exist %LIBRARY_PREFIX%\include\xtensor\xarray.hpp (exit 1)
-      - if not exist %LIBRARY_PREFIX%\lib\cmake\xtensor\xtensorConfig.cmake (exit 1)
-      - if not exist %LIBRARY_PREFIX%\lib\cmake\xtensor\xtensorConfigVersion.cmake (exit 1)
+    - if: unix
+      then:
+        - test -d ${PREFIX}/include/xtensor
+        - test -f ${PREFIX}/include/xtensor/xarray.hpp
+        - test -f ${PREFIX}/lib/cmake/xtensor/xtensorConfig.cmake
+        - test -f ${PREFIX}/lib/cmake/xtensor/xtensorConfigVersion.cmake
+    - if: win
+      then:
+        - if not exist %LIBRARY_PREFIX%\include\xtensor\xarray.hpp (exit 1)
+        - if not exist %LIBRARY_PREFIX%\lib\cmake\xtensor\xtensorConfig.cmake (exit 1)
+        - if not exist %LIBRARY_PREFIX%\lib\cmake\xtensor\xtensorConfigVersion.cmake (exit 1)
 
 # On unix this is rendered to:
 test:
@@ -151,7 +210,7 @@ You can set up Jinja variables in the context YAML section:
 context:
   name: "test"
   version: "5.1.2"
-  major_version: "{{ version.split('.')[0] }}"
+  major_version: ${{ version.split('.')[0] }}
 ```
 
 Later in your `recipe.yaml` you can use these values in string interpolation
@@ -159,30 +218,31 @@ with Jinja. For example:
 
 ```yaml
 source:
-  url: https://github.com/mamba-org/{{ name }}/v{{ version }}.tar.gz
+  url: https://github.com/mamba-org/${{ name }}/v${{ version }}.tar.gz
 ```
 
 Jinja has built-in support for some common string manipulations.
 
 In the new spec, complex Jinja is completely disallowed as we try to produce
 YAML that is valid at all times. So you should not use any `{% if ... %}` or
-similar Jinja constructs that produce invalid yaml. Furthermore, quotes need to
-be applied when starting a value with double-curly brackets like so:
+similar Jinja constructs that produce invalid YAML. We also do not use the
+standard Jinja delimiters (`{{ .. }}`) because that is confused by the YAML
+parser as a dictionary. We follow Github Actions and others and use `${{ ... }}`
+instead:
 
 ```yaml
 package:
   name: {{ name }}   # WRONG: invalid yaml
-  name: "{{ name }}" # correct
+  name: ${{ name }} # correct
 ```
 
-Some Jinja functions remain valid, but this is out of the scope of this spec.
-However, as an example, the `compiler` Jinja function will still be available,
-with the main difference being the quoting of the brackets.
+Jinja functions work as usual. As an example, the `compiler` Jinja function will
+look like this:
 
 ```yaml
 requirements:
   build:
-    - "{{ compiler('cxx') }}"
+    - ${{ compiler('cxx') }}
 ```
 
 ## Shortcomings
@@ -216,6 +276,9 @@ or any other scripting language. That means, many of the features that are
 currently done with Jinja could be done with a simple pre-processing step in the
 future.
 
+Another option would be to allow "full" Jinja inside the test script text blocks
+(as long as it doesn't change the structure of the YAML).
+
 ## Examples
 
 ### xtensor
@@ -230,24 +293,27 @@ context:
   sha256: f87259b51aabafdd1183947747edfff4cff75d55375334f2e81cee6dc68ef655
 
 package:
-  name: "{{ name|lower }}"
-  version: "{{ version }}"
+  name: ${{ name|lower }}
+  version: ${{ version }}
 
 source:
-  fn: "{{ name }}-{{ version }}.tar.gz"
-  url: https://github.com/xtensor-stack/xtensor/archive/{{ version }}.tar.gz
-  sha256: "{{ sha256 }}"
+  fn: ${{ name }}-${{ version }}.tar.gz"
+  url: https://github.com/xtensor-stack/xtensor/archive/${{ version }}.tar.gz
+  sha256: ${{ sha256 }}
 
 build:
   number: 0
-  sel(win and vc<14):
-    skip: true
+  # note: in the new recipe format, `skip` is a list of conditional expressions
+  #       but for the "YAML format" discussion we pretend that we still use the 
+  #       `skip: bool` syntax
+  skip: ${{ true if (win and vc14) }}
 
 requirements:
   build:
-    - "{{ compiler('cxx') }}"
+    - ${{ compiler('cxx') }}
     - cmake
-    - sel(unix): make
+    - if: unix
+      then: make
   host:
     - xtl >=0.7,<0.8
   run:
@@ -257,12 +323,14 @@ requirements:
 
 test:
   commands:
-    sel(unix):
+    if: unix
+    then:
       - test -d ${PREFIX}/include/xtensor
       - test -f ${PREFIX}/include/xtensor/xarray.hpp
       - test -f ${PREFIX}/share/cmake/xtensor/xtensorConfig.cmake
       - test -f ${PREFIX}/share/cmake/xtensor/xtensorConfigVersion.cmake
-    sel(win):
+    if: win
+    then:
       - if not exist %LIBRARY_PREFIX%\include\xtensor\xarray.hpp (exit 1)
       - if not exist %LIBRARY_PREFIX%\share\cmake\xtensor\xtensorConfig.cmake (exit 1)
       - if not exist %LIBRARY_PREFIX%\share\cmake\xtensor\xtensorConfigVersion.cmake (exit 1)
@@ -279,9 +347,6 @@ about:
 
 extra:
   recipe-maintainers:
-    - SylvainCorlay
-    - JohanMabille
-    - wolfv
-    - davidbrochart
+    - some-maintainer
 ```
 
