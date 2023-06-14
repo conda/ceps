@@ -488,8 +488,7 @@ outputs:
       version: ${{ libmamba_version }}
 
     build:
-      script:
-        script: ${{ "build_mamba.sh" if unix else "build_mamba.bat" }}
+      script: ${{ "build_mamba.sh" if unix else "build_mamba.bat" }}
       run_exports:
         - ${{ pin_subpackage('libmamba', max_pin='x.x') }}
       ignore_run_exports:
@@ -502,7 +501,7 @@ outputs:
         - ${{ compiler('cxx') }}
         - cmake
         - ninja
-        - ${{ python if win }}
+        - ${{ "python" if win }}
       host:
         - libsolv >=0.7.19
         - libcurl
