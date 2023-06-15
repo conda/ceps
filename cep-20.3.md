@@ -15,6 +15,11 @@
 We propose a new test-section for recipes (building on top of two previous CEPs that are in discussion).
 The new test section will make it easier to test for package contents in a cross-platform fashion.
 
+See also:
+
+- [CEP for YAML Format for new recipe](https://github.com/conda-incubator/ceps/pull/54)
+- [Content definition for new recipe format, incl. new test section & outputs](https://github.com/conda-incubator/ceps/pull/56)
+
 ## Motivation
 
 In many recipes, people use bash- or batch commands to test for file existence. This has several downsides:
