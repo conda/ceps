@@ -633,7 +633,7 @@ outputs:
 
           # for some reason tqdm doesn't have a proper colorama dependency so pip check fails
           # but that's completely unrelated to mamba
-          - python -c "import mamba._version; assert mamba._version.__version__ == '{{ mamba_version }}'"
+          - python -c "import mamba._version; assert mamba._version.__version__ == '${{ mamba_version }}'"
 
 about:
   home: https://github.com/mamba-org/mamba
