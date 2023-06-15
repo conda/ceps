@@ -114,8 +114,9 @@ build:
     # host dependency
     always_include_files: [path]
 
-    # wether to relocate binaries or not
-    binary_relocation: bool (defaults to true)
+    # wether to relocate binaries or not. If this is a list of paths, then
+    # only the listed paths are relocated
+    binary_relocation: bool (defaults to true) | [path]
 
     # force file to be detected as TEXT file (for prefix replacement)
     has_prefix_files: [path]
@@ -127,8 +128,7 @@ build:
     ignore_prefix_files: bool | [path] (defaults to false)
 
     # wether to detect binary files with prefix or not
-    detect_binary_files_with_prefix: bool (defaults to true)
-
+    detect_binary_files_with_prefix: bool (defaults to true on Unix and (always) false on Windows)
 
     # Wether to include the recipe or not in the final package
     include_recipe: bool (defaults to true)
@@ -139,6 +139,7 @@ build:
     run_exports: [MatchSpec] OR {strong: [MatchSpec], weak: [MatchSpec], strong_constrains: [MatchSpec], weak_constrains: [MatchSpec], noarch: [MatchSpec]}
 
     missing_dso_whitelist: [glob]
+
     runpath_whitelist: [glob]
 
     # This is only used in the pip feedstock.
