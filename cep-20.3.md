@@ -67,7 +67,7 @@ package_contents:
     - mamba
 
   # searches for `$PREFIX/lib/libmamba.so` or `$PREFIX/lib/libmamba.dylib` on Linux or macOS,
-  # on Windows for %PREFIX%\Library\lib\mamba.dll & %PREFIX%\Library\bin\mamba.bin
+  # on Windows for %PREFIX%\Library\lib\mamba.dll & %PREFIX%\Library\bin\mamba.lib
   lib:
     - mamba # (look for libmamba)
     - mamba_ext # (look for libmamba_ext)
