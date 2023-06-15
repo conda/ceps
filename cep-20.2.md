@@ -116,7 +116,7 @@ build:
 
     # wether to relocate binaries or not. If this is a list of paths, then
     # only the listed paths are relocated
-    binary_relocation: bool (defaults to true) | [path]
+    binary_relocation: bool (defaults to true) | [glob]
 
     # force file to be detected as TEXT file (for prefix replacement)
     has_prefix_files: [path]
