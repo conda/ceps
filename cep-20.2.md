@@ -581,7 +581,7 @@ outputs:
           - libmambapy
           - libmambapy.bindings
       - script:
-          - python -c "import libmambapy._version; assert libmambapy._version.__version__ == '{{ libmambapy_version }}'"
+          - python -c "import libmambapy._version; assert libmambapy._version.__version__ == '${{ libmambapy_version }}'"
 
   - package:
       name: mamba
