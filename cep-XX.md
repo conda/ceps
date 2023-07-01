@@ -166,7 +166,7 @@ The following sub-headings provide additional details on the considerations outl
 
 ### Developer experience
 - Proposals in this CEP aim to provide a smooth and straightforward experience for plugin developers. This consideration influenced the decision to minimize the required elements of the plugin architecture.
-- The proposed method avoids the use of inheritance.
+- The proposed method favors composition over inheritance, which simplifies the process of defining syntax and also grants more flexibility for working directly with the `PluginActivator` class. 
 ### User experience
 - The proposed approaches aim to provide a straightforward and smooth user experience.
 - The use of the `shell` subcommand will help to alert users to potential user experience deviations between the existing approach and the proposed approach.
@@ -193,8 +193,8 @@ Three alternatives are discussed in this section:
 The proposal to yield plugin logic based on the current shell is currently most easily completed through the use of `psutil`, a singly-maintained library. On Macs, `subprocess.run` uses `/bin/sh` by default to run shell commands, which makes it difficult to identify the actual shell currently being used to run conda without resorting to more complicated methods.
 
 There are two known concerns with the current proposal:
-- The current proposed method of determining the shell assumes that the shell executable is named correctly &ndash; or, that a POSIX shell has been substituted for the Bourne shell (`sh`). If a user were to use `/bin/sh` to point to a shell that requires different logic (e.g., `csh`), then a more complicated method will be needed to determine the current shell. However, plugin authors are welcome to come up with secondary methods of determining the shell and yielding the logic.
-- On Oct 8, 2022, the maintainer of `psutil` noted difficulties in keeping up with bug reports and other maintenance concerns. However, `psutil` is widely used, so we might expect that if maintenance falls through, someone else might take up the burden.
+- Each plugin hook contains syntax specific to a shell or group of shells. The current proposed method of determining the shell assumes the shell executable is not aliased. If an alias is used &ndash; for example, if `/bin/sh` is aliased to point to `csh` &ndash; then a more complicated method will be needed to determine the current shell. However, plugin authors are welcome to come up with secondary methods of determining the shell and yielding the logic.
+-  `psutil` is maintained by one person who has noted difficulties in keeping up with bug reports and other maintenance concerns (Oct 8, 2022). If `psutil` stops being maintained, plugin developers may have to resort to more difficult methods to determine the shell process being run. That being said, `psutil` is widely used, so we might expect that if maintenance falls through, someone else might take up the burden.
 
 An alternative to the proposal of yielding logic based on the current shell being used is to have users specify the desired shell plugin to be used in `.condarc` and access that setting via conda's `context`. This alternative will make the process of determining which plugin to use more straightforward but would also worsen the user experience for users who use multiple shells (e.g., on work computer vs. on home computer), as the desired plugin for each shell would have to be explicitly specified each time the user switches shells.
 
