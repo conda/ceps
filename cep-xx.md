@@ -10,20 +10,20 @@
 
 
 ## Abstract
-We recommend to remove ``*`` from valid ``Version`` characters, due to confusing intersection with
+We recommend to remove ``*`` from valid ``Version`` characters, because of the confusing intersection with
 ``VersionSpec`` glob expressions.
-We suggest different possibilities on how the character could be reinterpreted in ``VersionSpec``
-with an analysis on backward compatibility.
+We suggest different possibilities with how the character could be reinterpreted in ``VersionSpec``,
+including an analysis on backward compatibility.
 
 
 ## Motivation
 ### Suprising examples
-In Conda, ``*`` is a valid version character that is smaller that any string.
+In conda, ``*`` is a valid version character that is smaller than any string.
 For instance ``1.1* < 1.1alpha < 1.1``.
 Strings following a separator (typically a ``.``) are implicitly assumed to start with a ``0``, so
 we further have ``1.1.* == 1.1.0* < 1.1.0``.
 
-When we further consider ``VerionSpec`` (sets of versions), both ``.*`` and ``*`` suffixes can
+When we further consider ``VersionSpec`` (sets of versions), both ``.*`` and ``*`` suffixes can
 alternatively be interpreted as a glob expression.
 
 We have the following in ``conda``.
@@ -48,8 +48,8 @@ if the spec is used in a recipe).
 | ``>=1.7.*`` | ``1.7``         | False                  |
 | ``>=1.7*``  | ``1.7*``        | True                   |
 
-Core maintainers from [Mamba](github.com/mamba-org/mamba),
-[Rattler](github.com/mamba-org/rattler), and [Conda-Forge](https://conda-forge.org/) failed to
+Core maintainers from [mamba](github.com/mamba-org/mamba),
+[rattler](github.com/mamba-org/rattler), and [conda-forge](https://conda-forge.org/) failed to
 properly predict which version would match the aforementionned version specs.
 regular users would be all the more surprised of the difference, especially when ``*`` is not a
 usual version character (_e.g._ not in Python [PEP440](https://peps.python.org/pep-0440/)).
@@ -61,13 +61,13 @@ Conda versions can have arbitrarily many ``.`` separated segements, each contain
 many alternation of strings and numbers.
 For instance ``1.1 == 1.1.0 == 1.1.0.0 == ...``, and ``1.1 < 1.1p < 1.1p1 < 1.1p1p < ...1``.
 In a finite semantic verisioning scheme, such as Python PEP440, when asking for a spec
-"_matching all the versions starting with 1.1" (_i.e._ ``=1.1*`` in Conda), one could use
+"_matching all the versions starting with 1.1" (_i.e._ ``=1.1*`` in conda), one could use
 ``>=1.1.0a0`` and ``<1.2.0a0`` to represent the spec as an interval.
-This is a convenient representation that ease working with specs, especially to compute set
+This is a convenient representation that eases working with specs, especially to compute set
 intersections.
 
-However, since in Conda we have ``1.1.0a0 > 1.1.0a0a0 > 1.1.0a0a0a0 > ...``, there are no smallest
-version that can be used as a lower bound for such interval.
+However, in conda we have ``1.1.0a0 > 1.1.0a0a0 > 1.1.0a0a0a0 > ...``, there is no smallest
+version that can be used as a lower bound for such an interval.
 As a comparison, this would be like searching for a decimal to represent the lower bound of the
 interval ``>π`` (the mathematical constant).
 Hence, the ``*`` character, conveniently not used in practice in versions, was used to represent
@@ -93,7 +93,7 @@ and ``bioconda`` channels and found that:
 
 ## Specification
 ### [V1] Version
-Given that no version currently contains the ``*`` character, we reommend to simply forbid ``*``
+Given that no version currently contains the ``*`` character, we recommend to simply forbid ``*``
 inside a version.
  - The public API of ``Version`` must fail to create/parse a version from string contaning ``*``.
  - ``Version`` must not serialize to any string containing a ``*``.
@@ -109,15 +109,15 @@ From the motivation section, this would change the behaviour of ``=1.7*`` and ``
 Since no version where found containing a ``*``, the only occurence of such version spec are
 most likely a mistake.
 
-We further argue to make a difference between ``.*`` and ``*`` suffixes to make their meaning
+We further argue to differentiate between ``.*`` and ``*`` suffixes to make their meaning
 closer to glob expresions.
-- ``1.7*`` should match version starting with ``1.7``, that is for instance _including_ ``1.7alpha``;
-- ``1.7.*`` should match anything starting with ``1.7.``, that is _excluding_ ``1.7alpha``.
+- ``1.7*`` should match versions starting with ``1.7``, which would _include_ ``1.7alpha``;
+- ``1.7.*`` should match versionw starting with ``1.7.``, which would _exclude_ ``1.7alpha``.
 
-Currently, in ``conda``, only ``=1.7`` is matching ``1.7alpha``.
+Currently, in ``conda``, only ``=1.7`` matches ``1.7alpha``.
 
 #### [VS2] Relational comparison operators ``>``, ``>=``, ``<``, ``<=``
-This is the most delicate part to handle since ``>1.7*`` is frequently use to mean greater than the
+This is the most delicate part to handle since ``>1.7*`` is frequently used to mean greater than the
 ``1.7`` infimum (could also be writen as ``=1.7|>=1.7``, that is, mathching some versions smaller
 than ``1.7.0``, such as ``1.7alpha``).
 
@@ -125,12 +125,12 @@ than ``1.7.0``, such as ``1.7alpha``).
 ``conda`` is already ignoring ``.*`` suffixes on these operators.
 We could extend that to the ``*`` suffix, making the breaking change that ``>1.7*`` and the like
 would no longer match pre and alpha releases.
-In Conda-Forge, pre and alpha releases are kept in separate channels, so the impacts are not as
+In conda-forge, pre and alpha releases are kept in separate channels, so the impacts are not as
 important.
 
 However, this solution has the downside of not long being able to represent version infima.
 This could be reintroduced with a new operator, such as ``>inf(1.7)`` or ``>-1.7``.
-Conda-Forge also has a
+Conda-forge also has a
 [repodata patching tool](https://github.com/conda-forge/conda-forge-repodata-patches-feedstock)
 for globally migrating package metadata.
 
@@ -149,7 +149,7 @@ be reinterpreted to _greater than all versions in the ``1.7`` set_ (hence equiva
 The latter is (subjectively) more intuitive.
 For ``<1.7*`` the breakage is reversed, but this is again not used as often.
 
-As for the equality operator in [VS1], we suggest ``>1.7*`` and ``1.7.*`` to have different meaning.
+As for the equality operator in [VS1], we suggest ``>1.7*`` and ``1.7.*`` to have different meanings.
 
 ## Copyright
 All CEPs are explicitly [CC0 1.0 Universal](https://creativecommons.org/publicdomain/zero/1.0/).
