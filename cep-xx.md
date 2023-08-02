@@ -50,7 +50,7 @@ if the spec is used in a recipe).
 
 Core maintainers from [mamba](github.com/mamba-org/mamba),
 [rattler](github.com/mamba-org/rattler), and [conda-forge](https://conda-forge.org/) failed to
-properly predict which version would match the aforementionned version specs.
+properly predict which version would match the aforementioned version specs.
 regular users would be all the more surprised of the difference, especially when ``*`` is not a
 usual version character (_e.g._ not in Python [PEP440](https://peps.python.org/pep-0440/)).
 
@@ -112,7 +112,7 @@ most likely a mistake.
 We further argue to differentiate between ``.*`` and ``*`` suffixes to make their meaning
 closer to glob expresions.
 - ``1.7*`` should match versions starting with ``1.7``, which would _include_ ``1.7alpha``;
-- ``1.7.*`` should match versionw starting with ``1.7.``, which would _exclude_ ``1.7alpha``.
+- ``1.7.*`` should match versions starting with ``1.7.``, which would _exclude_ ``1.7alpha``.
 
 Currently, in ``conda``, only ``=1.7`` matches ``1.7alpha``.
 
