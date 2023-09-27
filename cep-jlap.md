@@ -228,11 +228,19 @@ else:
     )
 ```
 
+## File extension
+
+The `.jlap` extension stands for **J**SON **l**ines **a**ppend **p**enultimate.
+The format is based on [JSON Lines](https://jsonlines.org/) with an added
+leading and trailing checksum. It grows by replacing the next-to-last, or
+penultimate line of the file and appending new data.
+
 ## Reference
 
 * JSON Patch https://datatracker.ietf.org/doc/html/rfc6902
 * Server and client implementation in Python https://github.com/dholth/repodata-fly
 * Example code [cep-10.py](./cep-10.py)
+* [JSON Lines](https://jsonlines.org/)
 
 ## Copyright
 
