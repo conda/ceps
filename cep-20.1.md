@@ -2,11 +2,11 @@
 
 <table>
 <tr><td> Title </td><td> A new recipe format </td>
-<tr><td> Status </td><td> Proposed</td></tr>
+<tr><td> Status </td><td> Proposed </td></tr>
 <tr><td> Author(s) </td><td> Wolf Vollprecht &lt;wolf@prefix.dev&gt;</td></tr>
 <tr><td> Created </td><td> May 23, 2023</td></tr>
-<tr><td> Updated </td><td> May 23, 2023</td></tr>
-<tr><td> Discussion </td><td>  </td></tr>
+<tr><td> Updated </td><td> October 20, 2023</td></tr>
+<tr><td> Discussion </td><td>https://github.com/conda-incubator/ceps/pull/54</td></tr>
 <tr><td> Implementation </td><td>https://github.com/prefix-dev/rattler-build</td></tr>
 </table>
 
