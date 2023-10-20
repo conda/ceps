@@ -112,33 +112,6 @@ build:
 evaluates for `unix == true` to a list with elements `[${{ compiler('cxx') }},
 make, cmake, pkg-config]`.
 
-### The cmp function for variant selection
-
-Furthermore, we have a special "cmp" function that can be used to run a check
-against a selected variant version. The `cmp` function looks like the following:
-
-```
-cmp(python, "3.6")
-cmp(python, ">=3.6")
-cmp(python, ">=3.8,<3.10")
-etc
-```
-
-This can be used in a selector like so:
-
-```yaml
-requirements:
-  build:
-    - if: cmp(python, ">=3.6,<3.10")
-      then: dataclasses
-    # The following syntax is also valid and equivalent
-    - ${{ "dataclasses" if cmp(python, ">=3.6,<3.10") }}
-```
-
-This functionality generalizes and replaces the previous special variables such
-as `py2k`, `py3k`, `py36`, `py37`, and works just as well for NumPy, Ruby, R, or
-any other variant that might be of interest in the future.
-
 ### Preprocessing selectors
 
 You can add selectors to any item, and the selector is evaluated in a
