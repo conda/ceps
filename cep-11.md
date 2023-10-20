@@ -1,0 +1,382 @@
+<table>
+<tr><td> Title </td><td> Define the <code>menuinst</code> standard</td>
+<tr><td> Status </td><td> Accepted</td></tr>
+<tr><td> Author(s) </td><td> Jaime Rodríguez-Guerra &lt;jaime.rogue@gmail.com&gt;</td></tr>
+<tr><td> Created </td><td> Oct 14, 2021</td></tr>
+<tr><td> Updated </td><td> Jul 28, 2023</td></tr>
+<tr><td> Discussion </td><td> <a href="https://github.com/conda-incubator/ceps/pull/8" target="_blank">conda-incubator/ceps#8</a> </td></tr>
+<tr><td> Implementation </td><td> <a href="https://github.com/conda/menuinst/tree/cep-devel" target="_blank"><code>conda/menuinst</code>@<code>cep-devel</code></a> </td></tr>
+</table>
+
+> The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT",
+  "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as
+  described in [RFC2119][RFC2119] when, and only when, they appear in all capitals, as shown here.
+
+## Abstract
+
+`menuinst` is a library used by `conda` to install menu items that point to commands provided by
+`conda` packages. It operates by discovering certain JSON files located in `$PREFIX/Menu` after
+linking the package to the environment.
+
+This library has primarily targetted Windows. The original project supported Linux and MacOS, but
+`menuinst` was never used in practice on those platforms. As a result, the required JSON metadata
+diverged significantly in each platform, and the implementations were not kept up to date.
+
+This CEP will attempt to standardize the `menuinst` interface by:
+
+1. Providing a unified metadata schema for all platforms so a single document contains all the
+   metadata required to create shorcuts in all platforms.
+2. Enumerating the expected behavior for different configurations.
+3. Defining a programmatic interface for implementors (CLI / API).
+
+## Menu metadata schema
+
+The full JSON schema is defined in [this document][menuinst-json-schema], but here you can see a
+simplified overview of all possible keys and their default values:
+
+```python
+{
+  "$id": "https://schemas.conda.io/menuinst-1.schema.json",
+  "$schema": "https://json-schema.org/draft-07/schema",
+  "menu_name": "REQUIRED",
+  "menu_items": [
+    {
+      "name": "REQUIRED",
+      "description": "REQUIRED",
+      "command": [
+        "REQUIRED",
+      ],
+      "icon": None, # path to ico / png / icns file
+      "precreate": None, # command to run before the shortcut is created
+      "precommand": None, # command to run before activation and 'command'
+      "working_dir": None, # starting working location for the process
+      "activate": true,  # activate conda environment before running 'command'
+      "terminal": false, # open in terminal and leave it open
+      "platforms": {
+        # To create the menu item for a fiven platform, the key must be present in this
+        # dictionary. Presence is enough; the value can just be the empty dictionary: {}.
+        "linux": {  
+          # See XDG Desktop standard for details
+          # https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html#recognized-keys
+          "Categories": None,
+          "DBusActivatable": None,
+          "GenericName": None,
+          "Hidden": None,
+          "Implements": None,
+          "Keywords": None,
+          "MimeType": None,
+          "NoDisplay": None,
+          "NotShowIn": None,
+          "OnlyShowIn": None,
+          "PrefersNonDefaultGPU": None,
+          "StartupNotify": None,
+          "StartupWMClass": None,
+          "TryExec": None,
+          #: Map of custom MIME types to their corresponding glob patterns (e.g. ``*.txt``).
+          "glob_patterns": None
+        },
+        "osx": {
+          # See Apple docs for CF* and LS* variables
+          # CF*: https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
+          # LS*: https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/LaunchServicesKeys.html
+          "CFBundleDisplayName": None,
+          "CFBundleIdentifier": None,
+          "CFBundleName": None,
+          "CFBundleSpokenName": None,
+          "CFBundleVersion": None,
+          "CFBundleURLTypes": None,
+          "CFBundleDocumentTypes": None,
+          "LSApplicationCategoryType": None,
+          "LSBackgroundOnly": None,
+          "LSEnvironment": None,
+          "LSMinimumSystemVersion": None,
+          "LSMultipleInstancesProhibited": None,
+          "LSRequiresNativeExecution": None,
+          "UTExportedTypeDeclarations": None,
+          "UTImportedTypeDeclarations": None,
+          #: list of permissions to request for the app
+          #: see https://developer.apple.com/documentation/bundleresources/entitlements
+          "entitlements": None,
+          #: symlink a file (usually the executable in 'command') into the .app directory
+          "link_in_bundle": None, 
+          #: shell logic that will run when an Apple event is received
+          "event_handler": None,
+        },
+        "win": {
+          "desktop": true, # create desktop location
+          "quicklaunch": true, # create quick launch shortcut too
+          "file_extensions": None, # file extensions to associate with shortcut in registry
+          "url_protocols": None, # URI protocols to associate with shorcut in registry
+          "app_user_model_id": None, # Identifier used to associate processes with a taskbar icon
+        }
+      }
+    }
+  ]
+}
+```
+
+Note that each `platforms` sub-dictionary (`linux`, `macos`, `win`) can override the global values
+of their `menu_items[*]` entry (e.g. redefining `command` to adjust the shell syntax).
+
+Each JSON file MUST be validated against its `$id` schema at build time; e.g in `conda-build`.
+
+## Placeholders
+
+Each platform MUST provide these placeholders, to be used in the value of any `str`-accepting key.
+To be replaced, they MUST be wrapped in double curly braces: `{{ NAME }}`.
+
+Placeholder | Value
+------------|-------
+`BASE_PREFIX` | Path to the base Python location. In `conda` terms, this is the `base` environment
+`DISTRIBUTION_NAME` | Name of the base prefix directory; e.g. if `BASE_PREFIX` is `/opt/my-project`, this is `my-project`.
+`PREFIX` | Path to the target Python location. In `conda` terms, this is the path to the environment that contains the JSON file for this menu item. In some cases, it might be the same as `BASE_PREFIX`.
+`ENV_NAME` | Same as `DISTRIBUTION_NAME`, but for `PREFIX`.
+`PYTHON` | Path to the `python` executable in `PREFIX`.
+`BASE_PYTHON` | Path to the `python` executable in `BASE_PREFIX`.
+`MENU_DIR` | Path to the `Menu` directory in `PREFIX`.
+`MENU_ITEM_LOCATION` | Path to the main menu item artifact once installed. On Linux, this is the path to the `.desktop` file, on macOS it is the path to the `.app` directory, and on Windows it is the path to the Start Menu `.lnk` file.
+`BIN_DIR` | Path to the `bin` (Unix) or `Library/bin` (Windows) directories in `PREFIX`.
+`PY_VER` | Python `major.minor` version in `PREFIX`.
+`SP_DIR` | Path to Python's `site-packages` directory in `PREFIX`.
+`HOME` | Path to the user directory (`~`).
+`ICON_EXT` | Extension of the icon file expected by each platform. `png` in Linux, `icns` in macOS, and `ico` in Windows. Note the dot is _not_ included.
+**macOS-only** |
+`PYTHONAPP` | Path to the `python` executable installed in `PREFIX`, assuming the `python.app` conda package is installed. Equivalent to `{{ PREFIX }}/python.app/Contents/MacOS/python`. 
+**Windows-only** | 
+`SCRIPTS_DIR` | Path to the `Scripts` directory in `PREFIX`. 
+`BASE_PYTHONW` | Path to the `pythonw.exe` executable in `BASE_PREFIX`.
+`PYTHONW` | Path to the `pythonw.exe` executable in `PREFIX`.
+
+## Packaging guidelines
+
+`conda` packages that wish to create a shortcut at install time MUST provide a JSON file such that:
+
+- The JSON contents MUST pass schema validation.
+- The JSON file MUST be placed under `$PREFIX/Menu`.
+- The JSON filename MUST be `<package-name>.json`.
+- Packaging tools (e.g. `conda-build`) MUST check the above conditions are met when the package is
+  being created.
+
+> One example of a properly placed JSON file would be `$PREFIX/Menu/my-package.json` included
+> in the `my-package-1.2.3-h123abc.conda` artifact.
+
+## Expected behavior
+
+Each platform MUST place the menu artifacts in these target locations:
+
+Operating system | Artifact type | User location | System location | Notes
+-----------------|---------------|---------------|-----------------|-------
+Linux            | `.desktop` file   | `~/.local/share/applications` | `/usr/local/share/applications` | Some other user files are modified
+macOS            | `.app` directory | `~/Applications` | `/Applications` |
+Windows          | `.lnk` file | `{{ menu_name }}` directory inside Start Menu, Desktop, and/or Quick Launch | Start Menu | These locations are customizable and configured in the Windows registry.
+
+- On Linux, little needs to be done because XDG delegates the responsibility to the desktop
+  manager. The implementor only needs to create the `.desktop` file and adjust/add the menu XML
+  file(s).
+- On macOS, we had to come up with some ideas. The shortcut is actually an `.app` directory.
+  Implementors must follow Apple's guidelines. See Addendum B for implementation details.
+- On Windows, `.lnk` files are created with the Windows API. File type and URL protocol association
+  is done in the [Windows
+  registry](https://learn.microsoft.com/en-us/windows/win32/shell/fa-file-types).
+
+Some installations might provide two modes: "Current user only", and "All users". This option is
+not surfaced in the JSON metadata, but might be requested at creation time in the CLI or API. This
+means that implementors MUST be able to handle both user locations and system locations, as
+detailed above. In particular, in-process permission elevation needs to be considered.
+
+When a package is removed, the file artifacts MUST be deleted too. If changes were done in other
+resources (XML files on Linux, Registry on Windows), these MUST be undone too.
+
+## CLI interface
+
+The implementor CLI is _not_ defined in this document. However, the integrations with `constructor`
+SHOULD be standardized if they are going to be kept in use. 
+
+The proposed CLI (inspired by what's already in use to introduce minimal changes) is:
+
+```shell
+${IMPLEMENTOR} constructor --prefix ${PREFIX} [--base-prefix ${BASE_PREFIX}] [--mode user|system] [--make-menus | --rm-menus] [pkg-name ...] 
+```
+
+- `--make-menus` will create the menu items for the JSON files found in `$PREFIX/Menu`.
+- `--rm-menus` will uninstall the corresponding menu items from the system.
+- If values are passed next to these two flags, only the JSON files that match those package names
+  will be handled. Others will be ignored.
+- `--base-prefix` is optional and defaults to the value passed to `--prefix`. It is only needed
+  when `IMPLEMENTOR` is running from a location other than `--prefix` (e.g. `base` vs a custom
+  environment, or system Python and a virtual environment).
+- `--mode` is optional and defaults to the mark provided by the `--base-prefix` location. If a
+  `.nonadmin` file is present there, `mode=user` will be assumed. Otherwise, `mode=system` will be
+  assumed, with a fallback to `mode=user` if necessary.
+
+Alternatively, the `constructor` subcommand needs for menus can be dropped if `IMPLEMENTOR`
+supports new settings and/or CLI flags in the `create | install` commands. Namely:
+
+- `base_prefix`: override the assumed `base` environment location. This is nowadays available as
+  `root_prefix` but overriding this with environment variables (via `CONDA_ROOT_PREFIX`) is buggy
+  in `conda` and needs to be fixed.
+- Extend `shortcuts` with the ability of accepting values (true, false, or a list of strings).
+  - `--shortcuts` would set `shortcuts=True`, which is the default otherwise.
+  - `--no-shorcuts` would set `shortcuts=False`.
+  - `--shortcuts pkg1 pkg2 ...` would set `shortcuts=[pkg1, pkg2, ...]`, which would instruct
+    `IMPLEMENTOR` to handle menu item creation or removal for those packages only.
+
+## Backwards compatibility
+
+Windows users do depend on the existing `menuinst 1.x` "schema". There are a lot of packages that
+use it. This (unversioned) document needs to be kept around and respected. In the absence of the
+`$schema` or `$id` keys, it will be assumed that the metadata is built with the legacy schema.
+
+See Addendum A below for a best effort in documenting it.
+
+## References
+
+* [Rework linux/osx support plus new simplified format?](https://github.com/conda/menuinst/issues/48)
+* [Mamba's implementation in C++](https://github.com/mamba-org/mamba/blob/81a490a/src/core/menuinst.cpp)
+* [Interactions between conda, conda-standalone, constructor and menuinst](https://gist.github.com/jaimergp/7de5843421d63fa4a408ac5c8712c3c9)
+* [Change the API to `menuinst.install(path_or_dict)`](https://github.com/conda/menuinst/issues/25)
+* [`menuinst` wiki as of 2021.10.18](https://github.com/conda/menuinst/wiki/Menu-Shortcut-Config-Structure/632fbc84251c8a8093e1b56b0b5314d23c1e946b)
+* [freedesktop.org specification](https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html#recognized-keys)
+* [Core Foundation Keys (info.plist)](https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html#//apple_ref/doc/uid/TP40009249-SW1)
+* [File type association in Windows](https://learn.microsoft.com/en-us/windows/win32/shell/fa-file-types)
+* [Default programs in Windows](https://learn.microsoft.com/en-us/windows/win32/shell/default-programs)
+
+## Copyright
+
+All CEPs are explicitly [CC0 1.0 Universal](https://creativecommons.org/publicdomain/zero/1.0/).
+
+---
+
+## Addendum A
+
+### `menuinst 1.x` pre-standard
+
+The required metadata for each platform is documented in [the `menuinst` wiki][wiki]. However, only
+Windows is really supported by the tool. This assymmetrical growth has allowed Windows to grow an
+ad-hoc specification that doesn't really translate well to other platforms.
+
+The overall schema seems to be:
+
+```python
+{
+  "menu_name": str,
+  "menu_items": list of dict,
+}
+```
+
+Unfortunately, each menu item dict (let's call it `MenuItem`) takes a different form in each
+platform.
+
+#### `MenuItem` on Windows
+
+```python
+{
+  ["system" | "script" | "pyscript" | "pywscript" | "webbrowser"]: str,
+  "scriptargument": str,
+  "scriptarguments": list of str,
+  "name": str,
+  "workdir": str,
+  "icon": str,
+  "desktop": bool,
+  "quicklaunch": bool,
+}
+```
+
+Currently allowed placeholders are:
+
+* `${PREFIX}`: Python environment prefix
+* `${ROOT_PREFIX}`: Python environment prefix of root (conda or otherwise) installation
+* `${PYTHON_SCRIPTS}`: Scripts folder in Python environment, `${PREFIX}/Scripts`
+* `${MENU_DIR}`: Folder for menu config and icon files, `${PREFIX}/Menu`
+* `${PERSONALDIR}`: Not sure
+* `${USERPROFILE}`: User's home folder
+* `${ENV_NAME}`: The environment in which this shortcut lives.
+* `${DISTRIBUTION_NAME}`: The name of the folder of the root prefix, for example "Miniconda" if
+  distribution installed at "C:\Users\Miniconda".
+* `${PY_VER}`: The Python major version only. This is taken from the root prefix. Used generally
+  for placing shortcuts under a menu of a parent installation.
+* `${PLATFORM}`: one of (32-bit) or (64-bit). This is taken from the root prefix. Used generally
+  for placing shortcuts under a menu of a parent installation.
+
+#### `MenuItem` on MacOS
+
+```python
+{
+    "cmd": str,
+    "name": str,
+    "icns": str,
+}
+```
+
+Currently allowed placeholders are:
+
+* `${BIN_DIR}`: `PREFIX/bin`
+* `${MENU_DIR}`: `PREFIX/Menu`
+
+#### `MenuItem` on Linux
+
+```python
+{
+    "cmd": list of str,
+    "id": str,
+    "name": str,
+    "comment": str.
+    "terminal": bool,
+    "icon": str,
+},
+```
+
+On Linux, only `cmd` can take two special placeholders `{{FILEBROWSER}}` and `{{WEBBROWSER}}`,
+which are replaced by the default Desktop file explorer, and the default web browser, respectively.
+
+#### Identified problems
+
+##### The `command` interface
+
+Windows has several ways to specify which command should be run with the shortcut:
+
+* `system` + `scriptargument[s]`: path to executable plus its arguments.
+* `script` + `scriptargument[s]`: same as above, but the executable is run in a subprocess after
+  invoking `ROOT_PYTHON cwp.py PREFIX`.
+* `pyscript`: hardcodes `script` to be `PREFIX/python.exe` and takes the value as the first (and
+  only) argument.
+* `pywscript`: same as above, but uses `pythonw.exe` as the launcher to, theoretically, avoid
+  launching a console window next to your application.
+* `webbrowser`: alias to `PREFIX/python -m webbrowser -t URL`.
+
+On Linux the command is specified with `cmd`, expressed as a list of strings. On MacOS, `cmd` is
+also taken, but in this case it's expected to be a raw string.
+
+##### The `icon` key
+
+Windows and Linux expect `icon`. MacOS expects `icns`. Each platform requires a different file
+format, but that can be arranged with placeholders.
+
+##### Standardize the placeholders
+
+Allowed placeholders vary vastly across platforms. A common subset must be identified and
+implemented. Per-platform options are allowed but only when strictly necessary.
+
+## Addendum B: Implementation details in macOS
+
+- Most of the macOS-specific settings map to the `.app`'s `Info.plist` key-value pairs.
+- The shell script with the `precommand` + `activate` + `command` logic is located in
+  `<NAME>.app/Contents/MacOS/<NAME>-script`.
+- A binary launcher is required for correct system integration (see reasons
+  [`conda/menuinst#123`](https://github.com/conda/menuinst/issues/123)). This is placed at
+  `<NAME>.app/Contents/MacOS/<NAME>`. The proposed launcher simply guesses its own location to find
+  the `*-script` file, which is spawned in a subprocess. 
+- In some cases, if an external binary is required, it needs to be symlinked into the `.app`
+  directory to ensure keyboard integrations work (see
+  [`conda/menuinst#122`](https://github.com/conda/menuinst/issues/122)).
+- URL protocol association requires special support in the binary launcher. Implementors can choose
+  how to implement it. [See this issue](https://github.com/conda/menuinst/issues/118) and
+  [this PR](https://github.com/conda/menuinst/pull/119) for ideas.
+
+<!--links-->
+[wiki]:
+    https://github.com/conda/menuinst/wiki/Menu-Shortcut-Config-Structure/632fbc84251c8a8093e1b56b0b5314d23c1e946b
+
+[menuinst-json-schema]: https://github.com/conda/menuinst/blob/cep-devel/menuinst/data/menuinst.schema.json
+
+[RFC2119]: https://datatracker.ietf.org/doc/html/rfc2119
