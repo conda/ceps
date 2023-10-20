@@ -270,7 +270,7 @@ package:
   version: ${{ version }}
 
 source:
-  fn: ${{ name }}-${{ version }}.tar.gz"
+  fn: ${{ name }}-${{ version }}.tar.gz
   url: https://github.com/xtensor-stack/xtensor/archive/${{ version }}.tar.gz
   sha256: ${{ sha256 }}
 
