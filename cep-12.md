@@ -1,0 +1,176 @@
+<table>
+<tr><td> Title </td><td> Serving run_exports metadata in conda channels </td>
+<tr><td> Status </td><td> Accepted </td></tr>
+<tr><td> Author(s) </td>
+<td> 
+    Jaime Rodríguez-Guerra &lt;jrodriguez@quansight.com&gt;
+</td></tr>
+<tr><td> Created </td><td> May 4, 2023</td></tr>
+<tr><td> Updated </td><td> Jul 27, 2023</td></tr>
+<tr><td> Discussion </td><td> https://github.com/conda-incubator/ceps/pull/51 </td></tr>
+<tr><td> Implementation </td><td> NA </td></tr>
+</table>
+
+> The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT",
+  "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as
+  described in [RFC2119][RFC2119] when, and only when, they appear in all capitals, as shown here.
+
+## Abstract
+
+Have conda channels serve standalone `run_exports` metadata, next to `repodata.json`.
+
+## Motivation
+
+Building infrastructure (such as some conda-forge bots) use `run_exports` to calculate which packages need rebuilding as part of an upgrade. Right now, conda-forge needs to maintain their own JSON database, which involves downloading and extracting the new artifacts as they become available: the `run_exports` metadata lives inside the `.tar.bz2` and `.conda` files.
+
+Since `conda-index` already processes the package metadata to generate `repodata.json`, it would be trivial to also generate `run_exports.json` and serve them together.
+
+## Precedence and role in the pinning resolution process
+
+This file is not meant to replace the `run_exports` metadata already present in the package archives. It merely presents that information in a more convenient way. 
+`conda-build`-like clients are free to use either the `run_exports` metadata in the archives or the one in `run_exports.json`, since they MUST be equivalent.
+Special keys like `pin_run_as_build` MUST keep their behavior, since `run_exports.json` does not add a new level of precedence in the pinning resolution process. Again, it's an equivalent source for information already present in the archives.
+
+This means that `run_exports.json` MUST NOT be patched (like it is done with `repodata.json`). It MUST always reflect the metadata present in the archives. 
+
+> Note this only applies to the served `run_exports.json` file. It does not try to regulate what
+> `conda-build`-like tools can do at environment creation time. They might need to apply
+> modifications analogous to repodata patching to the `run_exports` metadata during the `build`,
+> `host` and `test` environments setup. If patching `run_exports.json` is shown to be necessary for
+> correct environment creation, it will be the subject of another CEP and could involve a change in
+> the schema version to ensure backwards compatibility.
+
+## Specification
+
+The schema of `run_exports.json` will mimic the `repodata.json` structure whenever possible:
+
+* `info`: metadata about the platform, architecture, and version of the `run_exports.json` schema.
+* `packages`: map of `.tar.bz2` filenames to `run_exports` metadata `dict`.
+* `packages.conda`: map of `.conda` filenames to `run_exports` metadata `dict`.
+
+Each `run_exports` metadata `dict` can contain the following fields; each field accepts a list of strings (conda-build specs).
+
+- `weak`
+- `strong`
+- `weak_constrains`
+- `strong_constrains`
+- `noarch`
+
+```json
+{   
+    "info": {
+        "platform": "string",
+        "arch": "string",
+        "subdir": "string",
+        "version": 0
+    },
+    "packages": {
+        "package-version-build.tar.bz2": {
+            "run_exports": {
+                "noarch": [
+                    "string",
+                ],
+                "strong": [
+                    "string",
+                ],
+                "strong_constrains": [
+                    "string",
+                ],
+                "weak": [
+                    "string",
+                ],
+                "weak_constrains": [
+                    "string",
+                ],
+            }
+        }
+    },
+    "packages.conda": {
+        "package-version-build.conda": {
+            "run_exports": {
+                "noarch": [
+                    "string",
+                ],
+                "strong": [
+                    "string",
+                ],
+                "strong_constrains": [
+                    "string",
+                ],
+                "weak": [
+                    "string",
+                ],
+                "weak_constrains": [
+                    "string",
+                ],
+            }
+        }
+    }
+}
+```
+
+If a package does not define `run_exports`, the corresponding entry in `packages` or `packages.conda` MUST be an empty `run_exports` item:
+
+```json
+{
+    "info": {
+        "platform": "string",
+        "arch": "string",
+        "subdir": "string",
+        "version": 0
+    },
+    "packages": {
+        "package-version-build.tar.bz2": {
+            "run_exports": {}
+        }
+    },
+    "packages.conda": {
+        "package-version-build.conda": {
+            "run_exports": {}
+        }
+    }
+}
+```
+
+> See the validation schema draft in [`run_exports.schema.json`](https://github.com/conda/schemas/pull/25).
+
+
+## Backwards compatibility
+
+This is a new feature, so there is no backwards compatibility to worry about.
+
+## Alternatives
+
+We could maintain the status quo and ask downstream infrastructure to maintain their own database. However, this is a burden on them, and it is trivial to generate this data.
+
+We also considered _adding_ the `run_exports` metadata to `repodata.json`, but this has a few shortcomings:
+
+- It would require extending the `repodata` schema, currently not formally standardized.
+- It would increase the size of the already heavy `repodata.json` files.
+- (Typed) repodata parsers would need to be updated to handle the new field.
+
+Finally, we studied whether the `run_exports` metadata already present in the `channeldata.json` metadata would be enough. However, this metadata is only presented per version (not build), so it is insufficient and incomplete. Changing the `channeldata.json` schema to include per-build `run_exports` metadata would be a breaking change (e.g. `conda-build`'s `--use-channeldata` option).
+
+## FAQ
+
+### Which packages should be included?
+
+All packages present in the unpatched `repodata.json` (`repodata_from_packages.json` in some channels) documents should be included.
+
+### Will this affect the performance of repodata fetching?
+
+Only package building infrastructure (such as conda-forge bots) will need to fetch this data. The rest of the ecosystem (such as CLI conda clients) will not be affected.
+
+## References
+
+- [Initial proposal in `conda-index`](https://github.com/conda/conda-index/issues/102)
+- [`write_run_exports` implementation in `conda-build`](https://github.com/conda/conda-build/blob/9fd6279cf510d34008fd0423c9efe364302e7589/conda_build/build.py#L1508-L1517)
+- [`run_exports` schema in `conda-build`](https://github.com/conda/conda-build/blob/9fd6279cf510d34008fd0423c9efe364302e7589/conda_build/utils.py#L132C1-L138)
+- [`RunExports` struct in `rattler-build`](https://github.com/prefix-dev/rattler-build/blob/1ac730501651fd124a086ee1db92a67cd5b55429/src/metadata.rs#L53-L66)
+
+
+## Copyright
+
+All CEPs are explicitly [CC0 1.0 Universal](https://creativecommons.org/publicdomain/zero/1.0/).
+
+[RFC2119]: https://datatracker.ietf.org/doc/html/rfc2119
