@@ -3,9 +3,11 @@
 <tr><td> Status </td><td> Draft </td></tr>
 <tr><td> Author(s) </td><td> Daniel Holth &lt;dholth@gmail.com | dholth@anaconda.com&gt;</td></tr>
 <tr><td> Created </td><td> Mar 30, 2022</td></tr>
-<tr><td> Updated </td><td> Oct 11, 2022</td></tr>
+<tr><td> Updated </td><td> Oct 20, 2023</td></tr>
 <tr><td> Discussion </td><td> NA </td></tr>
-<tr><td> Implementation </td><td> https://github.com/dholth/repodata-fly </td></tr>
+<tr><td> Implementation </td><td> https://github.com/dholth/repodata-fly/blob/main/app/json2jlap.py </td></tr>
+<tr><td> "" </td><td> https://github.com/conda/conda/tree/main/conda/gateways/repodata/jlap </td></tr>
+<tr><td> "" </td><td> https://github.com/mamba-org/rattler/pull/197 </td></tr>
 </table>
 
 ## Abstract
