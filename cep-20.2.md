@@ -102,7 +102,6 @@ build:
   # wether the package is a noarch package, and if yes, wether it is "generic" or "python"
   noarch: Option<"generic" | "python">
 
-  # Only valid if `noarch: python` - list of all entry points of the package
   # PythonEntryPoint: `bsdiff4 = bsdiff4.cli:main_bsdiff4`
   entry_points: [PythonEntryPoint]
 
@@ -668,7 +667,8 @@ outputs:
         - ${{ pin_subpackage('libmambapy', exact=True) }}
 
     test:
-      - imports: [mamba]
+      - python:
+          imports: [mamba]
 
       - extra_requirements:
           run:
