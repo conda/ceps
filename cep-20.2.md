@@ -44,6 +44,24 @@ If outputs exist, the top-level keys are 'merged' with the output keys (e.g. for
 
 # Format
 
+## Schema version
+
+The implicit version of the YAML schema for a recipe is an integer 1. 
+To discern between the "old" format and the new format, we utilize the file name.
+The old format is `meta.yaml` and the new format is `recipe.yaml`.
+The version can be explicitly set by adding a `schema_version` key to the recipe.
+
+```yaml
+# optional, since implicitly defaults to 1
+schema_version: 1  # integer
+```
+
+To benefit from autocompletion, and other LSP features in editors, we can add a schema URL to the recipe.
+
+```yaml
+# yaml-language-server: $schema=https://raw.githubusercontent.com/prefix-dev/recipe-format/main/schema.json
+```
+
 ## Context section
 
 ```yaml
@@ -51,7 +69,7 @@ If outputs exist, the top-level keys are 'merged' with the output keys (e.g. for
 # and replaces the {% set ... %} commands commonly used in recipes
 context:
   variable: test
-  # note that we can reference previous values
+  # note that we can reference previous values, that means that they are rendered in order
   other_variable: test_${{ variable }}
 ```
 
@@ -70,118 +88,118 @@ package:
 
 ```yaml
 build:
-    # the build number
-    number: Option<integer>, defaults to 0
-    # the build string. This is usually ommited
-    string: Option<string>, defaults to a build string made from "package hash & build number"
+  # the build number
+  number: Option<integer>, defaults to 0
+  # the build string. This is usually ommited
+  string: Option<string>, defaults to a build string made from "package hash & build number"
 
-    # A list of conditions under which to skip the build of this package
-    skip: [list of expressions]
+  # A list of conditions under which to skip the build of this package
+  skip: [list of expressions]
 
-    force_use_keys: [string]
-    force_ignore_keys: [string]
+  force_use_keys: [string]
+  force_ignore_keys: [string]
 
-    # wether the package is a noarch package, and if yes, wether it is "generic" or "python"
-    noarch: Option<"generic" | "python">
+  # wether the package is a noarch package, and if yes, wether it is "generic" or "python"
+  noarch: Option<"generic" | "python">
 
-    # Only valid if `noarch: python` - list of all entry points of the package
-    # PythonEntryPoint: `bsdiff4 = bsdiff4.cli:main_bsdiff4`
-    entry_points: [PythonEntryPoint]
+  # Only valid if `noarch: python` - list of all entry points of the package
+  # PythonEntryPoint: `bsdiff4 = bsdiff4.cli:main_bsdiff4`
+  entry_points: [PythonEntryPoint]
 
-    # Use the python.app for the entrypoint (not exactly sure what that means in practice)
-    osx_is_app: bool (default false)
+  # Use the python.app for the entrypoint (not exactly sure what that means in practice)
+  osx_is_app: bool (default false)
 
-    # used on conda-forge, still needed?
-    preserve_egg_dir: bool (default false)
+  # used on conda-forge, still needed?
+  preserve_egg_dir: bool (default false)
 
-    # only used as a hack to down-prioritize packages
-    track_features: [string]
+  # only used as a hack to down-prioritize packages
+  track_features: [string]
 
-    # skip compiling pyc for some files
-    skip_compile_pyc: [glob]
+  # skip compiling pyc for some files
+  skip_compile_pyc: [glob]
 
-    # do not soft- or hard-link these files, but always copy them
-    no_link: [glob]
+  # do not soft- or hard-link these files, but always copy them
+  no_link: [glob]
 
-    # the script that is executed to build the package
-    # if it is only one element and ends with `.sh` or `.bat`
-    script: string | [string]
+  # the script that is executed to build the package
+  # if it is only one element and ends with `.sh` or `.bat`
+  script: string | [string]
 
-    # linux only, list of rpaths
-    rpaths: [path] (defaults to ['lib/'])
+  # linux only, list of rpaths
+  rpaths: [path] (defaults to ['lib/'])
 
-    # include files even if they are already in the environment as part of some other
-    # host dependency
-    always_include_files: [path]
+  # include files even if they are already in the environment as part of some other
+  # host dependency
+  always_include_files: [path]
 
-    # wether to relocate binaries or not. If this is a list of paths, then
-    # only the listed paths are relocated
-    binary_relocation: bool (defaults to true) | [glob]
+  # wether to relocate binaries or not. If this is a list of paths, then
+  # only the listed paths are relocated
+  binary_relocation: bool (defaults to true) | [glob]
 
-    # force file to be detected as TEXT file (for prefix replacement)
-    has_prefix_files: [path]
+  # force file to be detected as TEXT file (for prefix replacement)
+  has_prefix_files: [path]
 
-    # force file to be detected as BINARY file (for prefix replacement)
-    binary_has_prefix_files: [path]
+  # force file to be detected as BINARY file (for prefix replacement)
+  binary_has_prefix_files: [path]
 
-    # ignore all or specific files for prefix replacement
-    ignore_prefix_files: bool | [path] (defaults to false)
+  # ignore all or specific files for prefix replacement
+  ignore_prefix_files: bool | [path] (defaults to false)
 
-    # wether to detect binary files with prefix or not
-    detect_binary_files_with_prefix: bool (defaults to true on Unix and (always) false on Windows)
+  # wether to detect binary files with prefix or not
+  detect_binary_files_with_prefix: bool (defaults to true on Unix and (always) false on Windows)
 
-    # Wether to include the recipe or not in the final package
-    include_recipe: bool (defaults to true)
+  # Wether to include the recipe or not in the final package
+  include_recipe: bool (defaults to true)
 
-    # environment variables to either pass through to the script environment or set
-    script_env: [env_vars]
+  # environment variables to either pass through to the script environment or set
+  script_env: [env_vars]
 
-    # A run export adds a dependency to the run requirements of a package if listed in build or host dependencies
-    run_exports: [MatchSpec] OR {strong: [MatchSpec], weak: [MatchSpec], strong_constrains: [MatchSpec], weak_constrains: [MatchSpec], noarch: [MatchSpec]}
+  # A run export adds a dependency to the run requirements of a package if listed in build or host dependencies
+  run_exports: [MatchSpec] OR {strong: [MatchSpec], weak: [MatchSpec], strong_constrains: [MatchSpec], weak_constrains: [MatchSpec], noarch: [MatchSpec]}
 
-    # Allow linking against libraries that are not in the run requirements
-    missing_dso_whitelist: [glob]
+  # Allow linking against libraries that are not in the run requirements
+  missing_dso_whitelist: [glob]
 
-    # Allow runpath / rpath to point to these locations outside of the environment
-    runpath_whitelist: [glob]
+  # Allow runpath / rpath to point to these locations outside of the environment
+  runpath_whitelist: [glob]
 
-    # This is only used in the pip feedstock.
-    disable_pip: bool (defaults to false)
+  # This is only used in the pip feedstock.
+  disable_pip: bool (defaults to false)
 
-    # merge the build and host environments (used in many R packages on Windows)
-    merge_build_host: bool
+  # merge the build and host environments (used in many R packages on Windows)
+  merge_build_host: bool
 
-    # ignore run exports by name
-    ignore_run_exports: list
+  # ignore run exports by name
+  ignore_run_exports: list
 
-    # ignore run exports coming from the specified packages
-    ignore_run_exports_from: list
+  # ignore run exports coming from the specified packages
+  ignore_run_exports_from: list
 
-    # copies fn[.bat/.sh] to the appropriate location, adds `.bat` or `.sh` to the filename
-    pre-link: string
-    post-link: string
-    pre-unlink: string
+  # copies fn[.bat/.sh] to the appropriate location, adds `.bat` or `.sh` to the filename
+  pre-link: string
+  post-link: string
+  pre-unlink: string
 
-    # error out when overdepending
-    error_overdepending: bool (defaults to ?)
-    # error out when overlinking
-    error_overlinking: bool (defaults to ?)
+  # error out when overdepending
+  error_overdepending: bool (defaults to ?)
+  # error out when overlinking
+  error_overlinking: bool (defaults to ?)
 
-    # REMOVED:
-    # noarch_python: bool
-    # features: list
-    # msvc_compiler: str
-    # requires_features: dict
-    # provides_features: dict
-    # preferred_env: str
-    # preferred_env_executable_paths: list
+  # REMOVED:
+  # noarch_python: bool
+  # features: list
+  # msvc_compiler: str
+  # requires_features: dict
+  # provides_features: dict
+  # preferred_env: str
+  # preferred_env_executable_paths: list
 
-    # marked as "still experimental"
-    # pin_depends: Enum<"record" | "strict">
-    # overlinking_ignore_patterns: [glob]
+  # marked as "still experimental"
+  # pin_depends: Enum<"record" | "strict">
+  # overlinking_ignore_patterns: [glob]
 
-    # defaults to patchelf (only cudatoolkit is using `lief` for some reason)
-    # rpaths_patcher: None
+  # defaults to patchelf (only cudatoolkit is using `lief` for some reason)
+  # rpaths_patcher: None
 ```
 
 ## Source section
@@ -251,28 +269,30 @@ requirements:
 ## Test section
 
 <details>
-  <summary>
-  The current state of the Test section.
+<summary>
+The current state of the Test section which is being removed with this spec.
 
 Note: the test section also has a weird implicit behavior with `run_test.sh`, `run_test.bat` as well as `run_test.py` and `run_test.pl` script files
 that are run as part of the test.
 
-  </summary>
-  ```yaml
-  test:
-    # files (from recipe directory) to include with the tests
-    files: [glob]
-    # files (from the work directory) to include with the tests
-    source_files: [glob]
-    # requirements at test time, in the target_platform architecture
-    requires: [MatchSpec]
-    # commands to execute
-    commands: [string]
-    # imports to execute with python (e.g. `import <string>`)
-    imports: [string]
-    # downstream packages that should be tested against this package
-    downstreams: [MatchSpec]
-  ```
+</summary>
+The current YAML format for the test section is:
+
+```yaml
+test:
+  # files (from recipe directory) to include with the tests
+  files: [glob]
+  # files (from the work directory) to include with the tests
+  source_files: [glob]
+  # requirements at test time, in the target_platform architecture
+  requires: [MatchSpec]
+  # commands to execute
+  commands: [string]
+  # imports to execute with python (e.g. `import <string>`)
+  imports: [string]
+  # downstream packages that should be tested against this package
+  downstreams: [MatchSpec]
+```
 </details>
 
 ```
