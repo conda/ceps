@@ -482,7 +482,7 @@ requirements:
 test:
   - script:
       - if: unix
-        value:
+        then:
           - test -d ${PREFIX}/include/xtensor
           - test -f ${PREFIX}/include/xtensor/xarray.hpp
           - test -f ${PREFIX}/share/cmake/xtensor/xtensorConfig.cmake
