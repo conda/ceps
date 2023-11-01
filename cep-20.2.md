@@ -388,11 +388,12 @@ Therefore, each variant is computed for each output individually.
 Another tricky bit is that packages can be "strongly" connected with a `pin_subpackage(name, exact=True)` constraint.
 In this case, the pinned package should also be part of the "variant configuration" for the output and appropriately zipped.
 
-For example, we can have three outputs: libmamba, libmambapy, and mamba.
+For example, we can have three outputs: `libmamba`, `libmambapy`, and `mamba`.
 
-libmamba -> creates a single variant as it is a low-level C++ library
-libmambapy -> creates multiple packages, one per python version
-mamba -> creates multiple packages (one per python + libmambapy version)
+
+- `libmamba` -> creates a single variant as it is a low-level C++ library
+- `libmambapy` -> creates multiple packages, one per python version
+- `mamba` -> creates multiple packages (one per python + libmambapy version)
 
 <img width="1527" alt="Screenshot 2023-11-01 at 15 48 59" src="https://github.com/wolfv/ceps/assets/885054/3ddb7ddb-f563-4842-91d6-d9f8c91b83e0">
 
