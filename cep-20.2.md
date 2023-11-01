@@ -88,7 +88,7 @@ build:
     # PythonEntryPoint: `bsdiff4 = bsdiff4.cli:main_bsdiff4`
     entry_points: [PythonEntryPoint]
 
-    # ?
+    # Use the python.app for the entrypoint (not exactly sure what that means in practice)
     osx_is_app: bool (default false)
 
     # used on conda-forge, still needed?
@@ -100,7 +100,7 @@ build:
     # skip compiling pyc for some files
     skip_compile_pyc: [glob]
 
-    # do not
+    # do not soft- or hard-link these files, but always copy them
     no_link: [glob]
 
     # the script that is executed to build the package
@@ -136,16 +136,19 @@ build:
     # environment variables to either pass through to the script environment or set
     script_env: [env_vars]
 
+    # A run export adds a dependency to the run requirements of a package if listed in build or host dependencies
     run_exports: [MatchSpec] OR {strong: [MatchSpec], weak: [MatchSpec], strong_constrains: [MatchSpec], weak_constrains: [MatchSpec], noarch: [MatchSpec]}
 
+    # Allow linking against libraries that are not in the run requirements
     missing_dso_whitelist: [glob]
 
+    # Allow runpath / rpath to point to these locations outside of the environment
     runpath_whitelist: [glob]
 
     # This is only used in the pip feedstock.
     disable_pip: bool (defaults to false)
 
-    # used in many r packages on Windows
+    # merge the build and host environments (used in many R packages on Windows)
     merge_build_host: bool
 
     # ignore run exports by name
@@ -200,7 +203,7 @@ folder: path
 sha256: hex string
 # absolute or relative path from recipe file
 patches: [path]
-# removed
+# removed keys
 # fn: string
 # md5: hex string
 # sha1: hex string
@@ -247,34 +250,36 @@ requirements:
 
 ## Test section
 
+<details>
+  <summary>
+  The current state of the Test section.
+
 Note: the test section also has a weird implicit behavior with `run_test.sh`, `run_test.bat` as well as `run_test.py` and `run_test.pl` script files
 that are run as part of the test.
 
-This is the current state of the Test section.
-
-```yaml
-test:
-  # files (from recipe directory) to include with the tests
-  files: [glob]
-  # files (from the work directory) to include with the tests
-  source_files: [glob]
-  # requirements at test time, in the target_platform architecture
-  requires: [MatchSpec]
-  # commands to execute
-  commands: [string]
-  # imports to execute with python (e.g. `import <string>`)
-  imports: [string]
-  # downstream packages that should be tested against this package
-  downstreams: [MatchSpec]
-```
-
-### Proposal for new test section:
+  </summary>
+  ```yaml
+  test:
+    # files (from recipe directory) to include with the tests
+    files: [glob]
+    # files (from the work directory) to include with the tests
+    source_files: [glob]
+    # requirements at test time, in the target_platform architecture
+    requires: [MatchSpec]
+    # commands to execute
+    commands: [string]
+    # imports to execute with python (e.g. `import <string>`)
+    imports: [string]
+    # downstream packages that should be tested against this package
+    downstreams: [MatchSpec]
+  ```
+</details>
 
 ```
 test: [TestElement]
 ```
 
-where the different test elements are defined as follows:
+The new test section consists of a list of test elements. Each element is executed independently and can have different requirements. There are multiple types of test elements defined, such as the `command` test element, the `python` test element and the `downstream` test element.
 
 #### Command test element
 
@@ -297,11 +302,12 @@ files:
   recipe: [glob]
 ```
 
-#### Import test element
+#### Python test element
 
 ```yaml
-# list of imports to try
-imports: [string]
+python:
+  # list of imports to try
+  imports: [string]
 ```
 
 #### Downstream test element
@@ -315,10 +321,18 @@ downstream: MatchSpec
 conda-build has very hard to understand behavior with multiple outputs. We propose some drastic simplifications.
 Each output in the new format has the same keys as a "top-level" recipe.
 
-Values from the top-level `build` and `about` section are merged into the outputs. The `version` from the top-level
-`package` is also merged into each output. The top-level name is ignored.
+Values from the top-level `build`, `source` and `about` sections are (deeply) merged into each of the outputs.
+
+The top-level package field is replaced by a top-level `recipe` field. The `version` from the top-level
+`recipe` is also merged into each output. The top-level name is ignored (but could be used, e.g. for
+the feedstock-name in the conda-forge case).
 
 ```yaml
+# note: instead of `package`, it says `recipe` here
+recipe:
+  name: string # mostly ignored, could be used for feedstock name
+  version: string # merged into each output if not overwritten by output
+
 outputs:
   - package:
       name: string
@@ -347,27 +361,45 @@ will get a prepared `$WORK_DIR` with the build artifacts from the previously exe
 > **Note**
 > Should run-dependencies from the cache_only package be inherited? That would make `run_exports` work better ...
 
+### Aside: variant computation for multiple outputs
+
+Multiple outputs are treated like individual recipes after the merging of the nodes is completed.
+Therefore, each variant is computed for each output individually.
+
+Another tricky bit is that packages can be "strongly" connected with a `pin_subpackage(name, exact=True)` constraint.
+In this case, the pinned package should also be part of the "variant configuration" for the output and appropriately zipped.
+
+For example, we can have three outputs: libmamba, libmambapy, and mamba.
+
+libmamba -> creates a single variant as it is a low-level C++ library
+libmambapy -> creates multiple packages, one per python version
+mamba -> creates multiple packages (one per python + libmambapy version)
+
+This has historically been an issue in conda-build, as it didn't take into account `pin_subpackage` edges as "variants" and
+sometimes created the same hashes for two different outputs.
+
 ## About section
 
 ```yaml
 about:
-  # The license
-  # We can enforce SPDX for license?
-  license: string
-  # license files
-  license_file: path | [path] (relative paths are found in source directory _or_ recipe directory)
   # a summary of what this package does
   summary: string
   # a longer description of what this package does (should we allow referencing files here?)
   description: string
-  # URL to the homepage
-  home: url
-  # url to the repository - rename?
-  dev_url: url
-  # URL to the docs
-  doc_url: url
-  # unsure if we should keep this one
+
+  # the license of the package in SPDX format
+  license: string (SPDX enforced)
+  # the license files
+  license_file: path | [path] (relative paths are found in source directory _or_ recipe directory)
+  # URL that points to the license
   license_url: url
+
+  # URL to the homepage (used to be `home`)
+  homepage: url
+  # URL to the repository (used to be `dev_url`)
+  repository: url
+  # URL to the documentation (used to be `doc_url`)
+  documentation: url
 
   # REMOVED:
   # prelink_message:
@@ -381,7 +413,7 @@ about:
 ## Extra section
 
 ```yaml
-# a free form dictionary
+# a free form YAML dictionary
 extra:
   <key>: <value>
 ```
@@ -454,9 +486,10 @@ test:
 
   - downstream: xtensor-python
   - downstream: xtensor-blas
-  - imports:
-      - xtensor_python
-      - xtensor_python.numpy_adapter
+  - python:
+      imports:
+        - xtensor_python
+        - xtensor_python.numpy_adapter
 ```
 
 Or a multi-output package
@@ -578,9 +611,10 @@ outputs:
         - ${{ pin_subpackage('libmamba', exact=True) }}
 
     test:
-      - imports:
-          - libmambapy
-          - libmambapy.bindings
+      - python:
+          imports:
+            - libmambapy
+            - libmambapy.bindings
       - script:
           - python -c "import libmambapy._version; assert libmambapy._version.__version__ == '${{ libmambapy_version }}'"
 
