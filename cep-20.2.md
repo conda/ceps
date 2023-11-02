@@ -19,7 +19,7 @@ meaning.
 ## Motivation
 
 The conda-build format is currently under-specified. For the new format, we try to list all values
-and types in a single document and document them. This is part of a larger effort (see [](/cep-20.1.md) for the new YAML syntax).
+and types in a single document and document them. This is part of a larger effort (see [CEP-13](/cep-13.md) for the new YAML syntax).
 
 ## History
 
