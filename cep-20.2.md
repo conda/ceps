@@ -151,7 +151,8 @@ build:
   include_recipe: bool (defaults to true)
 
   # environment variables to either pass through to the script environment or set
-  script_env: [env_vars]
+  # the env var is defined as dictionary with keys: passthrough, env and secrets (see below for full definition)
+  script_env: ScriptEnv
 
   # A run export adds a dependency to the run requirements of a package if listed in build or host dependencies
   run_exports: [MatchSpec] OR {strong: [MatchSpec], weak: [MatchSpec], strong_constrains: [MatchSpec], weak_constrains: [MatchSpec], noarch: [MatchSpec]}
@@ -199,6 +200,21 @@ build:
 
   # defaults to patchelf (only cudatoolkit is using `lief` for some reason)
   # rpaths_patcher: None
+```
+
+#### Script env dictionary
+
+Where the `ScriptEnv` section is defined as follows:
+
+```yaml
+# list of environment variables to pass through to the script environment
+# these are saved in the package / rendered recipe
+passthrough: [string]
+# A map of environment variables to set in the script environment
+env: {string: string}
+# A list of environment variables to leak into the build environment but keep "secret"
+# meaning they will not be embedded into the final package and will not be printed to stdout
+secrets: [string]
 ```
 
 ## Source section
