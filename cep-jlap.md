@@ -241,7 +241,7 @@ penultimate line of the file and appending new data.
 
 * JSON Patch https://datatracker.ietf.org/doc/html/rfc6902
 * Server and client implementation in Python https://github.com/dholth/repodata-fly
-* Example code [cep-10.py](./cep-10.py)
+* Example code [cep-jlap.py](./cep-jlap.py)
 * [JSON Lines](https://jsonlines.org/)
 
 ## Copyright
