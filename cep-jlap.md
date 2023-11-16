@@ -230,6 +230,53 @@ else:
     )
 ```
 
+## A Fast Implementation
+
+The initial JLAP implementations maintain a fully-updated `repodata.json` by
+applying patches directly to the complete file. Users with faster connections
+noticed that parsing and re-serializing this JSON can take longer than
+downloading a complete `repodata.json.zst`.
+
+Instead, we can accumulate patches in a much smaller second file by applying a
+copy-on-write scheme to the bulk of the data in `packages`, `packages.conda`,
+`signatures`.
+
+```json
+{
+    "packages": {},
+    "packages.conda": {},
+    "signatures": {}
+}
+```
+
+The solver's JSON parser first looks for keys in the overlay's `packages`,
+`packages.conda`, `signatures` objects, or other keys directly under the
+top-level object. Then it falls back to the larger file if a key is missing.
+The `null` value is used as a deletion marker when a package was removed.
+
+If the overlay file grows enough that the time to read and write the overlay
+exceeds the time saved by downloading patches, then the client may choose to
+re-download `repodata.json.zst` or fold older patches into the complete index.
+
+The structure of JSON Patch allows a copy-on-write implementation to apply new
+patches to the overlay without parsing the larger `repodata.json` for patches
+that only add/remove packages, but parse `repodata.json` to copy a package
+record and then patch when data inside an existing package record was modified
+(such as a license or dependency change).
+
+A compromise between JLAP "generic over JSON" patches and a local "specialized
+for `repodata.json`" format provides efficient patch transmission, and a
+C/C++/Rust JSON parser that does not have to contain a RFC 6902 JSON Patch
+implementation.
+
+Logical-level patches maintain flexibility to change the local cache format, for
+example, by writing individual package records to a database instead of a
+monolithic file.
+
+[Details of conda implementation](https://github.com/conda/conda/blob/13120-jlap-benchmark/conda/gateways/repodata/jlap/README.md)
+
+[Parser change against libmamba](https://github.com/mamba-org/mamba/pull/2969)
+
 ## File extension
 
 The `.jlap` extension stands for **J**SON **l**ines **a**ppend **p**enultimate.
