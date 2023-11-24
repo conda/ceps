@@ -34,14 +34,14 @@ PURL is already supported by dependency-related tooling like SPDX (see [External
 
 ## Motivation
 
-Conda packages can repackage packages from other ecosystems. 
-Conda-forge and other channels famously repackages a lot of pypi packages.
+Conda packages can repackage packages from other ecosystems.
+Conda-forge and other channels famously repackages a lot of PyPI packages.
 However, without actually downloading the conda package and inspecting its contents there is no reliable way to know whether a certain conda package is a repackaged package.
 
-Pixi and conda-lock are both tools that try to combine the conda and pypi package ecosystem but this is hard to do because conda package names and pypi package names do not necesarily match up.
+Pixi and conda-lock are both tools that try to combine the conda and PyPI package ecosystem but this is hard to do because conda package names and PyPI package names do not necessarily match up.
 
 Its hard to use open-source vulnerability databases because they often do not contain conda packages.
-Using PURL allows us to link vulnerabilities from other ecosystems to conda package.
+Using the PURL standard allows us to link vulnerabilities from other ecosystems to conda package.
 
 ## Rationale
 
@@ -59,7 +59,7 @@ The `purls` field is an array because:
 
 ## Alternatives
 
-Some work has been done to try and map conda package names to pypi package names through the grayskull mapping:
+Some work has been done to try and map conda package names to PyPI package names through the grayskull mapping:
 
 https://raw.githubusercontent.com/regro/cf-graph-countyfair/master/mappings/pypi/grayskull_pypi_mapping.yaml
 
@@ -71,7 +71,7 @@ However, this approach has some serious drawbacks:
 * Its a heuristic based on source urls.
 * The implementation is based on the recipes instead of the actual package files.
 * The implementation does not work with multi-output recipes.
-* Its maintained as a seperate file that is hard to discover
+* Its maintained as a separate file that is hard to discover
 
 ## Backwards Compatibility
 
