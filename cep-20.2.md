@@ -142,19 +142,21 @@ build:
     # used on conda-forge, still needed?
     preserve_egg_dir: bool (default false)
 
-    # skip compiling pyc for some files
-    skip_compile_pyc: [glob]
+    # skip compiling pyc for some files (was `skip_compile_pyc`)
+    skip_pyc_compilation: [glob]
 
     # This is only used in the pip feedstock.
     disable_pip: bool (defaults to false)
 
   # settings concerning the prefix detection in files
   prefix_detection:
-    # force file to be detected as TEXT file (for prefix replacement)
-    has_prefix_files: [path]
-
-    # force file to be detected as BINARY file (for prefix replacement)
-    binary_has_prefix_files: [path]
+    # force the file type of the given files to be TEXT or BINARY
+    # for prefix replacement
+    force_file_type:
+      # force TEXT file type
+      text: [glob]
+      # force binary file type
+      binary: [glob]
 
     # ignore all or specific files for prefix replacement
     ignore_prefix_files: bool | [path] (defaults to false)
@@ -165,7 +167,7 @@ build:
   # settings for shared libraries
   # although this also concerns executables
   shared_libraries:
-    # linux only, list of rpaths
+    # linux only, list of rpaths (was rpath)
     rpaths: [path] (defaults to ['lib/'])
 
     # wether to relocate binaries or not. If this is a list of paths, then
@@ -173,12 +175,12 @@ build:
     binary_relocation: bool (defaults to true) | [glob]
 
     # Allow linking against libraries that are not in the run requirements
-    # was `missing_dso_whitelist`
-    allow_missing_dso: [glob]
+    # (was `missing_dso_whitelist`)
+    missing_dso_allowlist: [glob]
 
     # Allow runpath / rpath to point to these locations outside of the environment
-    # was `runpath_whitelist`
-    allow_runpath: [glob]
+    # (was `runpath_whitelist`)
+    rpath_allowlist: [glob]
 
     # error out when overdepending
     error_overdepending: bool (defaults to ?)
@@ -294,11 +296,13 @@ patches: [path]
 
 ```yaml
 # URL to the git repository or path to local git repository
-git_url: url | path
+git: url | path
 # revision to checkout to (commit or tag)
-git_rev: string
+revision: string
 # depth of the git clone (mutually exclusive with git_rev)
-git_depth: signed integer (defaults to -1 -> not shallow)
+depth: signed integer (defaults to -1 -> not shallow)
+# destination folder in work directory
+target_directory: path
 ```
 
 ### Removed source definitions
@@ -462,7 +466,7 @@ about:
   license: string (SPDX enforced)
   # the license files
   license_file: path | [path] (relative paths are found in source directory _or_ recipe directory)
-  # URL that points to the license
+  # URL that points to the license – just stored as metadata
   license_url: url
 
   # URL to the homepage (used to be `home`)
