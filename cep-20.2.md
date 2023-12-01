@@ -109,11 +109,6 @@ build:
   # was `merge_build_host`
   merge_build_and_host_envs: bool (defaults to false)
 
-  # category: package or packaging?
-  # do not soft- or hard-link these files, but always copy them
-  # was `no_link`
-  always_copy: [glob]
-
   # include files even if they are already in the environment
   # as part of some other host dependency
   always_include_files: [path]
@@ -197,7 +192,7 @@ build:
     from_package: [string]
 
   # Actions that are run after linking or before unlinking
-  install_actions:
+  link_options:
     # copies fn[.bat/.sh] to the appropriate location, adds `.bat` or `.sh` to the filename
     # script to run after linking
     # was `post_link`
@@ -208,6 +203,10 @@ build:
     # message to show before linking (note: moved from `about`)
     pre_link_message: string
 
+    # category: package or packaging?
+    # do not soft- or hard-link these files, but always copy them
+    # was `no_link`
+    always_copy_files: [glob]
 
   # REMOVED:
   # pre-link: string (was deprecated for a long time)
