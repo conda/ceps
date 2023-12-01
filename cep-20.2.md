@@ -180,10 +180,10 @@ build:
     rpath_allowlist: [glob]
 
     # what to do when detecting overdepending
-    overdepending: str # one of "ignore" or "error" (defaults to "error")
+    overdepending_behavior: str # one of "ignore" or "error" (defaults to "error")
 
     # what to do when detecting overlinking
-    overlinking: str # one of "ignore" or "error" (defaults to "error")
+    overlinking_behavior: str # one of "ignore" or "error" (defaults to "error")
 
   ignore_run_exports:
     # ignore run exports by name (e.g. `libgcc-ng`)
