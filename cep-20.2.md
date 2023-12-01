@@ -257,8 +257,10 @@ where the different source elements are defined as follows.
 ### URL source
 
 ```yaml
-# url pointing to the source tar.gz|zip|tar.bz2|...
+# url pointing to the source tar.gz|zip|tar.bz2|... (this can be a list of mirrors that point to the same file)
 url: url | [url]
+# if there is a gitignore, adhere to it (or not)
+use_gitignore: bool (defaults to true)
 # destination folder in work directory
 target_directory: path
 # hash of the file
@@ -291,18 +293,15 @@ patches: [path]
 ```yaml
 # URL to the git repository or path to local git repository
 git: url | path
-
-# the following keys are mutually exclusive
+# the following 3 keys are mutually exclusive (branch, tag, and rev)
 # branch to checkout to
 branch: string
 # tag to checkout to
 tag: string
 # revision to checkout to (hash or ref)
 rev: string
-
 # depth of the git clone (mutually exclusive with rev)
 depth: signed integer (defaults to -1 -> not shallow)
-
 # should this use git-lfs?
 lfs: bool (defaults to false)
 # destination folder in work directory
