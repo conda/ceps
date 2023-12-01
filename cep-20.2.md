@@ -307,6 +307,8 @@ depth: signed integer (defaults to -1 -> not shallow)
 lfs: bool (defaults to false)
 # destination folder in work directory
 target_directory: path
+# absolute or relative path from recipe file
+patches: [path]
 ```
 
 ### Removed source definitions
