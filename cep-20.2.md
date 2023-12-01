@@ -100,33 +100,11 @@ build:
   # wether the package is a noarch package, and if yes, wether it is "generic" or "python"
   noarch: Option<"generic" | "python">
 
-  # script:
-  #   - bla
-  #   - bli
+  # script can be a single string or a list of strings
+  # if script is a single string and ends with `.sh` or `.bat`, then we interpret it as a file
+  script: str | [str] | Script
 
-  # script: |
-  #   this also works
-
-  # # we look for a file that matches exactly the name of the single line script
-  # # and if it exists we interpret it as `script.file`
-  # script: echo build.sh # ? -> WARN
-
-  # script:
-  #   interpreter: bash
-  #   env: {string: string}
-  #   secrets: [string]
-  #   file: build.sh  # add .bat on Win, and .sh on Linux/Mac
-  #   # OR (exclusive)
-  #   content: |
-  #     #!/bin/bash
-  #     bla
-  #     bli
-
-  # the script that is executed to build the package
-  # if it is only one element and ends with `.sh` or `.bat`
-  script: string | [string]
-
-  # # environment variables to either pass through to the script environment or set
+# # environment variables to either pass through to the script environment or set
   # # the env var is defined as dictionary with keys: passthrough, env and secrets (see below for full definition)
   # script_env: ScriptEnv
 
@@ -251,6 +229,24 @@ build:
 
   # defaults to patchelf (only cudatoolkit is using `lief` for some reason)
   # rpaths_patcher: None
+```
+
+### Script section
+
+```yaml
+script:
+  # the interpreter to use for the script
+  interpreter: str  # defaults to bash on UNIX and cmd.exe on Windows
+  # the script environment. You can use Jinja to pass through environment variables
+  # with the `env` key (`${{ env.get("MYVAR") }}`).
+  env: {str: str}
+  # secrets that are set as env variables but never shown in the logs or the environment
+  secrets: [str]
+  # The file to use as the script. Automatically adds `bat` or `sh` to the filename
+  # on Windows or UNIX respectively (if no file extension is given).
+  file: str  # build.sh  
+  # A string or list of strings that is the script contents (mutually exclusive with `file`)
+  content: str | [str]
 ```
 
 ## Source section
