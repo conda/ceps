@@ -46,14 +46,14 @@ If outputs exist, the top-level keys are 'merged' with the output keys (e.g. for
 
 ## Schema version
 
-The implicit version of the YAML schema for a recipe is an integer 1. 
+The implicit version of the YAML schema for a recipe is an integer 1.
 To discern between the "old" format and the new format, we utilize the file name.
 The old format is `meta.yaml` and the new format is `recipe.yaml`.
 The version can be explicitly set by adding a `schema_version` key to the recipe.
 
 ```yaml
 # optional, since implicitly defaults to 1
-schema_version: 1  # integer
+schema_version: 1 # integer
 ```
 
 To benefit from autocompletion, and other LSP features in editors, we can add a schema URL to the recipe.
@@ -100,24 +100,48 @@ build:
   # wether the package is a noarch package, and if yes, wether it is "generic" or "python"
   noarch: Option<"generic" | "python">
 
+  # script:
+  #   - bla
+  #   - bli
+
+  # script: |
+  #   this also works
+
+  # # we look for a file that matches exactly the name of the single line script
+  # # and if it exists we interpret it as `script.file`
+  # script: echo build.sh # ? -> WARN
+
+  # script:
+  #   interpreter: bash
+  #   env: {string: string}
+  #   secrets: [string]
+  #   file: build.sh  # add .bat on Win, and .sh on Linux/Mac
+  #   # OR (exclusive)
+  #   content: |
+  #     #!/bin/bash
+  #     bla
+  #     bli
+
   # the script that is executed to build the package
   # if it is only one element and ends with `.sh` or `.bat`
   script: string | [string]
 
-  # environment variables to either pass through to the script environment or set
-  # the env var is defined as dictionary with keys: passthrough, env and secrets (see below for full definition)
-  script_env: ScriptEnv
+  # # environment variables to either pass through to the script environment or set
+  # # the env var is defined as dictionary with keys: passthrough, env and secrets (see below for full definition)
+  # script_env: ScriptEnv
 
   # would love to get rid of this:
   # merge the build and host environments (used in many R packages on Windows)
-  merge_build_host: bool (defaults to false)
+  # was `merge_build_host`
+  merge_build_and_host_envs: bool (defaults to false)
 
   # category: package or packaging?
   # do not soft- or hard-link these files, but always copy them
-  no_link: [glob]
+  # was `no_link`
+  always_copy: [glob]
 
-  # include files even if they are already in the environment as part of some other
-  # host dependency
+  # include files even if they are already in the environment
+  # as part of some other host dependency
   always_include_files: [path]
 
   variant:
@@ -136,8 +160,9 @@ build:
     # PythonEntryPoint: `bsdiff4 = bsdiff4.cli:main_bsdiff4`
     entry_points: [PythonEntryPoint]
 
-    # Use the python.app for the entrypoint (not exactly sure what that means in practice)
-    osx_is_app: bool (default false)
+    # Specifies if python.app should be used as the entrypoint on macOS
+    # was `osx_is_app`
+    use_python_app_entrypoint: bool (defaults to false)  # macOS only!
 
     # used on conda-forge, still needed?
     preserve_egg_dir: bool (default false)
@@ -154,18 +179,21 @@ build:
     # for prefix replacement
     force_file_type:
       # force TEXT file type
+      # was `???`
       text: [glob]
       # force binary file type
+      # was `???`
       binary: [glob]
 
     # ignore all or specific files for prefix replacement
-    ignore_prefix_files: bool | [path] (defaults to false)
+    # was `ignore_prefix_files`
+    ignore: bool | [path] (defaults to false)
 
     # wether to detect binary files with prefix or not
-    detect_binary_files_with_prefix: bool (defaults to true on Unix and (always) false on Windows)
+    # was `detect_binary_files_with_prefix`
+    ignore_binary_files: bool (defaults to true on Unix and (always) false on Windows)
 
-  # settings for shared libraries
-  # although this also concerns executables
+  # settings for shared libraries and executables
   shared_libraries:
     # linux only, list of rpaths (was rpath)
     rpaths: [path] (defaults to ['lib/'])
@@ -182,28 +210,17 @@ build:
     # (was `runpath_whitelist`)
     rpath_allowlist: [glob]
 
-    # error out when overdepending
-    error_overdepending: bool (defaults to ?)
+    # what to do when detecting overdepending
+    overdepending: str # one of "ignore" or "error" (defaults to "error")
 
-    # error out when overlinking
-    error_overlinking: bool (defaults to ?)
+    # what to do when detecting overlinking
+    overlinking: str # one of "ignore" or "error" (defaults to "error")
 
-  run_exports:
-    # strong run exports go from build -> host & -> run
-    strong: [MatchSpec]
-    # weak run exports go from host -> run or build -> host
-    weak: [MatchSpec]
-    # strong constrains adds a run constraint from build -> run_constrained
-    strong_constrains: [MatchSpec]
-    # weak constrains adds a run constraint from host -> run_constrained
-    weak_constrains: [MatchSpec]
-    # noarch run exports go from host -> run for `noarch` builds
-    noarch: [MatchSpec]
-
-    # ignore run exports by name
-    ignore_run_exports: [string]
-    # ignore run exports coming from the specified packages
-    ignore_run_exports_from: [string]
+  ignore_run_exports:
+    # ignore run exports by name (e.g. `libgcc-ng`)
+    by_name: [string]
+    # ignore run exports that come from the specified packages
+    from_package: [string]
 
   # Actions that are run after linking or before unlinking
   install_actions:
@@ -212,13 +229,12 @@ build:
     post_link: string
     # script to run before unlinking
     pre_unlink: string
-    # message to show before linking
+    # message to show before linking (note: moved from `about`)
     pre_link_message: string
 
 
   # REMOVED:
-  # deprecated
-  # pre-link: string
+  # pre-link: string (was deprecated for a long time)
   # Wether to include the recipe or not in the final package - should be specified on command line or other config file?
   # include_recipe: bool (defaults to true)
   # noarch_python: bool
@@ -237,21 +253,6 @@ build:
   # rpaths_patcher: None
 ```
 
-### Script env dictionary
-
-Where the `ScriptEnv` section is defined as follows:
-
-```yaml
-# list of environment variables to pass through to the script environment
-# these are saved in the package / rendered recipe
-passthrough: [string]
-# A map of environment variables to set in the script environment
-env: {string: string}
-# A list of environment variables to leak into the build environment but keep "secret"
-# meaning they will not be embedded into the final package and will not be printed to stdout
-secrets: [string]
-```
-
 ## Source section
 
 ```yaml
@@ -264,30 +265,30 @@ where the different source elements are defined as follows.
 
 ```yaml
 # url pointing to the source tar.gz|zip|tar.bz2|...
-url: url
+url: url | [url]
 # destination folder in work directory
 target_directory: path
 # hash of the file
 sha256: hex string
-# legacy md5 sum of the file
+# legacy md5 sum of the file (test both, prefer sha256)
 md5: hex string
 # relative path from recipe file
 patches: [path]
-# Rename the file to the given name.
-# Prevents the file from being extracted if it is an archive.
-file_name: string
 ```
 
 ### Local source
+
+A path can be either:
+
+- directory ("../bla")
+- a path to an archive ("../bla.tar.gz")
+- a path to a file ("../bla.txt")
 
 ```yaml
 # file, absolute or relative to recipe file
 path: path
 # destination folder
 target_directory: path
-# Rename the file to the given name.
-# Prevents the file from being extracted if it is an archive.
-file_name: string
 # absolute or relative path from recipe file
 patches: [path]
 ```
@@ -297,10 +298,20 @@ patches: [path]
 ```yaml
 # URL to the git repository or path to local git repository
 git: url | path
-# revision to checkout to (commit or tag)
-revision: string
-# depth of the git clone (mutually exclusive with git_rev)
+
+# the following keys are mutually exclusive
+# branch to checkout to
+branch: string
+# tag to checkout to
+tag: string
+# revision to checkout to (hash or ref)
+rev: string
+
+# depth of the git clone (mutually exclusive with rev)
 depth: signed integer (defaults to -1 -> not shallow)
+
+# should this use git-lfs?
+lfs: bool (defaults to false)
 # destination folder in work directory
 target_directory: path
 ```
@@ -321,6 +332,25 @@ requirements:
   run: [MatchSpec]
   # constrain optional packages
   run_constrained: [MatchSpec]
+  # the run exports of this package
+  run_exports: [MatchSpec] OR RunExports
+```
+
+#### `RunExports` section
+
+The different kind of run exports that can be specified are:
+
+```yaml
+# strong run exports go from build -> host & -> run
+strong: [MatchSpec]
+# weak run exports go from host -> run or build -> host
+weak: [MatchSpec]
+# strong constrains adds a run constraint from build -> run_constrained
+strong_constrains: [MatchSpec]
+# weak constrains adds a run constraint from host -> run_constrained
+weak_constrains: [MatchSpec]
+# noarch run exports go from host -> run for `noarch` builds
+noarch: [MatchSpec]
 ```
 
 ### Test section
@@ -356,23 +386,23 @@ test:
 The new test section consists of a list of test elements. Each element is executed independently and can have different requirements. There are multiple types of test elements defined, such as the `command` test element, the `python` test element and the `downstream` test element.
 
 ```yaml
-test: [TestElement]
+tests: [TestElement]
 ```
 
 #### Command test element
 
 ```yaml
 # script to execute
+# reuse script definition from above
 script: string | [string]
 # optional extra requirements
-extra_requirements:
+requirements:
   # extra requirements with build_platform architecture (emulators, ...)
   build: [MatchSpec]
   # extra run dependencies
   run: [MatchSpec]
+
 # extra files to add to the package for the test
-# Alternatively, use ${{ RECIPE_DIR }} or ${{ SOURCE_DIR }} and a single list?
-# or $RECIPE_DIR / $SRC_DIR ...
 files:
   # files from $SRC_DIR
   source: [glob]
