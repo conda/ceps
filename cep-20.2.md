@@ -259,10 +259,10 @@ where the different source elements are defined as follows.
 ```yaml
 # url pointing to the source tar.gz|zip|tar.bz2|... (this can be a list of mirrors that point to the same file)
 url: url | [url]
-# if there is a gitignore, adhere to it (or not)
-use_gitignore: bool (defaults to true)
 # destination folder in work directory
 target_directory: path
+# rename the downloaded file to this name
+file_name: str
 # hash of the file
 sha256: hex string
 # legacy md5 sum of the file (test both, prefer sha256)
@@ -282,8 +282,12 @@ A path can be either:
 ```yaml
 # file, absolute or relative to recipe file
 path: path
+# if there is a gitignore, adhere to it (or not)
+use_gitignore: bool (defaults to true)
 # destination folder
 target_directory: path
+# rename the downloaded file to this name
+file_name: str
 # absolute or relative path from recipe file
 patches: [path]
 ```
