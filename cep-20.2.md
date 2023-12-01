@@ -104,10 +104,6 @@ build:
   # if script is a single string and ends with `.sh` or `.bat`, then we interpret it as a file
   script: str | [str] | Script
 
-# # environment variables to either pass through to the script environment or set
-  # # the env var is defined as dictionary with keys: passthrough, env and secrets (see below for full definition)
-  # script_env: ScriptEnv
-
   # would love to get rid of this:
   # merge the build and host environments (used in many R packages on Windows)
   # was `merge_build_host`
@@ -204,9 +200,11 @@ build:
   install_actions:
     # copies fn[.bat/.sh] to the appropriate location, adds `.bat` or `.sh` to the filename
     # script to run after linking
-    post_link: string
+    # was `post_link`
+    post_link_script: string
     # script to run before unlinking
-    pre_unlink: string
+    # was `pre_unlink`
+    pre_unlink_script: string
     # message to show before linking (note: moved from `about`)
     pre_link_message: string
 
