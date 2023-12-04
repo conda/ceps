@@ -381,7 +381,11 @@ test:
 
 </details>
 
-The new test section consists of a list of test elements. Each element is executed independently and can have different requirements. There are multiple types of test elements defined, such as the `command` test element, the `python` test element and the `downstream` test element.
+The new test section consists of a list of test elements. Each element is executed independently and can have different requirements.
+There are multiple types of test elements defined, such as the `command` test element, the `python` test element and the `downstream` test element.
+
+Before, the test section was written to a single folder (`info/test`). In the new format, we propose to write each test element to a separate folder
+(`info/tests/<index>`). This allows us to run each test element independently.
 
 ```yaml
 tests: [TestElement]
@@ -389,10 +393,14 @@ tests: [TestElement]
 
 #### Command test element
 
+The command test element renders to a single folder with a `test_time_dependencies.json` with two keys (`build` and `run`) that contain the raw "MatchSpec" strings.
+The `script` is rendered to a `script.json` that contains the `interpreter`, `env` and other keys (as defined in the `Script` section).
+Files are copied into the `info/tests/<index>` folder.
+
 ```yaml
 # script to execute
 # reuse script definition from above
-script: string | [string]
+script: string | [string] | Script
 # optional extra requirements
 requirements:
   # extra requirements with build_platform architecture (emulators, ...)
@@ -410,6 +418,8 @@ files:
 
 #### Python test element
 
+The python test element renders a `test_import.py` file that contains the imports to test.
+
 ```yaml
 python:
   # list of imports to try
@@ -417,6 +427,8 @@ python:
 ```
 
 #### Downstream test element
+
+The downstream test element renders to a `test_downstream.json` file that contains the `downstream` key with the raw "MatchSpec" string.
 
 ```yaml
 downstream: MatchSpec
