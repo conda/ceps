@@ -185,12 +185,6 @@ build:
     # what to do when detecting overlinking
     overlinking_behavior: str # one of "ignore" or "error" (defaults to "error")
 
-  ignore_run_exports:
-    # ignore run exports by name (e.g. `libgcc-ng`)
-    by_name: [string]
-    # ignore run exports that come from the specified packages
-    from_package: [string]
-
   # Actions that are run after linking or before unlinking
   link_options:
     # copies fn[.bat/.sh] to the appropriate location, adds `.bat` or `.sh` to the filename
@@ -328,10 +322,18 @@ requirements:
   host: [MatchSpec]
   # the section below is copied into the index.json and required at package installation
   run: [MatchSpec]
-  # constrain optional packages
-  run_constrained: [MatchSpec]
+  # constrain optional packages (was `run_constrained`)
+  run_constraints: [MatchSpec]
   # the run exports of this package
   run_exports: [MatchSpec] OR RunExports
+
+  # the run exports to ignore when calculating the requirements
+  ignore_run_exports:
+    # ignore run exports by name (e.g. `libgcc-ng`)
+    by_name: [string]
+    # ignore run exports that come from the specified packages
+    from_package: [string]
+
 ```
 
 #### `RunExports` section
@@ -343,10 +345,10 @@ The different kind of run exports that can be specified are:
 strong: [MatchSpec]
 # weak run exports go from host -> run or build -> host
 weak: [MatchSpec]
-# strong constrains adds a run constraint from build -> run_constrained
-strong_constrains: [MatchSpec]
-# weak constrains adds a run constraint from host -> run_constrained
-weak_constrains: [MatchSpec]
+# strong constrains adds a run constraint from build -> run_constraints (was `strong_constrains`)
+strong_constraints: [MatchSpec]
+# weak constrains adds a run constraint from host -> run_constrained (was `weak_constrains`)
+weak_constraints: [MatchSpec]
 # noarch run exports go from host -> run for `noarch` builds
 noarch: [MatchSpec]
 ```
@@ -587,7 +589,7 @@ test:
     then:
       files:
         - testfiles/cmake/*
-      extra_requirements:
+      requirements:
         build:
           - ${{ compiler('cxx') }}
           - cmake
@@ -638,12 +640,6 @@ outputs:
 
     build:
       script: ${{ "build_mamba.sh" if unix else "build_mamba.bat" }}
-      run_exports:
-        - ${{ pin_subpackage('libmamba', max_pin='x.x') }}
-      ignore_run_exports:
-        - spdlog
-        - if: win
-          then: python
 
     requirements:
       build:
@@ -665,6 +661,13 @@ outputs:
         - fmt
         - if: win
           then: winreg
+      run_exports:
+        - ${{ pin_subpackage('libmamba', max_pin='x.x') }}
+      ignore_run_exports:
+        from_package:
+          - spdlog
+          - if: win
+            then: python
 
     test:
       - script:
@@ -690,13 +693,11 @@ outputs:
   - package:
       name: libmambapy
       version: ${{ libmambapy_version }}
+
     build:
       script: ${{ "build_mamba.sh" if unix else "build_mamba.bat" }}
       string: py${{ CONDA_PY }}h${{ PKG_HASH }}_${{ PKG_BUILDNUM }}
-      run_exports:
-        - ${{ pin_subpackage('libmambapy', max_pin='x.x') }}
-      ignore_run_exports:
-        - spdlog
+
     requirements:
       build:
         - ${{ compiler('cxx') }}
@@ -725,6 +726,13 @@ outputs:
         - python
         - ${{ pin_subpackage('libmamba', exact=True) }}
 
+      run_exports:
+        - ${{ pin_subpackage('libmambapy', max_pin='x.x') }}
+
+      ignore_run_exports:
+        from_package:
+          - spdlog
+
     test:
       - python:
           imports:
@@ -741,6 +749,7 @@ outputs:
       string: py${{ CONDA_PY }}h${{ PKG_HASH }}_${{ PKG_BUILDNUM }}
       entry_points:
         - mamba = mamba.mamba:main
+
     requirements:
       build:
         - if: build_platform != target_platform
@@ -761,7 +770,7 @@ outputs:
       - python:
           imports: [mamba]
 
-      - extra_requirements:
+      - requirements:
           run:
             - pip
         script:
