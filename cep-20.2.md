@@ -317,15 +317,15 @@ SVN and HG (mercury) source definitions are removed as they are not relevant any
 ```yaml
 requirements:
   # build time dependencies, in the build_platform architecture
-  build: [MatchSpec]
+  build: [CondaBuildSpec]
   # dependencies to link against, in the target_platform architecture
-  host: [MatchSpec]
+  host: [CondaBuildSpec]
   # the section below is copied into the index.json and required at package installation
-  run: [MatchSpec]
+  run: [CondaBuildSpec]
   # constrain optional packages (was `run_constrained`)
-  run_constraints: [MatchSpec]
+  run_constraints: [CondaBuildSpec]
   # the run exports of this package
-  run_exports: [MatchSpec] OR RunExports
+  run_exports: [CondaBuildSpec] OR RunExports
 
   # the run exports to ignore when calculating the requirements
   ignore_run_exports:
@@ -336,21 +336,43 @@ requirements:
 
 ```
 
+#### CondaBuildSpec
+
+A `CondaBuildSpec` in the recipe is currently defined as a string with up to two whitespaces, looking like this:
+
+```
+<name> <version> <build_string>
+
+# examples:
+python
+python 3.8
+python 3.8 h1234567_0
+python >=3.8,<3.9
+python >=3.8,<3.9 h1234567_0
+python 3.9.*
+```
+
+> [!NOTE]
+> `MatchSpec` are defined with many more options in conda. We are sticking to conda-build's definition for the time being.
+> For example, `conda` MatchSpecs allow specifying a channel, a build number (in square brackets) and many additional things.
+> We might homogenize these things later on.
+
+
 #### `RunExports` section
 
 The different kind of run exports that can be specified are:
 
 ```yaml
 # strong run exports go from build -> host & -> run
-strong: [MatchSpec]
+strong: [CondaBuildSpec]
 # weak run exports go from host -> run
-weak: [MatchSpec]
+weak: [CondaBuildSpec]
 # strong constraints adds a run constraint from build -> run_constraints (was `strong_constrains`)
-strong_constraints: [MatchSpec]
+strong_constraints: [CondaBuildSpec]
 # weak constraints adds a run constraint from host -> run_constraints (was `weak_constrains`)
-weak_constraints: [MatchSpec]
+weak_constraints: [CondaBuildSpec]
 # noarch run exports go from host -> run for `noarch` builds
-noarch: [MatchSpec]
+noarch: [CondaBuildSpec]
 ```
 
 ### Test section
@@ -372,13 +394,13 @@ test:
   # files (from the work directory) to include with the tests
   source_files: [glob]
   # requirements at test time, in the target_platform architecture
-  requires: [MatchSpec]
+  requires: [CondaBuildSpec]
   # commands to execute
   commands: [string]
   # imports to execute with python (e.g. `import <string>`)
   imports: [string]
   # downstream packages that should be tested against this package
-  downstreams: [MatchSpec]
+  downstreams: [CondaBuildSpec]
 ```
 
 </details>
@@ -395,7 +417,7 @@ tests: [TestElement]
 
 #### Command test element
 
-The command test element renders to a single folder with a `test_time_dependencies.json` with two keys (`build` and `run`) that contain the raw "MatchSpec" strings.
+The command test element renders to a single folder with a `test_time_dependencies.json` with two keys (`build` and `run`) that contain the raw "CondaBuildSpec" strings.
 The `script` is rendered to a `script.json` that contains the `interpreter`, `env` and other keys (as defined in the `Script` section).
 Files are copied into the `info/tests/<index>` folder.
 
@@ -406,9 +428,9 @@ script: string | [string] | Script
 # optional extra requirements
 requirements:
   # extra requirements with build_platform architecture (emulators, ...)
-  build: [MatchSpec]
+  build: [CondaBuildSpec]
   # extra run dependencies
-  run: [MatchSpec]
+  run: [CondaBuildSpec]
 
 # extra files to add to the package for the test
 files:
@@ -430,10 +452,10 @@ python:
 
 #### Downstream test element
 
-The downstream test element renders to a `test_downstream.json` file that contains the `downstream` key with the raw "MatchSpec" string.
+The downstream test element renders to a `test_downstream.json` file that contains the `downstream` key with the raw "CondaBuildSpec" string.
 
 ```yaml
-downstream: MatchSpec
+downstream: CondaBuildSpec
 ```
 
 ## Outputs section
