@@ -343,11 +343,11 @@ The different kind of run exports that can be specified are:
 ```yaml
 # strong run exports go from build -> host & -> run
 strong: [MatchSpec]
-# weak run exports go from host -> run or build -> host
+# weak run exports go from host -> run
 weak: [MatchSpec]
-# strong constrains adds a run constraint from build -> run_constraints (was `strong_constrains`)
+# strong constraints adds a run constraint from build -> run_constraints (was `strong_constrains`)
 strong_constraints: [MatchSpec]
-# weak constrains adds a run constraint from host -> run_constrained (was `weak_constrains`)
+# weak constraints adds a run constraint from host -> run_constraints (was `weak_constrains`)
 weak_constraints: [MatchSpec]
 # noarch run exports go from host -> run for `noarch` builds
 noarch: [MatchSpec]
