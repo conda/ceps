@@ -317,15 +317,15 @@ SVN and HG (mercury) source definitions are removed as they are not relevant any
 ```yaml
 requirements:
   # build time dependencies, in the build_platform architecture
-  build: [CondaBuildSpec]
+  build: [PackageSelector]
   # dependencies to link against, in the target_platform architecture
-  host: [CondaBuildSpec]
+  host: [PackageSelector]
   # the section below is copied into the index.json and required at package installation
-  run: [CondaBuildSpec]
+  run: [PackageSelector]
   # constrain optional packages (was `run_constrained`)
-  run_constraints: [CondaBuildSpec]
+  run_constraints: [PackageSelector]
   # the run exports of this package
-  run_exports: [CondaBuildSpec] OR RunExports
+  run_exports: [PackageSelector] OR RunExports
 
   # the run exports to ignore when calculating the requirements
   ignore_run_exports:
@@ -336,9 +336,9 @@ requirements:
 
 ```
 
-#### CondaBuildSpec
+#### PackageSelector
 
-A `CondaBuildSpec` in the recipe is currently defined as a string with up to two whitespaces, looking like this:
+A `PackageSelector` in the recipe is currently defined as a string with up to two whitespaces, looking like this:
 
 ```
 <name> <version> <build_string>
@@ -364,15 +364,15 @@ The different kind of run exports that can be specified are:
 
 ```yaml
 # strong run exports go from build -> host & -> run
-strong: [CondaBuildSpec]
+strong: [PackageSelector]
 # weak run exports go from host -> run
-weak: [CondaBuildSpec]
+weak: [PackageSelector]
 # strong constraints adds a run constraint from build -> run_constraints (was `strong_constrains`)
-strong_constraints: [CondaBuildSpec]
+strong_constraints: [PackageSelector]
 # weak constraints adds a run constraint from host -> run_constraints (was `weak_constrains`)
-weak_constraints: [CondaBuildSpec]
+weak_constraints: [PackageSelector]
 # noarch run exports go from host -> run for `noarch` builds
-noarch: [CondaBuildSpec]
+noarch: [PackageSelector]
 ```
 
 ### Test section
@@ -394,13 +394,13 @@ test:
   # files (from the work directory) to include with the tests
   source_files: [glob]
   # requirements at test time, in the target_platform architecture
-  requires: [CondaBuildSpec]
+  requires: [PackageSelector]
   # commands to execute
   commands: [string]
   # imports to execute with python (e.g. `import <string>`)
   imports: [string]
   # downstream packages that should be tested against this package
-  downstreams: [CondaBuildSpec]
+  downstreams: [PackageSelector]
 ```
 
 </details>
@@ -417,7 +417,7 @@ tests: [TestElement]
 
 #### Command test element
 
-The command test element renders to a single folder with a `test_time_dependencies.json` with two keys (`build` and `run`) that contain the raw "CondaBuildSpec" strings.
+The command test element renders to a single folder with a `test_time_dependencies.json` with two keys (`build` and `run`) that contain the raw "PackageSelector" strings.
 The `script` is rendered to a `script.json` that contains the `interpreter`, `env` and other keys (as defined in the `Script` section).
 Files are copied into the `info/tests/<index>` folder.
 
@@ -428,9 +428,9 @@ script: string | [string] | Script
 # optional extra requirements
 requirements:
   # extra requirements with build_platform architecture (emulators, ...)
-  build: [CondaBuildSpec]
+  build: [PackageSelector]
   # extra run dependencies
-  run: [CondaBuildSpec]
+  run: [PackageSelector]
 
 # extra files to add to the package for the test
 files:
@@ -452,10 +452,10 @@ python:
 
 #### Downstream test element
 
-The downstream test element renders to a `test_downstream.json` file that contains the `downstream` key with the raw "CondaBuildSpec" string.
+The downstream test element renders to a `test_downstream.json` file that contains the `downstream` key with the raw "PackageSelector" string.
 
 ```yaml
-downstream: CondaBuildSpec
+downstream: PackageSelector
 ```
 
 ## Outputs section
