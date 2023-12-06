@@ -173,7 +173,7 @@ build:
     ignore_binary_files: bool (defaults to true on Unix and (always) false on Windows)
 
   # settings for shared libraries and executables
-  shared_libraries:
+  dynamic_linking:
     # linux only, list of rpaths (was rpath)
     rpaths: [path] (defaults to ['lib/'])
 
@@ -196,7 +196,7 @@ build:
     overlinking_behavior: OneOf<"ignore" | "error"> # (defaults to "error")
 
   # Actions that are run after linking or before unlinking
-  link_options:
+  install_options:
     # copies fn[.bat/.sh] to the appropriate location, adds `.bat` or `.sh` to the filename
     # script to run after linking
     # was `post_link`
@@ -227,7 +227,6 @@ build:
   # marked as "still experimental"
   # pin_depends: Enum<"record" | "strict">
   # overlinking_ignore_patterns: [glob]
-
   # defaults to patchelf (only cudatoolkit is using `lief` for some reason)
   # rpaths_patcher: None
 ```
