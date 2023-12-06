@@ -64,6 +64,16 @@ To benefit from autocompletion, and other LSP features in editors, we can add a 
 
 ## Context section
 
+The context section is a dictionary with key-value pairs that can be used for string interpolation.
+The right-hand side of the key-value pair is a scalar (bool, number or string).
+
+The variables can reference other variables from the context section.
+
+> ![NOTE]
+> The order of the keys is not enforced by the YAML standard. We expect parsers to parse maps (especially the context section)
+> in the order they are defined in the file. However, we do not require this behavior for the recipe to be valid to conform to the YAML standard.
+> Given this, implementations need to ensure topological sorting is done before string interpolation.
+
 ```yaml
 # The context dictionary defines arbitrary key-value pairs for Jinja interpolation
 # and replaces the {% set ... %} commands commonly used in recipes
@@ -72,6 +82,8 @@ context:
   # note that we can reference previous values, that means that they are rendered in order
   other_variable: test_${{ variable }}
 ```
+
+
 
 ## Package section
 
