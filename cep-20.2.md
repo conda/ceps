@@ -89,20 +89,21 @@ package:
 ```yaml
 build:
   # the build number
-  number: Option<integer>, defaults to 0
+  number: integer  # defaults to 0
 
   # the build string. This is usually ommited (can use `${{ hash }}` variable here)
-  string: Option<string>, defaults to a build string made from "package hash & build number"
+  string: string  # defaults to a build string made from "package hash & build number"
 
-  # A list of conditions under which to skip the build of this package (they are joined by `or`)
+  # A list of Jinja conditions under which to skip the build of this package (they are joined by `or`)
+  # What is valid in a an `if:` condition is valid
   skip: [list of expressions]
 
   # wether the package is a noarch package, and if yes, wether it is "generic" or "python"
-  noarch: Option<"generic" | "python">
+  noarch: OneOf<"generic" | "python">
 
   # script can be a single string or a list of strings
   # if script is a single string and ends with `.sh` or `.bat`, then we interpret it as a file
-  script: str | [str] | Script
+  script: string | [string] | Script
 
   # would love to get rid of this:
   # merge the build and host environments (used in many R packages on Windows)
@@ -138,9 +139,6 @@ build:
 
     # skip compiling pyc for some files (was `skip_compile_pyc`)
     skip_pyc_compilation: [glob]
-
-    # This is only used in the pip feedstock.
-    disable_pip: bool (defaults to false)
 
   # settings concerning the prefix detection in files
   prefix_detection:
@@ -180,10 +178,10 @@ build:
     rpath_allowlist: [glob]
 
     # what to do when detecting overdepending
-    overdepending_behavior: str # one of "ignore" or "error" (defaults to "error")
+    overdepending_behavior: OneOf<"ignore" | "error"> # (defaults to "error")
 
     # what to do when detecting overlinking
-    overlinking_behavior: str # one of "ignore" or "error" (defaults to "error")
+    overlinking_behavior: OneOf<"ignore" | "error"> # (defaults to "error")
 
   # Actions that are run after linking or before unlinking
   link_options:
@@ -213,7 +211,7 @@ build:
   # provides_features: dict
   # preferred_env: str
   # preferred_env_executable_paths: list
-
+  # disable_pip: bool
   # marked as "still experimental"
   # pin_depends: Enum<"record" | "strict">
   # overlinking_ignore_patterns: [glob]
@@ -227,17 +225,17 @@ build:
 ```yaml
 script:
   # the interpreter to use for the script
-  interpreter: str  # defaults to bash on UNIX and cmd.exe on Windows
+  interpreter: string  # defaults to bash on UNIX and cmd.exe on Windows
   # the script environment. You can use Jinja to pass through environment variables
   # with the `env` key (`${{ env.get("MYVAR") }}`).
-  env: {str: str}
+  env: {string: string}
   # secrets that are set as env variables but never shown in the logs or the environment
-  secrets: [str]
+  secrets: [string]
   # The file to use as the script. Automatically adds `bat` or `sh` to the filename
   # on Windows or UNIX respectively (if no file extension is given).
-  file: str  # build.sh  
+  file: string  # build.sh or build.bat
   # A string or list of strings that is the script contents (mutually exclusive with `file`)
-  content: str | [str]
+  content: string | [string]
 ```
 
 ## Source section
@@ -256,7 +254,7 @@ url: url | [url]
 # destination folder in work directory
 target_directory: path
 # rename the downloaded file to this name
-file_name: str
+file_name: string
 # hash of the file
 sha256: hex string
 # legacy md5 sum of the file (test both, prefer sha256)
@@ -281,7 +279,7 @@ use_gitignore: bool (defaults to true)
 # destination folder
 target_directory: path
 # rename the downloaded file to this name
-file_name: str
+file_name: string
 # absolute or relative path from recipe file
 patches: [path]
 ```
@@ -484,7 +482,7 @@ outputs:
     requirements:
       # same definition as top level
 
-    # as top level, by default merged from outer recipe
+    # same definitions as on top level, by default merged from outer recipe
     about:
     source:
     test:
