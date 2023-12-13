@@ -126,6 +126,9 @@ build:
   # as part of some other host dependency
   always_include_files: [path]
 
+  # do not soft- or hard-link these files, but always copy them was `no_link`
+  always_copy_files: [glob]
+
   variant:
     # Keys to forcibly use for the variant computation (even if they are not in the dependencies)
     use_keys: [string]
@@ -195,23 +198,6 @@ build:
     # what to do when detecting overlinking
     overlinking_behavior: OneOf<"ignore" | "error"> # (defaults to "error")
 
-  # Actions that are run after linking or before unlinking
-  install_options:
-    # copies fn[.bat/.sh] to the appropriate location, adds `.bat` or `.sh` to the filename
-    # script to run after linking
-    # was `post_link`
-    post_link_script: string
-    # script to run before unlinking
-    # was `pre_unlink`
-    pre_unlink_script: string
-    # message to show before linking (note: moved from `about`)
-    pre_link_message: string
-
-    # category: package or packaging?
-    # do not soft- or hard-link these files, but always copy them
-    # was `no_link`
-    always_copy_files: [glob]
-
   # REMOVED:
   # pre-link: string (was deprecated for a long time)
   # Wether to include the recipe or not in the final package - should be specified on command line or other config file?
@@ -229,6 +215,9 @@ build:
   # overlinking_ignore_patterns: [glob]
   # defaults to patchelf (only cudatoolkit is using `lief` for some reason)
   # rpaths_patcher: None
+  # post-link: path
+  # pre-unlink: path
+  # pre-link: path
 ```
 
 ### Script section
