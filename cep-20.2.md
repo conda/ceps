@@ -441,11 +441,13 @@ files:
 #### Python test element
 
 The python test element renders a `test_import.py` file that contains the imports to test.
+It also automatically runs the `pip check` command to check for missing dependencies.
 
 ```yaml
 python:
   # list of imports to try
   imports: [string]
+  pip_check: bool  # defaults to true
 ```
 
 #### Downstream test element
@@ -485,7 +487,7 @@ outputs:
     # same definitions as on top level, by default merged from outer recipe
     about:
     source:
-    test:
+    tests:
 ```
 
 Before the build, the outputs are topologically sorted by their dependencies. Each output acts as an independent recipe.
@@ -591,7 +593,7 @@ requirements:
   run_constraints:
     - xsimd >=8.0.3,<10
 
-test:
+tests:
   - script:
       - if: unix
         then:
@@ -689,7 +691,7 @@ outputs:
           - if: win
             then: python
 
-    test:
+    tests:
       - script:
           - if: unix
             then:
@@ -753,7 +755,7 @@ outputs:
         from_package:
           - spdlog
 
-    test:
+    tests:
       - python:
           imports:
             - libmambapy
@@ -786,7 +788,7 @@ outputs:
         - conda >=4.14,<23.4
         - ${{ pin_subpackage('libmambapy', exact=True) }}
 
-    test:
+    tests:
       - python:
           imports: [mamba]
 
