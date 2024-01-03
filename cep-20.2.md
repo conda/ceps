@@ -142,6 +142,7 @@ build:
 
   # settings concerning only Python
   python:
+    # List of strings, where each string follows this format:
     # PythonEntryPoint: `bsdiff4 = bsdiff4.cli:main_bsdiff4`
     entry_points: [PythonEntryPoint]
 
