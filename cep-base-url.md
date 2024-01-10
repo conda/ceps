@@ -25,7 +25,7 @@ A minimal `repodata.json` looks like this.
 ```
 {"info": {"subdir": "linux-64"},
  "packages": {},
- "packages.conda": {"package-name.conda":{...}},
+ "packages.conda": {"some-package-filename.conda":{...}},
  "removed": [],
  "repodata_version": 1}
 ```
@@ -35,12 +35,13 @@ Add `base_url` to the `info` object. Increment `repodata_version`.
 ```
 {"info": {"subdir": "...", "base_url":"https://repo.anaconda.com/repo/main/linux-64/"},
  "packages": {},
- "packages.conda": {"package-name.conda":{...}},
+ "packages.conda": {"some-package-filename.conda":{...}},
  "removed": [],
  "repodata_version": 2}
  ```
 
-Append `base_url` and `package-name.conda` when downloading a package.
+Prepend `base_url` to the package filename when composing a download URL for a package.
+For the example above the resulting download URL would be `https://repo.anaconda.com/repo/main/linux-64/some-package.conda`.
 
 `base_url` can be an absolute or a relative URL.
 
