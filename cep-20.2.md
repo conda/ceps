@@ -6,7 +6,7 @@
 <tr><td> Author(s) </td><td> Wolf Vollprecht &lt;wolf@prefix.dev&gt;</td></tr>
 <tr><td> Created </td><td> May 23, 2023</td></tr>
 <tr><td> Updated </td><td> May 23, 2023</td></tr>
-<tr><td> Discussion </td><td>  </td></tr>
+<tr><td> Discussion </td><td> https://github.com/conda-incubator/ceps/pull/56 </td></tr>
 <tr><td> Implementation </td><td>https://github.com/prefix-dev/rattler-build</td></tr>
 </table>
 
