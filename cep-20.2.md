@@ -25,7 +25,7 @@ and types in a single document and document them. This is part of a larger effor
 
 A discussion was started on what a new recipe spec could or should look like.
 The fragments of this discussion can be found here:
-https://github.com/mamba-org/conda-specs/blob/master/proposed_specs/recipe.md
+https://github.com/mamba-org/conda-specs/blob/7b53425caa11357487cba3fa9c7397744edb41f8/proposed_specs/recipe.md
 The reason for a new spec are:
 
 - Make it easier to parse ("pure yaml"). conda-build uses a mix of comments and
