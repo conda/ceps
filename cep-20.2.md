@@ -59,7 +59,7 @@ schema_version: 1 # integer
 To benefit from autocompletion, and other LSP features in editors, we can add a schema URL to the recipe.
 
 ```yaml
-# yaml-language-server: $schema=https://raw.githubusercontent.com/prefix-dev/recipe-format/main/schema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/prefix-dev/recipe-format/73cd2eed94c576213c5f25ab57adf6d8c83e792a/schema.json
 ```
 
 ## Context section
