@@ -1,11 +1,11 @@
 # A new recipe format – part 2 - the allowed keys & values
 
 <table>
-<tr><td> Title </td><td> A new recipe format - values </td>
+<tr><td> Title </td><td> A new recipe format – part 2 - the allowed keys & values </td>
 <tr><td> Status </td><td> Proposed</td></tr>
 <tr><td> Author(s) </td><td> Wolf Vollprecht &lt;wolf@prefix.dev&gt;</td></tr>
 <tr><td> Created </td><td> May 23, 2023</td></tr>
-<tr><td> Updated </td><td> May 23, 2023</td></tr>
+<tr><td> Updated </td><td> Jan 3, 2024</td></tr>
 <tr><td> Discussion </td><td> https://github.com/conda-incubator/ceps/pull/56 </td></tr>
 <tr><td> Implementation </td><td>https://github.com/prefix-dev/rattler-build</td></tr>
 </table>
@@ -26,15 +26,15 @@ and types in a single document and document them. This is part of a larger effor
 A discussion was started on what a new recipe spec could or should look like.
 The fragments of this discussion can be found here:
 https://github.com/mamba-org/conda-specs/blob/7b53425caa11357487cba3fa9c7397744edb41f8/proposed_specs/recipe.md
-The reason for a new spec are:
+The reasons for a new spec are:
 
 - Make it easier to parse ("pure yaml"). conda-build uses a mix of comments and
   jinja to achieve a great deal of flexibility, but it's hard to parse the
   recipe with a computer
-- iron out some inconsistencies around multiple outputs (build vs. build/script
+- Iron out some inconsistencies around multiple outputs (`build` vs. `build/script`
   and more)
-- remove any need for recursive parsing & solving
-- cater to needs for automation and dependency tree analysis via a determinstic
+- Remove any need for recursive parsing & solving
+- Cater to needs for automation and dependency tree analysis via a deterministic
   format
 
 ## Major differences with conda-build
@@ -69,7 +69,7 @@ The right-hand side of the key-value pair is a scalar (bool, number or string).
 
 The variables can reference other variables from the context section.
 
-> ![NOTE]
+> [!NOTE]
 > The order of the keys is not enforced by the YAML standard. We expect parsers to parse maps (especially the context section)
 > in the order they are defined in the file. However, we do not require this behavior for the recipe to be valid to conform to the YAML standard.
 > Given this, implementations need to ensure topological sorting is done before string interpolation.
@@ -103,11 +103,11 @@ build:
   # the build number
   number: integer  # defaults to 0
 
-  # the build string. This is usually ommited (can use `${{ hash }}` variable here)
+  # the build string. This is usually omitted (can use `${{ hash }}` variable here)
   string: string  # defaults to a build string made from "package hash & build number"
 
   # A list of Jinja conditions under which to skip the build of this package (they are joined by `or`)
-  # What is valid in a an `if:` condition is valid
+  # What is valid in an `if:` condition is valid
   skip: [list of expressions]
 
   # wether the package is a noarch package, and if yes, wether it is "generic" or "python"
@@ -117,7 +117,6 @@ build:
   # if script is a single string and ends with `.sh` or `.bat`, then we interpret it as a file
   script: string | [string] | Script
 
-  # would love to get rid of this:
   # merge the build and host environments (used in many R packages on Windows)
   # was `merge_build_host`
   merge_build_and_host_envs: bool (defaults to false)
@@ -201,8 +200,7 @@ build:
 
   # REMOVED:
   # pre-link: string (was deprecated for a long time)
-  # Wether to include the recipe or not in the final package - should be specified on command line or other config file?
-  # include_recipe: bool (defaults to true)
+  # Whether to include the recipe or not in the final package - should be specified on command line or other config file?
   # noarch_python: bool
   # features: list
   # msvc_compiler: str
@@ -231,6 +229,7 @@ script:
   # with the `env` key (`${{ env.get("MYVAR") }}`).
   env: {string: string}
   # secrets that are set as env variables but never shown in the logs or the environment
+  # The variables are taken from the parent environment by name (e.g. `MY_SECRET`)
   secrets: [string]
   # The file to use as the script. Automatically adds `bat` or `sh` to the filename
   # on Windows or UNIX respectively (if no file extension is given).
@@ -275,7 +274,8 @@ A path can be either:
 ```yaml
 # file, absolute or relative to recipe file
 path: path
-# if there is a gitignore, adhere to it (or not)
+# if there is a gitignore, adhere to it and ignore files that are matched by the ignore rules
+# i.e. only copy the subset of files that are not ignored by the rules
 use_gitignore: bool (defaults to true)
 # destination folder
 target_directory: path
@@ -493,7 +493,7 @@ outputs:
 
 Before the build, the outputs are topologically sorted by their dependencies. Each output acts as an independent recipe.
 
-> **Note**
+> [!NOTE]
 > A previous version contained a idea for a "cache-only" output. We've moved that to a future CEP.
 
 ### Aside: variant computation for multiple outputs
@@ -586,7 +586,7 @@ requirements:
     - ${{ compiler('cxx') }}
     - cmake
     - if: unix
-      value: make
+      then: make
   host:
     - xtl >=0.7,<0.8
   run:
@@ -603,7 +603,7 @@ tests:
           - test -f ${PREFIX}/share/cmake/xtensor/xtensorConfig.cmake
           - test -f ${PREFIX}/share/cmake/xtensor/xtensorConfigVersion.cmake
       - if: win
-        value:
+        then:
           - if not exist %LIBRARY_PREFIX%\include\xtensor\xarray.hpp (exit 1)
           - if not exist %LIBRARY_PREFIX%\share\cmake\xtensor\xtensorConfig.cmake (exit 1)
           - if not exist %LIBRARY_PREFIX%\share\cmake\xtensor\xtensorConfigVersion.cmake (exit 1)
