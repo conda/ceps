@@ -764,9 +764,8 @@ outputs:
       - script:
           - python -c "import libmambapy._version; assert libmambapy._version.__version__ == '${{ libmambapy_version }}'"
 
-  - package:
-      name: mamba
-      version: ${{ mamba_version }}
+  - name: mamba
+    # version: always the same as top-level
     build:
       script: ${{ "build_mamba.sh" if unix else "build_mamba.bat" }}
       string: py${{ CONDA_PY }}h${{ PKG_HASH }}_${{ PKG_BUILDNUM }}
