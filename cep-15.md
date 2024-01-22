@@ -3,8 +3,8 @@
 <tr><td> Status </td><td> Draft </td></tr>
 <tr><td> Author(s) </td><td> Daniel Holth &lt;dholth@anaconda.com&gt;</td></tr>
 <tr><td> Created </td><td> Aug 24, 2023</td></tr>
-<tr><td> Updated </td><td> Aug 24, 2023</td></tr>
-<tr><td> Discussion </td><td>  </td></tr>
+<tr><td> Updated </td><td> Jan 22, 2024</td></tr>
+<tr><td> Discussion </td><td> https://github.com/conda-incubator/ceps/pull/61 </td></tr>
 <tr><td> Implementation </td><td>  </td></tr>
 </table>
 
