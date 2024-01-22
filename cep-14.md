@@ -516,13 +516,13 @@ For example, we can have three outputs: `libmamba`, `libmambapy`, and `mamba`.
 - `libmambapy` -> creates multiple packages, one per python version
 - `mamba` -> creates multiple packages (one per python + libmambapy version)
 
-<img width="1527" alt="Screenshot 2023-11-01 at 15 48 59" src="https://github.com/wolfv/ceps/assets/885054/3ddb7ddb-f563-4842-91d6-d9f8c91b83e0">
+<img width="1527" alt="img-1" src="https://github.com/conda-incubator/ceps/assets/885054/b8292fd0-bd8d-4a55-831b-d32b7db2d61f">
 
 This has historically been an issue in conda-build, as it didn't take into account `pin_subpackage` edges as "variants" and
 sometimes created the same hashes for two different outputs. E.g. in the following situation, conda-build would only create a single
 `foofoo` package (instead of two variants that exactly pin two different libfoo packages):
 
-<img width="2065" alt="Screenshot 2023-11-01 at 15 47 49" src="https://github.com/wolfv/ceps/assets/885054/0c3ec263-0d00-45a7-b6fc-84e9b8daffa6">
+<img width="2065" alt="img-2" src="https://github.com/conda-incubator/ceps/assets/885054/b5e80f64-28ef-45fd-afbb-91e94dda5eeb">
 
 ## About section
 
