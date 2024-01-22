@@ -2,10 +2,10 @@
 
 <table>
 <tr><td> Title </td><td> A new recipe format – part 2 - the allowed keys & values </td>
-<tr><td> Status </td><td> Proposed</td></tr>
+<tr><td> Status </td><td> Accepted</td></tr>
 <tr><td> Author(s) </td><td> Wolf Vollprecht &lt;wolf@prefix.dev&gt;</td></tr>
 <tr><td> Created </td><td> May 23, 2023</td></tr>
-<tr><td> Updated </td><td> Jan 3, 2024</td></tr>
+<tr><td> Updated </td><td> Jan 22, 2024</td></tr>
 <tr><td> Discussion </td><td> https://github.com/conda-incubator/ceps/pull/56 </td></tr>
 <tr><td> Implementation </td><td>https://github.com/prefix-dev/rattler-build</td></tr>
 </table>
@@ -15,6 +15,9 @@
 We propose a new recipe format that is heavily inspired by conda-build. The main
 change is a pure YAML format without arbitrary Jinja or comments with semantic
 meaning.
+
+This document builds upon CEP 13, which defines the YAML syntax for the recipe.
+In this CEP, we define the allowed keys and values for the recipe.
 
 ## Motivation
 
@@ -87,6 +90,8 @@ context:
 
 ## Package section
 
+Required for recipes without outputs section. This is the only required section (for single-output recipes).
+
 ```yaml
 package:
   # The name of the package
@@ -111,7 +116,8 @@ build:
   skip: [list of expressions]
 
   # wether the package is a noarch package, and if yes, wether it is "generic" or "python"
-  noarch: OneOf<"generic" | "python">
+  # defaults to null ("arch" package)
+  noarch: Option<OneOf<"generic" | "python">>
 
   # script can be a single string or a list of strings
   # if script is a single string and ends with `.sh` or `.bat`, then we interpret it as a file
