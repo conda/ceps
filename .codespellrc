@@ -1,0 +1,4 @@
+# See: https://github.com/codespell-project/codespell#using-a-config-file
+[codespell]
+# In case of a false positive, add the problematic word, in all lowercase, to a comma-separated list here:
+ignore-words-list = lief

@@ -38,7 +38,7 @@ The reason for a new spec are:
 - iron out some inconsistencies around multiple outputs (build vs. build/script
   and more)
 - remove any need for recursive parsing & solving
-- cater to needs for automation and dependency tree analysis via a determinstic
+- cater to needs for automation and dependency tree analysis via a deterministic
   format
 
 ## Major differences with conda-build
