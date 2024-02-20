@@ -6,6 +6,26 @@ To better allow community members to provide feedback and proposals
 for conda's implementation, all major changes should be submitted as
 **Conda Enhancement Proposals (CEP)**.
 
+## Accepted CEPS:
+
+| CEP | Title |
+| --- | ------- |
+| [1](cep-1.md) | CEP Purpose and Guidelines  |
+| [2](cep-2.md) | Add plugin architecture to conda |
+| [3](cep-3.md) | Using the Mamba solver in conda |
+| [4](cep-4.md) | Implement initial conda plugin mechanism |
+| 5 | Does not exist |
+| [6](cep-6.md) | Add Channel Notices to conda
+| 7 | Does not exist |
+| [8](cep-8.md) | Conda Release Schedule |
+| [9](cep-9.md) | Conda Deprecation Schedule |
+| [10](cep-10.md) | Conda Version Support |
+| [11](cep-11.md) | Define the menuinst standard |
+| [12](cep-12.md) | Serving run_exports metadata in conda channels |
+| [13](cep-13.md) | A new recipe format - part 1 |
+| [14](cep-14.md) | A new recipe format – part 2 - the allowed keys & values |
+| [15](cep-15.md) | Hosting repodata.json and packages separately by adding a base_url property. |
+
 ## References
 
 These proposals are similar to conda-forge's [CFEP](https://github.com/conda-forge/cfep),
