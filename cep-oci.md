@@ -50,7 +50,7 @@ All versions of the repodata should also be tagged  with a timestamp of the foll
 
 The mediaType for the raw `repodata.json` file is `application/vnd.conda.repodata.v1+json`. However, for large repositories it's advised to store the `zstd` encoded repodata file with the mediaType `application/vnd.conda.repodata.v1+json+zst` as an additional layer in `<channel>/<subdir>/repodata.json`.
 
-Other encoding are also accepted:
+Other encodings are also accepted:
 
 - `application/vnd.conda.repodata.v1+json+gzip`
 - `application/vnd.conda.repodata.v1+json+bz2`
