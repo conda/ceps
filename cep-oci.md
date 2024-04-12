@@ -48,7 +48,7 @@ On an OCI registry it should be stored under `<channel>/<subdir>/repodata.json`.
 The repodata file should have one entry that has the `latest` tag. This entry should point to the latest version of the repodata.
 All versions of the repodata should also be tagged  with a timestamp of the following format: `YYYY.MM.DD.HH.MM`, e.g. `2024.04.12.07.06`.
 
-The mediaType for the raw `repodata.json` file is `application/vnd.conda.repodata.v1+json`. However, for large repositories it's advised to store the `zstd` encoded repodata file with the mediaType `application/vnd.conda.repodata.v1+json+zst`.
+The mediaType for the raw `repodata.json` file is `application/vnd.conda.repodata.v1+json`. However, for large repositories it's advised to store the `zstd` encoded repodata file with the mediaType `application/vnd.conda.repodata.v1+json+zst` as an additional layer in `<channel>/<subdir>/repodata.json`.
 
 Other encoding are also accepted:
 
