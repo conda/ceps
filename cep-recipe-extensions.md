@@ -31,3 +31,18 @@ build:
       regex: "/sysroot/"
       replacement: "$${PREFIX}/"
 ```
+
+## Globs, positive and negative
+
+Following some community discussion we would like to extend the recipe format in such a way that anywhere where a list of globs is accepted, we alternatively accept a dictionary with `include` and `exclude` keys. The values of these keys are lists of globs that are included or excluded respectively.
+
+For example:
+
+```yaml
+files:
+  include:
+    - "*.txt"
+  exclude:
+    - "foo.txt"
+```
+
