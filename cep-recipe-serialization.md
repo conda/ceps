@@ -78,10 +78,6 @@ Some key things to note:
   - compiler: c
   ```
 
-> [!NOTE] Should double check on the rendered values of the following functions,
-> and fill out example for `pin_compatible`. Should remove double
-> `pin_subpackage` in rattler-build.
-
 - Pin expressions like ${{ pin_subpackage('libtool', max_pin='x.x') }} are
   rendered to:
 
@@ -89,11 +85,10 @@ Some key things to note:
   - ${{ pin_subpackage('libtool', exact=true) }}
   # becomes
   - pin_subpackage:
-      pin_subpackage:
-        name: libtool
-        max_pin: null
-        min_pin: null
-        exact: true
+      name: libtool
+      max_pin: null
+      min_pin: null
+      exact: true
   ```
 
 - For the following:
@@ -107,17 +102,15 @@ Some key things to note:
 
   ```yaml
   - pin_subpackage:
-      pin_subpackage:
-        name: some-pkg-a
-        max_pin: null
-        min_pin: x.x.x
-        exact: false
+      name: some-pkg-a
+      max_pin: null
+      min_pin: x.x.x
+      exact: false
   - pin_compatible:
-      pin_compatible:
-        name: python
-        max_pin: null
-        min_pin: x.x.x
-        exact: false
+      name: python
+      max_pin: null
+      min_pin: x.x.x
+      exact: false
   ```
 
 ### Build configuration section
