@@ -46,3 +46,9 @@ files:
     - "foo.txt"
 ```
 
+The evaluation would go as follows:
+
+- first record all matches for the `include` globs
+- then remove all matches for the `exclude` globs
+
+In conda-build, this is discussed here: [Link to PR 5216](https://github.com/conda/conda-build/pull/5216)
