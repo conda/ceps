@@ -1,6 +1,8 @@
-# Sharded Repodata
+# CEP for Sparse Repodata
 
 We propose a new "repodata" format that can be sparsely fetched. That means, generally, smaller fetches (only fetch what you need) and faster updates of existing repodata (only fetch what has changed).
+
+We also change the encoding from JSON to MSGPACK for faster decoding.
 
 ## Motivation
 
@@ -31,7 +33,7 @@ Finally, the implementation of JLAP is quite complex which makes it hard to adop
 
 ### ZSTD compression
 
-A notable improvement is compressing the `repodata.json` with `zst` and serving that file. In practice this yields a file that is 20% smaller (20-30 Mb for large cases). Although this is still quite a big file its substantially smaller. 
+A notable improvement is compressing the `repodata.json` with `zst` and serving that file. In practice, this yields a file that is 1/5th the size (20-30 Mb for large cases). Although this is still quite a big file it's substantially smaller. 
 
 However, the file still contains all repodata in the channel. This means the file needs to be redownloaded every time anyone adds a single package (even if a user doesnt need that package).
 
@@ -73,7 +75,7 @@ The contents look like the following (written in JSON for readability):
 
 The index is still updated regularly but the file does not increase in size with every package added, only when new package names are added which happens much less often.
 
-For a large case (conda-forge linux-64) this files is 670kb at the time of writing.
+For a large case (conda-forge linux-64) this file is 670kb at the time of writing.
 
 We suggest serving the file with a short lived `Cache-Control` `max-age` header of 60 seconds to an hour but we leave it up to the channel administrator to set a value that works for that channel.
 
