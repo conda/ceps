@@ -27,7 +27,7 @@ With JLAP only the changes to an initially downloaded `repodata.json` file have 
 
 However, in practice patching the original repodata can be a very expensive operation, both in terms of memory and in terms of compute because of the shear amount of data involved.
 
-JLAP also does not save anything with a cold cache because the initial repodata still has to be downloaded. THis is often the case for CI runners.
+JLAP also does not save anything with a cold cache because the initial repodata still has to be downloaded. This is often the case for CI runners.
 
 Finally, the implementation of JLAP is quite complex which makes it hard to adopt for implementers. 
 
@@ -56,7 +56,7 @@ The shard index is a file that is stored under `<shard_base_url>/<subdir>/repoda
 
 The contents look like the following (written in JSON for readability):
 
-```json
+```js
 {
   "version": 1,
   "info": {
@@ -229,7 +229,7 @@ This did yield slightly better compression but we felt it makes it slightly hard
 
 ### Integrating additional data
 
-With the total size of the repodata reduced it becomes feasible to add additional fields directly to the repodata records. Exampels are:
+With the total size of the repodata reduced it becomes feasible to add additional fields directly to the repodata records. Examples are:
 
 - add `purl` as a list of strings (Package URLs to reference to original source of the package) (See: https://github.com/conda-incubator/ceps/pull/63)
 - add `run_exports` as a list of strings (run-exports needed to build the package) (See: https://github.com/conda-incubator/ceps/pull/51)
@@ -247,4 +247,4 @@ They will contain the same format as the `repodata_shards.msgpack.zst` file but 
 
 ### Store `set(dependencies)` at the start of the shards or in a header
 
-To reduce the time it takes to parse a shard and start fetching its dependencies we could also store the set of all dependencies in the file at the start of the shard or in a seperate header. This could enable fetching recursive dependencies while still parsing the records.
+To reduce the time it takes to parse a shard and start fetching its dependencies we could also store the set of all dependencies in the file at the start of the shard or in a separate header. This could enable fetching recursive dependencies while still parsing the records.
