@@ -22,7 +22,7 @@ The current repodata format is a JSON file that contains all the packages in a g
 
 ### JLAP
 
-In a previous CEP, [JLAP](https://github.com/conda-incubator/ceps/pull/20) was introduced. 
+In a previously proposed CEP, [JLAP](https://github.com/conda-incubator/ceps/pull/20) was introduced. 
 With JLAP only the changes to an initially downloaded `repodata.json` file have to be downloaded which means the user drastically saves on bandwidth which in turn makes fetching repodata much faster.
 
 However, in practice patching the original repodata can be a very expensive operation, both in terms of memory and in terms of compute because of the shear amount of data involved.
