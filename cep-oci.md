@@ -27,7 +27,8 @@ For example, a package like `xtensor-0.10.4-h431234.conda` would map to a OCI re
 
 A conda package, in an OCI registry, should ship up to 3 layers:
 
-- The package itself, as a tarball. (mandatory)
+- The package data itself, as a tarball. (mandatory)
+  - This can be either a `.tar.bz2` (v1) or a `.conda` (v2) file, or both as separate layers.
 - The package `info` folder as a gzipped "tar.gz" file.
 - The package `info/index.json` file as a plain JSON file.
 
@@ -48,7 +49,7 @@ It is used by conda to find packages in a channel.
 
 On an OCI registry it should be stored under `<channel>/<subdir>/repodata.json`.
 The repodata file should have one entry that has the `latest` tag. This entry should point to the latest version of the repodata.
-All versions of the repodata should also be tagged  with a UTC timestamp of the following format: `YYYY.MM.DD.HH.MM.SS`, e.g. `2024.04.12.07.06.32`.
+All versions of the repodata should also be tagged with a UTC timestamp of the following format: `YYYY.MM.DD.HH.MM.SS`, e.g. `2024.04.12.07.06.32`.
 
 The mediaType for the raw `repodata.json` file is `application/vnd.conda.repodata.v1+json`. However, for large repositories it's advised to store the `zstd` encoded repodata file with the mediaType `application/vnd.conda.repodata.v1+json+zstd` as an additional layer in `<channel>/<subdir>/repodata.json`. ([ref](https://github.com/opencontainers/image-spec/blob/main/layer.md#gzip-media-types))
 
@@ -67,15 +68,24 @@ The `jlap` file should also be stored under the `<channel>/<subdir>/repodata.jso
 
 A given conda-package is identified by a URL like `<subdir>/<package-name>-<version>-<build>.<ext>` where `<subdir>` is the platform and architecture, `<package-name>` is the name of the package, `<version>` is the version of the package, `<build>` is the build string of the package, and `<ext>` is the extension of the package file.
 
+#### Mapping the package name
+
+> ![NOTE]
+> **Package names in the conda world**
+> The following regex is given by `conda/schemas` for a valid package name: `^[a-z0-9_](?!_)[._-]?([a-z0-9]+(\.|-|_|$))*$`
+> That means, a package can start with an alphanumeric character or a _single_ underscore (not multiple), and can contain dots, dashes, and underscores. It also has to end with a alphanumeric character (cannot end with a dot, dash, or underscore).
+
 To store this package on an OCI registry, we need to map it to a name and tag. The name is `<channel>/<subdir>/<package-name>`. The tag is `<version>-<build>`. There are some special rules for OCI registry names and tags for which we need some mapping. The regex for valid names is as follows:
 
 `[a-z0-9]+((\.|_|__|-+)[a-z0-9]+)*(\/[a-z0-9]+((\.|_|__|-+)[a-z0-9]+)*)*` ([ref](https://github.com/opencontainers/distribution-spec/blob/main/spec.md#pulling-manifests))
 
 The regex expresses that names can only start with an alphanumeric letter.
 
-In `conda`, names can start with an underscore and it is used by conda-forge (e.g. `_libgcc_mutex`). For this reason, we replace a leading underscore with the string `zzz`.
+In `conda`, names can start with an underscore and it is used by conda-forge (e.g. `_libgcc_mutex`). For this reason, we prepend packages with a leading underscore with the string `zzz`. The name would thus be changed to `zzz_libgcc_mutex`.
 
-The tag is the version and build string of the packages, using a `-` as a separator. However, a OCI tag can only contain the following regex:
+#### Mapping the tag
+
+The tag is the version and build string of the packages, using a `-` as a separator. However, a OCI tag has to conform to the following regex:
 
 `[a-zA-Z0-9_][a-zA-Z0-9._-]{0,127}`
 
