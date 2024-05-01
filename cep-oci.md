@@ -70,9 +70,11 @@ A given conda-package is identified by a URL like `<subdir>/<package-name>-<vers
 
 #### Mapping the package name
 
-> ![NOTE]
+> [!NOTE]
 > **Package names in the conda world**
-> The following regex is given by `conda/schemas` for a valid package name: `^[a-z0-9_](?!_)[._-]?([a-z0-9]+(\.|-|_|$))*$`
+> 
+> The following regex is given by [`conda/schemas`](https://github.com/conda/schemas/blob/473708ac97283708d6664cbd89b8049ad1623489/common-1.schema.json#L58-L82) for a valid package name: `^[a-z0-9_](?!_)[._-]?([a-z0-9]+(\.|-|_|$))*$`
+> 
 > That means, a package can start with an alphanumeric character or a _single_ underscore (not multiple), and can contain dots, dashes, and underscores. It also has to end with a alphanumeric character (cannot end with a dot, dash, or underscore).
 
 To store this package on an OCI registry, we need to map it to a name and tag. The name is `<channel>/<subdir>/<package-name>`. The tag is `<version>-<build>`. There are some special rules for OCI registry names and tags for which we need some mapping. The regex for valid names is as follows:
