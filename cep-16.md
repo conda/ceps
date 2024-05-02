@@ -142,6 +142,8 @@ It is a dictionary that contains the following keys:
 The `sha256` and `md5` from the original repodata fields are converted from their hex representation to bytes. 
 This is done to reduce the overall file size of the shards.
 
+Implementers SHOULD ignore unknown keys, this allows adding additional keys to the format in the future without breaking old versions of tools.
+
 Although these files can become relatively large (100s of kilobytes) typically for a large case (conda-forge) these files remaing very small, e.g. 100s of bytes to a couple of kilobytes.
 
 ## <a id="authentication"></a>Authentication
