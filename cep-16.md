@@ -88,8 +88,9 @@ It is a dictionary that contains the following keys:
 
 **Example (written in JSON for readability):**
 
-```json
+```js
 {
+  // dictionary of .tar.bz2 files
   "packages": {
     "rich-10.15.2-pyhd8ed1ab_1.tar.bz2": {
       "build": "pyhd8ed1ab_1",
@@ -114,6 +115,7 @@ It is a dictionary that contains the following keys:
       "version": "10.15.2"
     }
   },
+ // dictionary of .conda files
   "packages.conda": {
     "rich-13.7.1-pyhd8ed1ab_0.conda": {
       "build": "pyhd8ed1ab_0",
@@ -135,7 +137,11 @@ It is a dictionary that contains the following keys:
       "timestamp": 1709150578093,
       "version": "13.7.1"
     }
-  }
+  },
+  // list of strings of keys (filenames) that were removed from either packages or packages.conda
+  "removed": [
+    "rich-10.15.1-pyhd8ed1ab_1.tar.bz2"
+  ]
 }
 ```
 
