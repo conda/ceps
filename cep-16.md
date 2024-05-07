@@ -42,7 +42,7 @@ Because the file is relatively big this means that often a large `max-age` is us
 We propose a "sharded" repodata format. It works by splitting the repodata into multiple files (one per package name) and recursively fetching the "shards".
 
 The shards are stored by the hash of their content (e.g. "content-addressable"). 
-That means that the URL of the shard is derived from the content of the shard. This allows for efficient caching and deduplication of shards on the client. Because the files are content-addressable no round-trip to the server is required to check fressness of individual shards.
+That means that the URL of the shard is derived from the content of the shard. This allows for efficient caching and deduplication of shards on the client. Because the files are content-addressable no round-trip to the server is required to check freshness of individual shards.
 
 Additionally an index file stores the mapping from package name to shard hash.
 
