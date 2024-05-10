@@ -53,7 +53,7 @@ The evaluation would go as follows:
 
 In conda-build, this is discussed here: [Link to PR 5216](https://github.com/conda/conda-build/pull/5216)
 
-## Compression
+## Compression level
 
 There are use cases where it is interesting for a output to set the compression level - for example when packaging pre-compressed data. We would like to extend the recipe format so that each output is able to set a "default" compression level with the following syntax:
 
