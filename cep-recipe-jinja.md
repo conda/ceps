@@ -12,7 +12,7 @@ The function looks as follows:
 ${{ compiler('c') }}
 ```
 
-This would pull in the c_compiler and c_compiler_version from the variant config. The compiler function also adds the target_platform to render to something such as:
+This would pull in the c_compiler and c_compiler_version from the variant config. The compiler function suffixes `{lang}_compiler` with the `target_platform` to render to something such as:
 
 ```
 gcc_linux-64 8.9
