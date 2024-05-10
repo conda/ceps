@@ -4,7 +4,7 @@ This document describes extensions to the recipe specification as merged in cep-
 
 ## The `build.post_process` section
 
-We became aware that the `conda_build_config.yaml` has ways to specify post-processing steps. These are regex replacements that are performed on any new files. 
+The `conda_build_config.yaml` configuration file has ways to specify post-processing steps. These are regex replacements that are performed on any new files. 
 
 Instead of adding these instructions to the `conda_build_config.yaml`, we decided to add a new section to the recipe spec: `build.post_process`. This section is a list of dictionaries, each with the following keys:
 
