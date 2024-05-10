@@ -55,12 +55,11 @@ In conda-build, this is discussed here: [Link to PR 5216](https://github.com/con
 
 ## Compression
 
-There are use cases where it is interesting for a output to set the compression level. For this we would like to implement the following syntax:
+There are use cases where it is interesting for a output to set the compression level - for example when packaging pre-compressed data. We would like to extend the recipe format so that each output is able to set a "default" compression level with the following syntax:
 
 ```yaml
-
 build:
-  compression_level: 1-10
+  compression_level: 1-10  # (integer)
 ```
 
 The compression level maps to the following levels in the `.zstd` and `bz2` formats:
@@ -68,3 +67,4 @@ The compression level maps to the following levels in the `.zstd` and `bz2` form
 - `zstd`: 1-19 (1 = 1, 10 = 19)
 - `bz2`: 1-9 (1 = 1, 10 = 9)
 
+Note that this compression level can still be overriden by the command line. It also does not define wether a `.conda` or `.tar.bz2` file is created.
