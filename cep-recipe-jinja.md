@@ -37,7 +37,7 @@ cxx_compiler_version:
 
 ## The `cdt` function
 
-cdt stands for "core dependency tree" packages. These are repackaged from Centos.
+CDT stands for "core dependency tree" packages. These are repackaged from Centos.
 
 The function expands to the following: 
 
