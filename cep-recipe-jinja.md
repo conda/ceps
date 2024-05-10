@@ -56,7 +56,7 @@ A pin has the following arguments:
 
 - `min_pin`: The lower bound of the dependency spec. This is expressed as a `x.x....` version where the `x` are filled in from the corresponding version of the package. For example, `x.x` would be `1.2` for a package version `1.2.3`. The resulting pin spec would look like `>=1.2` for the `min_pin` argument of `x.x` and a version of `1.2.3` for the package.
 - `max_pin`: This defines the upper bound and follows the same `x.x` semantics but adds `+1` to the last segment. For example, `x.x` would be `1.(2 + 1)` for a package version `1.2.3`. The resulting pin spec would look like `<1.3` for the `max_pin` argument of `x.x` and a version of `1.2.3` for the package.
-- `exact`: This is a boolean that specifies whether the pin should be exact. It defaults to `False`. If `exact` is `True`, the `min_pin` and `max_pin` are irrelevant. We pin to an `==` version and also include the build string exactly (e.g. `==1.2.3=h1234`).
+- `exact`: This is a boolean that specifies whether the pin should be exact. It defaults to `False`. If `exact` is `True`, the `min_pin` and `max_pin` are irrelevant. We pin to a `==` version and also include the build string exactly (e.g. `==1.2.3=h1234`).
 
 #### Example
 
