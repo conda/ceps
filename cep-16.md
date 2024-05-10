@@ -253,7 +253,7 @@ For this we propose to add the following two files:
 - `<channel>/<subdir>/repodata_shards_daily.msgpack.zst`
 - `<channel>/<subdir>/repodata_shards_weekly.msgpack.zst`
 
-They will contain the same format as the `repodata_shards.msgpack.zst` file but only contain the packages that have been updated in the last day or week respectively. The `created_at` field in the index file can be used to determine which file to fetch to make sure that the client has the latest information.
+They will contain the same format as the `repodata_shards.msgpack.zst` file but only contain the packages that have been updated in the last day or week respectively. `null` is used for keys that have been removed. The `created_at` field in the index file can be used to determine which file to fetch to make sure that the client has the latest information.
 
 ### Store `set(dependencies)` at the start of the shards or in a header
 
