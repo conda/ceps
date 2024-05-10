@@ -109,10 +109,6 @@ The `cmp` function is used to compare two versions. It returns `True` if the com
 
 `${{ hash }}` is the variant hash and is useful in the build string computation. This used to be `PKG_HASH` in the old recipe format. Since the `hash` variable depends on the variant computation, it is only available in the `build.string` field and is computed after the entire variant computation is finished.
 
-## The `version_to_buildstring` function
-
-- `${{ python | version_to_buildstring }}` converts a version from the variant to a build string (it removes the `.` character and takes only the first two elements of the version).
-
 ## The `env` object
 
 You can use the `env` object to retrieve environment variables and forward them to your build script. There are two ways to do this:
@@ -122,4 +118,38 @@ You can use the `env` object to retrieve environment variables and forward them 
 
 You can also check for the existence of an environment variable:
 
-- `${{ env.exists("MY_ENV_VAR") }}` will return `true` if the environment variable `MY_ENV_VAR` is set and `false` otherwise.
+- `${{ env.exists("MY_ENV_VAR") }}` will return a boolean `true` if the environment variable `MY_ENV_VAR` is set and `false` otherwise.
+
+## Jinja filters
+
+A feature of `jinja` is called "filters". Filters are functions that can be applied to variables in a template expression.
+The syntax for a filter is `{{ variable | filter_name }}`.
+
+The following Jinja filters are available:
+
+- `replace`: replace a string with another string (e.g. `"{{ 'foo' | replace('oo', 'aa') }}"` will return `"faa"`)
+- `lower`: convert a string to lowercase (e.g. `"{{ 'FOO' | lower }}"` will return `"foo"`)
+- `upper`: convert a string to uppercase (e.g. `"{{ 'foo' | upper }}"` will return `"FOO"`)
+- `int`: convert a string to an integer (e.g. `"{{ '42' | int }}"` will return `42`)
+
+There are more default filters specified here: https://docs.rs/minijinja/latest/minijinja/filters/index.html
+
+> [!NOTE]
+> Should we add all filters from `minijinja` to this spec? Probably ...
+
+### Extra filters for recipes
+
+#### The `version_to_buildstring` filter
+
+- `${{ python | version_to_buildstring }}` converts a version from the variant to a build string (it removes the `.` character and takes only the first two elements of the version).
+For example the following 
+
+```
+context:
+  cuda: "11.2.0"
+
+build:
+  string: ${{ hash }}_cuda${{ cuda_version | version_to_buildstring }}
+```
+
+Would evaluate to a `abc123_cuda112` (assuming the hash was `abc123`).
