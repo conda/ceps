@@ -52,3 +52,19 @@ The evaluation would go as follows:
 - then remove all matches for the `exclude` globs
 
 In conda-build, this is discussed here: [Link to PR 5216](https://github.com/conda/conda-build/pull/5216)
+
+## Compression
+
+There are use cases where it is interesting for a output to set the compression level. For this we would like to implement the following syntax:
+
+```yaml
+
+build:
+  compression_level: 1-10
+```
+
+The compression level maps to the following levels in the `.zstd` and `bz2` formats:
+
+- `zstd`: 1-19 (1 = 1, 10 = 19)
+- `bz2`: 1-9 (1 = 1, 10 = 9)
+
