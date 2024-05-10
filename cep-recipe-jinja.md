@@ -63,7 +63,7 @@ A pin has the following arguments:
 If we consider a package like `numpy-1.21.3-h123456_5` we could apply some pin expressions. 
 
 - `min_pin=x.x, max_pin=x.x` would result in `>=1.21,<1.22`
-- `min_pin=x.x.x,max_pin=x` would result in `>=1.21.3,<2`
+- `min_pin=x.x.x, max_pin=x` would result in `>=1.21.3,<2`
 - `exact=True` would result in `==1.21.3=h123456_5`
 
 
