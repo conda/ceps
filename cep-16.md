@@ -31,7 +31,7 @@ Finally, the implementation of JLAP is quite complex which makes it hard to adop
 
 ### ZSTD compression
 
-A notable improvement is compressing the `repodata.json` with `zst` and serving that file. In practice this yields a file that is 20% smaller (20-30 Mb for large cases). Although this is still quite a big file its substantially smaller. 
+A notable improvement is compressing the `repodata.json` with `zst` and serving that file. In practice this yields a file that is 20% of the original size (20-30 Mb for large cases). Although this is still quite a big file its substantially smaller. 
 
 However, the file still contains all repodata in the channel. This means the file needs to be redownloaded every time anyone adds a single package (even if a user doesnt need that package).
 
