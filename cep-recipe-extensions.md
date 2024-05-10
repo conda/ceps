@@ -67,4 +67,5 @@ The compression level maps to the following levels in the `.zstd` and `bz2` form
 - `zstd`: 1-19 (1 = 1, 10 = 19)
 - `bz2`: 1-9 (1 = 1, 10 = 9)
 
-Note that this compression level can still be overriden by the command line. It also does not define wether a `.conda` or `.tar.bz2` file is created.
+Note that this compression level can still be overridden by the command line.
+It also does not define wether a `.conda` or `.tar.bz2` file is created.
