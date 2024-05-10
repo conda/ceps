@@ -4,7 +4,7 @@ The new recipe format has some Jinja functionalities. We want to specify what fu
 
 ## The compiler function
 
-The compiler function is used to stick together a compiler from {lang}_compiler and {lang}_compiler_version
+The compiler function is used to stick together a compiler from `{lang}_compiler` and `{lang}_compiler_version`
 
 The function looks as follows:
 
