@@ -2,13 +2,15 @@
 
 ## Motivation
 
-We want to specify everything that goes into the final package in a standardized
-format. This defines the structure and contents of the rendered_recipe.yaml file
+As part of the metadata, a package might include the "raw" and "rendered" recipe.
+A rendered recipe is a recipe.yaml file that has all Jinja and if/else logic resolved to the final values.
+
+This CEP defines the structure and contents of the `rendered_recipe.yaml` file
 which captures the complete recipe, build configuration, dependencies and
 sources used to create a conda package.
 
 The goal is to have a single file that contains all the information needed to
-reproduce an exact build of a package. This will enable better reproducibility,
+reproduce the exact build of a package. This will enable better reproducibility,
 provenance tracking, and debugging of conda packages.
 
 ## Storage
@@ -132,13 +134,16 @@ process.
 - Description: The target platform for which the package is being built (e.g.,
   `osx-arm64`).
 
-##### `host_platform`
+##### `host_platform` (remove?)
 
 - Type: string
 - Description: The host platform used for building the package. Usually
   equivalent to `target_platform`, except when the `target_platform` is
   `noarch`. If the `target_platform` is `noarch`, the `host_platform` is the
   platform where the build is being executed.
+
+> [!NOTE] 
+> Actually we might remove this field as we can reconstruct it from the `build_platform` and `target_platform` fields.
 
 ##### `build_platform`
 
@@ -172,9 +177,9 @@ process.
 
 ##### `channels`
 
-- Type: array of strings
-- Description: The conda channels used for resolving dependencies (e.g.,
-  `conda-forge`).
+- Type: array of URLs
+- Description: The URLs to the conda channels that were used to resolve dependencies (e.g., `conda-forge`).
+               Also in the correct order.
 
 ##### `timestamp`
 
@@ -364,7 +369,7 @@ sha256: # computed sha256 hash of the source (this is only added if not in the s
 patches: # list of patches that should be applied to the source
 target_directory: # optional target directory where the source should be extracted
 file_name: # optional file name
-pub use_gitignore: # optional bool wether to use the .gitignore file when copying a directory
+use_gitignore: # optional bool wether to use the .gitignore file when copying a directory
 ```
 
 #### Git source
