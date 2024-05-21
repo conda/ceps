@@ -94,7 +94,7 @@ clang_osx-arm64 12
 msvc_win-64 19.29
 ```
 
-The function thus evaluates to `{compiler}_{target_platform} {compiler_version}`.
+The function `${{ compiler("foo") }}` thus evaluates to `{foo_compiler}_{target_platform} {foo_compiler_version}`.
 
 The variant config could look something like:
 
@@ -156,7 +156,7 @@ The new recipe format has two `pin` expressions:
 - `pin_compatible`
 - `pin_subpackage`
 
-Both follow the same "pinning" mechanism as described next.
+Both follow the same "pinning" mechanism as described next and have the same arguments.
 
 ### Pin definition
 
@@ -174,7 +174,9 @@ If we consider a package like `numpy-1.21.3-h123456_5` we could apply some pin e
 - `min_pin=x.x.x, max_pin=x` would result in `>=1.21.3,<2`
 - `exact=True` would result in `==1.21.3=h123456_5`
 
-## The `pin_compatible` function
+The function should error if `exact` is `True` and `min_pin` or `max_pin` are set.
+
+### The `pin_compatible` function
 
 Pin compatible will pin the dependency to the same version as "previously" resolved in the `host` or `build` environment. This is useful to ensure that the same package is used at run time as was used at build time.
 
@@ -186,9 +188,10 @@ requirements:
     - numpy
   run:
     - ${{ pin_compatible('numpy', exact=True) }}
+    - ${{ pin_compatible('numpy', min_pin='x.x.x', max_pin='x') }}
 ```
 
-## The `pin_subpackage` function
+### The `pin_subpackage` function
 
 Pin subpackage will pin the dependency to the same version as another sub-package from the recipe (or the current package itself).
 This is useful to ensure that multiple outputs from a recipe are linked together or to export the correct `run_exports` for a package.
@@ -217,9 +220,15 @@ For example, it can be used in the following way:
 ```yaml
 requirements:
   - $ {{ "six" if cmp(python, "<3.8") }}
+  - $ {{ "six" if cmp(python, "3.8") }}
+  - $ {{ "six" if cmp(python, "==3.8") }}
+  - $ {{ "six" if cmp(python, "3.8.*") }}
+  - $ {{ "six" if cmp(python, ">=3.8,<3.10") }}
 ```
 
 In this case the value from the `python` _variant_ is used to add or remove optional dependencies. Note that generalizes and replaces selectors from old recipes, such as `# [py38]` or `# [py3k]`.
+
+The version comparison rules follow those of the `conda` version comparison rules.
 
 ## The `hash` variable
 
@@ -248,8 +257,6 @@ The following Jinja filters are available:
 - `lower`: convert a string to lowercase (e.g. `"{{ 'FOO' | lower }}"` will return `"foo"`)
 - `upper`: convert a string to uppercase (e.g. `"{{ 'foo' | upper }}"` will return `"FOO"`)
 - `int`: convert a string to an integer (e.g. `"{{ '42' | int }}"` will return `42`)
-- 
-
 
 There are more filters available as [documented by MiniJinja](https://docs.rs/minijinja/latest/minijinja/filters/index.html).
 
@@ -263,7 +270,7 @@ There are more filters available as [documented by MiniJinja](https://docs.rs/mi
 - `${{ python | version_to_buildstring }}` converts a version from the variant to a build string (it removes the `.` character and takes only the first two elements of the version).
 For example the following 
 
-```
+```yaml
 context:
   cuda: "11.2.0"
 
@@ -273,8 +280,32 @@ build:
 
 Would evaluate to a `abc123_cuda112` (assuming the hash was `abc123`).
 
+### Various remarks
 
---- 
+#### Inline conditionals with Jinja
+
+The new recipe format allows for inline conditionals with Jinja. If they are falsey, and no `else` branch exists, they will render to an empty string (which is, for example in a list or dictionary, equivalent to a YAML `null`).
+
+When we render the recipe, we filter all values that are `null` from the YAML output. This allows us to write and parse the following easily:
+
+```yaml
+requirements:
+  host:
+    - ${{ "numpy" if cuda == "yes" }}
+```
+
+If `cuda` is not equal to yes, the first item of the host requirements will be empty (null) and thus filtered from the final list.
+
+This also works for dictionary keys:
+
+```yaml
+build:
+  number: ${{ 100 if cuda == "yes" }}
+  # or an `else` branch can be used, of course
+  number: ${{ 100 if cuda == "yes" else 0 }}
+```
+
+---
 
 ### Things to decide
 
