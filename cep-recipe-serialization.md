@@ -360,7 +360,7 @@ The following fields are available for each source:
 
 ```yaml
 path: # path to the source
-sha256: # computed sha256 hash of the source (this is added if not in the source description)
+sha256: # computed sha256 hash of the source (this is only added if not in the source entry in the original recipe)
 patches: # list of patches that should be applied to the source
 target_directory: # optional target directory where the source should be extracted
 file_name: # optional file name
