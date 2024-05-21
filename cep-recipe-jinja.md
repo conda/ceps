@@ -1,6 +1,80 @@
 # Jinja functions in recipes
 
-The new recipe format has some Jinja functionalities. We want to specify what functions exist and their expected behavior.
+Historically, conda-recipes have relied on templating with `Jinja` for some "dynamic" functionality. For example, many recipes use the `version` of the package in multiple places (as package version, in the URL and the tests, for example). To make it easy to change recipes, Jinja has been used for some light-weight templating.
+
+The "old" recipe format has allowed arbitrary Jinja syntax (including set, if/else or for loops). The new recipe format only allows a subset of Jinja with the goal of always producing valid YAML files. In this CEP we clarify how Jinja is used in the new recipe format, what Jinja functions are available and how variables can be set and used.
+
+## Jinja in the new recipe format
+
+The new recipe format uses a subset of Jinja. Specifically, only "variable" expressions are allowed (no blocks such as `set`, `for` loops, `if`/`else` blocks, ...).
+
+A Jinja expression in the new recipe format looks like the following:
+
+`${{ version }}`
+
+Or if a function is involved:
+
+`${{ compiler('c') }}`
+
+Jinja expressions are also used in `if` statements and in the `skip` field of a recipe. In both instances, the `${{ ... }}` syntax is omitted.
+
+E.g.:
+
+```yaml
+build:
+  skip:
+    - osx  # This is a Jinja expression!
+
+requirements:
+  build:
+    - if: win and cuda  # This is a Jinja expression!
+      then:
+        - cudatoolkit
+```
+
+## Variables in the recipe
+
+The variables that are available in the Jinja context in the recipe come from two sources: the "variant configuration" file or the "context" section of the recipe.
+
+### The context section
+
+The context is a dictionary at the top-level of a recipe that maps keys to scalar values. The keys can be used by accessing them as variables in the Jinja expressions. For example:
+
+```yaml
+context:
+  version: "1.0.5"
+
+package:
+  version: ${{ version }}
+```
+
+Context evaluation happens from top-to-bottom. That means a later value can reference an earlier one like so:
+
+```yaml
+context:
+  version: "1.0.5"
+  name_and_version: "pkg_${{ version }}"
+```
+
+### Variables from variant configuration
+
+Any variable specified in the variant configuration file can be used in a recipe by using it in a Jinja expression. For example, with a variant config like:
+
+```yaml
+cuda:
+  - yes
+  - no
+```
+
+This value can be used as follows, for example in an inline `if` expression:
+
+```yaml
+requirements:
+  host:
+    - ${{ "cudatoolkit" if cuda == "yes" }}
+```
+
+## Available Jinja functions
 
 ## The compiler function
 
@@ -24,7 +98,7 @@ The function thus evaluates to `{compiler}_{target_platform} {compiler_version}`
 
 The variant config could look something like:
 
-```
+```yaml
 c_compiler:
   - gcc
 c_compiler_version:
@@ -34,6 +108,33 @@ cxx_compiler:
 cxx_compiler_version:
   - "12"
 ```
+
+> [!NOTE]
+> Default values for the `compiler` function
+>
+> If not further specified, the following values are used as default values:4
+>
+> ```yaml
+> linux:
+>  c: gcc
+>  cxx: gxx
+>  fortran: gfortran
+>  rust: rust
+> osx:
+>   c: clang
+>   cxx: clangxx
+>   fortran: gfortran
+>   rust: rust
+> win:
+>   c: vs2017
+>   cxx: vs2017
+>   fortran: gfortran
+>   rust: rust
+> ```
+
+## The `stdlib` function
+
+The `stdlib` function works exactly as the `compiler` function.
 
 ## The `cdt` function
 
@@ -48,7 +149,14 @@ Where `cdt_name` and `cdt_arch` are loaded from the variant config. If they are 
 - `cos6` for `cdt_name` on `x86_64` and `x86`, otherwise `cos7`
 - To the `platform::arch` for `cdt_arch`, except for `x86` where it defaults to `i686`.
 
-## The `pin_subpackage` function
+## The pin functions
+
+The new recipe format has two `pin` expressions:
+
+- `pin_compatible`
+- `pin_subpackage`
+
+Both follow the same "pinning" mechanism as described next.
 
 ### Pin definition
 
@@ -60,12 +168,11 @@ A pin has the following arguments:
 
 #### Example
 
-If we consider a package like `numpy-1.21.3-h123456_5` we could apply some pin expressions. 
+If we consider a package like `numpy-1.21.3-h123456_5` we could apply some pin expressions.
 
 - `min_pin=x.x, max_pin=x.x` would result in `>=1.21,<1.22`
 - `min_pin=x.x.x, max_pin=x` would result in `>=1.21.3,<2`
 - `exact=True` would result in `==1.21.3=h123456_5`
-
 
 ## The `pin_compatible` function
 
@@ -105,15 +212,24 @@ outputs:
 
 The `cmp` function is used to compare two versions. It returns `True` if the comparison is true and `False` otherwise.
 
+For example, it can be used in the following way:
+
+```yaml
+requirements:
+  - $ {{ "six" if cmp(python, "<3.8") }}
+```
+
+In this case the value from the `python` _variant_ is used to add or remove optional dependencies. Note that generalizes and replaces selectors from old recipes, such as `# [py38]` or `# [py3k]`.
+
 ## The `hash` variable
 
 `${{ hash }}` is the variant hash and is useful in the build string computation. This used to be `PKG_HASH` in the old recipe format. Since the `hash` variable depends on the variant computation, it is only available in the `build.string` field and is computed after the entire variant computation is finished.
 
 ## The `env` object
 
-You can use the `env` object to retrieve environment variables and forward them to your build script. There are two ways to do this:
+The `env` object is used to retrieve environment variables and inject them into the recipe. There are two ways to do this:
 
-- `${{ env.get("MY_ENV_VAR") }}` will return the value of the environment variable `MY_ENV_VAR` or throw an error if it is not set.
+- `${{ env.get("MY_ENV_VAR") }}` will return the value of the environment variable `MY_ENV_VAR` or throw an error if the environment variable is not set.
 - `${{ env.get_default("MY_ENV_VAR", "default_value") }}` will return the value of the environment variable `MY_ENV_VAR` or `"default_value"` if it is not set.
 
 You can also check for the existence of an environment variable:
@@ -123,7 +239,8 @@ You can also check for the existence of an environment variable:
 ## Jinja filters
 
 A feature of `jinja` is called "filters". Filters are functions that can be applied to variables in a template expression.
-The syntax for a filter is `{{ variable | filter_name }}`.
+
+The syntax for a filter is `{{ variable | filter_name }}`. A filter can also take arguments, such as `... | replace('foo', 'bar')`.
 
 The following Jinja filters are available:
 
@@ -131,8 +248,10 @@ The following Jinja filters are available:
 - `lower`: convert a string to lowercase (e.g. `"{{ 'FOO' | lower }}"` will return `"foo"`)
 - `upper`: convert a string to uppercase (e.g. `"{{ 'foo' | upper }}"` will return `"FOO"`)
 - `int`: convert a string to an integer (e.g. `"{{ '42' | int }}"` will return `42`)
+- 
 
-There are more default filters specified here: https://docs.rs/minijinja/latest/minijinja/filters/index.html
+
+There are more filters available as [documented by MiniJinja](https://docs.rs/minijinja/latest/minijinja/filters/index.html).
 
 > [!NOTE]
 > Should we add all filters from `minijinja` to this spec? Probably ...
@@ -153,3 +272,18 @@ build:
 ```
 
 Would evaluate to a `abc123_cuda112` (assuming the hash was `abc123`).
+
+
+--- 
+
+### Things to decide
+
+- Limit the filters from Jinja to a default subset?
+- Should `env` work more like Python `env`
+  - `env["FOO"]` instead of `env.get("FOO")`
+  - `env.get("FOO", "default")` instead of `env.get_default("FOO", "default")`
+- Or should it be more like Github Actions
+  - `env.FOO` instead of `env.get("FOO")`
+  - `env.FOO or "default"` for default values
+- Should `${{ compiler('c') }}` evaluate directly to `gcc_linux-64` or should there be an intermediate representation (as is now)
+- For `pin_subpackage` it will be impossible to evaluate it directly (due to self-referential nature of the function).
