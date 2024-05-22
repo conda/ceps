@@ -112,7 +112,7 @@ cxx_compiler_version:
 > [!NOTE]
 > Default values for the `compiler` function
 >
-> If not further specified, the following values are used as default values:4
+> If not further specified, the following values are used as default values:
 >
 > ```yaml
 > linux:
