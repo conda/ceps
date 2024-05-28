@@ -273,28 +273,23 @@ source of the dependency. There are 6 possible `DependencyInfo` versions:
 - `compiler`: The dependency comes from a `compiler` expression.
 - `pin_subpackage`: The dependency comes from a `pin_subpackage` expression.
 - `pin_compatible`: The dependency comes from a `pin_compatible` expression.
-- `raw`: The dependency comes from a raw dependency.
+- `source`: The dependency comes from te recipe.
 - `run_export`: The dependency comes from a run export.
 - `variant`: The dependency comes from a variant.
 
 Example:
 
 ```yaml
-- source: compiler
-  spec: clang_osx-arm64
-- source: raw
-  spec: make >=1.3
-- source: pin_compatible
-  spec: quarto >=1.4.550,<1.5
-- source: pin_subpackage
-  spec: some-pkg-a >=1.0.0,<2
-- source: run_export
+- compile: c              # language specified in ${{ compiler(`c`) }}
+  spec: clang_osx-arm64   
+- source: make >=1.3      
+- pin_compatible: quarto >=1.4.550,<1.5
+- pin_subpackage: some-pkg-a >=1.0.0,<2
+- run_export: zlib
   spec: libzlib >=1.3.1,<1.4.0a0
-  from: host # environment that exported this dependency
-  source_package: zlib # source package that exported this dependency
-- source: variant
+  from: host              # environment that exported this dependency
+- variant: setuptools     # key from variant coming configuration
   spec: setuptools 69.*
-  variant: "69" # variant coming from the variant configuration
 ```
 
 The list of `resolved` dependencies contains a dictionary with the following
