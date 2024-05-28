@@ -160,8 +160,7 @@ process.
 - Type: object
 - Description: Contains information related to hashing.
   - `hash`: The hash value (e.g., `60d57d3`).
-  - `hash_input`: The input values used for generating the hash.
-  - `hash_prefix`: Prefix for the hash, which can include values like `py311`
+  - `prefix`: Prefix for the hash, which can include values like `py311`
     based on the variant configuration.
 
 ##### `directories`
