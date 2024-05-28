@@ -183,8 +183,31 @@ process.
 ##### `channels`
 
 - Type: array of URLs
-- Description: The URLs to the conda channels that were used to resolve dependencies (e.g., `conda-forge`).
-               Also in the correct order.
+- Description: The URLs to the conda channels that were used to resolve 
+  dependencies (e.g., `https://conda.anaconda.org/conda-forge`). 
+  
+  The order is significant.
+
+##### `channel_priority`
+
+- Type: string
+- Description: The channel priority used to solve the dependencies.
+
+  * `strict`: Only the repodata in the first channel that contains repodata for a package will be considered.
+  * `disabled`: Any repodata from any channel for a package can be considered.
+
+##### `solve_strategy`
+
+- Type: string
+- Description: The solve strategy used to solve the dependencies.
+
+  * `highest`: Resolve the highest version of each package.
+  * `lowest-version`: Resolve the lowest compatible version for each package.
+    
+    All candidates with the same version are still ordered the same as with `highest`. This ensures that the candidate with the highest build number is used and downprioritization still works.
+
+  * `lowest-version-direct`: Resolve the lowest compatible version for direct dependencies but the highest for transitive dependencies. This is similar to `lowest-version` but only for direct dependencies.
+
 
 ##### `timestamp`
 
@@ -232,6 +255,8 @@ build_configuration:
     build_dir: # build dir that contains host_prefix, build_prefix and work_dir as subdirectories
   channels:
     - conda-forge
+  channel_priority: strict
+  solve_strategy: highest
   timestamp: 2024-04-13T14:35:30.774863Z
   subpackages:
     curl:
@@ -470,6 +495,8 @@ build_configuration:
     build_dir: /Users/wolfv/Programs/rattler-build/output/bld/rattler-build_curl_1713018930
   channels:
     - conda-forge
+  channel_priority: strict
+  solve_strategy: highest
   timestamp: 2024-04-13T14:35:30.774863Z
   subpackages:
     curl:
