@@ -134,6 +134,23 @@ process.
 - Description: The target platform for which the package is being built (e.g.,
   `osx-arm64`).
 
+##### `host_platform` (remove?)
+
+- Type: string
+- Description: The host platform used for building the package. The 
+  `host-platform` is equivalent to `target_platform` except when the 
+  `target_platform` is `noarch`. If the `target_platform` is `noarch`, 
+  the `host_platform` is the platform where the build is being executed.
+  
+  If the package is cross-compiled this might not be the current platform, 
+  therefore it is recorded in the rendered recipe. If you have a `noarch` 
+  package and compile with `--target-platform=linux-64` on a windows 
+  machine the following will be set:
+
+  * `target_platform`: `noarch` (from recipe)
+  * `host_platform`: `linux-64` (from CLI)
+  * `build_platform`: `win-64` (the current platform)
+
 ##### `build_platform`
 
 - Type: string
@@ -201,6 +218,7 @@ process.
 ```yaml
 build_configuration:
   target_platform: osx-arm64
+  host_platform: osx-arm64
   build_platform: osx-arm64
   variant:
     target_platform: osx-arm64
@@ -439,6 +457,7 @@ recipe:
       with URL syntax. It is used in command lines or scripts to transfer data.
 build_configuration:
   target_platform: osx-arm64
+  host_platform: osx-arm64
   build_platform: osx-arm64
   variant:
     target_platform: osx-arm64
