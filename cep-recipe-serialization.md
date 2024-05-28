@@ -283,8 +283,16 @@ Example:
 - compile: c              # language specified in ${{ compiler(`c`) }}
   spec: clang_osx-arm64   
 - source: make >=1.3      
-- pin_compatible: quarto >=1.4.550,<1.5
-- pin_subpackage: some-pkg-a >=1.0.0,<2
+- pin_compatible: quarto
+  min_pin: x.x    # not present if not specified
+  max_pin: x.x.x  # not present if not specified
+  exact: true     # not present if false or not specified
+  spec: quarto >=1.4.550,<1.5
+- pin_subpackage: some-pkg-a
+  min_pin: x.x    # not present if not specified
+  max_pin: x.x.x  # not present if not specified
+  exact: true     # not present if false or not specified
+  spec: some-pkg-a >=1.0.0,<2
 - run_export: zlib
   spec: libzlib >=1.3.1,<1.4.0a0
   from: host              # environment that exported this dependency
