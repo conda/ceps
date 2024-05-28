@@ -206,8 +206,7 @@ build_configuration:
     target_platform: osx-arm64
   hash:
     hash: 60d57d3
-    hash_input: '{"target_platform": "osx-arm64"}' # input values for the hash
-    hash_prefix: "" # would contain `py311` and similar prefixes based on variant config
+    prefix: "" # would contain `py311` and similar prefixes based on variant config
   directories:
     host_prefix: # host prefix with placeholders for the host environment
     build_prefix: # build prefix for the build environment
@@ -445,8 +444,6 @@ build_configuration:
     target_platform: osx-arm64
   hash:
     hash: 60d57d3
-    hash_input: '{"target_platform": "osx-arm64"}'
-    hash_prefix: ""
   directories:
     host_prefix: /Users/wolfv/Programs/rattler-build/output/bld/rattler-build_curl_1713018930/host_env_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold
     build_prefix: /Users/wolfv/Programs/rattler-build/output/bld/rattler-build_curl_1713018930/build_env
