@@ -191,23 +191,22 @@ process.
 ##### `channel_priority`
 
 - Type: string
-- Description: The channel priority used to solve the dependencies.
+- Description: Optionally the channel priority used to solve the dependencies.
 
-  * `strict`: Only the repodata in the first channel that contains repodata for a package will be considered.
+  * `strict` (default): Only the repodata in the first channel that contains repodata for a package will be considered.
   * `disabled`: Any repodata from any channel for a package can be considered.
 
 ##### `solve_strategy`
 
 - Type: string
-- Description: The solve strategy used to solve the dependencies.
+- Description: Optionally the solve strategy used to solve the dependencies. 
 
-  * `highest`: Resolve the highest version of each package.
+  * `highest` (default): Resolve the highest version of each package.
   * `lowest-version`: Resolve the lowest compatible version for each package.
     
     All candidates with the same version are still ordered the same as with `highest`. This ensures that the candidate with the highest build number is used and downprioritization still works.
 
   * `lowest-version-direct`: Resolve the lowest compatible version for direct dependencies but the highest for transitive dependencies. This is similar to `lowest-version` but only for direct dependencies.
-
 
 ##### `timestamp`
 
