@@ -162,19 +162,52 @@ Both follow the same "pinning" mechanism as described next and have the same arg
 
 A pin has the following arguments:
 
-- `min_pin`: The lower bound of the dependency spec. This is expressed as a `x.x....` version where the `x` are filled in from the corresponding version of the package. For example, `x.x` would be `1.2` for a package version `1.2.3`. The resulting pin spec would look like `>=1.2` for the `min_pin` argument of `x.x` and a version of `1.2.3` for the package.
-- `max_pin`: This defines the upper bound and follows the same `x.x` semantics but adds `+1` to the last segment. For example, `x.x` would be `1.(2 + 1)` for a package version `1.2.3`. The resulting pin spec would look like `<1.3` for the `max_pin` argument of `x.x` and a version of `1.2.3` for the package.
+- `min_pin`: The lower bound of the dependency spec. This is expressed as a `x.x....` version where the `x` are filled in from the corresponding version of the package. For example, `x.x` would be `1.2` for a package version `1.2.3`. The resulting pin spec would look like `>=1.2` for the `min_pin` argument of `x.x` and a version of `1.2.3` for the package. If `min_pin=None` is explicitly set, no lower bound will be set. The default value for `min_pin` if it's left unspecified is `x.x.x.x.x.x`.
+- `max_pin`: This defines the upper bound and follows the same `x.x` semantics but adds `+1` to the last segment. For example, `x.x` would be `1.(2 + 1)` for a package version `1.2.3`. The resulting pin spec would look like `<1.3.0a0` for the `max_pin` argument of `x.x` and a version of `1.2.3` for the package. If `max_pin=None` then no upper bound is set. The default value for `max_pin` if it's left unspecified is `x`. If a version ends with a regular numeric segment, then a `.0a0` segment is appended to the final version. If a version contains a letter in the last segment, no `.0a0` segment is appended but the letter (or string) is set to `a`.
 - `exact`: This is a boolean that specifies whether the pin should be exact. It defaults to `False`. If `exact` is `True`, the `min_pin` and `max_pin` are irrelevant. We pin to a `==` version and also include the build string exactly (e.g. `==1.2.3=h1234`).
+- `lower_bound`: instead of using `min_pin`, the user can pass an explicit lower bound as a version string to the Jinja function. This will be preferred over the `min_pin` argument.
+- `upper_bound`: instead of using `max_pin`, the user can pass an explicit upper bound as a version string to the Jinja function. This will be preferred over the `max_pin` argument.
+
+#### Corner cases:
+
+If there are fewer segments in the version than in the `min_pin`, only the existing segments are used (implicit 0 padding). For example, `1.2` with a `min_pin` of `x.x.x.x` would result in `>=1.2`.
+
+If there are more segments in the `max_pin` than in the version, `0` segments are inserted before bumping the last segment. For example, `1.2` with a `max_pin` of `x.x.x.x` would result in `<1.0.0.3.0a0`.
+
+`max_pin` behavior:
+
+- If the last segment is a letter, we increment the number and set the letter to `a`, e.g. `9d` with a `max_pin='x'` results in `<10a`.
+- If the last segment is a number, we increment the number and append `.0a0` to prevent any alpha versions from being selected. For example: `1.2.3` with a `max_pin='x.x'` will result in `<1.3.0a0`.
+- The epoch is left untouched by the `max_pin` (or `min_pin`). If the epoch is set, it will be included in the final version.
+- When bumping the version with a `max_pin` the local version part is removed. For example, `1.2.3+local` with a `max_pin='x.x'` will result in `<1.3.0a0`.
 
 #### Example
 
 If we consider a package like `numpy-1.21.3-h123456_5` we could apply some pin expressions.
 
-- `min_pin=x.x, max_pin=x.x` would result in `>=1.21,<1.22`
-- `min_pin=x.x.x, max_pin=x` would result in `>=1.21.3,<2`
+- `min_pin='x.x', max_pin='x.x'` would result in `>=1.21,<1.22.0a0`
+- `min_pin='x.x.x', max_pin='x'` would result in `>=1.21.3,<2.0a0`
 - `exact=True` would result in `==1.21.3=h123456_5`
 
 The function should error if `exact` is `True` and `min_pin` or `max_pin` are set.
+
+Given the following version `1.2.3`, we get the following results:
+
+- default values: `min_pin='x.x.x.x.x.x', max_pin='x'` -> `>=1.2.3,<2.0a0`
+- `max_pin='x.x', lower_bound='1.0'` -> `>1.0,<1.3.0a0`
+- `min_pin='x.x', upper_bound='2.0'` -> `>1.2,<2.0`
+- `min_pin=None, max_pin='x'` -> `<2.0a0`
+- `min_pin='x.x.x.x', max_pin=None` -> `>=1.2.3`
+
+For an input of the form: `9e` (jpeg style version)
+
+- `min_pin='x', max_pin='x'` -> `>=9e,<10a`
+
+For an input of the form: `1.1.1j` (openssl style version)
+
+- `min_pin='x.x.x', max_pin='x'` -> `>=1.1.1j,<2.0a0`
+- `min_pin='x.x.x', max_pin='x.x'` -> `>=1.1.1j,<1.2.0a0`
+- `min_pin='x.x.x', max_pin='x.x.x'` -> `>=1.1.1j,<1.1.2a`
 
 ### The `pin_compatible` function
 
@@ -188,7 +221,11 @@ requirements:
     - numpy
   run:
     - ${{ pin_compatible('numpy', exact=True) }}
-    - ${{ pin_compatible('numpy', min_pin='x.x.x', max_pin='x') }}
+    # or alternatives
+    # - ${{ pin_compatible('numpy', min_pin='x.x.x', max_pin='x') }}
+    # - ${{ pin_compatible('numpy', min_pin=None, max_pin='x') }}
+    # - ${{ pin_compatible('numpy', lower_bound="1.0", max_pin='x') }}
+    # - ${{ pin_compatible('numpy', lower_bound="1.0", upper_bound="2.0") }}
 ```
 
 ### The `pin_subpackage` function
