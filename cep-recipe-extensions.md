@@ -69,3 +69,24 @@ The compression level maps to the following levels in the `.zstd` and `bz2` form
 
 Note that this compression level can still be overridden by the command line.
 It also does not define wether a `.conda` or `.tar.bz2` file is created.
+
+
+## System requirements
+
+This is a new section in the `build` section that defines the lower bound system requirements for a given package.
+
+In this section you can define the "virtual" packages that will be injected in the `host` sections of the specs:
+
+```yaml
+build:
+  system_requirements:
+    # this one is used on `osx-*` platforms
+    - osx: 11.0   # (or should we call this / alias it to `macos`?)
+    # the following are used on `linux-*` platforms
+    - glibc: 2.17
+    - linux: 3.10
+    # the following is used on `win-*` platforms
+    - win: 10.1
+```
+
+The system requirements are used to inject virtual packages in the `host` section of the recipe. They will also automatically add a dependency in the `run` section of the recipe, e.g. `__glibc >=2.17`, or `__osx >=11.0`.
