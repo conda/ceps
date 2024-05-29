@@ -178,7 +178,7 @@ If there are more segments in the `max_pin` than in the version, `0` segments ar
 
 - If the last segment is a letter, we increment the number and set the letter to `a`, e.g. `9d` with a `max_pin='x'` results in `<10a`.
 - If the last segment is a number, we increment the number and append `.0a0` to prevent any alpha versions from being selected. For example: `1.2.3` with a `max_pin='x.x'` will result in `<1.3.0a0`.
-- The epoch is left untouched by the `max_pin` (or `min_pin`). If the epoch is set, it will be included in the final version.
+- The epoch is left untouched by the `max_pin` (or `min_pin`). If the epoch is set, it will be included in the final version. E.g. `1!1.2.3` with a `max_pin='x.x'` will result in `<1!1.3.0a0`.
 - When bumping the version with a `max_pin` the local version part is removed. For example, `1.2.3+local` with a `max_pin='x.x'` will result in `<1.3.0a0`.
 
 #### Example
