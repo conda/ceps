@@ -168,6 +168,9 @@ A pin has the following arguments:
 - `lower_bound`: instead of using `min_pin`, the user can pass an explicit lower bound as a version string to the Jinja function. This will be preferred over the `min_pin` argument.
 - `upper_bound`: instead of using `max_pin`, the user can pass an explicit upper bound as a version string to the Jinja function. This will be preferred over the `max_pin` argument.
 
+> [!NOTE]
+> `conda-build` uses the `lower_bound` for the version that is used in the `max_pin` pinning expression. We are always using the actual version for `pin` expressions (and not the bounds). `conda-build` also ignores the `min_pin` expression when a `upper_bound` is used. We do not do this either.
+
 #### Corner cases:
 
 If there are fewer segments in the version than in the `min_pin`, only the existing segments are used (implicit 0 padding). For example, `1.2` with a `min_pin` of `x.x.x.x` would result in `>=1.2`.
