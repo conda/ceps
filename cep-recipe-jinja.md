@@ -291,17 +291,58 @@ A feature of `jinja` is called "filters". Filters are functions that can be appl
 
 The syntax for a filter is `{{ variable | filter_name }}`. A filter can also take arguments, such as `... | replace('foo', 'bar')`.
 
-The following Jinja filters are available:
+The following Jinja filters are available, taken from the upstream `minijinja` library:
 
 - `replace`: replace a string with another string (e.g. `"{{ 'foo' | replace('oo', 'aa') }}"` will return `"faa"`)
 - `lower`: convert a string to lowercase (e.g. `"{{ 'FOO' | lower }}"` will return `"foo"`)
 - `upper`: convert a string to uppercase (e.g. `"{{ 'foo' | upper }}"` will return `"FOO"`)
 - `int`: convert a string to an integer (e.g. `"{{ '42' | int }}"` will return `42`)
+- `abs`: return the absolute value of a number (e.g. `"{{ -42 | abs }}"` will return `42`)
+- `bool`: convert a value to a boolean (e.g. `"{{ 'foo' | bool }}"` will return `true`)
+- `default`: return a default value if the value is falsy (e.g. `"{{ '' | default('foo') }}"` will return `"foo"`)
+- `first`: return the first element of a list (e.g. `"{{ [1, 2, 3] | first }}"` will return `1`)
+- `last`: return the last element of a list (e.g. `"{{ [1, 2, 3] | last }}"` will return `3`)
+- `length`: return the length of a list (e.g. `"{{ [1, 2, 3] | length }}"` will return `3`)
+- `list`: convert a string to a list (e.g. `"{{ 'foo' | list }}"` will return `['f', 'o', 'o']`)
+- `join`: join a list with a separator (e.g. `"{{ [1, 2, 3] | join('.') }}"` will return `"1.2.3"`)
+- `min`: return the minimum value of a list (e.g. `"{{ [1, 2, 3] | min }}"` will return `1`)
+- `max`: return the maximum value of a list (e.g. `"{{ [1, 2, 3] | max }}"` will return `3`)
+- `reverse`: reverse a list (e.g. `"{{ [1, 2, 3] | reverse }}"` will return `[3, 2, 1]`)
+- `slice`: slice a list (e.g. `"{{ [1, 2, 3] | slice(1, 2) }}"` will return `[2]`)
+- `batch`: This filter works pretty much like `slice` just the other way round. It returns a list of lists with the given number of items. If you provide a second parameter this is used to fill up missing items.
+- `sort`: sort a list (e.g. `"{{ [3, 1, 2] | sort }}"` will return `[1, 2, 3]`)
+- `trim`: remove leading and trailing whitespace from a string (e.g. `"{{ ' foo ' | trim }}"` will return `"foo"`)
+- `unique`: remove duplicates from a list (e.g. `"{{ [1, 2, 1, 3] | unique }}"` will return `[1, 2, 3]`)
 
-There are more filters available as [documented by MiniJinja](https://docs.rs/minijinja/latest/minijinja/filters/index.html).
+<details>
+<summary>Removed filters</summary>
+The following filters are removed from the builtins:
 
-> [!NOTE]
-> Should we add all filters from `minijinja` to this spec? Probably ...
+- `attr`
+- `indent` (indent with spaces, could be useful?)
+- `select`
+- `selectattr`
+- `dictsort`
+- `reject`
+- `rejectattr`
+- `round`
+- `map`
+- `title`
+- `capitalize`
+- `urlencode`
+- `escape`
+- `pprint`
+- `safe`
+- `items`
+- `float`
+- `tojson`
+</details>
+
+### Extensions to the default minijinja filters
+
+The following filters are available in the new recipe format, but not in "stock" MiniJinja (we are planning to contribute it back):
+
+- `split`: split a string into a list (e.g. `"{{ '1.2.3' | split('.') }}"` will return `['1', '2', '3']`). By default, splits on whitespace.
 
 ### Extra filters for recipes
 
@@ -349,12 +390,9 @@ build:
 
 ### Things to decide
 
-- Limit the filters from Jinja to a default subset?
 - Should `env` work more like Python `env`
   - `env["FOO"]` instead of `env.get("FOO")`
   - `env.get("FOO", "default")` instead of `env.get_default("FOO", "default")`
 - Or should it be more like Github Actions
   - `env.FOO` instead of `env.get("FOO")`
   - `env.FOO or "default"` for default values
-- Should `${{ compiler('c') }}` evaluate directly to `gcc_linux-64` or should there be an intermediate representation (as is now)
-- For `pin_subpackage` it will be impossible to evaluate it directly (due to self-referential nature of the function).
