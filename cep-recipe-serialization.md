@@ -272,7 +272,7 @@ build_configuration:
 
 The finalized dependencies section contains a "lockfile" of all the dependencies
 exactly as they were used at build-time, for the two environments `build` and
-`host`. It also includes the final `run` and `constrains` specs that are
+`host`. It also includes the final `run` and `constraints` specs that are
 computed based on the `build` and `host` dependencies (resolved all
 `run_exports`).
 
@@ -290,7 +290,7 @@ finalized_dependencies:
     run_exports: { package_name: run_export } # all run_exports.json that were found among the packages in this environment
   run:
     depends: [list of dependencies with dependency source information]
-    constrains: [list of constrains with dependency source information]
+    constraints: [list of constraints with dependency source information]
     run_exports: optional run_export dictionary
 ```
 
@@ -1135,8 +1135,7 @@ finalized_dependencies:
         spec: libzlib >=1.3.1,<1.4.0a0
         from: host
         source_package: zlib
-    constrains: []
-    run_exports: null
+    constraints: []
 finalized_sources:
   - url: http://curl.haxx.se/download/curl-8.0.1.tar.bz2
     sha256: 9b6b1e96b748d04b968786b6bdf407aa5c75ab53a3d37c1c8c81cdb736555ccf
