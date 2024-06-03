@@ -232,9 +232,7 @@ process.
     `conda`).
   - `compression_level`: The numerical compression level used for packaging
     (e.g., `15`).
-  - `compression_threads`: The number of threads used for compression (e.g.,
-    `1`).
-
+  
 #### Example
 
 ```yaml
@@ -265,7 +263,6 @@ build_configuration:
   packaging_settings:
     archive_type: conda
     compression_level: 15
-    compression_threads: 1
 ```
 
 ### Finalized dependencies
@@ -505,7 +502,6 @@ build_configuration:
   packaging_settings:
     archive_type: conda
     compression_level: 15
-    compression_threads: 1
 finalized_dependencies:
   build:
     specs:
