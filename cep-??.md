@@ -20,11 +20,11 @@ The motivation of this CEP is merely informative. It describes the details of an
 
 This type of input file has not received a specific name. Different conda clients vaguely refer to it as [file specification](https://github.com/conda/conda/blob/841d9d57fd96ad27cda4b7c43549104a96f961ce/conda/cli/helpers.py#L90-L91), or [text spec file](https://github.com/mamba-org/mamba/blob/9300a6530cac4f5575e7f8aa4049fbb9c1150909/docs/source/user_guide/micromamba.rst?plain=1#L143).
 
-In this CEP, we will use the term "text spec file" or "text input file".
+In this CEP, we will use the term "text spec file".
 
 ## Specification
 
-Text spec files use plain text to specify one package requirement per line. Lines starting with `#` are considered comments and are not taken into account. Blank lines are also ignored.
+Text spec files use plain text to specify one package requirement per line. Lines starting with `#` are considered comments and are not taken into account. Empty lines or lines consisting only of whitespace are also ignored.
 
 There are two flavors of this input file: explicit and not explicit.
 
@@ -32,7 +32,11 @@ There are two flavors of this input file: explicit and not explicit.
 
 If the line `@EXPLICIT` is found, the file is considered explicit. The word `@EXPLICIT` can contain whitespace before and after, but it's not recommended.
 
-In explicit files, each package requirement line MUST specify a single, direct URL (as in RFC 3986) to a conda artifact. Each URL can be immediately followed by an anchor tag that encodes the expected MD5 checksum of the downloaded artifact. 
+In explicit files, each package requirement line MUST specify a single, direct URL (as in RFC 3986) to a conda artifact. File paths are also supported, but they SHOULD be preferrably expressed as `file://` URLs. Each URL can be immediately followed by an anchor tag (`#<hash>`) that encodes the expected MD5 checksum of the downloaded artifact. More specifically, whitespace-stripped lines SHOULD be parsable by this regex:
+
+```re
+(?:(?P<url_p>.+)(?:[/\\]))?(?P<fn>[^/\\#]+(?:\.tar\.bz2|\.conda))(:?#(?P<md5>[0-9a-f]{32}))?$
+```
 
 When an explicit input file is processed, the conda client SHOULD NOT invoke a solver. Because of this, the lines SHOULD be sorted topologically; e.g. if a package `A` depends on `B`, then the URL of B should come first.
 
