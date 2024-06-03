@@ -4,7 +4,7 @@
 <tr><td> Author(s) </td><td> Jaime Rodríguez-Guerra &lt;jaime.rogue@gmail.com&gt;</td></tr>
 <tr><td> Created </td><td> June 3, 2024 </td></tr>
 <tr><td> Updated </td><td> June 3, 2024 </td></tr>
-<tr><td> Discussion </td><td> NA </td></tr>
+<tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/79 </td></tr>
 <tr><td> Implementation </td><td> NA </td></tr>
 </table>
 
