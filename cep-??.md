@@ -1,5 +1,5 @@
 <table>
-<tr><td> Title </td><td> Specification of `environment.yml` input files </td>
+<tr><td> Title </td><td> Specification of <code>environment.yml</code> input files </td>
 <tr><td> Status </td><td> Draft </td></tr>
 <tr><td> Author(s) </td><td> Jaime Rodríguez-Guerra &lt;jaime.rogue@gmail.com&gt;</td></tr>
 <tr><td> Created </td><td> June 4, 2024 </td></tr>
@@ -26,7 +26,7 @@ The `environment.yml` file format was introduced by `conda env`. It has been tra
 
 - `name`: The preferred name for the environment.
 - `prefix`: The preferred full path for the environment. Often ignored.
-- `dependencies`: List of package specifications that MUST be installed in the new environment. 
+- `dependencies`: List of package specifications that MUST be installed in the new environment.
 - `channels`: conda channels that will be used to solve the dependencies
 - `variables`: Environment variables that SHOULD be added to the `conda-meta/state` file in the resulting environment.
 
@@ -36,9 +36,9 @@ The file name is not standardized, but the extension MUST be `yml` or `yaml`.
 
 ### `name` and `prefix`
 
-Optional, `str`. 
+Optional, `str`.
 
-Both fields refer to the _preferred_ name or path for the newly created environment. Tools SHOULD allow these suggestions to be overridden by the user with additional CLI flags or equivalent. If the proposed environment path exists, tools MUST NOT overwrite silently by default. 
+Both fields refer to the _preferred_ name or path for the newly created environment. Tools SHOULD allow these suggestions to be overridden by the user with additional CLI flags or equivalent. If the proposed environment path exists, tools MUST NOT overwrite silently by default.
 
 Special names `base` and `root` SHOULD not be accepted. Prefixes targetting protected system paths SHOULD be rejected. Paths can contain tildes (`~`) and environment variables, and they MUST be expanded when present.
 
