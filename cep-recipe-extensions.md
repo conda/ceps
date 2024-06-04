@@ -24,7 +24,7 @@ means that replacement strings need to escape `$` with `$$`.
 Internally, we use `replace_all` from the `regex` crate. This means that the
 regex is applied to the entire file, not line by line.
 
-### Example
+### Example for `post_process`
 
 ```yaml
 build:
@@ -72,6 +72,19 @@ Anywhere the recipe format accepts a list of globs is extended to accept:
 
 The lists are "conditional" lists and can contain `if` and `else` statements.
 
+A single glob or a list of globs is equivalent to a dictionary with only an
+`include` key.
+
+The evaluation of the globs is done in two steps:
+
+- first record all matches for the `include` globs. If no `include` globs are
+  given but an `exclude` glob is provided, all files are included.
+- Any file that matched an `include` glob is tested against the `exclude` globs.
+  If it matches an `exclude` glob, it is removed from the list of files to
+  include. If no exclude globs are given, no files are removed.
+
+### Example for `glob` definition
+
 For example:
 
 ```yaml
@@ -93,17 +106,6 @@ files:
   exclude:
     - foo.txt
 ```
-
-A single glob or a list of globs is equivalent to a dictionary with only an
-`include` key.
-
-The evaluation of the globs is done in two steps:
-
-- first record all matches for the `include` globs. If no `include` globs are
-  given but an `exclude` glob is provided, all files are included.
-- Any file that matched an `include` glob is tested against the `exclude` globs.
-  If it matches an `exclude` glob, it is removed from the list of files to
-  include. If no exclude globs are given, no files are removed.
 
 In conda-build, this is discussed here: [Link to PR
 5216](https://github.com/conda/conda-build/pull/5216)
