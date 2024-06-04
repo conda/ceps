@@ -125,7 +125,9 @@ variables:
 
 ## Reference
 
-...
+- [Allowed extensions](https://github.com/conda/conda/blob/24.5.0/conda/env/specs/yaml_file.py)
+- [Allowed keys](https://github.com/conda/conda/blob/24.5.0/conda/env/env.py#L25)
+- [Extra subsections in `dependencies`](https://github.com/conda/conda/blob/841d9d57fd96ad27cda4b7c43549104a96f961ce/conda/cli/main_env_create.py#L167-L185)
 
 ## Copyright
 
