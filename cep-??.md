@@ -32,11 +32,13 @@ There are two flavors of this input file: explicit and not explicit.
 
 If the line `@EXPLICIT` is found, the file is considered explicit. The word `@EXPLICIT` can contain whitespace before and after, but it's not recommended.
 
-In explicit files, each package requirement line MUST specify a single, direct URL (as in RFC 3986) to a conda artifact. File paths are also supported, but they SHOULD be preferrably expressed as `file://` URLs. Each URL can be immediately followed by an anchor tag (`#<hash>`) that encodes the expected MD5 checksum of the downloaded artifact. More specifically, whitespace-stripped lines SHOULD be parsable by this regex:
+In explicit files, each package requirement line MUST specify a single, direct URL (as in RFC 3986) to a conda artifact. File paths are also supported, but they SHOULD be preferrably expressed as `file://` URLs. Relative paths are allowed, and will be processed as relative to the working directory, not the input file parent directory. Each URL can be immediately followed by an anchor tag (`#<hash>`) that encodes the expected MD5 checksum of the downloaded artifact. More specifically, whitespace-stripped lines SHOULD be parsable by this regex:
 
 ```re
 (?:(?P<url_p>.+)(?:[/\\]))?(?P<fn>[^/\\#]+(?:\.tar\.bz2|\.conda))(:?#(?P<md5>[0-9a-f]{32}))?$
 ```
+
+Leading tildes (`~`) and environment variables MUST replaced with their values at runtime for backwards compatibility (as Python's [`os.path.expanduser`](https://docs.python.org/3/library/os.path.html#os.path.expanduser) and [`os.path.expandvars`](https://docs.python.org/3/library/os.path.html#os.path.expandvars) would do, respectively). That said, users SHOULD NOT use environment variables in their explicit spec files for the sake of reproducibility.
 
 When an explicit input file is processed, the conda client SHOULD NOT invoke a solver. Because of this, the lines SHOULD be sorted topologically; e.g. if a package `A` depends on `B`, then the URL of B should come first.
 
@@ -46,8 +48,7 @@ Some conda clients tend to include a comment line specifying the platform the fi
 
 In the absence of a `@EXPLICIT` line, the file is considered regular or not explicit. Each line will encode a `MatchSpec`-compatible string. The solver SHOULD be invoked and, as such, topological sorting is not required.
 
-
-## Examples 
+## Examples
 
 An example of an explicit TXT input file:
 
