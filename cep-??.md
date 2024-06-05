@@ -42,11 +42,11 @@ Leading tildes (`~`) and environment variables MUST replaced with their values a
 
 When an explicit input file is processed, the conda client SHOULD NOT invoke a solver. Because of this, the lines SHOULD be sorted topologically; e.g. if a package `A` depends on `B`, then the URL of B should come first.
 
-Some conda clients tend to include a comment line specifying the platform the file was written for. This line is often found right before the `@EXPLICIT` marker, with the following syntax `# platform: {SUBDIR}`, where `{SUBDIR}` is a platform identifier like `linux-64` or `osx-arm64`. This line is not required, but implementors might choose to parse if found for logging or verification purposes.
+Some conda clients tend to include a comment line specifying the platform the file was written for. This line is often found right before the `@EXPLICIT` marker, with the following syntax `# platform: {SUBDIR}`, where `{SUBDIR}` is a platform identifier like `linux-64` or `osx-arm64`. This line is not required, but implementors might choose to parse it if found for logging or verification purposes.
 
 ### Non-explicit input files
 
-In the absence of a `@EXPLICIT` line, the file is considered regular or not explicit. Each line will encode a `MatchSpec`-compatible string. The solver SHOULD be invoked and, as such, topological sorting is not required.
+In the absence of an `@EXPLICIT` line, the file is considered regular or not explicit. Each line will encode a `MatchSpec`-compatible string. The solver SHOULD be invoked and, as such, topological sorting is not required.
 
 ## Examples
 
