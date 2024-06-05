@@ -25,9 +25,9 @@ The `environment.yml` file format was introduced by `conda env`. It has been tra
 `environment.yml` files are YAML documents that encode the necessary information to create a new conda environment. They can contain up to five top-level keys:
 
 - `name`: The preferred name for the environment.
-- `prefix`: The preferred full path for the environment. Often ignored.
+- `prefix`: The preferred full path to the environment. Often ignored.
 - `dependencies`: List of package specifications that MUST be installed in the new environment.
-- `channels`: conda channels that will be used to solve the dependencies
+- `channels`: conda channels that will be used to resolve the dependencies.
 - `variables`: Environment variables that SHOULD be added to the `conda-meta/state` file in the resulting environment.
 
 Additional sections can be present, but they MUST be ignored and the user SHOULD receive an informative warning about them.
@@ -40,9 +40,9 @@ Optional, `str`.
 
 Both fields refer to the _preferred_ name or path for the newly created environment. Tools SHOULD allow these suggestions to be overridden by the user with additional CLI flags or equivalent. If the proposed environment path exists, tools MUST NOT overwrite silently by default.
 
-Special names `base` and `root` SHOULD not be accepted. Prefixes targetting protected system paths SHOULD be rejected. Paths can contain tildes (`~`) and environment variables, and they MUST be expanded when present.
+Special names `base` and `root` SHOULD NOT be accepted. Prefixes targetting protected system paths SHOULD be rejected. Paths can contain tildes (`~`) and environment variables, and they MUST be expanded when present.
 
-The name of the environment (and the last component of the expanded`prefix` path) MUST NOT contain any of these characters: `/`, ` `, `:`, `#`.
+The name of the environment (and the last component of the expanded `prefix` path) MUST NOT contain any of these characters: `/`, ` `, `:`, `#`.
 
 ### `dependencies`
 
@@ -52,7 +52,7 @@ The simplest form for this section is a list of `str` encoding `MatchSpec`-compa
 
 This section can also contain "subsection" dictionaries that map `str` to arbitrary values. Each key refers to a non-conda installer tool that will process the associated contents as necessary. The additional subsections MUST be processed after the conda requirements. They SHOULD only add new contents. These keys SHOULD NOT overwrite existing contents.
 
-Currently known subsections include `pip`, the contents of which encode a list of `str` referring to PyPI requirements. How to process this list is left as an implementation detail, but common approaches involve invoking the `pip` command-line directly.
+Currently known subsections include `pip`, the contents of which encode a list of `str` referring to PyPI requirements. How this list is processed is left as an implementation detail, but common approaches involve invoking the `pip` command-line directly.
 
 Additional subsections are allowed. The conda client MUST error out if it cannot process unknown sections.
 
@@ -62,7 +62,7 @@ Optional, `list[str]`.
 
 These are the conda channels that will be queried to solve the requirements added in `dependencies`. They can be expressed with names, URLs and local paths.
 
-If not specified, the conda client MUST use the default configuration. When specified, these channels MUST be used to populate the channel list passed to the solver. Then default channel configuration MUST be appended, unless the special name `nodefaults` is present. When this is the case, the default configuration MUST no be appended. The `nodefaults` name MUST not be passed to the solver.
+If not specified, the conda client MUST use the default configuration. When specified, these channels MUST be used to populate the channel list passed to the solver. Then default channel configuration MUST be appended, unless the special name `nodefaults` is present. When this is the case, the default configuration MUST no be appended. The `nodefaults` name MUST NOT be passed to the solver.
 
 ### `variables`
 
