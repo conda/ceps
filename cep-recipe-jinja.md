@@ -123,12 +123,11 @@ To configure the `foo` compiler, the following variant keys can be used:
 foo_compiler: "compiler_name"
 foo_compiler_version: "1.2.3"
 
-# on linux-64 this then results in 
+# on linux-64 this then results in
 # compiler: "compiler_name_linux-64 1.2.3"
 ```
 
-> [!NOTE]
-> Default values for the `compiler` function
+> [!NOTE] Default values for the `compiler` function
 >
 > If not further specified, the following values are used as default values:
 >
@@ -199,62 +198,61 @@ arguments.
 
 A pin has the following arguments:
 
-- `package_name` (required): The name of the package to pin.
-- `min_pin`: The lower bound of the dependency spec. This is expressed as a
-  `x.x....` version where the `x` are filled in from the corresponding version
-  of the package. For example, `x.x` would be `1.2` for a package version
-  `1.2.3`. The resulting pin spec would look like `>=1.2` for the `min_pin`
-  argument of `x.x` and a version of `1.2.3` for the package. If `min_pin=None`
-  is explicitly set, no lower bound will be set. The default value for `min_pin`
-  if it's left unspecified is `x.x.x.x.x.x`.
-- `max_pin`: This defines the upper bound and follows the same `x.x` semantics
-  but adds `+1` to the last segment. For example, `x.x` would be `1.(2 + 1)` for
-  a package version `1.2.3`. The resulting pin spec would look like `<1.3.0a0`
-  for the `max_pin` argument of `x.x` and a version of `1.2.3` for the package.
-  If `max_pin=None` then no upper bound is set. The default value for `max_pin`
-  if it's left unspecified is `x`. If a version ends with a regular numeric
-  segment, then a `.0a0` segment is appended to the final version. If a version
-  contains a letter in the last segment, no `.0a0` segment is appended but the
-  letter (or string) is set to `a`.
-- `exact`: This is a boolean that specifies whether the pin should be exact. It
-  defaults to `False`. If `exact` is `True`, the `min_pin` and `max_pin` are
-  irrelevant. The spec must be a pin with `==` to a version and also include the
-  build string exactly (e.g. `==1.2.3=h1234`).
-- `lower_bound`: instead of using `min_pin`, the user can pass an explicit lower
-  bound as a version string to the Jinja function. This will be preferred over
-  the `min_pin` argument.
-- `upper_bound`: instead of using `max_pin`, the user can pass an explicit upper
-  bound as a version string to the Jinja function. This will be preferred over
-  the `max_pin` argument.
+- `package_name`, positional, required: The name of the package to pin.
+- `lower_bound`, defaults to `x.x.x.x.x.x`: the lower bound, either as a version
+  or as a "pin expression"
+- `upper_bound`, defaults to `x`: the upper bound, either as a version or as a
+  "pin expression"
+- `exact`: a boolean that specifies whether the pin should be exact. It defaults
+  to `False`. If `exact` is `True`, the `lower_bound` and `upper_bound` are
+  irrelevant. An exact pin must pin with the full version and build string (to a
+  single package), e.g. `==version=build`.
 
-> [!NOTE] 
-> `conda-build` uses the `lower_bound` for the version that is used in
-> the `max_pin` pinning expression. The actual version should always be used
-> in the `pin` expressions (and not the bounds). `conda-build` also ignores the
-> `min_pin` expression when a `upper_bound` is used. This is against this spec, too.
+#### Pin expressions
 
-#### Corner cases
+A pin expression is a string that contains only `x` and `.` characters. The
+number of `x` characters in the expression determines the number of segments
+that are used from the version.
 
-If there are fewer segments in the version than in the `min_pin`, only the
-existing segments are used (implicit 0 padding). For example, `1.2` with a
-`min_pin` of `x.x.x.x` would result in `>=1.2`.
+A pin expression of `x.x` applied to a version like `1.2.3` would yield `1.2`.
+The epoch and local version parts are left untouched by the pin expression:
+`1!1.2.3+local` with a `x.x` pin expression would yield `1!1.2+local`.
 
-If there are more segments in the `max_pin` than in the version, `0` segments
-are inserted before bumping the last segment. For example, `1.2` with a
-`max_pin` of `x.x.x.x` would result in `<1.0.0.3.0a0`.
+The version used in the pin expression computation must _always_ be the version
+that was determined during the run of the recipe (irrespective of setting the
+lower bound to an explicit version).
 
-`max_pin` behavior:
+#### Upper bound pin computation
 
-- If the last segment is a letter,  the number should be incremented and the
-  letter set to `a`, e.g. `9d` with a `max_pin='x'` results in `<10a`.
+When a pin expression is used for the upper bound, the last segment of the
+version must be incremented, and the local version part must be removed.
+
+- If the last segment is a letter, the number should be incremented and the
+  letter set to `a`, e.g. `9d` with a `x` pin expression results in `<10a`.
 - If the last segment is a number, the number should be incremented and `.0a0`
   should be appended to prevent any alpha versions from being selected. For
-  example: `1.2.3` with a `max_pin='x.x'` will result in `<1.3.0a0`.
+  example: `1.2.3` with a `x.x` pin expression should result in `<1.3.0a0`.
 - The epoch is left untouched by the `max_pin` (or `min_pin`). If the epoch is
   set, it will be included in the final version. E.g. `1!1.2.3` with a
   `max_pin='x.x'` will result in `<1!1.3.0a0`.
 - When bumping the version with a `max_pin` the local version part is removed.
   For example, `1.2.3+local` with a `max_pin='x.x'` will result in `<1.3.0a0`.
+
+> [!NOTE]
+>
+> `conda-build` uses the `lower_bound` for the version that is used in
+> the `max_pin` pinning expression. `conda-build` also ignores the `min_pin`
+> expression when a `upper_bound` is used.
+
+#### Corner cases
+
+If there are fewer segments in the version than in the `lower_bound` pin
+expression, only the existing segments are used (implicit 0 padding). For
+example, `1.2` with a `min_pin` of `x.x.x.x` would result in `>=1.2`.
+
+If there are more segments in the `upper_bound` pin expression than in the
+version, `0` segments are inserted before bumping the last segment. For example,
+`1.2` with a `max_pin` of `x.x.x.x` would result in `<1.0.0.3.0a0`.
 
 #### Example
 
@@ -367,9 +365,8 @@ the recipe. There are two ways to do this:
 - `${{ env.get("MY_ENV_VAR") }}` will return the value of the environment
   variable `MY_ENV_VAR` or throw an error if the environment variable is not
   set.
-- `${{ env.get_default("MY_ENV_VAR", "default_value") }}` will return the value
-  of the environment variable `MY_ENV_VAR` or `"default_value"` if it is not
-  set.
+- `${{ env.get("MY_ENV_VAR", default="default_value") }}` will return the value
+  of the environment variable `MY_ENV_VAR` or `"default_value"` if it is unset.
 
 You can also check for the existence of an environment variable:
 
@@ -387,35 +384,29 @@ take arguments, such as `... | replace('foo', 'bar')`.
 The following Jinja filters are available, taken from the upstream `minijinja`
 library:
 
-- `replace`: replace a string with another string (e.g. `"{{ 'foo' |
-replace('oo', 'aa') }}"` will return `"faa"`) - `lower`: convert a string to
-lowercase (e.g. `"{{ 'FOO' | lower }}"` will return `"foo"`) - `upper`: convert
-a string to uppercase (e.g. `"{{ 'foo' | upper }}"` will return `"FOO"`) -
-`int`: convert a string to an integer (e.g. `"{{ '42' | int }}"` will return
-`42`) - `abs`: return the absolute value of a number (e.g. `"{{ -42 | abs }}"`
-will return `42`) - `bool`: convert a value to a boolean (e.g. `"{{ 'foo' | bool
-}}"` will return `true`) - `default`: return a default value if the value is
-falsy (e.g. `"{{ '' | default('foo') }}"` will return `"foo"`) - `first`: return
-the first element of a list (e.g. `"{{ [1, 2, 3] | first }}"` will return `1`) -
-`last`: return the last element of a list (e.g. `"{{ [1, 2, 3] | last }}"` will
-return `3`) - `length`: return the length of a list (e.g. `"{{ [1, 2, 3] |
-length }}"` will return `3`) - `list`: convert a string to a list (e.g. `"{{
-'foo' | list }}"` will return `['f', 'o', 'o']`) - `join`: join a list with a
-separator (e.g. `"{{ [1, 2, 3] | join('.') }}"` will return `"1.2.3"`) - `min`:
-return the minimum value of a list (e.g. `"{{ [1, 2, 3] | min }}"` will return
-`1`) - `max`: return the maximum value of a list (e.g. `"{{ [1, 2, 3] | max }}"`
-will return `3`) - `reverse`: reverse a list (e.g. `"{{ [1, 2, 3] | reverse }}"`
-will return `[3, 2, 1]`) - `slice`: slice a list (e.g. `"{{ [1, 2, 3] | slice(1,
-2) }}"` will return `[2]`)
+- `replace`: replace a string with another string (e.g. `"{{ 'foo' | replace('oo', 'aa') }}"` will return `"faa"`)
+- `lower`: convert a string to lowercase (e.g. `"{{ 'FOO' | lower }}"` will return `"foo"`)
+- `upper`: convert a string to uppercase (e.g. `"{{ 'foo' | upper }}"` will
+return `"FOO"`) - `int`: convert a string to an integer (e.g. `"{{ '42' | int }}"` will return `42`)
+- `abs`: return the absolute value of a number (e.g. `"{{ -42 | abs }}"` will return `42`)
+- `bool`: convert a value to a boolean (e.g. `"{{ 'foo' | bool }}"` will return `true`)
+- `default`: return a default value if the value is falsy (e.g. `"{{ '' | default('foo') }}"` will return `"foo"`)
+- `first`: return the first element of a list (e.g. `"{{ [1, 2, 3] | first }}"`
+will return `1`) - `last`: return the last element of a list (e.g. `"{{ [1, 2, 3] | last }}"` will return `3`)
+- `length`: return the length of a list (e.g. `"{{ [1, 2, 3] | length }}"` will return `3`)
+- `list`: convert a string to a list (e.g. `"{{ 'foo' | list }}"` will return `['f', 'o', 'o']`)
+- `join`: join a list with a separator (e.g. `"{{ [1, 2, 3] | join('.') }}"` will return `"1.2.3"`)
+- `min`: return the minimum value of a list (e.g. `"{{ [1, 2, 3] | min }}"` will return `1`)
+- `max`: return the maximum value of a list (e.g. `"{{ [1, 2, 3] | max }}"` will return `3`)
+- `reverse`: reverse a list (e.g. `"{{ [1, 2, 3] | reverse }}"` will return `[3, 2, 1]`)
+- `slice`: slice a list (e.g. `"{{ [1, 2, 3] | slice(1, 2) }}"` will return `[2]`)
 - `batch`: This filter works pretty much like `slice` just the other way round.
   It returns a list of lists with the given number of items. If you provide a
   second parameter this is used to fill up missing items.
 - `sort`: sort a list (e.g. `"{{ [3, 1, 2] | sort }}"` will return `[1, 2, 3]`)
-- `trim`: remove leading and trailing whitespace from a string (e.g. `"{{ ' foo
-' | trim }}"` will return `"foo"`) - `unique`: remove duplicates from a list
-(e.g. `"{{ [1, 2, 1, 3] | unique }}"` will return `[1, 2, 3]`)
-- `split`: split a string into a list (e.g. `"{{ '1.2.3' | split('.') }}"` will
-  return `['1', '2', '3']`). By default, splits on whitespace.
+- `trim`: remove leading and trailing whitespace from a string (e.g. `"{{ ' foo ' | trim }}"` will return `"foo"`)
+- `unique`: remove duplicates from a list (e.g. `"{{ [1, 2, 1, 3] | unique }}"` will return `[1, 2, 3]`)
+- `split`: split a string into a list (e.g. `"{{ '1.2.3' | split('.') }}"` will return `['1', '2', '3']`). By default, splits on whitespace.
 
 <details>
 <summary>Removed filters</summary>
@@ -491,14 +482,3 @@ build:
   # or an `else` branch can be used, of course
   number: ${{ 100 if cuda == "yes" else 0 }}
 ```
-
----
-
-### Things to decide
-
-- Should `env` work more like Python `env`
-  - `env["FOO"]` instead of `env.get("FOO")`
-  - `env.get("FOO", "default")` instead of `env.get_default("FOO", "default")`
-- Or should it be more like Github Actions
-  - `env.FOO` instead of `env.get("FOO")`
-  - `env.FOO or "default"` for default values
