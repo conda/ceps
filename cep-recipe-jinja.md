@@ -262,6 +262,8 @@ pin expressions.
 
 - `lower_bound='x.x', upper_bound='x.x'` would result in `>=1.21,<1.22.0a0`
 - `lower_bound='x.x.x', max_pin='x'` would result in `>=1.21.3,<2.0a0`
+- `lower_bound=None, upper_bound='x'` would result in `<2.0a0`
+- `lower_bound='x.x.x.x', upper_bound=None` would result in `>=1.21.3`
 - `exact=True` would result in `==1.21.3=h123456_5`
 
 The function should error if `exact` is `True` and `min_pin` or `max_pin` are
