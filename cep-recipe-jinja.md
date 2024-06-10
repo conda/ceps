@@ -1,6 +1,23 @@
-# Jinja functions in recipes
+# A new recipe format: `jinja` functions in recipes
 
-Historically, conda-recipes have relied on templating with `Jinja` for some
+<table>
+<tr><td> Title </td><td> A new recipe format: `jinja` functions in recipes </td>
+<tr><td> Status </td><td> Open </td></tr>
+<tr><td> Author(s) </td><td> Wolf Vollprecht &lt;wolf@prefix.dev&gt;</td></tr>
+<tr><td> Created </td><td> Apr 12, 2024</td></tr>
+<tr><td> Updated </td><td> Jun 10, 2024</td></tr>
+<tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/71 </td></tr>
+<tr><td> Implementation </td><td>https://github.com/prefix-dev/rattler-build</td></tr>
+</table>
+
+## Abstract
+
+This CEP is part of the effort to strictly define a new recipe format. The previous CEPs are:
+
+- [CEP 13: A new recipe format](https://github.com/conda/ceps/blob/main/cep-13.md)
+- [CEP 14: A new recipe format: allowed keys and values](https://github.com/conda/ceps/blob/main/cep-14.md)
+
+Historically, `conda-build` recipes have relied on templating with `Jinja` for some
 "dynamic" functionality. For example, many recipes use the `version` of the
 package in multiple places (as package version, in the URL and the tests, for
 example). To make it easy to change recipes, Jinja has been used for some
@@ -467,7 +484,6 @@ is, for example in a list or dictionary, equivalent to a YAML `null`).
 When a recipe is rendered, all values that are `null` must be filtered from the
 resulting YAML.
 
-
 ```yaml
 requirements:
   host:
@@ -485,3 +501,11 @@ build:
   # or an `else` branch can be used, of course
   number: ${{ 100 if cuda == "yes" else 0 }}
 ```
+
+## Error handling
+
+Build tools should be aggressive about Jinja errors:
+
+- Undefined variables should always be an error. To workaround, the user should use the `default` filter (e.g. `${{ foo | default("bla") }}`).
+- Unknown functions should always be an error.
+- Syntax errors should always be an error.
