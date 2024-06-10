@@ -200,12 +200,13 @@ A pin has the following arguments:
 
 - `package_name`, positional, required: The name of the package to pin.
 - `lower_bound`, defaults to `x.x.x.x.x.x`: the lower bound, either as a version
-  or as a "pin expression"
+  or as a "pin expression", or `None`
 - `upper_bound`, defaults to `x`: the upper bound, either as a version or as a
-  "pin expression"
+  "pin expression" or `None`
 - `exact`: a boolean that specifies whether the pin should be exact. It defaults
   to `False`. If `exact` is `True`, the `lower_bound` and `upper_bound` are
-  irrelevant. An exact pin must pin with the full version and build string (to a
+  irrelevant and should not be set.
+  An exact pin must pin with the full version and build string (to a
   single package), e.g. `==version=build`.
 
 #### Pin expressions
@@ -248,19 +249,19 @@ version must be incremented, and the local version part must be removed.
 
 If there are fewer segments in the version than in the `lower_bound` pin
 expression, only the existing segments are used (implicit 0 padding). For
-example, `1.2` with a `min_pin` of `x.x.x.x` would result in `>=1.2`.
+example, `1.2` with a `lower_bound` of `x.x.x.x` would result in `>=1.2`.
 
 If there are more segments in the `upper_bound` pin expression than in the
 version, `0` segments are inserted before bumping the last segment. For example,
-`1.2` with a `max_pin` of `x.x.x.x` would result in `<1.0.0.3.0a0`.
+`1.2` with a `upper_bound` of `x.x.x.x` would result in `<1.0.0.3.0a0`.
 
 #### Example
 
 For example, a package like `numpy-1.21.3-h123456_5` as input to the following
 pin expressions.
 
-- `min_pin='x.x', max_pin='x.x'` would result in `>=1.21,<1.22.0a0`
-- `min_pin='x.x.x', max_pin='x'` would result in `>=1.21.3,<2.0a0`
+- `lower_bound='x.x', upper_bound='x.x'` would result in `>=1.21,<1.22.0a0`
+- `lower_bound='x.x.x', max_pin='x'` would result in `>=1.21.3,<2.0a0`
 - `exact=True` would result in `==1.21.3=h123456_5`
 
 The function should error if `exact` is `True` and `min_pin` or `max_pin` are
@@ -268,21 +269,21 @@ set.
 
 Given the following version `1.2.3`, we get the following results:
 
-- default values: `min_pin='x.x.x.x.x.x', max_pin='x'` -> `>=1.2.3,<2.0a0`
-- `max_pin='x.x', lower_bound='1.0'` -> `>1.0,<1.3.0a0`
-- `min_pin='x.x', upper_bound='2.0'` -> `>1.2,<2.0`
-- `min_pin=None, max_pin='x'` -> `<2.0a0`
-- `min_pin='x.x.x.x', max_pin=None` -> `>=1.2.3`
+- default values: `lower_bound='x.x.x.x.x.x', upper_bound='x'` -> `>=1.2.3,<2.0a0`
+- `lower_bound='1.0', upper_bound='x.x'` -> `>1.0,<1.3.0a0`
+- `lower_bound='x.x', upper_bound='2.0'` -> `>1.2,<2.0`
+- `lower_bound=None, upper_bound='x'` -> `<2.0a0`
+- `lower_bound='x.x.x.x', upper_bound=None` -> `>=1.2.3`
 
 For an input of the form: `9e` (jpeg style version)
 
-- `min_pin='x', max_pin='x'` -> `>=9e,<10a`
+- `lower_bound='x', upper_bound='x'` -> `>=9e,<10a`
 
 For an input of the form: `1.1.1j` (openssl style version)
 
-- `min_pin='x.x.x', max_pin='x'` -> `>=1.1.1j,<2.0a0`
-- `min_pin='x.x.x', max_pin='x.x'` -> `>=1.1.1j,<1.2.0a0`
-- `min_pin='x.x.x', max_pin='x.x.x'` -> `>=1.1.1j,<1.1.2a`
+- `lower_bound='x.x.x', upper_bound='x'` -> `>=1.1.1j,<2.0a0`
+- `lower_bound='x.x.x', upper_bound='x.x'` -> `>=1.1.1j,<1.2.0a0`
+- `lower_bound='x.x.x', upper_bound='x.x.x'` -> `>=1.1.1j,<1.1.2a`
 
 ### The `pin_compatible` function
 
@@ -299,9 +300,9 @@ requirements:
   run:
     - ${{ pin_compatible('numpy', exact=True) }}
     # or alternatives
-    # - ${{ pin_compatible('numpy', min_pin='x.x.x', max_pin='x') }}
-    # - ${{ pin_compatible('numpy', min_pin=None, max_pin='x') }}
-    # - ${{ pin_compatible('numpy', lower_bound="1.0", max_pin='x') }}
+    # - ${{ pin_compatible('numpy', lower_bound='x.x.x', upper_bound='x') }}
+    # - ${{ pin_compatible('numpy', lower_bound=None, upper_bound='x') }}
+    # - ${{ pin_compatible('numpy', lower_bound="1.0", upper_bound='x') }}
     # - ${{ pin_compatible('numpy', lower_bound="1.0", upper_bound="2.0") }}
 ```
 
