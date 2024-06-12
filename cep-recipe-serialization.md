@@ -451,12 +451,12 @@ This section records all system tools that were used during build execution and
 their versions (if available). This is useful for tracking the tools that were
 used from the host system in order to warn if reproducing the build on a
 different host system might lead to different results. It also records the
-version of `rattler_build` itself, so a future build could be reproduced with
-the same version of `rattler_build`.
+version of the build tool (conda-build, rattler-build, etc) itself, so a future build could be reproduced with
+the same version of these tools.
 
 ```yaml
 system_tools:
-  rattler_build: 0.14.0
+  rattler-build: 0.14.0
   patchelf: 0.12
   git: 2.33.0
 ```
@@ -529,16 +529,12 @@ finalized_dependencies:
   build:
     specs:
       # specs record the source, can be one of `raw`, `compiler`, `pin_subpackage`, `pin_compatible`, `variant`, `run_export`
-      - source: compiler
+      - compiler: c
         spec: clang_osx-arm64
-      - source: raw
-        spec: make
-      - source: raw
-        spec: perl
-      - source: raw
-        spec: pkg-config
-      - source: raw
-        spec: libtool
+      - source: make
+      - source: perl
+      - source: pkg-config
+      - source: libtool
     resolved:
       - build: he57ea6c_1
         build_number: 1
@@ -615,6 +611,11 @@ finalized_dependencies:
         fn: perl-5.32.1-7_h4614cfb_perl5.conda
         url: https://conda.anaconda.org/conda-forge/osx-arm64/perl-5.32.1-7_h4614cfb_perl5.conda
         channel: https://conda.anaconda.org/conda-forge/
+        run_exports:
+          weak:
+            - perl >=5.32.1,<5.33.0a0 *_perl5
+          noarch:
+            - perl >=5.32.1,<6.0a0 *_perl5
       - build: hfc324ee_4
         build_number: 4
         constrains:
@@ -1100,16 +1101,9 @@ finalized_dependencies:
         fn: ca-certificates-2024.2.2-hf0a4a13_0.conda
         url: https://conda.anaconda.org/conda-forge/osx-arm64/ca-certificates-2024.2.2-hf0a4a13_0.conda
         channel: https://conda.anaconda.org/conda-forge/
-    run_exports:
-      perl:
-        weak:
-          - perl >=5.32.1,<5.33.0a0 *_perl5
-        noarch:
-          - perl >=5.32.1,<6.0a0 *_perl5
   host:
     specs:
-      - source: raw
-        spec: zlib
+      - source: zlib
     resolved:
       - build: h0d3ecfb_0
         build_number: 0
@@ -1127,6 +1121,9 @@ finalized_dependencies:
         fn: zlib-1.3.1-h0d3ecfb_0.conda
         url: https://conda.anaconda.org/conda-forge/osx-arm64/zlib-1.3.1-h0d3ecfb_0.conda
         channel: https://conda.anaconda.org/conda-forge/
+        run_exports:
+          weak:
+            - libzlib >=1.3.1,<1.4.0a0
       - build: h0d3ecfb_0
         build_number: 0
         constrains:
@@ -1144,10 +1141,6 @@ finalized_dependencies:
         fn: libzlib-1.3.1-h0d3ecfb_0.conda
         url: https://conda.anaconda.org/conda-forge/osx-arm64/libzlib-1.3.1-h0d3ecfb_0.conda
         channel: https://conda.anaconda.org/conda-forge/
-    run_exports:
-      zlib:
-        weak:
-          - libzlib >=1.3.1,<1.4.0a0
   run:
     depends:
       - source: run_export
@@ -1160,5 +1153,5 @@ finalized_sources:
     sha256: 9b6b1e96b748d04b968786b6bdf407aa5c75ab53a3d37c1c8c81cdb736555ccf
 system_tools:
   codesign: ""
-  rattler_build: 0.14.2
+  rattler-build: 0.14.2
 ```
