@@ -80,7 +80,7 @@ Some key things to note:
   - compiler: c
   ```
 
-- Pin expressions like ${{ pin_subpackage('libtool', max_pin='x.x') }} are
+- Pin expressions like `${{ pin_subpackage('libtool', upper_bound='x.x') }}` are
   rendered to:
 
   ```yaml
@@ -88,32 +88,53 @@ Some key things to note:
   # becomes
   - pin_subpackage:
       name: libtool
-      max_pin: null
-      min_pin: null
       exact: true
   ```
 
 - For the following:
 
   ```yaml
-  - ${{ pin_subpackage('some-pkg-a', min_pin="x.x.x") }}
-  - ${{ pin_compatible('python', min_pin="x.x.x") }}
+  - ${{ pin_subpackage('some-pkg-a', lower_bound="x.x.x") }}
+  - ${{ pin_compatible('python', upper_bound="x.x.x") }}
+  - ${{ pin_compatible('numpy', upper_bound="3.2.1", lower_bound="1.2.3") }}
   ```
 
   the rendered result is as follows:
 
   ```yaml
   - pin_subpackage:
-      name: some-pkg-a
-      max_pin: null
-      min_pin: x.x.x
-      exact: false
+      name: some-pkg-a    # string
+      lower_bound: x.x.x  # this is a string or null
   - pin_compatible:
       name: python
-      max_pin: null
-      min_pin: x.x.x
-      exact: false
+      upper_bound: x.x.x  # this is a string or null
+  - pin_compatible:
+      name: numpy
+      lower_bound: 1.2.3
+      upper_bound: 3.2.1
   ```
+
+The pin functions take 4 arguments: `name`, `lower_bound`, `upper_bound` and
+`exact`. lower_bound and upper_bound can be either a "pin expression"
+(x.x.x...), a version string or None. If None, the field CAN be omitted in the
+rendered output. The default values for lower_bound is `x.x.x.x.x.x`, for
+`upper_bound` it's `x`. For `exact` the default value is `false`. If `exact` is
+false, the field CAN be omitted from the rendered output.
+
+The definitions for these entries are:
+
+```yaml
+pin_subpackage:
+  name: string
+  lower_bound: string or null
+  upper_bound: string or null
+  exact: bool
+pin_subpackage:
+  name: string
+  lower_bound: string or null
+  upper_bound: string or null
+  exact: bool
+```
 
 ### Build configuration section
 
@@ -147,9 +168,9 @@ process.
   package and compile with `--target-platform=linux-64` on a windows 
   machine the following will be set:
 
-  * `target_platform`: `noarch` (from recipe)
-  * `host_platform`: `linux-64` (from CLI)
-  * `build_platform`: `win-64` (the current platform)
+  - `target_platform`: `noarch` (from recipe)
+  - `host_platform`: `linux-64` (from CLI)
+  - `build_platform`: `win-64` (the current platform)
 
 ##### `build_platform`
 
@@ -160,6 +181,8 @@ process.
 
 - Type: object
 - Description: Dictionary with the variant configuration used for the build.
+
+This dictionary contains _only_ the keys of the variant configuration file that were applied during the build (e.g. used in a `jinja` expression or as a dependency).
 
 ##### `hash`
 
@@ -193,20 +216,20 @@ process.
 - Type: string
 - Description: Optionally the channel priority used to solve the dependencies.
 
-  * `strict` (default): Only the repodata in the first channel that contains repodata for a package will be considered.
-  * `disabled`: Any repodata from any channel for a package can be considered.
+  - `strict` (default): Only the repodata in the first channel that contains repodata for a package will be considered.
+  - `disabled`: Any repodata from any channel for a package can be considered.
 
 ##### `solve_strategy`
 
 - Type: string
 - Description: Optionally the solve strategy used to solve the dependencies. 
 
-  * `highest` (default): Resolve the highest version of each package.
-  * `lowest-version`: Resolve the lowest compatible version for each package.
+  - `highest` (default): Resolve the highest version of each package.
+  - `lowest-version`: Resolve the lowest compatible version for each package.
     
     All candidates with the same version are still ordered the same as with `highest`. This ensures that the candidate with the highest build number is used and downprioritization still works.
 
-  * `lowest-version-direct`: Resolve the lowest compatible version for direct dependencies but the highest for transitive dependencies. This is similar to `lowest-version` but only for direct dependencies.
+  - `lowest-version-direct`: Resolve the lowest compatible version for direct dependencies but the highest for transitive dependencies. This is similar to `lowest-version` but only for direct dependencies.
 
 ##### `timestamp`
 
@@ -310,14 +333,14 @@ Example:
   spec: clang_osx-arm64   
 - source: make >=1.3      
 - pin_compatible: quarto
-  min_pin: x.x    # not present if not specified
-  max_pin: x.x.x  # not present if not specified
-  exact: true     # not present if false or not specified
+  lower_bound: x.x    # not present if set to None
+  upper_bound: x.x.x  # not present if set to None
+  exact: true         # not present if false
   spec: quarto >=1.4.550,<1.5
 - pin_subpackage: some-pkg-a
-  min_pin: x.x    # not present if not specified
-  max_pin: x.x.x  # not present if not specified
-  exact: true     # not present if false or not specified
+  lower_bound: x.x    # not present if set to None
+  upper_bound: x.x.x  # not present if set to None
+  exact: true         # not present if false
   spec: some-pkg-a >=1.0.0,<2
 - run_export: zlib
   spec: libzlib >=1.3.1,<1.4.0a0
