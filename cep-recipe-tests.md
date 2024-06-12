@@ -12,17 +12,42 @@
 
 ## Abstract
 
-Testing is an important part of the packaging workflow - the goal is to make sure that packages
-work correctly and package the files they are supposed to contain.
+Testing is an important part of the packaging workflow - the goal is to make
+sure that packages work correctly and package the files they are supposed to
+contain.
 
-In the CEP we want to clearly define how tests can be declared in the `recipe.yaml` file and how they
-are stored in the final package.
+In the CEP we want to clearly define how tests can be declared in the
+`recipe.yaml` file and how they are stored in the final package.
+
+## History
+
+Conda-build has a (single) test section in the recipes. These tests are rendered
+into the `info/test` folder of the package. The tests are rendered to a
+`run_test.sh` or `run_test.bat` (shell) script, a `run_test.py` or `run_test.pl`
+script for Python or Perl.
+
+An `import` test is added to the `run_test.py` script.
+
+Any additional test-time dependencies are added to a separata
+`test_time_dependencies.json` file in the `info/test` folder. There is only a
+single dependency list for all tests (making cross-compilation tests more
+difficult).
+
+There is also only a single test definition which means it's not easy to run
+multiple (independent) tests (e.g. with different sets of requirements).
+
+## Proposal
+
+The new test section should be more flexible. Test definitions should be well
+separated.
 
 ## Tests definition
 
-With the exception of the package content tests, this is a recap of the previous CEPs (CEP 14).
+With the exception of the package content tests, this is a recap of the previous
+CEPs (CEP 14).
 
-The recipes can contain a `tests` section that is a list of individual tests that should be executed by the package build program after the package is built.
+The recipes can contain a `tests` section that is a list of individual tests
+that should be executed by the package build program after the package is built.
 
 ```yaml
 tests:
@@ -36,7 +61,7 @@ tests:
         - pytest # match spec
     files:
       # files to be copied to the package for test execution
-      source:    # GlobVec
+      source: # GlobVec
         - tests/**
     # Additional files from the recipe directory
     #   recipe:
@@ -53,20 +78,33 @@ tests:
   - downstream: bar # string
 ```
 
-For `script`, `python` and `downstream` tests, please refer to CEP-14.
-The `package_contents` test is a new test type that runs before package creation and checks if the files listed are present (or not present) in the package.
+For `script`, `python` and `downstream` tests, please refer to CEP-14. The
+`package_contents` test is a new test type that runs before package creation and
+checks if the files listed are present (or not present) in the package.
 
 ## Test rendering to the final package
 
-Tests should be shipped as part of the package in order to facilitate running tests outside of the package build execution, and as part of e.g. downstream tests.
+Tests should be shipped as part of the package in order to facilitate running
+tests outside of the package build execution, and as part of e.g. downstream
+tests.
 
-For this reason, tests should be rendered as part of the package. However, the rendered tests should still contain the original test definition including the un-evaluated Jinja selectors and if/else sections - in order to facilitate running tests in cross-compilation settings.
+For this reason, tests should be rendered as part of the package. However, the
+rendered tests should still contain the original test definition including the
+un-evaluated Jinja selectors and if/else sections - in order to facilitate
+running tests in cross-compilation settings.
 
-A build tool SHOULD render the list of tests into a JSON file in the `info/` folder of the package. The file should be named `tests.json`. It should contain a list of dictionaries, where each dictionary is a test definition.
+A build tool SHOULD render the list of tests into a JSON file in the `info/`
+folder of the package. The file should be named `tests.json`. It should contain
+a list of dictionaries, where each dictionary is a test definition.
 
-- Any Jinja or conditionals should be kept in-tact and evaluated at runtime. (Question: should the list of tests be filtered? Should we introduce a `skip` key instead?)
+- Any Jinja or conditionals should be kept in-tact and evaluated at runtime.
+  (Question: should the list of tests be filtered? Should we introduce a `skip`
+  key instead?)
 - The package content tests are filtered
-- The source files for the command tests are copied into the `/etc/conda/test-files/<package-identifier>/<index>/` folder and referenced from the `tests.json` file. This is done in order to keep the `info`-folder small for cases when only metadata is requested.
+- The source files for the command tests are copied into the
+  `/etc/conda/test-files/<package-identifier>/<index>/` folder and referenced
+  from the `tests.json` file. This is done in order to keep the `info`-folder
+  small for cases when only metadata is requested.
 
 ```js
 [
@@ -93,14 +131,45 @@ A build tool SHOULD render the list of tests into a JSON file in the `info/` fol
 
 #### Script test
 
-A script test SHOULD create the `run` and `build` environment. The `build` environment SHOULD be in the architecture of the current platform. The `run` environment SHOULD be in the architecture of the target platform (ie. the platform the package is intended to run on).
+A script test SHOULD create the `run` and `build` environment. The `build`
+environment SHOULD be in the architecture of the current platform. The `run`
+environment SHOULD be in the architecture of the target platform (ie. the
+platform the package is intended to run on).
 
-The `build` environment SHOULD be stacked on top of the `run` environment (ie. the PATH entries of the `build` environment take precedence).
-The script MUST be executed with the current work dir set to a copy of of the folder of files copied for the test (ie. the `$PREFIX/etc/conda/test-files/<package-identifier>/<id>/` folder).
+The `build` environment SHOULD be stacked on top of the `run` environment (ie.
+the PATH entries of the `build` environment take precedence). The script MUST be
+executed with the current work dir set to a copy of of the folder of files
+copied for the test (ie. the
+`$PREFIX/etc/conda/test-files/<package-identifier>/<id>/` folder).
+
+#### Python test
+
+For the Python test, a single test environment with the package should be
+created. The package SHOULD depend on Python. If `pip_check` is set, `pip`
+should be added as dependency to the test environment.
+
+The import test SHOULD be executed with the test environment activated. A file
+that includes each import statement SHOULD be created and executed. The test
+SHOULD succeed if the file can be executed without error.
+
+If `pip_check` is true, the test SHOULD also run `pip check` in the test
+environment to ensure that the dependencies match the requirements of the
+original Python package.
+
+#### Downstream test
+
+A downstream test SHOULD create a execute all tests of a downstream package with
+the package to be tested. If dependency resolution for any of the tests fails
+(e.g. due to conflicting dependencies), the test SHOULD be skipped.
+
+The downstream test SHOULD then execute all tests from the downstream package in
+separate test environments. The test SHOULD succeed if all tests pass. If any
+test fails, the downstream test SHOULD fail.
 
 ## Package contents test
 
-A list of `globs` is used to check for the presence (or absence) of files in the package.
+A list of `globs` is used to check for the presence (or absence) of files in the
+package.
 
 The full definition of a package content test is given below:
 
@@ -114,7 +183,9 @@ package_contents:
   site_packages: TestGlobVec
 ```
 
-Where the `TestGlobVec` is defined as follows: either a single glob, a list of globs or a dictionary with `exists` and `not_exists` keys, where the values are list of globs.
+Where the `TestGlobVec` is defined as follows: either a single glob, a list of
+globs or a dictionary with `exists` and `not_exists` keys, where the values are
+list of globs.
 
 For example:
 
@@ -131,22 +202,26 @@ package_contents:
       - libbar.so
 ```
 
-This test would check if the files `foo.h`, `foo.hpp` and any files matching `*.hpp` files are present in the package.
-It would also check if `libfoo.so` is present and `libbar.so` is not present in the package.
+This test would check if the files `foo.h`, `foo.hpp` and any files matching
+`*.hpp` files are present in the package. It would also check if `libfoo.so` is
+present and `libbar.so` is not present in the package.
 
 ### The `strict` flag
 
-If the strict flag is set, all files included in the package MUST be matched by at least one glob.
+If the strict flag is set, all files included in the package MUST be matched by
+at least one glob.
 
 ### The `lib` section
 
-The `lib` section will look in the `$PREFIX/lib` or `$PREFIX/Library/lib` (on Windows) folder.
-A simple library name MUST be checked in multiple ways (e.g. `foo`) - inspired by CMake `find_library` command.
+The `lib` section will look in the `$PREFIX/lib` or `$PREFIX/Library/lib` (on
+Windows) folder. A simple library name MUST be checked in multiple ways (e.g.
+`foo`) - inspired by CMake `find_library` command.
 
 #### Windows
 
-Libraries are expected to be found in both .dll and .lib formats.
-Special handling is required for .dll files, which must be accompanied by a corresponding .bin file.
+Libraries are expected to be found in both .dll and .lib formats. Special
+handling is required for .dll files, which must be accompanied by a
+corresponding .bin file.
 
 If the path extension of the glob is `.dll` or `lib`, we search for
 
@@ -160,8 +235,8 @@ If no extension is given, the dll/lib must be search in:
 
 #### MacOS
 
-On macOS the base directory that must be searched for libraries is `lib/`.
-If the glob does not include `.a` or `.dylib`, the following variations are tried:
+On macOS the base directory that must be searched for libraries is `lib/`. If
+the glob does not include `.a` or `.dylib`, the following variations are tried:
 
 - `lib/{,lib}{glob}.dylib` (matches `foo.dylib`, `libfoo.dylib`)
 - `lib/{,lib}{glob}.*.dylib` (matches `foo.1.dylib`, `libfoo.1.dylib`)
@@ -172,8 +247,9 @@ If the glob ends with `.a` or `.dylib`, the following variations are tried:
 
 #### Linux and WebAssembly
 
-On Linux and WebAssembly the base directory that must be searched for libraries is `lib/`.
-If the glob does not end with `.a` or `.so` and does not contain `.so.`, the following variations are tried:
+On Linux and WebAssembly the base directory that must be searched for libraries
+is `lib/`. If the glob does not end with `.a` or `.so` and does not contain
+`.so.`, the following variations are tried:
 
 - `lib/{,lib}{glob}.so` (matches `foo.so`, `libfoo.so`)
 - `lib/{,lib}{glob}.so.*` (matches `foo.so.1`, `libfoo.so.1`)
@@ -184,10 +260,12 @@ Otherwise, the following variations are tried:
 
 ### The `bin` section
 
-The `bin` section will look in the `$PREFIX/bin` folder on macOS, Linux and WebAssembly.
+The `bin` section will look in the `$PREFIX/bin` folder on macOS, Linux and
+WebAssembly.
 
-On Windows, the build tool must search under the following folders, with the following extensions.
-If a file extension is explictly given, only that extension is searched for.
+On Windows, the build tool must search under the following folders, with the
+following extensions. If a file extension is explictly given, only that
+extension is searched for.
 
 - extensions: `.exe`, `.bat`, `.com`, `.cmd`, `.ps1`
 - folders:
@@ -201,5 +279,6 @@ For example, `foo` would match `Library/bin/foo.exe`.
 
 ### The `include` section
 
-Globs in the include section should match files in the `$PREFIX/include` or `$PREFIX/Library/include` (on Windows) folder.
-If no file extension is supplied, `.h` and `.hpp` files must be matched.
+Globs in the include section should match files in the `$PREFIX/include` or
+`$PREFIX/Library/include` (on Windows) folder. If no file extension is supplied,
+`.h` and `.hpp` files must be matched.
