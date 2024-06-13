@@ -205,9 +205,9 @@ package_contents:
       - libbar.so
 ```
 
-This test would check if the files `foo.h`, `foo.hpp` and any files matching
-`*.hpp` files are present in the package. It would also check if `libfoo.so` is
-present and `libbar.so` is not present in the package.
+This test MUST check if the files `foo.h`, `foo.hpp` and any files matching
+`*.hpp` files are present in the package. It MUST also check if `libfoo.so` is
+present MUST check that `libbar.so` is NOT present in the package.
 
 ### The `strict` flag
 
