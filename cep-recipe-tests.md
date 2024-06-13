@@ -97,10 +97,11 @@ A build tool SHOULD render the list of tests into a JSON file in the `info/`
 folder of the package. The file should be named `tests.json`. It should contain
 a list of dictionaries, where each dictionary is a test definition.
 
-- Any Jinja or conditionals should be kept in-tact and evaluated at runtime.
+- Any Jinja or conditionals should be kept intact and evaluated at runtime.
   (Question: should the list of tests be filtered? Should we introduce a `skip`
   key instead?)
-- The package content tests are filtered
+- The package content tests are filtered as they are not executed at test-time
+  but at build-time and we can assume that they already passed.
 - The source files for the command tests are copied into the
   `/etc/conda/test-files/<package-identifier>/<index>/` folder and referenced
   from the `tests.json` file. This is done in order to keep the `info`-folder
@@ -138,9 +139,11 @@ platform the package is intended to run on).
 
 The `build` environment SHOULD be stacked on top of the `run` environment (ie.
 the PATH entries of the `build` environment take precedence). The script MUST be
-executed with the current work dir set to a copy of of the folder of files
-copied for the test (ie. the
-`$PREFIX/etc/conda/test-files/<package-identifier>/<id>/` folder).
+executed with the current work dir set to a temporary folder containing a copy
+of the extra test files (from the
+`$PREFIX/etc/conda/test-files/<package-identifier>/<id>/` folder). If there are
+no extra test files and the folder does not exist, the current working directory
+SHOULD be an empty folder.
 
 #### Python test
 
@@ -213,9 +216,9 @@ at least one glob.
 
 ### The `lib` section
 
-The `lib` section will look in the `$PREFIX/lib` or `$PREFIX/Library/lib` (on
-Windows) folder. A simple library name MUST be checked in multiple ways (e.g.
-`foo`) - inspired by CMake `find_library` command.
+The `lib` section will look in the `$PREFIX/lib` folder on Unix and scan
+multiple folders on Windows. A simple library name MUST be checked in multiple
+ways (e.g. `foo`) - inspired by CMake `find_library` command.
 
 #### Windows
 
@@ -232,6 +235,8 @@ If no extension is given, the dll/lib must be search in:
 
 - `Library/bin/{glob}.dll`
 - `Library/lib/{glob}.lib`
+
+**Question Windows:** do we need to search in all $PATH entries for `.dll` files?
 
 #### MacOS
 
@@ -277,8 +282,22 @@ extension is searched for.
 
 For example, `foo` would match `Library/bin/foo.exe`.
 
+For `noarch` Python packages this section will also look at the
+`/python-scripts` folder in the package and entry-points.
+
 ### The `include` section
 
 Globs in the include section should match files in the `$PREFIX/include` or
 `$PREFIX/Library/include` (on Windows) folder. If no file extension is supplied,
 `.h` and `.hpp` files must be matched.
+
+### The `files` section
+
+The `files` section will look in the `$PREFIX` folder for any globs that match.
+
+### The site-packages section
+
+The site packages section will look for globs in the
+`$PREFIX/lib/pythonX.X/site-packages` (on Unix) or `$PREFIX/Lib/site-packages`
+(on Windows) folder. For `noarch` packages it will look into the
+`/site-packages` folder.
