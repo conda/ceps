@@ -110,7 +110,7 @@ requirements:
 
 ## Available Jinja functions
 
-## The compiler function
+### The compiler function
 
 The compiler function is used to create a dependency spec from `{lang}_compiler`
 and `{lang}_compiler_version`
@@ -164,7 +164,7 @@ foo_compiler_version: "1.2.3"
 >   fortran: gfortran
 > ```
 
-## The `stdlib` function
+### The `stdlib` function
 
 The `stdlib` function works exactly as the `compiler` function, but uses the
 `stdlib` keys in the variant.
@@ -183,7 +183,7 @@ Evaluates to the `c_stdlib` and `c_stdlib_version` from the variant config
 The function should evaluate to `{<lang>_stdlib}_{target_platform}
 <lang>_stdlib_version`.
 
-## The `cdt` function
+### The `cdt` function
 
 CDT stands for "core dependency tree" packages. These are typically repackaged
 from a Linux distribution.
@@ -193,13 +193,10 @@ The function expands to the following:
 - package-name-<cdt_name>-<cdt_arch>
 
 Where `cdt_name` and `cdt_arch` are loaded from the variant config. If they are
-undefined, they default to:
+undefined in the variant configuration, an error is raised. There are no default
+values for `cdt_name` and `cdt_arch`.
 
-- `cos6` for `cdt_name` on `x86_64` and `x86`, otherwise `cos7`
-- To the `platform::arch` for `cdt_arch`, except for `x86` where it defaults to
-  `i686`.
-
-## The pin functions
+### The pin functions
 
 The new recipe format has two `pin` expressions:
 
@@ -209,7 +206,7 @@ The new recipe format has two `pin` expressions:
 Both follow the same "pinning" mechanism as described next and have the same
 arguments.
 
-### Pin definition
+#### Pin definition
 
 A pin has the following arguments:
 
@@ -224,7 +221,7 @@ A pin has the following arguments:
   An exact pin must pin with the full version and build string (to a
   single package), e.g. `==version=build`.
 
-#### Pin expressions
+##### Pin expressions
 
 A pin expression is a string that contains only `x` and `.` characters. The
 number of `x` characters in the expression determines the number of segments
@@ -238,7 +235,7 @@ The version used in the pin expression computation must _always_ be the version
 that was determined during the run of the recipe (irrespective of setting the
 lower bound to an explicit version).
 
-#### Upper bound pin computation
+##### Upper bound pin computation
 
 When a pin expression is used for the upper bound, the last segment of the
 version must be incremented, and the local version part must be removed.
@@ -260,7 +257,7 @@ version must be incremented, and the local version part must be removed.
 > the `max_pin` pinning expression. `conda-build` also ignores the `min_pin`
 > expression when a `upper_bound` is used.
 
-#### Corner cases
+##### Corner cases
 
 If there are fewer segments in the version than in the `lower_bound` pin
 expression, only the existing segments are used (implicit 0 padding). For
@@ -345,7 +342,7 @@ outputs:
         - ${{ pin_subpackage('libfoo', exact=True) }}
 ```
 
-## The `match` function
+### The `match` function
 
 The `match` function is used to match a variant with a version spec. It returns
 `true` if the version spec matches the variant and `false` otherwise.
@@ -449,7 +446,6 @@ The following filters are removed from the builtins:
 - `float`
 - `tojson`
 </details>
-
 
 ### Extra filters for recipes
 
