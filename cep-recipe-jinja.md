@@ -125,7 +125,7 @@ This would pull in the `c_compiler` and `c_compiler_version` from the variant
 config. The compiler function suffixes `{lang}_compiler` with the
 `target_platform` to render to something such as:
 
-```
+```txt
 gcc_linux-64 8.9
 clang_osx-arm64 12
 msvc_win-64 19.29
@@ -137,33 +137,31 @@ The function `${{ compiler("foo") }}` thus evaluates to
 To configure the `foo` compiler, the following variant keys can be used:
 
 ```yaml
-foo_compiler: "compiler_name"
+foo_compiler: "superfoo"
 foo_compiler_version: "1.2.3"
 
 # on linux-64 this then results in
-# compiler: "compiler_name_linux-64 1.2.3"
+# compiler: "superfoo_linux-64 1.2.3"
 ```
 
-> [!NOTE] Default values for the `compiler` function
+> [!NOTE] Default values for `<lang>_compiler`
 >
-> If not further specified, the following values are used as default values:
+> The default value for the `<lang>_compiler` variable is the language that was passed in (e.g. `rust -> rust`, or `go -> go`)
+> However, for `c`, `cxx`, and `fortran`, `rattler-build` and `conda-build` define the following default values:
 >
 > ```yaml
 > linux:
 >  c: gcc
 >  cxx: gxx
 >  fortran: gfortran
->  rust: rust
 > osx:
 >   c: clang
 >   cxx: clangxx
 >   fortran: gfortran
->   rust: rust
 > win:
 >   c: vs2017
 >   cxx: vs2017
 >   fortran: gfortran
->   rust: rust
 > ```
 
 ## The `stdlib` function
@@ -179,11 +177,11 @@ build:
 ```
 
 Evaluates to the `c_stdlib` and `c_stdlib_version` from the variant config
-(incl. the target platform), using the following `{lang}_stdlib` and
-`{lang}_stdlib_version` keys.
+(incl. the target platform), using the following `<lang>_stdlib` and
+`<lang>_stdlib_version` keys.
 
-The function should evaluate to `{($lang)_stdlib}_{target_platform}
-($lang)_stdlib_version`.
+The function should evaluate to `{<lang>_stdlib}_{target_platform}
+<lang>_stdlib_version`.
 
 ## The `cdt` function
 
