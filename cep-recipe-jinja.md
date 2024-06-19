@@ -351,11 +351,11 @@ For example, it can be used in the following way:
 
 ```yaml
 requirements:
-  - $ {{ "six" if match(python, "<3.8") }}
-  - $ {{ "six" if match(python, "3.8") }}
-  - $ {{ "six" if match(python, "==3.8") }}
-  - $ {{ "six" if match(python, "3.8.*") }}
-  - $ {{ "six" if match(python, ">=3.8,<3.10") }}
+  - ${{ "six" if match(python, "<3.8") }}
+  - ${{ "six" if match(python, "3.8") }}
+  - ${{ "six" if match(python, "==3.8") }}
+  - ${{ "six" if match(python, "3.8.*") }}
+  - ${{ "six" if match(python, ">=3.8,<3.10") }}
 ```
 
 In this case the value from the `python` _variant_ is used to add or remove
