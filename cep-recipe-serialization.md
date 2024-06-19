@@ -71,13 +71,12 @@ the build.
 
 Some key things to note:
 
-- Compiler expressions like ${{ compiler('c') }} are rendered to their final
-  YAML dictionary form:
+- Compiler expressions like ${{ compiler('c') }} are rendered to their final form immediately:
 
   ```yaml
   - ${{ compiler('c') }}
-  # becomes
-  - compiler: c
+  # becomes (with target_platform linux-64, as an example)
+  - gcc_linux-64
   ```
 
 - Pin expressions like `${{ pin_subpackage('libtool', upper_bound='x.x') }}` are
@@ -155,7 +154,7 @@ process.
 - Description: The target platform for which the package is being built (e.g.,
   `osx-arm64`).
 
-##### `host_platform` (remove?)
+##### `host_platform`
 
 - Type: string
 - Description: The host platform used for building the package. The 
@@ -319,7 +318,6 @@ finalized_dependencies:
 A dependency spec contains the `MatchSpec` and additional information about the
 source of the dependency. There are 6 possible `DependencyInfo` versions:
 
-- `compiler`: The dependency comes from a `compiler` expression.
 - `pin_subpackage`: The dependency comes from a `pin_subpackage` expression.
 - `pin_compatible`: The dependency comes from a `pin_compatible` expression.
 - `source`: The dependency comes from te recipe.
@@ -329,9 +327,9 @@ source of the dependency. There are 6 possible `DependencyInfo` versions:
 Example:
 
 ```yaml
-- compile: c              # language specified in ${{ compiler(`c`) }}
-  spec: clang_osx-arm64   
-- source: make >=1.3      
+# language specified in ${{ compiler(`c`) }}
+- source: clang_osx-arm64   
+- source: make >=1.3
 - pin_compatible: quarto
   lower_bound: x.x    # not present if set to None
   upper_bound: x.x.x  # not present if set to None
@@ -411,7 +409,7 @@ The following fields are available for each source:
 #### Path source
 
 > [!NOTE] The `sha256` field is added if it is not already present in the source
-> description. (TODO in rattler-build) We should compute the SHA hashes of the
+> description. We should compute the SHA hashes of the
 > patches as well and store it in the source description.
 
 ```yaml
@@ -485,8 +483,7 @@ recipe:
     host:
       - zlib
   tests:
-    - test_type: command
-      script:
+    - script:
         - curl --version
   about:
     homepage: http://curl.haxx.se/
