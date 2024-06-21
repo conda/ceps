@@ -159,6 +159,17 @@ If `pip_check` is true, the test SHOULD also run `pip check` in the test
 environment to ensure that the dependencies match the requirements of the
 original Python package.
 
+The following environment variables SHOULD be set:
+
+- `PKG_NAME` - the name of the package
+- `PKG_VERSION` - the version of the package
+- `PKG_BUILDNUM` - the build number of the package
+- `PKG_BUILD_STRING` - the build number of the package
+- `PREFIX` - the prefix where the package is installed
+- (TODO: complete this list)
+
+Note: `PKG_HASH` is removed because it can't be easily extracted from `index.json`
+
 #### Downstream test
 
 A downstream test SHOULD create a execute all tests of a downstream package with
