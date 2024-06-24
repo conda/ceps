@@ -107,25 +107,27 @@ a list of dictionaries, where each dictionary is a test definition.
   from the `tests.json` file. This is done in order to keep the `info`-folder
   small for cases when only metadata is requested.
 
-```js
-[
-  {
-    script: ['echo "Hello World"'],
-    requirements: {
-      build: ["${{ 'qemu' if target_platform != build_platform }}"],
-      run: ["python", "pytest", { if: "win", then: "pytest-windows" }],
-    },
-  },
-  {
-    python: {
-      imports: ["foo"],
-      pip_check: true,
-    },
-  },
-  {
-    downstream: "bar",
-  },
-];
+```yaml
+- script:
+    script:
+      contents:
+        - echo "Hello World"
+      # this is added as the folder where the script should be executed
+      # (ie. where the test files were copied to)
+      cwd: etc/conda/test-files/<package-identifier>/<index>/
+    requirements:
+      build: # [MatchSpec]
+        - ${{ "qemu" if target_platform != build_platform }}
+      run: # [MatchSpec]
+        - python
+        - pytest
+    files:
+      source:
+        - tests/**
+- python:
+    imports:
+      - foo
+    pip_check: true
 ```
 
 ### Test execution
@@ -139,11 +141,12 @@ platform the package is intended to run on).
 
 The `build` environment SHOULD be stacked on top of the `run` environment (ie.
 the PATH entries of the `build` environment take precedence). The script MUST be
-executed with the current work dir set to a temporary folder containing a copy
-of the extra test files (from the
-`$PREFIX/etc/conda/test-files/<package-identifier>/<id>/` folder). If there are
-no extra test files and the folder does not exist, the current working directory
-SHOULD be an empty folder.
+executed in the `cwd` stored in the script section. If there is no `cwd` stored (there are
+no extra test files and the folder does not exist), the current working directory
+SHOULD be a temporary empty folder.
+
+> Note: should we copy the cwd folder to a temporary location to prevent editing
+> the source files?
 
 #### Python test
 
@@ -165,10 +168,13 @@ The following environment variables SHOULD be set:
 - `PKG_VERSION` - the version of the package
 - `PKG_BUILDNUM` - the build number of the package
 - `PKG_BUILD_STRING` - the build number of the package
-- `PREFIX` - the prefix where the package is installed
-- (TODO: complete this list)
 
 Note: `PKG_HASH` is removed because it can't be easily extracted from `index.json`
+
+Some additional environment variables that MUST be set:
+
+- `PREFIX` - the prefix where the package is installed
+- `SHLIB_EXT` - the shared library extension (e.g. `.so`, `.dylib`, `.dll`)
 
 #### Downstream test
 
@@ -176,9 +182,10 @@ A downstream test SHOULD create a execute all tests of a downstream package with
 the package to be tested. If dependency resolution for any of the tests fails
 (e.g. due to conflicting dependencies), the test SHOULD be skipped.
 
-The downstream test SHOULD then execute all tests from the downstream package in
-separate test environments. The test SHOULD succeed if all tests pass. If any
-test fails, the downstream test SHOULD fail.
+The downstream test SHOULD then execute any script and python tests from the downstream package in separate test environments.
+The test SHOULD succeed if all tests pass. If any test fails, the downstream test SHOULD fail.
+
+Note: downstream tests of the downstream package are not executed to prevent too many tests from being executed.
 
 ## Package contents test
 
