@@ -1,7 +1,7 @@
 # Support for abi3 python packages
 
 <table>
-<tr><td> Title </td><td> A new recipe format </td>
+<tr><td> Title </td><td> Support for abi3 python packages </td>
 <tr><td> Status </td><td> Draft </td></tr>
 <tr><td> Author(s) </td><td> Isuru Fernando &lt;ifernando@quansight.com&gt;</td></tr>
 <tr><td> Created </td><td> July 01, 2023</td></tr>
