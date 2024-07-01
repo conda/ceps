@@ -53,27 +53,35 @@ are arch independent.
 
 `noarch: python` packages have several attributes to them:
 
-  A1. They have `subdir: noarch` in `info/index.json`.
+&nbsp;&nbsp;<strong>A1</strong>:
+  They have `subdir: noarch` in `info/index.json`.
 
-  A2. They have `noarch: python` in `info/index.json`.
+&nbsp;&nbsp;<strong>A2</strong>:
+  They have `noarch: python` in `info/index.json`.
 
-  A3. Python files are in `<PREFIX>/site-packages`.
+&nbsp;&nbsp;<strong>A3</strong>:
+  Python files are in `<PREFIX>/site-packages`.
 
-  A4. Entry points are recorded in `info/link.json`.
+&nbsp;&nbsp;<strong>A4</strong>:
+  Entry points are recorded in `info/link.json`.
 
 A conda install tool does four things to support them:
 
-  B1. Files in `<PREFIX>/site-packages` are moved to the correct location. Eg:
-      `<PREFIX>/lib/python3.10/site-packages`.
+&nbsp;&nbsp;<strong>B1</strong>:
+  Files in `<PREFIX>/site-packages` are moved to the correct location. Eg:
+  `<PREFIX>/lib/python3.10/site-packages`.
 
-  B2. python files (files ending with `*.py`) are compiled to `.pyc` files. Eg:
-      `<PREFIX>/lib/python3.10/site-packages/foo.py` is compiled to
-      `<PREFIX>/lib/python3.10/site-packages/__pycache__/foo.cpython-310.pyc`.
+&nbsp;&nbsp;<strong>B2</strong>:
+  python files (files ending with `*.py`) are compiled to `.pyc` files. Eg:
+  `<PREFIX>/lib/python3.10/site-packages/foo.py` is compiled to
+  `<PREFIX>/lib/python3.10/site-packages/__pycache__/foo.cpython-310.pyc`.
 
-  B3. `.pyc` files created are recorded in `<PREFIX>/conda-meta/<pkg>.json`
-      so that they are removed properly when the package is uninstalled.
+&nbsp;&nbsp;<strong>B3</strong>:
+  `.pyc` files created are recorded in `<PREFIX>/conda-meta/<pkg>.json`
+  so that they are removed properly when the package is uninstalled.
 
-  B4. Entry points in `info/link.json` are materialised.
+&nbsp;&nbsp;<strong>B4</strong>:
+  Entry points in `info/link.json` are materialised.
 
 ### info/link.json file
 An example `info/link.json` for `noarch: python` looks like
@@ -155,12 +163,15 @@ In order to support abi3 packages, we propose two methods.
 
 We require the following attributes in abi3 packages:
 
-  C1. They have `subdir: <platform>` where `<platform>` is the subdir
-      that the package was built for.
+&nbsp;&nbsp;<strong>C1</strong>:
+  They have `subdir: <platform>` where `<platform>` is the subdir
+  that the package was built for.
 
-  C2. They have `noarch: python`.
+&nbsp;&nbsp;<strong>C2</strong>:
+  They have `noarch: python`.
 
-  C3. `A2, A3, A4` are applied.
+&nbsp;&nbsp;<strong>C3</strong>:
+  `A2, A3, A4` are applied.
 
 This is compatible with `conda/mamba/micromamba` install tools
 currently. This requires support from build tools to set `subdir: <platform>`
@@ -198,11 +209,14 @@ the pure python files in `info/link,json`.
 
 We require the following support from install tools
 
-  D1: Apply action `B4` if `python: entry_points` is present in `info/link.json`.
+&nbsp;&nbsp;<strong>D1</strong>:
+  Apply action `B4` if `python: entry_points` is present in `info/link.json`.
 
-  D2: Apply actions `B2, B3` if `python: py_compile` is present in `info/link.json`.
+&nbsp;&nbsp;<strong>D2</strong>:
+  Apply actions `B2, B3` if `python: py_compile` is present in `info/link.json`.
 
-  D3: Provide a `__supports_package_metadata_version=2` virtual package.
+&nbsp;&nbsp;<strong>D3</strong>:
+  Provide a `__supports_package_metadata_version=2` virtual package.
 
 Note that we do not require `B1` as package authors should depend on a python
 version that has a custom `site.py` that adds `lib/python/site-packages` to
@@ -210,16 +224,20 @@ the path.
 
 We require additional support from build tools.
 
-  E1. Move contents in `<SP_DIR>` to `<PREFIX>/lib/python/site-packages`
-      instead of `<PREFIX>/site-packages`.
+&nbsp;&nbsp;<strong>E1</strong>:
+  Move contents in `<SP_DIR>` to `<PREFIX>/lib/python/site-packages`
+  instead of `<PREFIX>/site-packages`.
 
-  E2. Record pure python `.py` files to be compiled in `info/link.json`.
-      TODO: not sure if this is required. We can infer this from `info/index.json`.
+&nbsp;&nbsp;<strong>E2</strong>:
+  Record pure python `.py` files to be compiled in `info/link.json`.
+  TODO: not sure if this is required. We can infer this from `info/index.json`.
 
-  E3: For `noarch: generic` packages, we do not require `info/link.json` file and
-      build tools are recommended to not produce a `info/link.json` file.
+&nbsp;&nbsp;<strong>E3</strong>:
+  For `noarch: generic` packages, we do not require `info/link.json` file and
+  build tools are recommended to not produce a `info/link.json` file.
 
-  E4: Adds a `__supports_package_metadata_version>=2` in `run`.
+&nbsp;&nbsp;<strong>E4</strong>:
+  Adds a `__supports_package_metadata_version>=2` in `run`.
 
 ## Alternatives considered
 
