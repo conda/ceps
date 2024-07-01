@@ -189,8 +189,8 @@ in `info/index.json`.
 
 In this method, we require additional support from install tools.
 
-For `abi3` and `noarch: python` pacakges, we record the `entry_points` and
-the pure python files in `info/link,json`.
+For `abi3` and `noarch: python` packages, we record the `entry_points` and
+the pure python files in `info/link.json`.
 
 ```json
 {
