@@ -13,7 +13,36 @@ The goal is to have a single file that contains all the information needed to
 reproduce the exact build of a package. This will enable better reproducibility,
 provenance tracking, and debugging of conda packages.
 
-## Storage
+## Specification
+
+A package builder should have a defined way on how to serialize the recipe to the final
+output in the artifact / package.
+
+This "rendered recipe" should contain the following information:
+
+- The fully rendered recipe with all Jinja2 expressions evaluated and if/else
+  logic resolved to the final used values. There should be no more logic in the rendered recipe.
+- The fully resolved environments for the build environments (build and host). This SHOULD at least
+  include the exact versions, a checksum and the full URL for every package that was used as a dependency.
+  The resolved environments should also include the channel URLs that were used for resolution in the correct order.
+
+Additional a file MUST be placed in the `info` folder, named `info/used_build_tool.json`. This file MUST record the name and version of the tool that produced the rendered recipe. This JSON file SHOULD AT LEAST have the following keys:
+
+```js
+{
+  "name": "rattler-build",  // string
+  "version": "0.14.0"       // string
+}
+```
+
+This information can be used to reproduce the build with the same version of the tool.
+This tool version should also be able to read the rendered recipe.
+
+## Implementation details for `rattler-build`
+
+What follows is a thorough description of what is implemented in `rattler-build`. This is not directly relevant to the CEP, but should serve as an illustration for a project that follows these guidelines.
+
+### Storage
 
 The rendered recipe YAML file is stored in the `info/recipe` folder of the final
 package. Alongside the rendered recipe, we copy the entire "recipe folder".
@@ -35,6 +64,7 @@ Will be copied into the following folder structure in the final package:
 ```txt
 ├── ...
 ├── index.json
+├── used_build_tool.json  // new file!
 └── recipe
     ├── build.bat
     ├── build.sh
@@ -45,25 +75,28 @@ Will be copied into the following folder structure in the final package:
     └── variant_config.yaml
 ```
 
-## Specification
+### Implementation details
 
 The rendered recipe YAML file contains the following top-level sections:
 
-1. `recipe`: The fully rendered recipe with all Jinja2 expressions evaluated and
+1. `rendered_recipe_version`: integer - The version of the rendered recipe format.
+2. `recipe`: The fully rendered recipe with all Jinja2 expressions evaluated and
    if/else logic resolved to the final used values.
-2. `build_configuration`: Captures all the build-time configuration such as the
+3. `build_configuration`: Captures all the build-time configuration such as the
    target platform, build/host prefixes, variant used, package version and build
    string, channels, etc.
-3. `finalized_dependencies`: Records the exact versions and builds of all
+4. `finalized_dependencies`: Records the exact versions and builds of all
    dependencies (build, host and run) that were used at build time, like a
    "lockfile".
-4. `finalized_sources`: Contains the final references to the sources used, e.g.
+5. `finalized_sources`: Contains the final references to the sources used, e.g.
    git commit hashes, tarball URLs + sha256, etc.
-5. `system_tools`: Records the tools that were used from the host system in
+6. `system_tools`: Records the tools that were used from the host system in
    order to warn if reproducing the build on a different host system might lead
    to different results (patchelf, git, etc).
 
-### Recipe section
+The version of the rendered recipe format as described here is `1`.
+
+#### Recipe section
 
 This section is the fully rendered recipe in valid YAML format, with all Jinja2
 expressions evaluated and if/else logic resolved to the final values used during
@@ -135,7 +168,7 @@ pin_subpackage:
   exact: bool
 ```
 
-### Build configuration section
+#### Build configuration section
 
 This records all information that was used at build time, incl. variables given
 on the CLI or by environment yaml. Everything necessary to reproduce the build
@@ -143,18 +176,18 @@ should be recorded here.
 
 Here's the documentation for the fields in the provided YAML:
 
-#### `build_configuration`
+##### `build_configuration`
 
 The `build_configuration` section contains information related to the build
 process.
 
-##### `target_platform`
+###### `target_platform`
 
 - Type: string
 - Description: The target platform for which the package is being built (e.g.,
   `osx-arm64`).
 
-##### `host_platform`
+###### `host_platform`
 
 - Type: string
 - Description: The host platform used for building the package. The 
@@ -171,19 +204,19 @@ process.
   - `host_platform`: `linux-64` (from CLI)
   - `build_platform`: `win-64` (the current platform)
 
-##### `build_platform`
+###### `build_platform`
 
 - Type: string
 - Description: The platform used for building the package (e.g., `osx-arm64`).
 
-##### `variant`
+###### `variant`
 
 - Type: object
 - Description: Dictionary with the variant configuration used for the build.
 
 This dictionary contains _only_ the keys of the variant configuration file that were applied during the build (e.g. used in a `jinja` expression or as a dependency).
 
-##### `hash`
+###### `hash`
 
 - Type: object
 - Description: Contains information related to hashing.
@@ -191,7 +224,7 @@ This dictionary contains _only_ the keys of the variant configuration file that 
   - `prefix`: Prefix for the hash, which can include values like `py311`
     based on the variant configuration.
 
-##### `directories`
+###### `directories`
 
 - Type: object
 - Description: Contains directory paths used during the build process.
@@ -202,7 +235,7 @@ This dictionary contains _only_ the keys of the variant configuration file that 
   - `build_dir`: The build directory that contains `host_prefix`,
     `build_prefix`, and `work_dir` as subdirectories.
 
-##### `channels`
+###### `channels`
 
 - Type: array of URLs
 - Description: The URLs to the conda channels that were used to resolve 
@@ -210,7 +243,7 @@ This dictionary contains _only_ the keys of the variant configuration file that 
   
   The order is significant.
 
-##### `channel_priority`
+###### `channel_priority`
 
 - Type: string
 - Description: Optionally the channel priority used to solve the dependencies.
@@ -218,25 +251,27 @@ This dictionary contains _only_ the keys of the variant configuration file that 
   - `strict` (default): Only the repodata in the first channel that contains repodata for a package will be considered.
   - `disabled`: Any repodata from any channel for a package can be considered.
 
-##### `solve_strategy`
+###### `solve_strategy`
 
 - Type: string
 - Description: Optionally the solve strategy used to solve the dependencies. 
 
   - `highest` (default): Resolve the highest version of each package.
   - `lowest-version`: Resolve the lowest compatible version for each package.
-    
-    All candidates with the same version are still ordered the same as with `highest`. This ensures that the candidate with the highest build number is used and downprioritization still works.
 
-  - `lowest-version-direct`: Resolve the lowest compatible version for direct dependencies but the highest for transitive dependencies. This is similar to `lowest-version` but only for direct dependencies.
+     All candidates with the same version are still ordered the same as with `highest`.
+     This ensures that the candidate with the highest build number is used and down-prioritization still works.
 
-##### `timestamp`
+  - `lowest-version-direct`: Resolve the lowest compatible version for direct dependencies but the 
+    highest for transitive dependencies. This is similar to `lowest-version` but only for direct dependencies.
+
+###### `timestamp`
 
 - Type: string / timestamp in ISO 8601 format
 - Description: The timestamp of the build configuration (e.g.,
   `2024-04-13T14:35:30.774863Z`).
 
-##### `subpackages`
+###### `subpackages`
 
 - Type: list of objects
 - Description: Contains information about subpackages that are used in
@@ -246,7 +281,7 @@ This dictionary contains _only_ the keys of the variant configuration file that 
     - `version`: The version of the subpackage (e.g., `8.0.1`).
     - `build_string`: The build string for the subpackage (e.g., `h60d57d3_0`).
 
-##### `packaging_settings`
+###### `packaging_settings`
 
 - Type: object
 - Description: Contains settings related to the final package output.
@@ -454,14 +489,15 @@ the same version of these tools.
 
 ```yaml
 system_tools:
-  rattler-build: 0.14.0
-  patchelf: 0.12
-  git: 2.33.0
+  rattler-build: "0.14.0"
+  patchelf: "0.12"
+  git: "2.33.0"
 ```
 
 ## Full Example
 
 ```yaml
+rendered_recipe_version: 1
 recipe:
   schema_version: 1
   package:
