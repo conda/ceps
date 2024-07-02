@@ -108,6 +108,16 @@ requirements:
     - ${{ "cudatoolkit" if cuda == "have_cuda" }}
 ```
 
+### Default variables in the recipe
+
+Several variables are globally available in the recipe, based on the `target_platform` and `build_platform`:
+
+- `target_platform` is a string that represents the platform for which the package is built. It is a string of the form `os-arch` (e.g. `linux-64`, `osx-64`, `win-64`, `linux-aarch64`, ...).
+- `build_platform` is a string that represents the platform on which the package is built. Same format as `target_platform`.
+- `linux`, `osx`, `win`, `emscripten`: These are boolean variables that are `true` if the target platform is a Linux, macOS, Unix, or Windows platform, respectively. Note that this is the first part of the `target_platform` string.
+- `x86_64`, `aarch64`, `armv7l`, `ppc64le`, `s390x`, `sparc64`, `riscv64`: These are boolean variables that are `true` if the target platform is the respective architecture. Note that, except for `x86_64`, these are the second part of the `target_platform` string.
+- `unix`: This is a boolean variable that is `true` if the target platform is a Unix platform (Linux, macOS or emscripten).
+
 ## Available Jinja functions
 
 ### The compiler function
@@ -364,6 +374,18 @@ recipes, such as `# [py38]` or `# [py3k]`.
 
 The version comparison rules follow those of the `conda` version comparison
 rules.
+
+## The `is_unix`, `is_win`, `is_osx`, and `is_linux` functions
+
+The `is_...` functions can be used to check if the target or build platforms match
+the given platform. For example:
+
+```yaml
+requirements:
+  - ${{ "six" if is_unix(target_platform) }}
+  - ${{ "six" if is_win(target_platform) }}
+  - ${{ "six" if is_linux(build_platform) }}
+```
 
 ## The `hash` variable
 
