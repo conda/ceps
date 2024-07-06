@@ -31,7 +31,7 @@ Finally, the implementation of JLAP is quite complex which makes it hard to adop
 
 ### ZSTD compression
 
-A notable improvement is compressing the `repodata.json` with `zst` and serving that file. In practice this yields a file that is 20% of the original size (20-30 Mb for large cases). Although this is still quite a big file its substantially smaller. 
+A notable improvement is compressing the `repodata.json` with `zst` and serving that file. In practice this yields a file that is 20% of the original size (20-30 Mb for large cases). Although this is still quite a big file it's substantially smaller. 
 
 However, the file still contains all repodata in the channel. This means the file needs to be redownloaded every time anyone adds a single package (even if a user doesnt need that package).
 
@@ -78,7 +78,7 @@ The urls are relative to the shard index.
 
 The index is still updated regularly but the file does not increase in size with every package added, only when new package names are added which happens much less often.
 
-For a large case (conda-forge linux-64) this files is 670kb at the time of writing.
+For a large case (conda-forge linux-64) this file is 670kb at the time of writing.
 
 We suggest serving the file with a short lived `Cache-Control` `max-age` header of 60 seconds to an hour but we leave it up to the channel administrator to set a value that works for that channel.
 
@@ -157,7 +157,7 @@ This is done to reduce the overall file size of the shards.
 
 Implementers SHOULD ignore unknown keys, this allows adding additional keys to the format in the future without breaking old versions of tools.
 
-Although these files can become relatively large (100s of kilobytes) typically for a large case (conda-forge) these files remaing very small, e.g. 100s of bytes to a couple of kilobytes.
+Although these files can become relatively large (100s of kilobytes) typically for a large case (conda-forge) these files remain very small, e.g. 100s of bytes to a couple of kilobytes.
 
 ## Fetch process
 
