@@ -104,7 +104,7 @@ the build.
 
 Some key things to note:
 
-- Compiler expressions like ${{ compiler('c') }} are rendered to their final form immediately:
+- Compiler expressions like `${{ compiler('c') }}` are rendered to their final form immediately:
 
   ```yaml
   - ${{ compiler('c') }}
