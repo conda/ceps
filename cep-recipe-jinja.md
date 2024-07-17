@@ -183,7 +183,7 @@ For example:
 
 ```yaml
 build:
-  - ${{ stdlib('c) }}
+  - ${{ stdlib('c') }}
 ```
 
 Evaluates to the `c_stdlib` and `c_stdlib_version` from the variant config
