@@ -26,7 +26,7 @@ This "rendered recipe" should contain the following information:
   include the exact versions, a checksum and the full URL for every package that was used as a dependency.
   The resolved environments should also include the channel URLs that were used for resolution in the correct order.
 
-Additional a file MUST be placed in the `info` folder, named `info/used_build_tool.json`. This file MUST record the name and version of the tool that produced the rendered recipe. This JSON file SHOULD AT LEAST have the following keys:
+Additionally, a file MUST be placed in the `info` folder, named `info/used_build_tool.json`. This file MUST record the name and version of the tool that produced the rendered recipe. This JSON file SHOULD AT LEAST have the following keys:
 
 ```js
 {
