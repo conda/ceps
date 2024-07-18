@@ -32,7 +32,7 @@ There are two flavors of this input file: explicit and not explicit.
 
 If the line `@EXPLICIT` is found, the file is considered explicit. The word `@EXPLICIT` can contain whitespace before and after, but it's not recommended.
 
-In explicit files, each package requirement line MUST specify a single, direct URL (as in RFC 3986) to a conda artifact. File paths are also supported, but they SHOULD be preferrably expressed as `file://` URLs. Relative paths are allowed, and will be processed as relative to the working directory, not the input file parent directory. Each URL can be immediately followed by an anchor tag (`#<hash>`) that encodes the expected MD5 checksum of the downloaded artifact. More specifically, whitespace-stripped lines SHOULD be parsable by this regex:
+In explicit files, each package requirement line MUST specify a single, direct URL (as in RFC 3986) to a conda artifact. File paths are also supported, but they SHOULD be preferrably expressed as `file://` URLs. Relative paths are allowed, and will be processed as relative to the working directory, not the input file parent directory. Each URL can be immediately followed by an anchor tag (`#<hash>`) that encodes the expected MD5 checksum of the downloaded artifact as a lowercase string of 32 hexadecimal characters. More specifically, whitespace-stripped lines SHOULD be parsable by this Python-style regex:
 
 ```re
 (?:(?P<url_p>.+)(?:[/\\]))?(?P<fn>[^/\\#]+(?:\.tar\.bz2|\.conda))(:?#(?P<md5>[0-9a-f]{32}))?$
