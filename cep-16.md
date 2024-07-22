@@ -1,3 +1,13 @@
+<table>
+<tr><td> Title </td><td> Sharded Repodata </td>
+<tr><td> Status </td><td> Accepted </td></tr>
+<tr><td> Author(s) </td><td> Bas Zalmstra &lt;bas@prefix.dev&gt;</td></tr>
+<tr><td> Created </td><td> April 30, 2024</td></tr>
+<tr><td> Updated </td><td> July 22, 2024</td></tr>
+<tr><td> Discussion </td><td> https://github.com/conda-incubator/ceps/pull/75 </td></tr>
+<tr><td> Implementation </td><td>  </td></tr>
+</table>
+
 # Sharded Repodata
 
 We propose a new "repodata" format that can be sparsely fetched. That means, generally, smaller fetches (only fetch what you need) and faster updates of existing repodata (only fetch what has changed).
