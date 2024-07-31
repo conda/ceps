@@ -12,13 +12,14 @@
 [cep8]: https://github.com/conda-incubator/ceps/blob/main/cep-8.md
 [django]: https://docs.djangoproject.com/en/dev/internals/release-process/#deprecation-policy
 [voting]: https://github.com/conda-incubator/governance#enhancement-proposal-approval
+[cep9999]: https://github.com/conda-incubator/ceps/blob/main/cep-9999.md
 
 ## Abstract
 
 This CEP describes a deprecation schedule to properly warn about upcoming removals from the codebase. This policy expands on ideas and terminology defined in the [Conda Release Schedule (CEP-8)][cep8].
 
 > **Note**
-> This CEP is only applicable for projects that have adopted the [Conda Release Schedule (CEP-8)][cep8].
+> This CEP is only applicable for projects that have adopted either the [Conda Release Schedule (CEP-8)][cep8] or the [Conda-build Release Schedule (CEP-9999)][cep9999].
 
 ## Specification
 

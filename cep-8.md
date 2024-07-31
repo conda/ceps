@@ -9,17 +9,23 @@
 <tr><td> Implementation </td><td> NA </td></tr>
 </table>
 
+<!-- links -->
+[cep9]: https://github.com/conda-incubator/ceps/blob/main/cep-9.md]
+[calver]: https://calver.org/
+[pep602]: https://peps.python.org/pep-0602/
+[django]: https://docs.djangoproject.com/en/dev/internals/release-process/#release-cadence
+
 ## Abstract
 
 This CEP describes a release cadence for all future `conda` versions starting with `22.9.0`.
 
 ## Specification
 
-We propose regularly scheduled bi-monthly (every two months) releases where the tagging/release occurs during the week (per ISO 8601, Monday through Thursday) of the second Monday of the month.
+We propose regularly scheduled bi-monthly (every two months) releases where the tagging/release occurs during the week (per ISO 8601, Monday through Thursday) of the **second** Monday of the month.
 
-In a nod to our many different kinds of users, we will also propose a deprecation policy (to be defined in a later CEP) that allows for a slower adoption rate (i.e., users could update every 3-4 months instead).
+In a nod to our many different kinds of users, we will also propose a deprecation policy ([CEP-9][cep9]) that allows for a slower adoption rate (i.e., users could update every 3-4 months instead).
 
-To accomplish better, more predictable versioning, we will adopt [CalVer](https://calver.org/):
+To accomplish better, more predictable versioning, we will adopt [CalVer][calver]:
 - `YY`: the major version will be the shortened year (22+)
 - `MM`: the minor version will be the shortened month (1-12)
 - `MICRO`: the micro/patch version is reset to zero every month and incremented for every additional release that occurs during that month (0+)
@@ -99,8 +105,8 @@ It should be noted that a request for change was recorded in the pull request ab
 
 ## Reference
 
-- [PEP 602 – Annual Release Cycle for Python](https://peps.python.org/pep-0602/)
-- [Django's Release Cadence](https://docs.djangoproject.com/en/dev/internals/release-process/#release-cadence)
+- [PEP 602 – Annual Release Cycle for Python][pep602]
+- [Django's Release Cadence][django]
 
 ## Copyright
 
