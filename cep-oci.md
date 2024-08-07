@@ -139,15 +139,9 @@ Note that in the case of pulling repodata, the name `repodata.json` is always us
 
 ##### mamba
 
-In order to fetch packages from an OCI registry, we need to set a mirror (can be more than one) for the channel to be used (e.g `conda-forge`).
-This can be done in the rc file as follows:
+In order to fetch packages from an OCI registry, the corresponding URL should be used as a channel (i.e `oci://ghcr.io/channel-mirrors/conda-forge`).
 
-```
-mirrored_channels:
-  conda-forge: ["oci://ghcr.io/channel-mirrors/conda-forge"]
-```
-
-When a user requests installing a package (with the configuration set above, and using `conda-forge` channel), a set of requests to fetch `repodata.json` are first performed as follows:
+When a user requests installing a package, a set of requests to fetch `repodata.json` are first performed as follows:
 
 - A token is requested to anonymously pull `repodata.json` using the following URL:\
 `https://ghcr.io/token?scope=repository:channel-mirrors/conda-forge/<subdir>/repodata.json:pull`
