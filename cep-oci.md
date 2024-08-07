@@ -1,4 +1,14 @@
-# OCI registries as conda channels
+<table>
+<tr><td> Title </td><td> OCI registries as conda channels </td>
+<tr><td> Status </td><td> Proposed </td></tr>
+<tr><td> Author(s) </td><td> Wolf Vollprecht &lt;wolf@prefix.dev&gt;</td></tr>
+<tr><td> Created </td><td> April 12, 2024</td></tr>
+<tr><td> Updated </td><td> August 7, 2024</td></tr>
+<tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/70 </td></tr>
+<tr><td> Implementation </td><td>  </td></tr>
+</table>
+
+# Abstract
 
 We want to use OCI registries as a storage for conda packages. This CEP specifies how we lay out conda packages on an OCI registry.
 
