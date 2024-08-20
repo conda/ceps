@@ -1,7 +1,7 @@
 <table>
 <tr><td> Title </td><td> OCI registries as conda channels </td>
 <tr><td> Status </td><td> Proposed </td></tr>
-<tr><td> Author(s) </td><td> Wolf Vollprecht &lt;wolf@prefix.dev&gt;</td></tr>
+<tr><td> Author(s) </td><td> Wolf Vollprecht &lt;wolf@prefix.dev&gt;<br> Hind Montassif &lt;hind.montassif@quantstack.net&gt;</td></tr>
 <tr><td> Created </td><td> April 12, 2024</td></tr>
 <tr><td> Updated </td><td> August 7, 2024</td></tr>
 <tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/70 </td></tr>
@@ -48,7 +48,6 @@ Custom mediaTypes defined for the conda channels use case are as follows:
 | repodata         | `repodata.json.zst` file  | application/vnd.conda.repodata.v1+json+zst  |
 | repodata         | `repodata.json.gz` file   | application/vnd.conda.repodata.v1+json+gzip |
 | repodata         | `repodata.json.bz2` file  | application/vnd.conda.repodata.v1+json+bz2  |
-| repodata         | `repodata.json.jlap` file | application/vnd.conda.jlap.v1               |
 
 If needed, more mediaTypes could be specified (i.e `application/vnd.conda.info.v1.tar+zst`).
 
@@ -70,12 +69,6 @@ Other encodings are also accepted:
 
 - `application/vnd.conda.repodata.v1+json+gzip`
 - `application/vnd.conda.repodata.v1+json+bz2`
-
-For `jlap`, the following mediaType is used:
-
-- `application/vnd.conda.jlap.v1`
-
-The `jlap` file should also be stored under the `<channel>/<subdir>/repodata.json` path as an additional layer.
 
 ### Conda package artifacts on an OCI registry
 
