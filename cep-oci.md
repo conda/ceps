@@ -119,6 +119,12 @@ Some characters that are used in the conda-forge repository as part of the build
 - `!` is replaced by `__e__`
 - `=` is replaced by `__eq__`
 
+> [!IMPORTANT]
+> 
+> The mapping of the package names and tags, as previously outlined, is solely intended for internal storage within an OCI registry.
+> 
+> From the user's perspective, or in contexts outside of the OCI registry—beyond the middleware that interacts with it—, the package names and tags will remain unchanged, preserving the original strings.
+
 #### Authentication
 
 Pulling a public image from a Container registry can be done anonymously ([ref](https://docs.github.com/en/packages/learn-github-packages/about-permissions-for-github-packages#visibility-and-access-permissions-for-packages)).
