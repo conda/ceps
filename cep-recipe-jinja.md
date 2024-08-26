@@ -1,7 +1,7 @@
 # A new recipe format: `jinja` functions in recipes
 
 <table>
-<tr><td> Title </td><td> A new recipe format: `jinja` functions in recipes </td>
+<tr><td> Title </td><td> CEP 17 – A new recipe format (part 3): `jinja` functions in recipes </td>
 <tr><td> Status </td><td> Open </td></tr>
 <tr><td> Author(s) </td><td> Wolf Vollprecht &lt;wolf@prefix.dev&gt;</td></tr>
 <tr><td> Created </td><td> Apr 12, 2024</td></tr>
@@ -115,7 +115,7 @@ Several variables are globally available in the recipe, based on the `target_pla
 - `target_platform` is a string that represents the platform for which the package is built. It is a string of the form `os-arch` (e.g. `linux-64`, `osx-64`, `win-64`, `linux-aarch64`, ...).
 - `build_platform` is a string that represents the platform on which the package is built. Same format as `target_platform`.
 - `linux`, `osx`, `win`, `emscripten`: These are boolean variables that are `true` if the target platform is a Linux, macOS, Unix, or Windows platform, respectively. Note that this is the first part of the `target_platform` string.
-- `x86_64`, `aarch64`, `armv7l`, `ppc64le`, `s390x`, `sparc64`, `riscv64`: These are boolean variables that are `true` if the target platform is the respective architecture. Note that, except for `x86_64`, these are the second part of the `target_platform` string.
+- `x86_64`, `aarch64`, `armv7l`, `ppc64le`, `s390x`, `sparc64`, `riscv64`, `arm64`: These are boolean variables that are `true` if the target platform is the respective architecture. Note that, except for `x86_64`, these are the second part of the `target_platform` string.
 - `unix`: This is a boolean variable that is `true` if the target platform is a Unix platform (Linux, macOS or emscripten).
 
 ## Available Jinja functions
@@ -255,11 +255,11 @@ version must be incremented, and the local version part must be removed.
 - If the last segment is a number, the number should be incremented and `.0a0`
   should be appended to prevent any alpha versions from being selected. For
   example: `1.2.3` with a `x.x` pin expression should result in `<1.3.0a0`.
-- The epoch is left untouched by the `max_pin` (or `min_pin`). If the epoch is
+- The epoch is left untouched by the `upper_bound` (or `lower_bound`). If the epoch is
   set, it will be included in the final version. E.g. `1!1.2.3` with a
-  `max_pin='x.x'` will result in `<1!1.3.0a0`.
-- When bumping the version with a `max_pin` the local version part is removed.
-  For example, `1.2.3+local` with a `max_pin='x.x'` will result in `<1.3.0a0`.
+  `upper_bound='x.x'` will result in `<1!1.3.0a0`.
+- When bumping the version with a `upper_bound` the local version part is removed.
+  For example, `1.2.3+local` with a `upper_bound='x.x'` will result in `<1.3.0a0`.
 
 > [!NOTE]
 >
@@ -283,12 +283,12 @@ For example, a package like `numpy-1.21.3-h123456_5` as input to the following
 pin expressions.
 
 - `lower_bound='x.x', upper_bound='x.x'` would result in `>=1.21,<1.22.0a0`
-- `lower_bound='x.x.x', max_pin='x'` would result in `>=1.21.3,<2.0a0`
+- `lower_bound='x.x.x', upper_bound='x'` would result in `>=1.21.3,<2.0a0`
 - `lower_bound=None, upper_bound='x'` would result in `<2.0a0`
 - `lower_bound='x.x.x.x', upper_bound=None` would result in `>=1.21.3`
 - `exact=True` would result in `==1.21.3=h123456_5`
 
-The function should error if `exact` is `True` and `min_pin` or `max_pin` are
+The function should error if `exact` is `True` and `lower_bound` or `upper_bound` are
 set.
 
 Given the following version `1.2.3`, we get the following results:
