@@ -46,7 +46,7 @@ The registry will be implemented as a JSON file in a public GitHub repository. I
 - Description
 - Channel dependencies, that link a given channel to other channels
 - Homepage and GitHub URL, Logo, etc.
-- Wether the channel is commercial, and where the Terms of Service are located
+- Whether the channel is commercial, and where the Terms of Service are located
 
 The JSON file would look like the following:
 
