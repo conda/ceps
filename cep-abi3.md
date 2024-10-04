@@ -185,12 +185,6 @@ build:
 to imply a python version independent package and set `noarch: python`
 in `info/index.json`.
 
-To test that an install tool works with this scheme, you can try
-
-    conda/micromamba create -n a sympy python=3.10 -c isuruf/label/abi3 -c conda-forge
-
-on a linux-64 machine and confirm that all actions `B1, B2, B3, B4` are applied.
-
 ### `package_metadata_version = 2`
 
 In this method, we require additional support from install tools.
