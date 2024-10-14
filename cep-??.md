@@ -10,7 +10,7 @@
 
 ## Abstract
 
-The conda steering council team is proposing to transition chat platforms from Element/Matrix to Zulip.
+The conda steering council is proposing to transition chat platforms from Element/Matrix to Zulip.
 
 ## Background
 
@@ -44,11 +44,10 @@ Zulip offers some features we would consider beneficial to the conda-forge commu
 After accepting this proposal, we will implement the following decisions:
 
 - The Zulip instance published at `conda.zulipchat.com` will be open to the public with world-readable permissions.
-- The steering council will move its private communications to the Zulip instance, and stop using the Element rooms. A last message will be published in the Element core chat room with the details on how to transition to the Zulip instance. 
+- The steering council will move its private communications to the Zulip instance, and stop using the Element rooms. A last message will be published in the Element core chat room with the details on how to transition to the Zulip instance.
 - New channels will be created in the instance as considered necessary (e.g. tool-specific channels, CEP discussions, etc).
 
 Three months after the approval of this CEP, the steering council will consider the migration finished and the public rooms will become private and archived. If the steering council estimates that there's still sufficient activity, another three months will be granted, with periodic reminders of the new Zulip instance. After that period, no more extensions will take place.
-
 
 ## Alternatives
 
