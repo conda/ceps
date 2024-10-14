@@ -4,7 +4,7 @@
 <tr><td> Author(s) </td><td> Jaime Rodríguez-Guerra &lt;jaime.rogue@gmail.com&gt; </td></tr>
 <tr><td> Created </td><td> Oct 14, 2024</td></tr>
 <tr><td> Updated </td><td> Oct 14, 2024</td></tr>
-<tr><td> Discussion </td><td> https://github.com/conda/ceps/pulls </td></tr>
+<tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/92, https://github.com/conda/communications/issues/29 </td></tr>
 <tr><td> Implementation </td><td> NA </td></tr>
 </table>
 
