@@ -25,6 +25,8 @@ for conda's implementation, all major changes should be submitted as
 | [13](cep-13.md) | A new recipe format - part 1 |
 | [14](cep-14.md) | A new recipe format – part 2 - the allowed keys & values |
 | [15](cep-15.md) | Hosting repodata.json and packages separately by adding a base_url property. |
+| [16](cep-16.md) | Sharded Repodata |
+| [17](cep-17.md) | Optional python site-packages path in repodata |
 
 ## References
 
