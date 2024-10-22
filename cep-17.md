@@ -1,11 +1,11 @@
 <table>
 <tr><td> Title </td><td> Optional python site-packages path in repodata </td>
-<tr><td> Status </td><td> Proposed </td></tr>
+<tr><td> Status </td><td> Accepted </td></tr>
 <tr><td> Author(s) </td><td> Jonathan Helmus &lt;jjhelmus@gmail.com&gt;</td></tr>
 <tr><td> Created </td><td> Sep 13, 2024</td></tr>
 <tr><td> Updated </td><td> Sep 13, 2024</td></tr>
 <tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/90 </td></tr>
-<tr><td> Implementation </td><td> NA </td></tr>
+<tr><td> Implementation </td><td> https://github.com/conda/conda/pull/14256 </td></tr>
 </table>
 
 To avoid confusion this document will use a stylized `python` to indicate a conda package with that name.
