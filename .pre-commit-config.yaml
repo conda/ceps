@@ -25,6 +25,12 @@ repos:
       types: [text]
       args: [--negate]
       files: cep-.+\.md
+    - id: email-tags
+      name: Email addresses must use &lt; and &gt;
+      entry: <[^<>\s]+@[^<>\s]+>
+      language: pygrep
+      types: [text]
+      files: cep-.+\.md
     - id: cep-filenames
       name: CEP filenames must be 'cep-XXXX.md'
       entry: CEP documents must be named '/cep-XXXX.md'
