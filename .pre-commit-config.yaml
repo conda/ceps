@@ -1,12 +1,6 @@
 # disable autofixing PRs, commenting "pre-commit.ci autofix" on a pull request triggers a autofix
 ci:
   autofix_prs: false
-# generally speaking we ignore all vendored code as well as tests data
-exclude: |
-  (?x)^(
-    tests/data/.* |
-    conda_libmamba_solver/mamba_utils\.py
-  )$
 repos:
   # generic verification and formatting
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -22,3 +16,18 @@ repos:
     hooks:
       - id: check-hooks-apply
       - id: check-useless-excludes
+  - repo: local
+    hooks:
+    - id: cep-header
+      name: CEP must start with a '# CEP \d - Title' header
+      entry: ^# CEP \d+ - .+$
+      language: pygrep
+      types: [text]
+      args: [--negate]
+      files: cep-.+\.md
+    - id: cep-filenames
+      name: CEP filenames must be 'cep-XXXX.md'
+      entry: CEP documents must be named '/cep-XXXX.md'
+      language: fail
+      files: ^.*cep-.*\.md.*$
+      exclude: ^cep-\d{4}\.md$
