@@ -23,7 +23,7 @@ for conda's implementation, all major changes should be submitted as
 | [0010](cep-0010.md) | Conda Version Support |
 | [0011](cep-0011.md) | Define the menuinst standard |
 | [0012](cep-0012.md) | Serving run_exports metadata in conda channels |
-| [0013](cep-0013.md) | A new recipe format - part 1 |
+| [0013](cep-0013.md) | A new recipe format – part 1 |
 | [0014](cep-0014.md) | A new recipe format – part 2 - the allowed keys & values |
 | [0015](cep-0015.md) | Hosting repodata.json and packages separately by adding a base_url property. |
 | [0016](cep-0016.md) | Sharded Repodata |
@@ -40,9 +40,9 @@ Community members are encouraged to author a CEP to suggest changes *before*
 any code is written to allow for the community to discuss the proposed changes.
 
 The formal process by which CEPs should be authored and how they are reviewed
-and resolved is specified in [CEP-1](https://github.com/conda/ceps/blob/main/cep-0001.md).
+and resolved is specified in [CEP 1](https://github.com/conda/ceps/blob/main/cep-0001.md).
 
-A template for new CEPs is given in [CEP-0](https://github.com/conda/ceps/blob/main/cep-0000.md).
+A template for new CEPs is given in [CEP 0](https://github.com/conda/ceps/blob/main/cep-0000.md).
 
 ## Conda capitalization standards
 
