@@ -115,7 +115,7 @@ build:
   # What is valid in an `if:` condition is valid
   skip: [list of expressions]
 
-  # wether the package is a noarch package, and if yes, wether it is "generic" or "python"
+  # whether the package is a noarch package, and if yes, whether it is "generic" or "python"
   # defaults to null ("arch" package)
   noarch: Option<OneOf<"generic" | "python">>
 
@@ -177,7 +177,7 @@ build:
     # was `ignore_prefix_files`
     ignore: bool | [path] (defaults to false)
 
-    # wether to detect binary files with prefix or not
+    # whether to detect binary files with prefix or not
     # was `detect_binary_files_with_prefix`
     ignore_binary_files: bool (defaults to true on Unix and (always) false on Windows)
 
@@ -186,7 +186,7 @@ build:
     # linux only, list of rpaths (was rpath)
     rpaths: [path] (defaults to ['lib/'])
 
-    # wether to relocate binaries or not. If this is a list of paths, then
+    # whether to relocate binaries or not. If this is a list of paths, then
     # only the listed paths are relocated
     binary_relocation: bool (defaults to true) | [glob]
 

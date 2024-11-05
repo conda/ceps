@@ -16,6 +16,12 @@ repos:
     hooks:
       - id: check-hooks-apply
       - id: check-useless-excludes
+  - repo: https://github.com/codespell-project/codespell
+    # see setup.cfg
+    rev: v2.3.0
+    hooks:
+      - id: codespell
+        args: [--write-changes]
   - repo: local
     hooks:
     - id: cep-header
