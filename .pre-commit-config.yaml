@@ -43,6 +43,12 @@ repos:
       language: pygrep
       types: [text]
       files: cep-.+\.md
+    - id: cep-hrefs
+      name: Links to CEPs must be relative (no leading slash)
+      entry: '\(/cep-\d{4}\.md\)'
+      language: pygrep
+      types: [text]
+      files: cep-.+\.md
     - id: email-tags
       name: Email addresses must use &lt; and &gt;
       entry: <[^<>\s]+@[^<>\s]+>
