@@ -31,6 +31,18 @@ repos:
       types: [text]
       args: [--negate]
       files: cep-.+\.md
+    - id: cep-nodash
+      name: CEPs must be referred to with 'CEP N' (no dash)
+      entry: CEP-+\d+
+      language: pygrep
+      types: [text]
+      files: cep-.+\.md
+    - id: cep-nozero
+      name: CEPs must be referred to with 'CEP N' (no leading zeros)
+      entry: CEP[- ]+0+\d+
+      language: pygrep
+      types: [text]
+      files: cep-.+\.md
     - id: email-tags
       name: Email addresses must use &lt; and &gt;
       entry: <[^<>\s]+@[^<>\s]+>
