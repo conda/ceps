@@ -155,7 +155,9 @@ Micromamba:
 2. Action `B4` is applied for packages with both `A2, A4`.
 
 
-## Implementation for abi3 packages in install tools.
+## Implementation for abi3 packages
+
+### Support in install tools
 
 We require the following attributes in abi3 packages:
 
@@ -170,28 +172,30 @@ We require the following attributes in abi3 packages:
   `A2, A3, A4` are applied.
 
 This is compatible with `conda/mamba/micromamba` install tools
-currently. This requires support from build tools to set `subdir: <platform>`.
+currently.
 
-In particular an option
+### Support in build tools
+
+This requires support from build tools to set `subdir: <platform>`.
+
+In particular recipe authors would set
 ```
 build:
   python_version_independent: true
-```
-that does
 
-&nbsp;&nbsp;<strong>D1</strong>:
-Set `noarch: python` in `info/index.json`.
-
-Recipe authors would explicitly support ABI3 packages by adding
-```yaml
 requirements:
   host:
     - python
     - python-abi3
 ```
-which would set the runtime requirements. This is explicitly required
-from recipe authors so that we do not restrict this CEP to ABI3 packages
-and allow the possibility for ABI4 etc.
+which would make the build tool
+
+&nbsp;&nbsp;<strong>D1</strong>:
+Set `noarch: python` in `info/index.json`.
+
+Note that `python-abi3` would set the runtime requirements.
+This is explicitly required from recipe authors so that we do not
+restrict this CEP to ABI3 packages and allow the possibility for ABI4 etc.
 
 An example `python-abi3=3.8` package would set itself in its
 `run_exports` entry and will have the following requirements:
