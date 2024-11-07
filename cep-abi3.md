@@ -157,10 +157,6 @@ Micromamba:
 
 ## Implementation for abi3 packages in install tools.
 
-In order to support abi3 packages, we propose two methods.
-
-### `package_metadata_version = 1`
-
 We require the following attributes in abi3 packages:
 
 &nbsp;&nbsp;<strong>C1</strong>:
@@ -174,70 +170,37 @@ We require the following attributes in abi3 packages:
   `A2, A3, A4` are applied.
 
 This is compatible with `conda/mamba/micromamba` install tools
-currently. This requires support from build tools to set `subdir: <platform>`
-only.
+currently. This requires support from build tools to set `subdir: <platform>`.
 
-In particular an option:
+In particular an option
 ```
 build:
   python_version_independent: true
 ```
-to imply a python version independent package and set `noarch: python`
-in `info/index.json`.
-
-### `package_metadata_version = 2`
-
-In this method, we require additional support from install tools.
-
-For `abi3` and `noarch: python` packages, we record the `entry_points` and
-the pure python files in `info/link.json`.
-
-```json
-{
-  "python": {
-    "entry_points": [
-      "foo = foo:main"
-    ],
-    "py_compile": [
-      "lib/python/site-packages/foo/main.py",
-      "lib/python/site-packages/foo/__init__.py",
-    ]
-  },
-  "package_metadata_version": 2,
-}
-```
-
-We require the following support from install tools
+that does
 
 &nbsp;&nbsp;<strong>D1</strong>:
-  Apply action `B4` if `python: entry_points` is present in `info/link.json`.
+Set `noarch: python` in `info/index.json`.
 
-&nbsp;&nbsp;<strong>D2</strong>:
-  Apply actions `B2, B3` if `python: py_compile` is present in `info/link.json`.
+Recipe authors would explicitly support ABI3 packages by adding
+```yaml
+requirements:
+  host:
+    - python
+    - python-abi3
+```
+which would set the runtime requirements. This is explicitly required
+from recipe authors so that we do not restrict this CEP to ABI3 packages
+and allow the possibility for ABI4 etc.
 
-&nbsp;&nbsp;<strong>D3</strong>:
-  Provide a `__supports_package_metadata_version=2` virtual package.
-
-Note that we do not require `B1` as package authors should depend on a python
-version that has a custom `site.py` that adds `lib/python/site-packages` to
-the path.
-
-We require additional support from build tools.
-
-&nbsp;&nbsp;<strong>E1</strong>:
-  Move contents in `<SP_DIR>` to `<PREFIX>/lib/python/site-packages`
-  instead of `<PREFIX>/site-packages`.
-
-&nbsp;&nbsp;<strong>E2</strong>:
-  Record pure python `.py` files to be compiled in `info/link.json`.
-  TODO: not sure if this is required. We can infer this from `info/index.json`.
-
-&nbsp;&nbsp;<strong>E3</strong>:
-  For `noarch: generic` packages, we do not require `info/link.json` file and
-  build tools are recommended to not produce a `info/link.json` file.
-
-&nbsp;&nbsp;<strong>E4</strong>:
-  Adds a `__supports_package_metadata_version>=2` in `run`.
+An example `python-abi3=3.8` package would set itself in its
+`run_exports` entry and will have the following requirements:
+```yaml
+requirements:
+  run:
+    - cpython >=3.8
+    - python-gil
+```
 
 ## Alternatives considered
 
@@ -254,6 +217,11 @@ environment to compile the python files.
 
 This suggestion by `@wolfv` is not ideal as this clutters `noarch` subdir
 `repodata.json` file with packages that are useless for the platform in question.
+
+### A new `package_metadata_version`
+
+Since we can work within the constraints of the current install tools we
+do not need to require extra support from install tools.
 
 <!--links-->
 [C_API_Stability]: https://docs.python.org/3/c-api/stable.html
