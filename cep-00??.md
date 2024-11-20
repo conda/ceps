@@ -20,7 +20,9 @@ Given a directory, propose an algorithm to compute the aggregated hash of its co
 
 ## Specification
 
-Given a directory, recursively scan all its contents (without following symlinks) and sort them by their full path. For each entry in the contents table, compute the hash for the concatenation of:
+Given a directory, recursively scan all its contents (without following symlinks) and sort them by their full path as a Unicode string. More specifically, it MUST follow an ascending lexicographical comparison using the numerical Unicode code points (i.e. the result of Python's built-in function `ord()`) of their characters [^1]. 
+
+For each entry in the contents table, compute the hash for the concatenation of:
 - UTF-8 encoded bytes of the path, relative to the input directory. Backslashes MUST be normalized to forward slashes before encoding.
 - Then, depending on the type:
     - For text files, the UTF-8 encoded bytes of an `F` separator, followed by the UTF-8 encoded bytes of its line-ending-normalized contents (`\r\n` replaced with `\n`). A file is considered
@@ -102,3 +104,4 @@ All CEPs are explicitly [CC0 1.0 Universal](https://creativecommons.org/publicdo
 [pymerkletools]: https://github.com/Tierion/pymerkletools
 [crates]: https://crates.io/search?q=content%20hash
 [conda-build-issue]: https://github.com/conda/conda-build/issues/4762
+[^1]: This is what Python does. See "strings" in [Value comparisons](https://docs.python.org/3/reference/expressions.html#value-comparisons).
