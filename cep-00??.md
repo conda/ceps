@@ -74,8 +74,9 @@ The implementation of this algorithm as specific options in build tools is a non
 
 ## References
 
+- The original issue suggesting this idea is [`conda-build#4762`][conda-build-issue].
 - The Nix ecosystem has a similar feature called [`fetchzip`][fetchzip].
-- There are several [Rust crates][crates] and [Python projects][pymerkletools] implementing similar strategies using Merkle trees. Some of the details here were inspired by [`dasher`][dasher]
+- There are several [Rust crates][crates] and [Python projects][pymerkletools] implementing similar strategies using Merkle trees. Some of the details here were inspired by [`dasher`][dasher].
 
 ## Copyright
 
@@ -88,3 +89,4 @@ All CEPs are explicitly [CC0 1.0 Universal](https://creativecommons.org/publicdo
 [dasher]: https://github.com/DrSLDR/dasher#hashing-scheme
 [pymerkletools]: https://github.com/Tierion/pymerkletools
 [crates]: https://crates.io/search?q=content%20hash
+[conda-build-issue]: https://github.com/conda/conda-build/issues/4762
