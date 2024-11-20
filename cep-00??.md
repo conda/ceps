@@ -48,9 +48,12 @@ def contents_hash(directory: str, algorithm: str) -> str:
             hasher.update(b"F") 
             try:
                 # assume it's text
+                lines = []
                 with open(path) as fh:
                     for line in fh:
-                        hasher.update(line.replace("\r\n", "\n").encode("utf-8"))
+                        lines.append(line.replace("\r\n", "\n")
+                for line in lines:
+                    hasher.update(line.encode("utf-8")))
             except UnicodeDecodeError:
                 # file must be binary
                 with open(path, "rb") as fh:
