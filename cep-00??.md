@@ -6,7 +6,7 @@
 <tr><td> Author(s) </td><td> Jaime Rodríguez-Guerra &lt;jaime.rogue@gmail.com&gt;</td></tr>
 <tr><td> Created </td><td> Nov 19, 2024</td></tr>
 <tr><td> Updated </td><td> Nov 19, 2024</td></tr>
-<tr><td> Discussion </td><td> link to the PR where the CEP is being discussed, NA is circulated initially </td></tr>
+<tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/100 </td></tr>
 <tr><td> Implementation </td><td> https://github.com/conda/conda-build/pull/5277 </td></tr>
 </table>
 
