@@ -23,8 +23,8 @@ Given a directory, propose an algorithm to compute the aggregated hash of its co
 Given a directory, recursively scan all its contents (without following symlinks) and sort them by their full path. For each entry in the contents table, compute the hash for the concatenation of:
 - UTF-8 encoded bytes of the path, relative to the input directory. Backslashes MUST be normalized to forward slashes before encoding.
 - Then, depending on the type:
-    - For regular binary files, the UTF-8 encoded bytes of an `F` separator, followed by the bytes of its contents.
-    - For regular text files, the UTF-8 encoded bytes of an `F` separator, followed by the UTF-8 encoded bytes of its line-ending-normalized contents (`\r\n` replaced with `\n`).
+    - For binary files, the UTF-8 encoded bytes of an `F` separator, followed by the bytes of its contents.
+    - For text files, the UTF-8 encoded bytes of an `F` separator, followed by the UTF-8 encoded bytes of its line-ending-normalized contents (`\r\n` replaced with `\n`).
     - For a directory, the UTF-8 encoded bytes of a `D` separator, and nothing else.
     - For a symlink, the UTF-8 encoded bytes of an `L` separator, followed by the UTF-8 encoded bytes of the path it points to. Backslashes MUST be normalized to forward slashes before encoding.
 - UTF-8 encoded bytes of the string `-`.
