@@ -25,9 +25,10 @@ for conda's implementation, all major changes should be submitted as
 | [0012](cep-0012.md) | Serving run_exports metadata in conda channels |
 | [0013](cep-0013.md) | A new recipe format – part 1 |
 | [0014](cep-0014.md) | A new recipe format – part 2 - the allowed keys & values |
-| [0015](cep-0015.md) | Hosting repodata.json and packages separately by adding a base_url property. |
+| [0015](cep-0015.md) | Hosting repodata.json and packages separately by adding a base_url property |
 | [0016](cep-0016.md) | Sharded Repodata |
 | [0017](cep-0017.md) | Optional python site-packages path in repodata |
+| [0018](cep-0018.md) | Migration to the Zulip chat platform |
 
 ## References
 
