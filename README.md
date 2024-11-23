@@ -10,21 +10,24 @@ for conda's implementation, all major changes should be submitted as
 
 | CEP | Title |
 | --- | ------- |
-| [1](cep-1.md) | CEP Purpose and Guidelines  |
-| [2](cep-2.md) | Add plugin architecture to conda |
-| [3](cep-3.md) | Using the Mamba solver in conda |
-| [4](cep-4.md) | Implement initial conda plugin mechanism |
-| 5 | Does not exist |
-| [6](cep-6.md) | Add Channel Notices to conda
-| 7 | Does not exist |
-| [8](cep-8.md) | Conda Release Schedule |
-| [9](cep-9.md) | Conda Deprecation Schedule |
-| [10](cep-10.md) | Conda Version Support |
-| [11](cep-11.md) | Define the menuinst standard |
-| [12](cep-12.md) | Serving run_exports metadata in conda channels |
-| [13](cep-13.md) | A new recipe format - part 1 |
-| [14](cep-14.md) | A new recipe format – part 2 - the allowed keys & values |
-| [15](cep-15.md) | Hosting repodata.json and packages separately by adding a base_url property. |
+| [0000](cep-0000.md) | CEP template  |
+| [0001](cep-0001.md) | CEP Purpose and Guidelines  |
+| [0002](cep-0002.md) | Add plugin architecture to conda |
+| [0003](cep-0003.md) | Using the Mamba solver in conda |
+| [0004](cep-0004.md) | Implement initial conda plugin mechanism |
+| 0005 | _Does not exist_ |
+| [0006](cep-0006.md) | Add Channel Notices to conda
+| 0007 | _Does not exist_ |
+| [0008](cep-0008.md) | Conda Release Schedule |
+| [0009](cep-0009.md) | Conda Deprecation Schedule |
+| [0010](cep-0010.md) | Conda Version Support |
+| [0011](cep-0011.md) | Define the menuinst standard |
+| [0012](cep-0012.md) | Serving run_exports metadata in conda channels |
+| [0013](cep-0013.md) | A new recipe format – part 1 |
+| [0014](cep-0014.md) | A new recipe format – part 2 - the allowed keys & values |
+| [0015](cep-0015.md) | Hosting repodata.json and packages separately by adding a base_url property. |
+| [0016](cep-0016.md) | Sharded Repodata |
+| [0017](cep-0017.md) | Optional python site-packages path in repodata |
 
 ## References
 
@@ -37,9 +40,9 @@ Community members are encouraged to author a CEP to suggest changes *before*
 any code is written to allow for the community to discuss the proposed changes.
 
 The formal process by which CEPs should be authored and how they are reviewed
-and resolved is specified in [CEP 1](https://github.com/conda/ceps/blob/main/cep-1.md).
+and resolved is specified in [CEP 1](https://github.com/conda/ceps/blob/main/cep-0001.md).
 
-A template for new CEPs is given in [CEP 0](https://github.com/conda/ceps/blob/main/cep-0.md).
+A template for new CEPs is given in [CEP 0](https://github.com/conda/ceps/blob/main/cep-0000.md).
 
 ## Conda capitalization standards
 
@@ -63,7 +66,7 @@ Conda in the middle of a sentence:
 
 #### In titles and headers
 
-Titles and headers should use the same capitalization and formmating standards as sentences.
+Titles and headers should use the same capitalization and formatting standards as sentences.
 
 #### In links
 
