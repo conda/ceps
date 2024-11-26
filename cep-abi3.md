@@ -4,7 +4,10 @@
 <tr><td> Title </td><td> Support for <code>abi3</code> Python packages </td>
 <tr><td> Status </td><td> Draft </td></tr>
 <tr><td> Author(s) </td><td> Isuru Fernando &lt;ifernando@quansight.com&gt;</td></tr>
-<tr><td> Created </td><td> July 01, 2023</td></tr>
+<tr><td> Created </td><td> July 01, 2024</td></tr>
+<tr><td> Updated </td><td> Nov 26, 2024</td></tr>
+<tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/86 </td></tr>
+<tr><td> Implementation </td><td> https://github.com/conda/conda-build/pull/5456 </td></tr>
 </table>
 
 ## Abstract
@@ -225,6 +228,10 @@ This suggestion by `@wolfv` is not ideal as this clutters `noarch` subdir
 
 Since we can work within the constraints of the current install tools we
 do not need to require extra support from install tools.
+
+## Copyright
+
+All CEPs are explicitly [CC0 1.0 Universal](https://creativecommons.org/publicdomain/zero/1.0/).
 
 <!--links-->
 [C_API_Stability]: https://docs.Python.org/3/c-api/stable.html
