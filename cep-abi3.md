@@ -21,7 +21,7 @@ version. These extensions are identified by the extension suffix.
 For example, `foo.cpython-310-x86_64-linux-gnu.so` is an extension that
 supports only CPython 3.10 on the `x86_64-linux-gnu` platform.
 
-However some symbols are available in all Python major.minor versions with some
+However, some symbols are available in all Python major.minor versions with some
 lower bound on the Python version. These symbols are part of the
 [limited C API]([C_API_Stability]). It is guaranteed that the symbols Stable ABI
 introduced in Python 3.X are available in Python 3.Y for any `Y >= X`.
@@ -37,46 +37,46 @@ ABI, see the [HPy project](HPy).
 
 The motivation for building `abi3` packages is that we only need to build the
 extension for one Python version and the extension will work for any Python
-later version. This reduces build matrix from 4-5 Python minor versions to one
+later version. This reduces the build matrix from 4-5 Python minor versions to one
 Python minor version and reduces the maintenance burden of package builders.
 
 ## noarch: Python packages
 
 `abi3` packages are Python version independent and we will first look at
 `noarch: python` packages that are also Python version independent and in addition
-are arch independent.
+are arch-independent.
 
 `noarch: python` packages have several attributes to them:
 
-&nbsp;&nbsp;<strong>A1</strong>:
-  They have `subdir: noarch` in `info/index.json`.
+- **A1**:
+ They have `subdir: noarch` in `info/index.json`.
 
-&nbsp;&nbsp;<strong>A2</strong>:
-  They have `noarch: Python` in `info/index.json`.
+- **A2**:
+ They have `noarch: Python` in `info/index.json`.
 
-&nbsp;&nbsp;<strong>A3</strong>:
-  Python files are in `<PREFIX>/site-packages`.
+- **A3**:
+ Python files are in `<PREFIX>/site-packages`.
 
-&nbsp;&nbsp;<strong>A4</strong>:
-  Entry points are recorded in `info/link.json`.
+- **A4**:
+ Entry points are recorded in `info/link.json`.
 
 A conda install tool does four things to support them:
 
-&nbsp;&nbsp;<strong>B1</strong>:
-  Files in `<PREFIX>/site-packages` are moved to the correct location. Eg:
+- **B1**:
+ Files in `<PREFIX>/site-packages` are moved to the correct location. Eg:
   `<PREFIX>/lib/python3.10/site-packages`.
 
-&nbsp;&nbsp;<strong>B2</strong>:
-  Python files (files ending with `*.py`) are compiled to `.pyc` files. Eg:
+- **B2**:
+ Python files (files ending with `*.py`) are compiled to `.pyc` files. Eg:
   `<PREFIX>/lib/python3.10/site-packages/foo.py` is compiled to
   `<PREFIX>/lib/python3.10/site-packages/__pycache__/foo.cpython-310.pyc`.
 
-&nbsp;&nbsp;<strong>B3</strong>:
+- **B3**:
   `.pyc` files created are recorded in `<PREFIX>/conda-meta/<pkg>.json`
-  so that they are removed properly when the package is uninstalled.
+ so that they are removed properly when the package is uninstalled.
 
-&nbsp;&nbsp;<strong>B4</strong>:
-  Entry points in `info/link.json` are materialised.
+- **B4**:
+ Entry points in `info/link.json` are materialized.
 
 ### info/link.json file
 An example `info/link.json` for `noarch: python` looks like
@@ -109,11 +109,11 @@ An example for `info/link.json` for `noarch: generic` looks like
 Here `preferred_env` is ignored by conda since 2017 and is not supported by
 other conda install tools. Therefore `info/link.json` is used exclusively
 for `noarch` packages and out of the two types, `noarch: generic` packages
-does not require any special action.
+do not require any special action.
 
 ### info/index.json file
 
-An example for a `noarch: python` recipe.
+An example of a `noarch: python` recipe.
 
 ```json
 {
@@ -135,12 +135,12 @@ An example for a `noarch: python` recipe.
 }
 ```
 
-### Current behaviour in solver tools
+### Current behavior in solver tools
 
 Conda package upload tools like `anaconda-client` use `A1` to upload
 the package to the `noarch` subdir.
 
-Conda install tools have slightly different behaviour.
+Conda install tools have slightly different behavior.
 
 Conda:
 1. Actions `B1, B2, B3` are applied for packages with `A3`.
@@ -157,14 +157,14 @@ Micromamba:
 
 We require the following attributes in `abi3` packages:
 
-&nbsp;&nbsp;<strong>C1</strong>:
-  They have `subdir: <platform>` where `<platform>` is the subdir
-  that the package was built for.
+- **C1**:
+ They have `subdir: <platform>` where `<platform>` is the subdir
+ that the package was built for.
 
-&nbsp;&nbsp;<strong>C2</strong>:
-  They have `noarch: python`.
+- **C2**:
+ They have `noarch: python`.
 
-&nbsp;&nbsp;<strong>C3</strong>:
+- **C3**:
   `A2, A3, A4` are applied.
 
 This is compatible with `conda/mamba/micromamba` install tools
@@ -188,7 +188,7 @@ requirements:
 
 which would make the build tool
 
-&nbsp;&nbsp;<strong>D1</strong>:
+- **D1**:
 Set `noarch: python` in `info/index.json`.
 
 Note that `python-abi3` would set the runtime requirements.
@@ -210,9 +210,9 @@ requirements:
 ### Apply all actions in a `post-link.sh` script.
 
 A draft work provided at [python-feedstock](Python-pr-669)
-This was suggested by `@mbargull`, but some community members (@baszalmstra,
+This was suggested by @mbargull, but some community members (@baszalmstra,
 @wolfv) does not prefer post-link scripts as they can be used for arbitrary
-code execution. However in the author's opinion, this attack vector is not a
+code execution. However, in the author's opinion, this attack vector is not a
 new one since the install tool uses the Python executable in the host
 environment to compile the Python files.
 
