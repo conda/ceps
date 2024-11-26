@@ -23,7 +23,7 @@ supports only CPython 3.10 on the `x86_64-linux-gnu` platform.
 
 However, some symbols are available in all Python major.minor versions with some
 lower bound on the Python version. These symbols are part of the
-[limited C API]([C_API_Stability]). It is guaranteed that the symbols Stable ABI
+[limited C API][C_API_Stability]. It is guaranteed that the symbols Stable ABI
 introduced in Python 3.X are available in Python 3.Y for any `Y >= X`.
 Extensions using only these symbols are identified by the extension suffix
 `abi3.so`. For example, `foo.abi3.so`.
@@ -33,7 +33,7 @@ These extensions only support the platform it was built for (e.g.
 
 Note that the stable ABI is only specific to CPython and is not compatible with
 PyPy or other Python implementations. For a Python implementation independent
-ABI, see the [HPy project](HPy).
+ABI, see the [HPy project][HPy].
 
 The motivation for building `abi3` packages is that we only need to build the
 extension for one Python version and the extension will work for any Python
@@ -209,7 +209,7 @@ requirements:
 
 ### Apply all actions in a `post-link.sh` script.
 
-A draft work provided at [python-feedstock](Python-pr-669)
+A draft work provided at [python-feedstock][Python-pr-669]
 This was suggested by @mbargull, but some community members (@baszalmstra,
 @wolfv) does not prefer post-link scripts as they can be used for arbitrary
 code execution. However, in the author's opinion, this attack vector is not a
