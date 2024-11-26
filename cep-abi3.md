@@ -1,7 +1,7 @@
-# Support for `abi3` python packages
+# Support for `abi3` Python packages
 
 <table>
-<tr><td> Title </td><td> Support for <code>abi3</code> python packages </td>
+<tr><td> Title </td><td> Support for <code>abi3</code> Python packages </td>
 <tr><td> Status </td><td> Draft </td></tr>
 <tr><td> Author(s) </td><td> Isuru Fernando &lt;ifernando@quansight.com&gt;</td></tr>
 <tr><td> Created </td><td> July 01, 2023</td></tr>
@@ -9,13 +9,13 @@
 
 ## Abstract
 
-This CEP specifies how `abi3` python packages are supported in conda install tools
+This CEP specifies how `abi3` Python packages are supported in conda install tools
 (conda/mamba/micromamba/pixi) and how they are built in conda build tools
 (conda-build/rattler-build).
 
 ## Motivation
 
-When building extensions for python, they might use python minor version
+When building extensions for Python, they might use Python minor version
 specific symbols. This results in the extension being usable only on that minor
 version. These extensions are identified by the extension suffix.
 For eg:
@@ -24,8 +24,8 @@ For eg:
 
 is an extension that support only CPython 3.10 on x86_64-linux-gnu platform.
 
-However some symbols are available in all python major.minor versions with some
-lower bound on the python version. These symbols are part of the
+However some symbols are available in all Python major.minor versions with some
+lower bound on the Python version. These symbols are part of the
 [limited C API]([C_API_Stability]). It is guaranteed that the symbols Stable ABI
 introduced in Python 3.X are available in Python 3.Y for any `Y >= X`.
 Extensions using only these symbols are identified by the extension suffix
@@ -41,14 +41,14 @@ PyPy or other Python implementations. For a Python implementation independent
 ABI, see the [HPy project](HPy).
 
 The motivation for building `abi3` packages is that we only need to build the
-extension for one python version and the extension will work for any python
-later version. This reduces build matrix from 4-5 python minor versions to one
-python minor version and reduces the maintenance burden of package builders.
+extension for one Python version and the extension will work for any Python
+later version. This reduces build matrix from 4-5 Python minor versions to one
+Python minor version and reduces the maintenance burden of package builders.
 
-## noarch: python packages
+## noarch: Python packages
 
-`abi3` packages are python version independent and we will first look at
-`noarch: python` packages that are also python version independent and in addition
+`abi3` packages are Python version independent and we will first look at
+`noarch: python` packages that are also Python version independent and in addition
 are arch independent.
 
 `noarch: python` packages have several attributes to them:
@@ -57,7 +57,7 @@ are arch independent.
   They have `subdir: noarch` in `info/index.json`.
 
 &nbsp;&nbsp;<strong>A2</strong>:
-  They have `noarch: python` in `info/index.json`.
+  They have `noarch: Python` in `info/index.json`.
 
 &nbsp;&nbsp;<strong>A3</strong>:
   Python files are in `<PREFIX>/site-packages`.
@@ -72,7 +72,7 @@ A conda install tool does four things to support them:
   `<PREFIX>/lib/python3.10/site-packages`.
 
 &nbsp;&nbsp;<strong>B2</strong>:
-  python files (files ending with `*.py`) are compiled to `.pyc` files. Eg:
+  Python files (files ending with `*.py`) are compiled to `.pyc` files. Eg:
   `<PREFIX>/lib/python3.10/site-packages/foo.py` is compiled to
   `<PREFIX>/lib/python3.10/site-packages/__pycache__/foo.cpython-310.pyc`.
 
@@ -210,12 +210,12 @@ requirements:
 
 ### Apply all actions in a `post-link.sh` script.
 
-A draft work provided at [python-feedstock](python-pr-669)
+A draft work provided at [python-feedstock](Python-pr-669)
 This was suggested by `@mbargull`, but some community members (@baszalmstra,
 @wolfv) does not prefer post-link scripts as they can be used for arbitrary
 code execution. However in the author's opinion, this attack vector is not a
-new one since the install tool uses the python executable in the host
-environment to compile the python files.
+new one since the install tool uses the Python executable in the host
+environment to compile the Python files.
 
 ### `noarch: python` packages with `__linux, __osx, __win` constrains.
 
@@ -228,8 +228,8 @@ Since we can work within the constraints of the current install tools we
 do not need to require extra support from install tools.
 
 <!--links-->
-[C_API_Stability]: https://docs.python.org/3/c-api/stable.html
+[C_API_Stability]: https://docs.Python.org/3/c-api/stable.html
 
 [HPy]: https://hpyproject.org
 
-[python-pr-669]: https://github.com/conda-forge/python-feedstock/pull/669
+[Python-pr-669]: https://github.com/conda-forge/Python-feedstock/pull/669
