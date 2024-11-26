@@ -1,7 +1,7 @@
-# Support for abi3 python packages
+# Support for `abi3` python packages
 
 <table>
-<tr><td> Title </td><td> Support for abi3 python packages </td>
+<tr><td> Title </td><td> Support for <code>abi3</code> python packages </td>
 <tr><td> Status </td><td> Draft </td></tr>
 <tr><td> Author(s) </td><td> Isuru Fernando &lt;ifernando@quansight.com&gt;</td></tr>
 <tr><td> Created </td><td> July 01, 2023</td></tr>
@@ -9,7 +9,7 @@
 
 ## Abstract
 
-This CEP specifies how ABI3 python packages are supported in conda install tools
+This CEP specifies how `abi3` python packages are supported in conda install tools
 (conda/mamba/micromamba/pixi) and how they are built in conda build tools
 (conda-build/rattler-build).
 
@@ -40,14 +40,14 @@ Note that the stable ABI is only specific to CPython and is not compatible with
 PyPy or other Python implementations. For a Python implementation independent
 ABI, see the [HPy project](HPy).
 
-The motivation for building abi3 packages is that we only need to build the
+The motivation for building `abi3` packages is that we only need to build the
 extension for one python version and the extension will work for any python
 later version. This reduces build matrix from 4-5 python minor versions to one
 python minor version and reduces the maintenance burden of package builders.
 
 ## noarch: python packages
 
-abi3 packages are python version independent and we will first look at
+`abi3` packages are python version independent and we will first look at
 `noarch: python` packages that are also python version independent and in addition
 are arch independent.
 
@@ -155,11 +155,11 @@ Micromamba:
 2. Action `B4` is applied for packages with both `A2, A4`.
 
 
-## Implementation for abi3 packages
+## Implementation for `abi3` packages
 
 ### Support in install tools
 
-We require the following attributes in abi3 packages:
+We require the following attributes in `abi3` packages:
 
 &nbsp;&nbsp;<strong>C1</strong>:
   They have `subdir: <platform>` where `<platform>` is the subdir
@@ -195,7 +195,7 @@ Set `noarch: python` in `info/index.json`.
 
 Note that `python-abi3` would set the runtime requirements.
 This is explicitly required from recipe authors so that we do not
-restrict this CEP to ABI3 packages and allow the possibility for ABI4 etc.
+restrict this CEP to `abi3` packages and allow the possibility for `abi4` etc.
 
 An example `python-abi3=3.8` package would set itself in its
 `run_exports` entry and will have the following requirements:
