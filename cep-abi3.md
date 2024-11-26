@@ -18,23 +18,18 @@ This CEP specifies how `abi3` Python packages are supported in conda install too
 When building extensions for Python, they might use Python minor version
 specific symbols. This results in the extension being usable only on that minor
 version. These extensions are identified by the extension suffix.
-For eg:
-
-  foo.cpython-310-x86_64-linux-gnu.so
-
-is an extension that support only CPython 3.10 on x86_64-linux-gnu platform.
+For example, `foo.cpython-310-x86_64-linux-gnu.so` is an extension that
+supports only CPython 3.10 on the `x86_64-linux-gnu` platform.
 
 However some symbols are available in all Python major.minor versions with some
 lower bound on the Python version. These symbols are part of the
 [limited C API]([C_API_Stability]). It is guaranteed that the symbols Stable ABI
 introduced in Python 3.X are available in Python 3.Y for any `Y >= X`.
 Extensions using only these symbols are identified by the extension suffix
-`abi3.so`. For eg:
+`abi3.so`. For example, `foo.abi3.so`.
 
-  foo.abi3.so
-
-These extensions only support the platform it was built for (for eg:
-`x86_64-linux-gnu`), but is not specified in the extension suffix.
+These extensions only support the platform it was built for (e.g.
+`x86_64-linux-gnu`), but this is not specified in the extension suffix.
 
 Note that the stable ABI is only specific to CPython and is not compatible with
 PyPy or other Python implementations. For a Python implementation independent
@@ -100,7 +95,8 @@ An example `info/link.json` for `noarch: python` looks like
 ```
 
 An example for `info/link.json` for `noarch: generic` looks like
-```
+
+```json
 {
   "noarch": {
     "type": "generic"
@@ -179,7 +175,8 @@ currently.
 This requires support from build tools to set `subdir: <platform>`.
 
 In particular recipe authors would set
-```
+
+```yaml
 build:
   python_version_independent: true
 
@@ -188,6 +185,7 @@ requirements:
     - python
     - python-abi3
 ```
+
 which would make the build tool
 
 &nbsp;&nbsp;<strong>D1</strong>:
@@ -199,6 +197,7 @@ restrict this CEP to `abi3` packages and allow the possibility for `abi4` etc.
 
 An example `python-abi3=3.8` package would set itself in its
 `run_exports` entry and will have the following requirements:
+
 ```yaml
 requirements:
   run:
