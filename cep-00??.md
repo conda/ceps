@@ -20,7 +20,7 @@ Given a directory, propose an algorithm to compute the aggregated hash of its co
 
 ## Specification
 
-Given a directory, recursively scan all its contents (without following symlinks) and sort them by their full path as a Unicode string. More specifically, it MUST follow an ascending lexicographical comparison using the numerical Unicode code points (i.e. the result of Python's built-in function `ord()`) of their characters [^1]. 
+Given a directory, recursively scan all its contents (without following symlinks) and sort them by their full path as a Unicode string. More specifically, it MUST follow an ascending lexicographical comparison using the numerical Unicode code points (i.e. the result of Python's built-in function `ord()`) of their characters [^1].
 
 For each entry in the contents table, compute the hash for the concatenation of:
 - UTF-8 encoded bytes of the path, relative to the input directory. Backslashes MUST be normalized to forward slashes before encoding.
@@ -52,7 +52,7 @@ def contents_hash(directory: str, algorithm: str) -> str:
         elif path.is_dir():
             hasher.update(b"D")
         elif path.is_file():
-            hasher.update(b"F") 
+            hasher.update(b"F")
             try:
                 # assume it's text
                 lines = []
