@@ -55,7 +55,7 @@ are arch-independent.
  They have `subdir: noarch` in `info/index.json`.
 
 - **A2**:
- They have `noarch: Python` in `info/index.json`.
+ They have `noarch: python` in `info/index.json`.
 
 - **A3**:
  Python files are in `<PREFIX>/site-packages`.
