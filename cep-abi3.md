@@ -26,7 +26,7 @@ supports only CPython 3.10 on the `x86_64-linux-gnu` platform.
 
 However, some symbols are available in all Python major.minor versions with some
 lower bound on the Python version. These symbols are part of the
-[limited C API][C_API_Stability]. It is guaranteed that the symbols Stable ABI
+[limited C API][C_API_Stability]. It is guaranteed that the symbols in limited C API
 introduced in Python 3.X are available in Python 3.Y for any `Y >= X`.
 Extensions using only these symbols are identified by the extension suffix
 `abi3.so`. For example, `foo.abi3.so`.
