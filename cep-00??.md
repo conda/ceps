@@ -25,14 +25,16 @@ Given a directory, recursively scan all its contents (without following symlinks
 For each entry in the contents table, compute the hash for the concatenation of:
 - UTF-8 encoded bytes of the path, relative to the input directory. Backslashes MUST be normalized to forward slashes before encoding.
 - Then, depending on the type:
-    - For text files, the UTF-8 encoded bytes of an `F` separator, followed by the UTF-8 encoded bytes of its line-ending-normalized contents (`\r\n` replaced with `\n`). A file is considered
-    a text file if all the contents can be UTF-8 decoded. Otherwise it's considered binary. If the
-    file can't be opened, it's handled as if it were empty.
-    - For binary files, the UTF-8 encoded bytes of an `F` separator, followed by the bytes of its contents.
+    - For regular files:
+        - If text, the UTF-8 encoded bytes of an `F` separator, followed by the UTF-8 encoded bytes of its line-ending-normalized contents (`\r\n` replaced with `\n`). A file is considered a text file if all the contents can be UTF-8 decoded. Otherwise it's considered binary. If the file can't be opened, it's handled as if it were empty.
+        - If binary, the UTF-8 encoded bytes of an `F` separator, followed by the bytes of its contents.
+        - If it can't be read, error out.
     - For a directory, the UTF-8 encoded bytes of a `D` separator, and nothing else.
     - For a symlink, the UTF-8 encoded bytes of an `L` separator, followed by the UTF-8 encoded bytes of the path it points to. Backslashes MUST be normalized to forward slashes before encoding.
-    - For any other paths, the UTF-8 encoded bytes of a `?` separator, and nothing else.
+    - For any other types, error out.
 - UTF-8 encoded bytes of the string `-`.
+
+Note that the algorithm MUST error out on unreadable files and unknown file types because we can't verify its contents. An attacker could hide malicious content in those paths known to be "unhashable" and later reveal then again in the build script (e.g. by `chmod`ing them as readable).
 
 Example implementation in Python:
 
@@ -65,7 +67,7 @@ def contents_hash(directory: str, algorithm: str) -> str:
                     for chunk in iter(partial(fh.read, 8192), b""):
                         hasher.update(chunk)
         else:
-            hasher.update(b"?")
+            raise RuntimeError(f"Unknown file type: {path}")
         hasher.update(b"-")
     return hasher.hexdigest()
 ```
