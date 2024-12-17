@@ -76,9 +76,9 @@ The version MUST be overridable with the `CONDA_OVERRIDE_LINUX` environment vari
 
 #### `__osx`
 
-This virtual package MUST be present when the target platform is `osx-*`. Its version value MUST be set to the first two numeric components of macOS version formatted as `{major}[.{minor}]`. If the version cannot be estimated (e.g. because the native platform is not macOS), the fallback value MUST be set to `0`. The build string MUST be `0`. 
+This virtual package MUST be present when the target platform is `osx-*`. Its version value MUST be set to the first two numeric components of macOS version formatted as `{major}[.{minor}]`. If the version cannot be estimated (e.g. because the native platform is not macOS), the fallback value MUST be set to `0`. The build string MUST be `0`.
 
-The macOS version can be ontained via:
+The macOS version can be contained via:
 
 - Python's `platform.mac_ver()[0]`
 - `sw_vers -productVersion`
@@ -91,11 +91,11 @@ The version MUST be overridable with the `CONDA_OVERRIDE_OSX` environment variab
 
 This virtual package MUST be present when the target platform is `linux-*`, `osx-*` or `freebsd-*`. The version and build string fields MUST be set to `0`.
 
-The version or build string fields MUST NOT be overriden by the `CONDA_OVERRIDE_UNIX` environment variable. However, if this environment variable is set to a non-empty value, the `__unix` virtual package MUST be present if otherwise if would not have been. The environment variable MUST be ignored when the target platform is not `linux-*`, `osx-*` or `freebsd-*`.
+The version or build string fields MUST NOT be overridden by the `CONDA_OVERRIDE_UNIX` environment variable. However, if this environment variable is set to a non-empty value, the `__unix` virtual package MUST be present if otherwise if would not have been. The environment variable MUST be ignored when the target platform is not `linux-*`, `osx-*` or `freebsd-*`.
 
 #### `__win`
 
-This virtual package MUST be present when the target platform is `win-*`. The version MUST be set to the first three numeric components of the Windows build version, formatted as `{major}.{minor}.{build}`. If the version cannot be estimated (e.g. because the target platform does not match the native platform), the fallback value MUST be set to `0`. The build string MUST be `0`. 
+This virtual package MUST be present when the target platform is `win-*`. The version MUST be set to the first three numeric components of the Windows build version, formatted as `{major}.{minor}.{build}`. If the version cannot be estimated (e.g. because the target platform does not match the native platform), the fallback value MUST be set to `0`. The build string MUST be `0`.
 
 The string `{major}.{minor}.{build}` can be obtained from:
 
