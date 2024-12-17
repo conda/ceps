@@ -81,7 +81,8 @@ The string `{major}.{minor}.{build}` can be obtained from:
 
 - Python's `platform.win32_ver()`
 - CMD's `ver`
-- Powershell's `[System.Environment]::OSVersion.Version` or `(Get-CimInstance Win32_OperatingSystem).version`
+- Powershell's `[System.Environment]::OSVersion.Version`, `(Get-CimInstance Win32_OperatingSystem).version`
+- The command `wmic os get version`
 
 The version MUST be overridable with the `CONDA_OVERRIDE_WIN` environment variable. If this environment variable is set to the empty string `""`, then the `__win` virtual package MUST NOT be present. The environment variable MUST be ignored when the target platform is not `win-*`.
 
