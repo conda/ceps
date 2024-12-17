@@ -62,8 +62,6 @@ If the microarchitecture cannot be detected or the target platform does not matc
 | `zos-z` | `0` |
 | Any other value | `0` |
 
-
-
 The build string MUST be overridable with the `CONDA_OVERRIDE_ARCHSPEC` environment variable, if set to a non-empty value.
 
 #### `__cuda`
@@ -74,17 +72,17 @@ The version MUST be overridable with the `CONDA_OVERRIDE_CUDA` environment varia
 
 #### `__glibc`
 
-This virtual package MUST be present when the native platform is `linux-*`. Its version value MUST be set to the system `libc` version, constrained to the first two components (major and minor) formatted as `{major}.{minor}`. The build string MUST be `0`.
+This virtual package MUST be present when the native platform is `linux-*`. Its version value MUST be set to the system GNU `libc` version, constrained to the first two components (major and minor) formatted as `{major}.{minor}`. The build string MUST be `0`.
 
 The version MUST be overridable with the `CONDA_OVERRIDE_GLIBC` environment variable, if set to a non-empty value.
 
-If the `libc` version could not be estimated (e.g. the tool is not running on Linux), the tool SHOULD provide a default value (e.g. `2.17`) and inform the user of that choice and its possible overrides; e.g. via `CONDA_OVERRIDE_GLIBC`, a CLI flag or a configuration file. The environment variable MUST be ignored when the target platform is not `linux~-*`.
+If the GNU `libc` version could not be estimated (e.g. the tool is not running on Linux), the tool SHOULD provide a default value (e.g. `2.17`) and inform the user of that choice and its possible overrides; e.g. via `CONDA_OVERRIDE_GLIBC`, a CLI flag or a configuration file. The environment variable MUST be ignored when the target platform is not `linux~-*`.
 
-> The `libc` version can be computed via:
+> The GNU `libc` version can be computed via:
 >
 > - Python's `os.confstr("CS_GNU_LIBC_VERSION")`
 > - `getconf GNU_LIBC_VERSION`
-> - `ldd --version`. Note this only applies to GLIBC distros. In MUSL distros this will return the MUSL version instead. In these systems, you might need to locate the gcompat `libc.so` library and call it directly.
+> - `ldd --version`. Note this only applies to GLIBC distros. In MUSL distros this will return the MUSL version instead. In these systems, you might need to locate the GNU `libc.so` library and call it directly.
 
 #### `__linux`
 
@@ -101,8 +99,6 @@ The version MUST be overridable with the `CONDA_OVERRIDE_LINUX` environment vari
 #### `__osx`
 
 This virtual package MUST be present when the target platform is `osx-*`. Its version value MUST be set to the first two numeric components of macOS version formatted as `{major}[.{minor}]`. If the version cannot be estimated (e.g. because the native platform is not macOS), the fallback value MUST be set to `0`. The build string MUST be `0`.
-
-
 
 The version MUST be overridable with the `CONDA_OVERRIDE_OSX` environment variable. If this environment variable is set to the empty string `""`, then the `__osx` virtual package MUST NOT be present. The environment variable MUST be ignored when the target platform is not `osx-*`.
 
@@ -141,6 +137,14 @@ Virtual packages are used to expose details of the system configuration to a con
 * Whether a `noarch` package should be constrained to a single operating system via the `__linux`, `__osx` or `__win` virtual packages (often with no version).
 * The minimum CPU microarchitecture level that the binaries require via the `__archspec` virtual package.
 * The lowest CUDA version the GPU driver is compatible with via `__cuda`.
+
+## Rationale
+
+This CEP attempts to describe and standardize the existing implementations of the currently available virtual packages. The following items are deliberately kept out of scope and recommended for discussion in future CEPs:
+
+- Additional OSes, like `__freebsd` or `__netbsd`.
+- Architectures, like `__x86_64` or `__arm64`.
+- More `libc` implementations, like `__musl`.
 
 ## References
 
