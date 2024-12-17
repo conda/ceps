@@ -75,7 +75,13 @@ The version or build string fields MUST NOT be overriden by the `CONDA_OVERRIDE_
 
 #### `__win`
 
-This virtual package MUST be present when the target platform is `win-*`. The version MUST be set to the first three numeric components of the version reported by CMD's `ver` command, formatted as `{major}.{minor}.{build}`. If the version cannot be estimated (e.g. because the target platform does not match the native platform), the fallback value MUST be set to `0`. The build string MUST be `0`. 
+This virtual package MUST be present when the target platform is `win-*`. The version MUST be set to the first three numeric components of the Windows build version, formatted as `{major}.{minor}.{build}`. If the version cannot be estimated (e.g. because the target platform does not match the native platform), the fallback value MUST be set to `0`. The build string MUST be `0`. 
+
+The string `{major}.{minor}.{build}` can be obtained from:
+
+- Python's `platform.win32_ver()`
+- CMD's `ver`
+- Powershell's `[System.Environment]::OSVersion.Version` or `(Get-CimInstance Win32_OperatingSystem).version`
 
 The version MUST be overridable with the `CONDA_OVERRIDE_WIN` environment variable. If this environment variable is set to the empty string `""`, then the `__win` virtual package MUST NOT be present. The environment variable MUST be ignored when the target platform is not `win-*`.
 
