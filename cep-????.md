@@ -23,6 +23,8 @@ This CEP standardizes which virtual packages MUST be offered by conda solvers.
 A virtual package is defined as a package record with three fields: name, version and build string.
 The name MUST start with double underscore. The version and build string MUST follow the same semantics as in regular package records.
 
+In general, the version or build string of a virtual package MAY be overridden by the value of `CONDA_OVERRIDE_{NAME}` environment variable, with `{NAME}` being the uppercased name of the virtual package. Many exceptions apply so please observe the details in the section below.
+
 ### List of virtual packages
 
 In alphabetical order, every conda client MUST support the following virtual packages:
