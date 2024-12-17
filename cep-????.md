@@ -39,7 +39,30 @@ In alphabetical order, every conda client MUST support the following virtual pac
 
 #### `__archspec`
 
-This virtual package MUST be always present, with the version set to `1`. The build string SHOULD reflect the detected CPU microarchitecture. If it cannot be detected, the build string SHOULD be `0`.
+This virtual package MUST be always present, with the version set to `1`. The build string SHOULD reflect the detected CPU microarchitecture when the target platform matches the native platform, 
+as provided by the generic values in the [`archspec/archspec-json` database](https://github.com/archspec/archspec-json/blob/v0.2.5/cpu/microarchitectures.json), plus some exceptions. For example,  `conda/conda` reports its generic values for Intel/AMD and `m*` names for Apple:
+
+- Generic: `x86_64_v1`, `x86_64_v2`, `x86_64_v3`, `x86_64_v4`, `arm`, `ppc`...
+- Apple: For M1, the value is `m1`. M2 and M3 are reported as `m2` and `m3`, respectively.
+
+If the microarchitecture cannot be detected or the target platform does not match the native platform, the build string MUST be set to the second component of the target platform, mapped with these rules:
+
+| Target platform | Reported `archspec` build string |
+|-----------------|----------------------------------|
+| `*-32` | `x86` |
+| `*-64` | `x86_64` |
+| `*-armv6l` | `armv6l`  |
+| `*-armv7l` | `armv7l`  |
+| `*-aarch64` | `aarch64`  |
+| `*-arm64` | `arm64`  |
+| `*-ppc64` | `ppc64`  |
+| `*-ppc64le` | `ppc64le`  |
+| `*-riscv64` | `riscv64`  |
+| `*-s390x` | `s390x`  |
+| `zos-z` | `0` |
+| Any other value | `0` |
+
+
 
 The build string MUST be overridable with the `CONDA_OVERRIDE_ARCHSPEC` environment variable, if set to a non-empty value.
 
@@ -53,41 +76,42 @@ The version MUST be overridable with the `CONDA_OVERRIDE_CUDA` environment varia
 
 This virtual package MUST be present when the native platform is `linux-*`. Its version value MUST be set to the system `libc` version, constrained to the first two components (major and minor) formatted as `{major}.{minor}`. The build string MUST be `0`.
 
-The `libc` version can be computed via:
-
-- Python's `os.confstr("CS_GNU_LIBC_VERSION")`
-- `getconf GNU_LIBC_VERSION`
-- `ldd --version` (in GLIBC distros)
-- System's `libc.so` (in MUSL distros, location not standardized)
-
 The version MUST be overridable with the `CONDA_OVERRIDE_GLIBC` environment variable, if set to a non-empty value.
 
 If the `libc` version could not be estimated (e.g. the tool is not running on Linux), the tool SHOULD provide a default value (e.g. `2.17`) and inform the user of that choice and its possible overrides; e.g. via `CONDA_OVERRIDE_GLIBC`, a CLI flag or a configuration file. The environment variable MUST be ignored when the target platform is not `linux~-*`.
+
+> The `libc` version can be computed via:
+>
+> - Python's `os.confstr("CS_GNU_LIBC_VERSION")`
+> - `getconf GNU_LIBC_VERSION`
+> - `ldd --version`. Note this only applies to GLIBC distros. In MUSL distros this will return the MUSL version instead. In these systems, you might need to locate the gcompat `libc.so` library and call it directly.
 
 #### `__linux`
 
 This virtual package MUST be present when the target platform is `linux-*`. Its version value MUST be set to the Linux kernel version, constrained to two to four numeric components formatted as `{major}.{minor}.{micro}.{patch}`. If the version cannot be estimated (e.g. because the native platform is not Linux), the fallback value MUST be set to `0`. The build string MUST be `0`.
 
-The Linux kernel version can be obtained via:
-
-* Python's `platform.release()`
-* `uname -r`
-* `cat /proc/version`
-
 The version MUST be overridable with the `CONDA_OVERRIDE_LINUX` environment variable, if set to a non-empty value that matches the regex `"\d+\.\d+(\.\d+)?(\.\d+)?"`. The environment variable MUST be ignored when the target platform is not `linux-*`.
+
+> The Linux kernel version can be obtained via:
+> 
+> - Python's `platform.release()`
+> - `uname -r`
+> - `cat /proc/version`
 
 #### `__osx`
 
 This virtual package MUST be present when the target platform is `osx-*`. Its version value MUST be set to the first two numeric components of macOS version formatted as `{major}[.{minor}]`. If the version cannot be estimated (e.g. because the native platform is not macOS), the fallback value MUST be set to `0`. The build string MUST be `0`.
 
-The macOS version can be contained via:
 
-- Python's `platform.mac_ver()[0]`
-- `sw_vers -productVersion`
-
-> If applicable, the `SYSTEM_VERSION_COMPAT` workaround MUST NOT be enabled; e.g. the version reported for Big Sur should be 11.x and not 10.16.
 
 The version MUST be overridable with the `CONDA_OVERRIDE_OSX` environment variable. If this environment variable is set to the empty string `""`, then the `__osx` virtual package MUST NOT be present. The environment variable MUST be ignored when the target platform is not `osx-*`.
+
+> The macOS version can be obtained via:
+> 
+> - Python's `platform.mac_ver()[0]`
+> -  `sw_vers -productVersion`
+>
+> If applicable, the `SYSTEM_VERSION_COMPAT` workaround MUST NOT be enabled; e.g. the version reported for Big Sur should be 11.x and not 10.16.
 
 #### `__unix`
 
