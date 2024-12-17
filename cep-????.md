@@ -51,9 +51,9 @@ The version MUST be overridable with the `CONDA_OVERRIDE_CUDA` environment varia
 
 #### `__glibc`
 
-This virtual package MUST be present when the native platform is `linux-*`. Its version value MUST be set to the system `libc` version, constrained to the first two components (major and minor) formatted as `{major}.{minor}`. The build string MUST be `0`.
+This virtual package MUST be present when the native platform is `linux-*`. Its version value MUST be set to the system GNU `libc` version, constrained to the first two components (major and minor) formatted as `{major}.{minor}`. The build string MUST be `0`.
 
-The `libc` version can be computed via:
+The GNU `libc` version can be computed via:
 
 - Python's `os.confstr("CS_GNU_LIBC_VERSION")`
 - `getconf GNU_LIBC_VERSION`
