@@ -51,6 +51,13 @@ The version MUST be overridable with the `CONDA_OVERRIDE_CUDA` environment varia
 
 This virtual package MUST be present when the native platform is `linux-*`. Its version value MUST be set to the system `libc` version, constrained to the first two components (major and minor) formatted as `{major}.{minor}`. The build string MUST be `0`.
 
+The `libc` version can be computed via:
+
+- Python's `os.confstr("CS_GNU_LIBC_VERSION")`
+- `getconf GNU_LIBC_VERSION`
+- `ldd --version` (in GLIBC distros)
+- System's `libc.so` (in MUSL distros, location not standardized)
+
 The version MUST be overridable with the `CONDA_OVERRIDE_GLIBC` environment variable, if set to a non-empty value.
 
 If the `libc` version could not be estimated (e.g. the tool is not running on Linux), the tool SHOULD provide a default value (e.g. `2.17`) and inform the user of that choice and its possible overrides; e.g. via `CONDA_OVERRIDE_GLIBC`, a CLI flag or a configuration file. The environment variable MUST be ignored when the target platform is not `linux~-*`.
@@ -59,11 +66,24 @@ If the `libc` version could not be estimated (e.g. the tool is not running on Li
 
 This virtual package MUST be present when the target platform is `linux-*`. Its version value MUST be set to the Linux kernel version, constrained to two to four numeric components formatted as `{major}.{minor}.{micro}.{patch}`. If the version cannot be estimated (e.g. because the native platform is not Linux), the fallback value MUST be set to `0`. The build string MUST be `0`.
 
+The Linux kernel version can be obtained via:
+
+* Python's `platform.release()`
+* `uname -r`
+* `cat /proc/version`
+
 The version MUST be overridable with the `CONDA_OVERRIDE_LINUX` environment variable, if set to a non-empty value that matches the regex `"\d+\.\d+(\.\d+)?(\.\d+)?"`. The environment variable MUST be ignored when the target platform is not `linux-*`.
 
 #### `__osx`
 
 This virtual package MUST be present when the target platform is `osx-*`. Its version value MUST be set to the first two numeric components of macOS version formatted as `{major}[.{minor}]`. If the version cannot be estimated (e.g. because the native platform is not macOS), the fallback value MUST be set to `0`. The build string MUST be `0`. 
+
+The macOS version can be ontained via:
+
+- Python's `platform.mac_ver()[0]`
+- `sw_vers -productVersion`
+
+> If applicable, the `SYSTEM_VERSION_COMPAT` workaround MUST NOT be enabled; e.g. the version reported for Big Sur should be 11.x and not 10.16.
 
 The version MUST be overridable with the `CONDA_OVERRIDE_OSX` environment variable. If this environment variable is set to the empty string `""`, then the `__osx` virtual package MUST NOT be present. The environment variable MUST be ignored when the target platform is not `osx-*`.
 
