@@ -6,8 +6,8 @@
 <tr><td> Author(s) </td><td> Jaime Rodríguez-Guerra &lt;jaime.rogue@gmail.com&gt;</td></tr>
 <tr><td> Created </td><td> Dec 17, 2024</td></tr>
 <tr><td> Updated </td><td> Dec 17, 2024</td></tr>
-<tr><td> Discussion </td><td> NA </td></tr>
-<tr><td> Implementation </td><td> Several </td></tr>
+<tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/103 </td></tr>
+<tr><td> Implementation </td><td> https://github.com/conda/conda/tree/24.11.1/conda/plugins/virtual_packages, https://github.com/mamba-org/mamba/blob/libmamba-2.0.5/libmamba/src/core/virtual_packages.cpp, https://github.com/conda/rattler/tree/rattler-v0.28.8/crates/rattler_virtual_packages/src </td></tr>
 </table>
 
 > The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT",
@@ -119,6 +119,8 @@ Virtual packages are used to expose details of the system configuration to a con
 ## References
 
 * [Virtual packages implementation in `conda/conda` 24.11.1](https://github.com/conda/conda/tree/24.11.1/conda/plugins/virtual_packages)
+* [Virtual packages implementation in `libmamba` 2.0.5](https://github.com/mamba-org/mamba/blob/libmamba-2.0.5/libmamba/src/core/virtual_packages.cpp)
+* [Virtual packages implementation in `rattler` 0.28.8](https://github.com/conda/rattler/tree/rattler-v0.28.8/crates/rattler_virtual_packages/src)
 * [ENH: make `__win` version usable for package metadata (conda/conda#14443)](https://github.com/conda/conda/issues/14443)
 * [Drop `CONDA_OVERRIDE_WIN` environment variable (mamba-org/mamba#2815)](https://github.com/mamba-org/mamba/pull/2815)
 
