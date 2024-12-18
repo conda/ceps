@@ -143,7 +143,7 @@ Virtual packages are used to expose details of the system configuration to a con
 This CEP attempts to describe and standardize the existing implementations of the currently available virtual packages. The following items are deliberately kept out of scope and recommended for discussion in future CEPs:
 
 - Additional OSes, like `__freebsd` or `__netbsd`.
-- Architectures, like `__x86_64` or `__arm64`.
+- Architectures, like `__x86_64` or `__arm64`, or, more generally, [`__arch`](https://github.com/conda/conda/issues/13420).
 - More `libc` implementations, like `__musl`.
 
 ## References
@@ -153,6 +153,7 @@ This CEP attempts to describe and standardize the existing implementations of th
 * [Virtual packages implementation in `rattler` 0.28.8](https://github.com/conda/rattler/tree/rattler-v0.28.8/crates/rattler_virtual_packages/src)
 * [ENH: make `__win` version usable for package metadata (conda/conda#14443)](https://github.com/conda/conda/issues/14443)
 * [Drop `CONDA_OVERRIDE_WIN` environment variable (mamba-org/mamba#2815)](https://github.com/mamba-org/mamba/pull/2815)
+* [`__arch` feature request](https://github.com/conda/conda/issues/13420)
 
 ## Copyright
 
