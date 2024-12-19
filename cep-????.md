@@ -21,7 +21,9 @@ This CEP standardizes which virtual packages MUST be offered by conda solvers.
 ## Specification
 
 A virtual package is defined as a package record with three fields: name, version and build string.
-The name MUST start with double underscore. The version and build string MUST follow the same semantics as in regular package records.
+The name MUST start with double underscore (`__`). The version and build string MUST follow the same semantics as in regular package records.
+
+The build string MAY be zero (`0`). Some exceptions apply. See below.
 
 In general, the version or build string of a virtual package MAY be overridden by the value of `CONDA_OVERRIDE_{NAME}` environment variable, with `{NAME}` being the uppercased name of the virtual package. Many exceptions apply so please observe the details in the section below.
 
@@ -82,7 +84,7 @@ If the GNU `libc` version could not be estimated (e.g. the tool is not running o
 >
 > - Python's `os.confstr("CS_GNU_LIBC_VERSION")`
 > - `getconf GNU_LIBC_VERSION`
-> - `ldd --version`. Note this only applies to GLIBC distros. In MUSL distros this will return the MUSL version instead. In these systems, you might need to locate the GNU `libc.so` library and call it directly.
+> - `ldd --version`. Please verify that it references GNU libc or GLIBC. For non-standard installs, using a GLIBC compatibility layer, this may require locating the implementation and directly querying.
 
 #### `__linux`
 
@@ -138,12 +140,14 @@ Virtual packages are used to expose details of the system configuration to a con
 * The minimum CPU microarchitecture level that the binaries require via the `__archspec` virtual package.
 * The lowest CUDA version the GPU driver is compatible with via `__cuda`.
 
-## Rationale
+## Potential future work
 
-This CEP attempts to describe and standardize the existing implementations of the currently available virtual packages. The following items are deliberately kept out of scope and recommended for discussion in future CEPs:
+This CEP focuses on the standardization of existing virtual package implementations.
+
+The following items are not considered here. Though would be open for discussion in future CEP work:
 
 - Additional OSes, like `__freebsd` or `__netbsd`.
-- Architectures, like `__x86_64` or `__arm64`, or, more generally, [`__arch`](https://github.com/conda/conda/issues/13420).
+- Coarse grain architecture information, like `__x86_64` or `__arm64`, or, more generally, [`__arch`](https://github.com/conda/conda/issues/13420).
 - More `libc` implementations, like `__musl`.
 
 ## References
