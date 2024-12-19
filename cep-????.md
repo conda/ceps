@@ -31,11 +31,11 @@ Virtual packages are used to expose details of the system configuration to a con
 ## Specification
 
 A virtual package is defined as a package record with three fields: name, version and build string.
-The name MUST start with double underscore (`__`). The version and build string MUST follow the same semantics as in regular package records.
+The name MUST start with double underscore (`__`). The version and build string MUST follow the same semantics as in regular package records. More specifically, the version field MUST follow the version string specifications, regardless its origin (computed from a system property, overridden by the user or configuration, or provided by default by the tool).
 
 Some general considerations: 
 
-- The version or build string of a virtual package MAY be overridden by the value of `CONDA_OVERRIDE_{NAME}` environment variable, with `{NAME}` being the uppercased name of the virtual package. If the field being overridden is `version`, the value MUST be parsable as a version string. Many exceptions apply so please observe the details in the section below.
+- The version or build string of a virtual package MAY be overridden by the value of `CONDA_OVERRIDE_{NAME}` environment variable, with `{NAME}` being the uppercased name of the virtual package. Many exceptions apply so please observe the details in the section below.
 - The build string MAY be zero (`0`). Some exceptions apply. See below.
 - When the tool used a fallback default value instead of a computed one, it SHOULD also inform the user of that choice and its possible override options (e.g. `CONDA_OVERRIDE_{NAME}` variables, CLI flags, configuration file, etc).
 
@@ -54,7 +54,9 @@ In alphabetical order, every conda client MUST support the following virtual pac
 #### `__archspec`
 
 This virtual package MUST be always present, with the version set to `1`. The build string SHOULD reflect the detected CPU microarchitecture when the target platform matches the native platform, 
-as provided by the generic values in the [`archspec/archspec-json` database](https://github.com/archspec/archspec-json/blob/v0.2.5/cpu/microarchitectures.json), plus some exceptions. For example,  `conda/conda` reports its generic values for Intel/AMD and `m*` names for Apple:
+as provided by the generic values in the [`archspec/archspec-json` database](https://github.com/archspec/archspec-json/blob/v0.2.5/cpu/microarchitectures.json), plus some exceptions. 
+
+For example,  `conda/conda` reports its generic values for Intel/AMD and vendor-specific names for Apple:
 
 - Generic: `x86_64_v1`, `x86_64_v2`, `x86_64_v3`, `x86_64_v4`, `arm`, `ppc`...
 - Apple: For M1, the value is `m1`. M2 and M3 are reported as `m2` and `m3`, respectively.
@@ -82,7 +84,7 @@ The build string MUST be overridable with the `CONDA_OVERRIDE_ARCHSPEC` environm
 
 This virtual package MUST be present when the system exhibits GPU drivers compatible with the CUDA runtimes. When available, the version value MUST be set to the oldest CUDA version supported by the detected drivers (i.e. the formatted value of `libcuda.cuDriverGetVersion()`), constrained to the first two components (major and minor) and formatted as `{major}.{minor}`. The build string MUST be `0`.
 
-The version MUST be overridable with the `CONDA_OVERRIDE_CUDA` environment variable, if set to a non-empty value.
+The version MUST be overridable with the `CONDA_OVERRIDE_CUDA` environment variable, if set to a non-empty value that can be parsed as a version string.
 
 #### `__glibc`
 
@@ -105,7 +107,7 @@ The build string MUST always be `0`.
 
 #### `__linux`
 
-This virtual package MUST be present when the target platform is `linux-*`. Its version value MUST be set to the Linux kernel version, constrained to two to four numeric components formatted as `{major}.{minor}.{micro}.{patch}`. If the version cannot be estimated (e.g. because the native platform is not Linux), the fallback value MUST be set to `0`. The build string MUST be `0`.
+This virtual package MUST be present when the target platform is `linux-*`. Its version value MUST be set to the Linux kernel version, constrained to the first two to four numeric components formatted as `{major}.{minor}.{micro}.{patch}`. If the version cannot be estimated (e.g. because the native platform is not Linux), the tool MUST set `version` to a fallback value of its choice. The build string MUST be `0`.
 
 The version MUST be overridable with the `CONDA_OVERRIDE_LINUX` environment variable, if set to a non-empty value that matches the regex `"\d+\.\d+(\.\d+)?(\.\d+)?"`. The environment variable MUST be ignored when the target platform is not `linux-*`.
 
@@ -117,16 +119,14 @@ The version MUST be overridable with the `CONDA_OVERRIDE_LINUX` environment vari
 
 #### `__osx`
 
-This virtual package MUST be present when the target platform is `osx-*`. Its version value MUST be set to the first two numeric components of macOS version formatted as `{major}[.{minor}]`. If the version cannot be estimated (e.g. because the native platform is not macOS), the fallback value MUST be set to `0`. The build string MUST be `0`.
+This virtual package MUST be present when the target platform is `osx-*`. Its version value MUST be set to the first two numeric components of macOS version formatted as `{major}.{minor}`. If applicable, the `SYSTEM_VERSION_COMPAT` environment variable workaround MUST NOT be enabled; e.g. the version reported for Big Sur should be 11.x and not 10.16. If the version cannot be estimated (e.g. because the native platform is not macOS), the fallback value MUST be set to `0`. The build string MUST be `0`.
 
-The version MUST be overridable with the `CONDA_OVERRIDE_OSX` environment variable. If this environment variable is set to the empty string `""`, then the `__osx` virtual package MUST NOT be present. The environment variable MUST be ignored when the target platform is not `osx-*`.
+The version MUST be overridable with the `CONDA_OVERRIDE_OSX` environment variable if set to a non-empty value that can be parsed as a version string. The environment variable MUST be ignored when the target platform is not `osx-*`.
 
 > The macOS version can be obtained via:
 > 
 > - Python's `platform.mac_ver()[0]`
-> -  `sw_vers -productVersion`
->
-> If applicable, the `SYSTEM_VERSION_COMPAT` workaround MUST NOT be enabled; e.g. the version reported for Big Sur should be 11.x and not 10.16.
+> -  `SYSTEM_VERSION_COMPAT=0 sw_vers -productVersion`
 
 #### `__unix`
 
@@ -136,16 +136,18 @@ The `CONDA_OVERRIDE_UNIX` environment variable MUST NOT have any effect.
 
 #### `__win`
 
-This virtual package MUST be present when the target platform is `win-*`. The version MUST be set to the first three numeric components of the Windows build version, formatted as `{major}.{minor}.{build}`. If the version cannot be estimated (e.g. because the target platform does not match the native platform), the fallback value MUST be set to `0`. The build string MUST be `0`.
+This virtual package MUST be present when the target platform is `win-*`. The version MUST be set to the first three numeric components of the Windows build version, formatted as `{major}.{minor}.{build}`. If the version cannot be estimated (e.g. because the target platform does not match the native platform), the tool MUST set the version to a default value of its choice.
 
-The string `{major}.{minor}.{build}` can be obtained from:
+The version MUST be overridable with the `CONDA_OVERRIDE_WIN` environment variable if set to a non-empty value that can be parsed as a version string. The environment variable MUST be ignored when the target platform is not `win-*`.
 
-- Python's `platform.win32_ver()`
-- CMD's `ver`
+The build string MUST be `0`.
+
+> The version string `{major}.{minor}.{build}` can be obtained from:
+> 
+> - Python's `platform.win32_ver()`
+> - CMD's `ver`
 - Powershell's `[System.Environment]::OSVersion.Version`, `(Get-CimInstance Win32_OperatingSystem).version`
-- The command `wmic os get version`
-
-The version MUST be overridable with the `CONDA_OVERRIDE_WIN` environment variable. If this environment variable is set to the empty string `""`, then the `__win` virtual package MUST NOT be present. The environment variable MUST be ignored when the target platform is not `win-*`.
+> - The command `wmic os get version`
 
 ## Potential future work
 
