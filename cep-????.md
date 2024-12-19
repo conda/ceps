@@ -57,7 +57,7 @@ This virtual package MUST be always present, with the version set to `1`.
 
 The build string MUST reflect one of:
 
-- The detected CPU microarchitecture when the target platform matches the native platform, as specified in the [`archspec/archspec-json` database](https://github.com/archspec/archspec-json/blob/v0.2.5/cpu/microarchitectures.json). For Apple Silicon, the reported values MUST correspond to the `vendor == Apple` entries; e.g. `m1`, `m2`, etc. For any other vendors, the reported values MUST correspond to the `vendor == generic` entries; e.g. `x86_64_v1`, `x86_64_v2`, `x86_64_v3`, `x86_64_v4`, `arm`, `ppc`, etc. 
+- If the target platform matches the native platform, the best fitting CPU microarchitecture in the [`archspec/archspec-json` database](https://github.com/archspec/archspec-json/blob/v0.2.5/cpu/microarchitectures.json). The reference CPU detection implementation is [`archspec.cpu.detect.host()`](https://github.com/archspec/archspec/blob/v0.2.5/archspec/cpu/detect.py#L338).
 
 - The target platform architecture (second component of the platform string), mapped as: 
 
