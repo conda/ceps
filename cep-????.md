@@ -33,9 +33,11 @@ Virtual packages are used to expose details of the system configuration to a con
 A virtual package is defined as a package record with three fields: name, version and build string.
 The name MUST start with double underscore (`__`). The version and build string MUST follow the same semantics as in regular package records.
 
-The build string MAY be zero (`0`). Some exceptions apply. See below.
+Some general considerations: 
 
-In general, the version or build string of a virtual package MAY be overridden by the value of `CONDA_OVERRIDE_{NAME}` environment variable, with `{NAME}` being the uppercased name of the virtual package. Many exceptions apply so please observe the details in the section below.
+- The version or build string of a virtual package MAY be overridden by the value of `CONDA_OVERRIDE_{NAME}` environment variable, with `{NAME}` being the uppercased name of the virtual package. If the field being overridden is `version`, the value MUST be parsable as a version string. Many exceptions apply so please observe the details in the section below.
+- The build string MAY be zero (`0`). Some exceptions apply. See below.
+- When the tool used a fallback default value instead of a computed one, it SHOULD also inform the user of that choice and its possible override options (e.g. `CONDA_OVERRIDE_{NAME}` variables, CLI flags, configuration file, etc).
 
 ### List of virtual packages
 
