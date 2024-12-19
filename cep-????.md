@@ -53,30 +53,28 @@ In alphabetical order, every conda client MUST support the following virtual pac
 
 #### `__archspec`
 
-This virtual package MUST be always present, with the version set to `1`. The build string SHOULD reflect the detected CPU microarchitecture when the target platform matches the native platform, 
-as provided by the generic values in the [`archspec/archspec-json` database](https://github.com/archspec/archspec-json/blob/v0.2.5/cpu/microarchitectures.json), plus some exceptions. 
+This virtual package MUST be always present, with the version set to `1`. 
 
-For example,  `conda/conda` reports its generic values for Intel/AMD and vendor-specific names for Apple:
+The build string MUST reflect one of:
 
-- Generic: `x86_64_v1`, `x86_64_v2`, `x86_64_v3`, `x86_64_v4`, `arm`, `ppc`...
-- Apple: For M1, the value is `m1`. M2 and M3 are reported as `m2` and `m3`, respectively.
+- The detected CPU microarchitecture when the target platform matches the native platform, as specified in the [`archspec/archspec-json` database](https://github.com/archspec/archspec-json/blob/v0.2.5/cpu/microarchitectures.json). For Apple Silicon, the reported values MUST correspond to the `vendor == Apple` entries; e.g. `m1`, `m2`, etc. For any other vendors, the reported values MUST correspond to the `vendor == generic` entries; e.g. `x86_64_v1`, `x86_64_v2`, `x86_64_v3`, `x86_64_v4`, `arm`, `ppc`, etc. 
 
-If the microarchitecture cannot be detected or the target platform does not match the native platform, the build string MUST be set to the second component of the target platform, mapped with these rules:
+- The target platform architecture (second component of the platform string), mapped as: 
 
-| Target platform | Reported `archspec` build string |
-| --------------- | -------------------------------- |
-| `*-32`          | `x86`                            |
-| `*-64`          | `x86_64`                         |
-| `*-armv6l`      | `armv6l`                         |
-| `*-armv7l`      | `armv7l`                         |
-| `*-aarch64`     | `aarch64`                        |
-| `*-arm64`       | `arm64`                          |
-| `*-ppc64`       | `ppc64`                          |
-| `*-ppc64le`     | `ppc64le`                        |
-| `*-riscv64`     | `riscv64`                        |
-| `*-s390x`       | `s390x`                          |
-| `zos-z`         | `0`                              |
-| Any other value | `0`                              |
+  | Target platform | Reported `archspec` build string |
+  | --------------- | -------------------------------- |
+  | `*-32`          | `x86`                            |
+  | `*-64`          | `x86_64`                         |
+  | `*-armv6l`      | `armv6l`                         |
+  | `*-armv7l`      | `armv7l`                         |
+  | `*-aarch64`     | `aarch64`                        |
+  | `*-arm64`       | `arm64`                          |
+  | `*-ppc64`       | `ppc64`                          |
+  | `*-ppc64le`     | `ppc64le`                        |
+  | `*-riscv64`     | `riscv64`                        |
+  | `*-s390x`       | `s390x`                          |
+  | `zos-z`         | `0`                              |
+  | Any other value | `0`                              |
 
 The build string MUST be overridable with the `CONDA_OVERRIDE_ARCHSPEC` environment variable, if set to a non-empty value.
 
