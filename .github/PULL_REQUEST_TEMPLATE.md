@@ -1,10 +1,11 @@
 ## Checklist for submitter
 
-- [ ] I am submitting a new CEP.
+- [ ] I am submitting a new CEP: [Put your title here](#link-to-markdown-preview-in-branch).
   - [ ] I am using the CEP template by creating a copy `cep-0000.md` named `cep-????.md` in the root level.
-- [ ] I am submitting modifications to an existing CEP.
-- [ ] Something else.
+- [ ] I am submitting modifications to CEP XX. <!-- reflect CEP number here -->
+- [ ] Something else: (add your description here).
 
+<!-- delete section below if this is not a new CEP -->
 ## Checklist for CEP approvals
 
 - [ ] The vote period has ended and the vote has passed the necessary quorum and approval thresholds.
