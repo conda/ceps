@@ -60,19 +60,19 @@ as provided by the generic values in the [`archspec/archspec-json` database](htt
 If the microarchitecture cannot be detected or the target platform does not match the native platform, the build string MUST be set to the second component of the target platform, mapped with these rules:
 
 | Target platform | Reported `archspec` build string |
-|-----------------|----------------------------------|
-| `*-32` | `x86` |
-| `*-64` | `x86_64` |
-| `*-armv6l` | `armv6l`  |
-| `*-armv7l` | `armv7l`  |
-| `*-aarch64` | `aarch64`  |
-| `*-arm64` | `arm64`  |
-| `*-ppc64` | `ppc64`  |
-| `*-ppc64le` | `ppc64le`  |
-| `*-riscv64` | `riscv64`  |
-| `*-s390x` | `s390x`  |
-| `zos-z` | `0` |
-| Any other value | `0` |
+| --------------- | -------------------------------- |
+| `*-32`          | `x86`                            |
+| `*-64`          | `x86_64`                         |
+| `*-armv6l`      | `armv6l`                         |
+| `*-armv7l`      | `armv7l`                         |
+| `*-aarch64`     | `aarch64`                        |
+| `*-arm64`       | `arm64`                          |
+| `*-ppc64`       | `ppc64`                          |
+| `*-ppc64le`     | `ppc64le`                        |
+| `*-riscv64`     | `riscv64`                        |
+| `*-s390x`       | `s390x`                          |
+| `zos-z`         | `0`                              |
+| Any other value | `0`                              |
 
 The build string MUST be overridable with the `CONDA_OVERRIDE_ARCHSPEC` environment variable, if set to a non-empty value.
 
