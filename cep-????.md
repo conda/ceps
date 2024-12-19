@@ -84,17 +84,22 @@ The version MUST be overridable with the `CONDA_OVERRIDE_CUDA` environment varia
 
 #### `__glibc`
 
-This virtual package MUST be present when the native platform is `linux-*`. Its version value MUST be set to the system GNU `libc` version, constrained to the first two components (major and minor) formatted as `{major}.{minor}`. The build string MUST be `0`.
+This virtual package MUST NOT be present if the target platform is not `linux-*`.
 
-The version MUST be overridable with the `CONDA_OVERRIDE_GLIBC` environment variable, if set to a non-empty value.
+This virtual package MUST be present when the native and target platforms are both the same type of `linux-*` and GNU `libc` is installed in the system. The version value MUST be set to the system GNU `libc` version, constrained to the first two components (major and minor) formatted as `{major}.{minor}`. If the version cannot be estimated, the tool MUST set the version to a default value (e.g. `2.17`). 
 
-If the GNU `libc` version could not be estimated (e.g. the tool is not running on Linux), the tool SHOULD provide a default value (e.g. `2.17`) and inform the user of that choice and its possible overrides; e.g. via `CONDA_OVERRIDE_GLIBC`, a CLI flag or a configuration file. The environment variable MUST be ignored when the target platform is not `linux~-*`.
+If the native platform does not match the target platform, the tool MAY export `__glibc` with its `version` field set to a default value (e.g. `2.17`) of its choice.  
+
+If the `CONDA_OVERRIDE_GLIBC` environment variable if set to a non-empty value that complies to the version string specification, the tool MUST export `__glibc` with its version value set to the value of the environemnt variable.
+
+The build string MUST always be `0`. 
+
 
 > The GNU `libc` version can be computed via:
 >
 > - Python's `os.confstr("CS_GNU_LIBC_VERSION")`
 > - `getconf GNU_LIBC_VERSION`
-> - `ldd --version`. Please verify that it references GNU libc or GLIBC. For non-standard installs, using a GLIBC compatibility layer, this may require locating the implementation and directly querying.
+> - `ldd --version`. Please verify that it references GNU `libc` or GLIBC. For non-standard installs, using a GLIBC compatibility layer, this may require locating the implementation and directly querying.
 
 #### `__linux`
 
