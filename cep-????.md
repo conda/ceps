@@ -16,7 +16,17 @@
 
 ## Abstract
 
-This CEP standardizes which virtual packages MUST be offered by conda solvers.
+This CEP standardizes which virtual packages MUST be offered by conda install tools.
+
+## Motivation
+
+Virtual packages are used to expose details of the system configuration to a conda client. They are commonly used as dependencies in regular packages to constrain on which systems they can be installed. Some examples include:
+
+* On Linux, the minimum GNU `libc` version that must be available in the system via the `__glibc` virtual package.
+* The oldest macOS version compatible with the package via the `__osx` virtual package.
+* Whether a `noarch` package should be constrained to a single operating system via the `__linux`, `__osx` or `__win` virtual packages (often with no version constraint).
+* The minimum CPU microarchitecture level that the binaries require via the `__archspec` virtual package.
+* The lowest CUDA version the GPU driver is compatible with via `__cuda`.
 
 ## Specification
 
@@ -129,16 +139,6 @@ The string `{major}.{minor}.{build}` can be obtained from:
 - The command `wmic os get version`
 
 The version MUST be overridable with the `CONDA_OVERRIDE_WIN` environment variable. If this environment variable is set to the empty string `""`, then the `__win` virtual package MUST NOT be present. The environment variable MUST be ignored when the target platform is not `win-*`.
-
-## Motivation
-
-Virtual packages are used to expose details of the system configuration to a conda client. They are commonly used as dependencies in regular packages to constrain on which systems they can be installed. Some examples include:
-
-* On Linux, the minimum `libc` version that must be available in the system via the `__glibc` virtual package.
-* The oldest macOS version compatible with the package via the `__osx` virtual package.
-* Whether a `noarch` package should be constrained to a single operating system via the `__linux`, `__osx` or `__win` virtual packages (often with no version).
-* The minimum CPU microarchitecture level that the binaries require via the `__archspec` virtual package.
-* The lowest CUDA version the GPU driver is compatible with via `__cuda`.
 
 ## Potential future work
 
