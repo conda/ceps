@@ -34,7 +34,7 @@ This CEP is inspired by [PEP 668][PEP-668], which defines the `EXTERNALLY-MANAGE
     - A message chosen by the tool, if `frozen` is empty.
     - The message included in the `message` key, if `frozen` is not empty.
     - A help message explaining how to override the check, if available.
-- Tools SHOULD offer a way to override the presence of `frozen`, but never by default. For example, `--override-frozen-env`.
+- Tools SHOULD offer a way to override the presence of `frozen` (e.g. `--override-frozen-env`). However, tools MUST NOT enable the overrides by default.
 
 ## Example
 
