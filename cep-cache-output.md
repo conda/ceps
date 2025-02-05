@@ -28,6 +28,10 @@ The top-level `cache` key looks as follows:
 
 ```yaml
 cache:
+  source:
+    - url: https://foo.bar/source.tar.bz
+      sha256: ...
+
   requirements:
     build:
       - ${{ compiler('c') }}
@@ -38,8 +42,9 @@ cache:
     # run: ...
     # run_constraints: ...
     # ignore_run_exports: ...
+
   build:
-    # note: in the current implementation, all other keys for build
+    # note: in the current implementation, most other keys for build
     #       are also valid, but unused
     script: build.sh
 ```
@@ -57,21 +62,10 @@ The variant keys that are injected at build time is the subset used by the cache
 
 When the cache build is done, the newly created files are moved outside of the `host-prefix`. Post-processing is not performed on the files beyond memoizing what files contain the `$PREFIX` (which is later replaced in binaries and text files with the actual build-prefix with a simple 1-to-1 replacement as the prefix-length are guaranteed to be equal).
 
-The cache _only_ restores files that were added to the prefix (conda-build also restored source files). Sources are re-created from scratch and no intermediate state is kept.
+The cache restores files that were added to the prefix (conda-build also restored source files).
+The cache work dir folder, including the cache sources, is also recreated at the "dirty" state of the end of the cache build. The individual outputs can add additional source files into the cached source folder.
 
-<details> 
-  <summary>**Workaround for keeping intermediate build state**</summary>
-In order to keep state from the build around in the outputs, one could exercise the build in the $PREFIX and ignore the files in the outputs, or the build folder coule be placed in the `/tmp` folder:
-
-```bash
-cmake -B /tmp/mybuild -S .
-cmake --build /tmp/mybuild
-```
-
-Since this is not extremely convenient, we could discuss adding a "scratchpad" outside the `src` dir to rattler-build that will be kept between outputs and removed at the end of the whole build.
-</details>
-
-The new files can then be used in the outputs with the `build.files` key:
+Any new files in the prefix (from the cache) can then be used in the outputs with the `build.files` key:
 
 ```yaml
 outputs:
