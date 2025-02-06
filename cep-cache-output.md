@@ -39,13 +39,14 @@ cache:
       - ninja
     host:
       - libzlib
-    # run: ...
-    # run_constraints: ...
-    # ignore_run_exports: ...
+      - libfoo
+    # the `run` and `run_constraints` sections are not allowed here
+    ignore_run_exports:
+      by_name:
+        - libfoo
 
   build:
-    # note: in the current implementation, most other keys for build
-    #       are also valid, but unused
+    # only the script key is allowed here
     script: build.sh
 ```
 
@@ -60,7 +61,7 @@ When rattler-build executes the recipe, it will start by building the cache outp
 
 The variant keys that are injected at build time is the subset used by the cache output.
 
-When the cache build is done, the newly created files are moved outside of the `host-prefix`. Post-processing is not performed on the files beyond memoizing what files contain the `$PREFIX` (which is later replaced in binaries and text files with the actual build-prefix with a simple 1-to-1 replacement as the prefix-length are guaranteed to be equal).
+When the cache build is done, the newly created files are moved outside of the `host-prefix`. Post-processing is not performed on the files beyond memoizing what files contain the `$PREFIX` (which is later replaced in binaries and text files with the actual build-prefix).
 
 The cache restores files that were added to the prefix (conda-build also restored source files).
 The cache work dir folder, including the cache sources, is also recreated at the "dirty" state of the end of the cache build. The individual outputs can add additional source files into the cached source folder.
@@ -87,6 +88,16 @@ outputs:
       run:
         - ${{ pin_subpackage("libfoo") }}
         - ${{ pin_subpackage("foo-headers") }}
+```
+
+The glob list syntax can also be a dictionary with `include / exclude` keys, e.g.
+
+```yaml
+files:
+  include:
+    - include/**
+  exclude:
+    - lib/**
 ```
 
 Special care must be taken for `run-exports`. For example, the `${{ compiler('c') }}` package used to build the cache is going to have run-exports that need to be present at runtime for the package. To compute run-exports for the outputs, we use the union of the requirements - so virtually, the host & build dependencies of the cache are injected into the outputs and will attach their run exports to each output.
