@@ -105,7 +105,7 @@ The build string MUST always be `0`.
 
 #### `__linux`
 
-This virtual package MUST be present when the target platform is `linux-*`. Its version value MUST be set to the Linux kernel version, constrained to the first two to four numeric components formatted as `{major}.{minor}.{micro}.{patch}`. If the version cannot be estimated (e.g. because the native platform is not Linux), the tool MUST set `version` to a fallback value of its choice. The build string MUST be `0`.
+This virtual package MUST be present when the target platform is `linux-*`. Its version value MUST be set to the upstream (mainline) Linux kernel version, but it MUST exclude any and all [distribution-specific components](https://www.kernel.org/releases.html#distribution-kernels) of the kernel version. If the version cannot be estimated (e.g. because the native platform is not Linux), the tool MUST set `version` to a fallback value of its choice. The build string MUST be `0`.
 
 The version MUST be overridable with the `CONDA_OVERRIDE_LINUX` environment variable, if set to a non-empty value that matches the regex `"\d+\.\d+(\.\d+)?(\.\d+)?"`. The environment variable MUST be ignored when the target platform is not `linux-*`.
 
