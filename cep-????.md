@@ -65,12 +65,13 @@ The build string MUST reflect one of:
   | --------------- | -------------------------------- |
   | `*-32`          | `x86`                            |
   | `*-64`          | `x86_64`                         |
-  | `*-armv6l`      | `armv6l`                         |
-  | `*-armv7l`      | `armv7l`                         |
   | `*-aarch64`     | `aarch64`                        |
   | `*-arm64`       | `arm64`                          |
+  | `*-armv6l`      | `armv6l`                         |
+  | `*-armv7l`      | `armv7l`                         |
   | `*-ppc64`       | `ppc64`                          |
   | `*-ppc64le`     | `ppc64le`                        |
+  | `*-riscv32`     | `riscv32`                        |
   | `*-riscv64`     | `riscv64`                        |
   | `*-s390x`       | `s390x`                          |
   | `zos-z`         | `0`                              |
