@@ -66,3 +66,7 @@ This predicate adds basic verifiable facts about the package. It will tie the pr
 This is similar to what PyPI has implemented with the [PyPI publish attestation](https://docs.pypi.org/attestations/publish/v1/). Since there is no single authoritative index in the Conda world, we add the `targetChannel` field to reach parity.
 
 On the server, the certificate should be tested against the Trusted Publisher used to upload the certificate to establish a chain of trust.
+
+## Future work
+
+Once sigstore attestations are established and more research has been done, we might want to use the [SLSA (Supply-chain Levels for Software Artifacts)](https://slsa.dev) spec as base for predicates in the conda ecosystem. 
