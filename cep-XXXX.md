@@ -135,7 +135,7 @@ The channel and subdir MUST be used as-is without modification.
 The channel, subdir and OCI-encoded package name (or hashed OCI-encoded package name if required) MUST be combined with `/` to form the OCI repository `<name>`
 
 ```
-<channel>/<subdir>/<OCI-encoded package name>
+<channel>/<subdir>/<OCI-encoded package name or its SHA1 hash in hexidecimal>
 ```
 
 #### Encoding Labels, Versions and Build Strings into OCI `<tag>`s
