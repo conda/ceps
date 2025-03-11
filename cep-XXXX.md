@@ -79,12 +79,10 @@ Additional annotations are NOT allowed.
 
 The follow regexes define valid conda channel names, labels, and conda package names:
 
-| Type         | Regex                                                         |
-|--------------|---------------------------------------------------------------|
-| channel      | `^[a-z0-9]+((-|_|.)[a-z0-9]+)*$`                              |
-| subdirs      | `^[a-z0-9]+((-|_|.)[a-z0-9]+)*$`                              |
-| label        | `^[a-zA-Z][0-9a-zA-Z_\-\.\/:\s]*`                             |
-| package name | `^(([a-z0-9])|([a-z0-9_](?!_)))[._-]?([a-z0-9]+(\.|-|_|$))*$` |
+- channel: `^[a-z0-9]+((-|_|.)[a-z0-9]+)*$`
+- subdirs: `^[a-z0-9]+((-|_|.)[a-z0-9]+)*$`
+- label: `^[a-zA-Z][0-9a-zA-Z_\-\.\/:\s]*`
+- package name: `^(([a-z0-9])|([a-z0-9_](?!_)))[._-]?([a-z0-9]+(\.|-|_|$))*$`
 
 All channels, subdirs, labels, and package names MUST conform to their respective regex in the table above.
 
@@ -215,6 +213,8 @@ Some specific choices were made to ease parsing and avoid edge cases:
 ## Backwards Compatibility
 
 This specification is not fully backwards compatible with the original `v0` proof-of-concept implementation/specification of conda packages in an OCI registry in the [conda-oci-mirror](https://github.com/channel-mirrors/conda-oci-mirror) project. See the Alternatives section below. The main differences are the construction of the OCI artifact `<name>:<tag>` from the conda package information and the addition of OCI Annotations to the manifest. However, the OCI blob structure is unchanged, so cheap conversion may be possible by uploading only new OCI manifests with the new OCI artifact `<name>:<tag>` and the required OCI Annotations.
+
+The conda channel, subdir, label and package name regexes are backwards compatible with the current conda implementation and all existing packages on the `defaults` and `conda-forge` channels, except the `__anaconda_core_depends` package on the `defaults` channel.
 
 ## Alternatives
 
