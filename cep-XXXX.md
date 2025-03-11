@@ -1,7 +1,7 @@
-# CEP XXXX - OCI Storage of Conda Artifacts
+# CEP XXXX - OCI Storage of conda Artifacts
 
 <table>
-<tr><td> Title </td><td> OCI Storage of Conda Artifacts </td>
+<tr><td> Title </td><td> OCI Storage of conda Artifacts </td>
 <tr><td> Status </td><td> Proposed </td></tr>
 <tr><td> Author(s) </td><td> Wolf Vollprecht &lt;wolf@prefix.dev&gt;<br /> Hind Montassif &lt;hind.montassif@quantstack.net&gt;<br /> Matthew R. Becker &lt;becker.mr@gmail.com&gt;<br /> Jaime Rodríguez-Guerra &lt;jaime.rogue@gmail.com&gt;</td></tr>
 <tr><td> Created </td><td> April 12, 2024</td></tr>
@@ -39,11 +39,11 @@ For further details on the OCI-defined terms, see the full OCI specifications, t
 
 This specification is labeled `v1` and uses only `v1.0` of the OCI specification.
 
-### conda Packages as OCI Artifacts
+### Conda Packages as OCI Artifacts
 
 In order to store a conda package as an OCI artifact, we need to define how the data within the conda package is mapped into the OCI blobs, the allowed blob mediaTypes, and what additional metadata (if any) is stored in the OCI manifest.
 
-#### conda OCI Artifact Blob/Layer Media Types
+#### Conda OCI Artifact Blob/Layer Media Types
 
 We define the following custom media types that MUST be used for the storage of conda packages in an OCI registry.
 
@@ -54,7 +54,7 @@ We define the following custom media types that MUST be used for the storage of 
 | package info     | `info` folder as gzip  | application/vnd.conda.info.v1.tar+gzip      |
 | package index    | `info/index.json` file | application/vnd.conda.info.index.v1+json    |
 
-#### conda OCI Artifact Blob/Layer Structure
+#### Conda OCI Artifact Blob/Layer Structure
 
 A valid conda package as an OCI artifact MUST have the following layers:
 
@@ -64,7 +64,7 @@ A valid conda package as an OCI artifact MUST have the following layers:
 
 Additional layers are NOT allowed in the OCI artifact. If a conda package exists in both `.tar.bz2` and `.conda` format, the `.conda` version MUST be chosen to be in the OCI artifact.
 
-#### conda Manifest Annotations
+#### Conda Manifest Annotations
 
 The manifest MUST have the following [Annotations](https://github.com/opencontainers/image-spec/blob/main/annotations.md#annotations):
 
@@ -192,7 +192,7 @@ Finally, if the entire OCI tag exceeds 128 characters in length, the entire tag 
 The set of rules defined above ensure that
 
 - Nearly all conda packages can be stored in an OCI registry without hashing. As of 2025-03-10, the maximum lengths across `defaults` and `conda-forge` for the various components are ~90 characters, well below the OCI limits.
-- conda packages whose OCI artifact `<name>:<tag>` are not hashed retain human-readability.
+- Conda packages whose OCI artifact `<name>:<tag>` are not hashed retain human-readability.
 - For conda packages whose OCI artifact `<name>:<tag>` are not hashed, the underlying conda package information can be decoded from the OCI artifact `<name>:<tag>` without needing to access the OCI registry or consult a lookup table.
 - For conda packages whose OCI artifact `<name>:<tag>` are hashed, the underlying conda package information can be extracted from the OCI Annotations stored in the OCI manifest.
 - All labels on `anaconda.org` can be used as-is.
