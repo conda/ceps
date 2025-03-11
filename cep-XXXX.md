@@ -23,7 +23,7 @@ Below we use the following terms, some of which are defined by the OCI specs and
 OCI-define terms:
 
 - *OCI registry*: A service that implements the OCI Distribution Spec (e.g., `ghcr.io`).
-- *OCI repository*: A collection of container images with the same repository `<name>` in an OCI registry.
+- *OCI repository*: A collection of OCI artifacts with the same container or image `<name>` in an OCI registry.
 - *OCI tag*: A label for a specific container image within an OCI repository, identified by its `<tag>`.
 - *OCI artifact*: A container image stored in an OCI registry, specified by its OCI repository `<name>:<tag>`. Internally, an artifact consists of an OCI manifest and a set of OCI blobs (layers) that hold the artifact's data.
 - *OCI blob*: A binary blob stored in an OCI registry identified by its mediaType, digest, and size.
@@ -43,16 +43,16 @@ This specification is labeled `v1` and uses only `v1.0` of the OCI specification
 
 In order to store a conda package as an OCI artifact, we need to define how the data within the conda package is mapped into the OCI blobs, the allowed blob mediaTypes, and what additional metadata (if any) is stored in the OCI manifest.
 
-#### conda OIC Artifact Blob/Layer Media Types
+#### conda OCI Artifact Blob/Layer Media Types
 
 We define the following custom media types that MUST be used for the storage of conda packages in an OCI registry.
 
-| Blob type        | Content type              | mediaType                                   |
-|------------------|---------------------------|---------------------------------------------|
-| conda package v1 | .tar.bz2 package          | application/vnd.conda.package.v1            |
-| conda package v2 | .conda package            | application/vnd.conda.package.v2            |
-| package info     | `info` folder as gzip     | application/vnd.conda.info.v1.tar+gzip      |
-| package index    | `index.json` file         | application/vnd.conda.info.index.v1+json    |
+| Blob type        | Content type           | mediaType                                   |
+|------------------|------------------------|---------------------------------------------|
+| conda package v1 | .tar.bz2 package       | application/vnd.conda.package.v1            |
+| conda package v2 | .conda package         | application/vnd.conda.package.v2            |
+| package info     | `info` folder as gzip  | application/vnd.conda.info.v1.tar+gzip      |
+| package index    | `info/index.json` file | application/vnd.conda.info.index.v1+json    |
 
 #### conda OCI Artifact Blob/Layer Structure
 
@@ -60,9 +60,9 @@ A valid conda package as an OCI artifact MUST have the following layers:
 
 - a layer holding either the `.tar.bz2` or `.conda` package file with the mediaType `application/vnd.conda.package.v1` or `application/vnd.conda.package.v2`, respectively.
 - a layer holding the `info` folder as a gzipped tarball with extension `.tar.gz` and mediaType `application/vnd.conda.info.v1.tar+gzip`.
-- a layer holding the `index.json` file as plain JSON with the mediaType `application/vnd.conda.info.index.v1+json`.
+- a layer holding the `info/index.json` file as plain JSON with the mediaType `application/vnd.conda.info.index.v1+json`.
 
-Additional layers are NOT allowed in the OCI artifact.
+Additional layers are NOT allowed in the OCI artifact. If a conda package exists in both `.tar.bz2` and `.conda` format, the `.conda` version MUST be chosen to be in the OCI artifact.
 
 #### conda Manifest Annotations
 
@@ -73,18 +73,18 @@ The manifest MUST have the following [Annotations](https://github.com/opencontai
 - `org.conda.package.version` with the version of the conda package.
 - `org.conda.package.build` with the build string of the conda package
 
-Additional annotations are NOT allowed.
+Additional annotations under the `org.conda` namespace are NOT allowed.
 
 ### Allowed Characters and Formats for conda Channels, Subdirs, Labels, and Package Names
 
-The follow regexes define valid conda channel names, labels, and conda package names:
+The follow regexes define valid conda channel names, labels, and conda package names for the ENTIRE conda ecosystem:
 
 - channel: `^[a-z0-9]+((-|_|.)[a-z0-9]+)*$`
 - subdirs: `^[a-z0-9]+((-|_|.)[a-z0-9]+)*$`
 - label: `^[a-zA-Z][0-9a-zA-Z_\-\.\/:\s]*`
 - package name: `^(([a-z0-9])|([a-z0-9_](?!_)))[._-]?([a-z0-9]+(\.|-|_|$))*$`
 
-All channels, subdirs, labels, and package names MUST conform to their respective regex in the table above.
+All channels, subdirs, labels, and package names MUST conform to their respective regex in the list above regardless of whether or not they are package inside an OCI registry or a tradition conda package index (e.g., anaconda.org).
 
 Further, the following rule applies to labels:
 
@@ -99,7 +99,7 @@ Per the [OCI Distribution Spec](https://github.com/opencontainers/distribution-s
 
 The [OCI Distribution Spec](https://github.com/opencontainers/distribution-spec) further notes that "Many clients impose a limit of 255 characters on the length of the concatenation of the registry hostname (and optional port), /, and <name> value."
 
-These constraints motivate the following set of rules for mapping conda packages to OCI repositories and tags. More explanation is given below in the Rational section and the example implementation illustrate how these rules work together to create a human-readable and easily parsable OCI repository `<name>` and `<tag>` for a conda package.
+These constraints motivate the following set of rules for mapping conda packages to OCI repositories and tags. More explanation is given below in the Rationale section and the example implementation illustrates how these rules work together to create a human-readable and easily parsable OCI repository `<name>` and `<tag>` for a conda package.
 
 #### Overall Form of the OCI Repository and Tag
 
@@ -125,7 +125,7 @@ The package name MUST be encoded to OCI-form as follows:
 
 - If the package name starts with an `_`, the `_` MUST be replaced with `z`.
 - Otherwise, if the package name does NOT start with an `_`, the package name MUST be prepended by `c`.
-- If the combined string `<channel>/<subdir>/<OCI-encoded package name>` exceeds 128 characters in length, the OCI-encoded package name MUST be replaced by the SHA1 hash of the OCI-encoded package name in hexadecimal form as `h<SHA1 in hexidecimal>`.
+- If the combined string `<channel>/<subdir>/<OCI-encoded package name>` exceeds 128 characters in length, the OCI-encoded package name MUST be replaced by the SHA1 hash of the OCI-encoded package name in hexadecimal form as `h<SHA1 in hexadecimal>`.
 
 Package names in OCI-form which are not hashed can be decoded by reversing the encoding rules above.
 
@@ -143,7 +143,7 @@ The channel, subdir and OCI-encoded package name (or hashed OCI-encoded package 
 
 The label, version, and build string are encoded to OCI-form as follows. First the following mapping rules MUST be applied to the label, version and build string in the order listed below:
 
-- `_` -> `__`
+- `_` -> `_U`
 - `-` -> `_D`
 - `+` -> `_P`
 - `!` -> `_N`
