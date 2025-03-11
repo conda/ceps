@@ -159,13 +159,13 @@ This encoding can be undone by applying the rules in reverse, starting at the bo
 After encoding each component to OCI-form, the version, build string, and (optional) label MUST be combined with a `-` to form the OCI `<tag>` as either
 
 ```
-<version>-<build>-<label>
+<OCI-encoded version>-<OCI-encoded build>-<OCI-encoded label>
 ```
 
 or if the label is not specified (i.e. the package is on the `main` label), then
 
 ```
-<version>-<build>
+<OCI-encoded version>-<OCI-encoded build>
 ```
 
 with no trailing `-`.
@@ -173,8 +173,8 @@ with no trailing `-`.
 As implied above, if no label is explicitly specified for a package, then package is by definition on the `main` label. This stipulation means the following two OCI tags for conda packages are equivalent:
 
 ```
-v1.0.0-h123456__0-main
-v1.0.0-h123456__0
+v1.0.0-h123456_U0-main
+v1.0.0-h123456_U0
 ```
 
 Finally, if the entire OCI tag exceeds 128 characters in length, the entire tag MUST be hashed with the SHA1 algorithm and the resulting OCI tag is then `h<SHA1 in hexadecimal>`.
@@ -184,7 +184,7 @@ Finally, if the entire OCI tag exceeds 128 characters in length, the entire tag 
 - If either the OCI-encoded form of package name or the OCI tag for the conda package are hashed, then both MUST be hashed. In other words, only the two forms of the OCI artifact `<name>:<tag>` combination defined above, either unhashed or hashed, are allowed.
 - Once the OCI repository `<name>` and `<tag>` are computed for the conda artifact, the rest of the OCI Distribution Spec MUST be followed.
 - If an OCI registry implementation errors due to length when dealing with the full OCI form of the conda package (e.g., the combination of the registry URL and full OCI repository `<name>` for the conda package exceed some internal limit in the implementation), then that package cannot be stored in that registry and an error MUST be raised.
-- The download URL for a conda package in an OCI registry MUST use the `oci://` scheme to indicate that the artifact will be downloaded from an OCI endpoint. More specifically, it MUST follow the syntax `oci://<authority>[:<port>]/<name>:<tag>`. The `<authority>` is the URI of the OCI registry (e.g., `ghcr.io`).
+- The repodata download URL for a conda package in an OCI registry MUST use the `oci://` scheme to indicate that the artifact will be downloaded from an OCI endpoint. More specifically, it MUST follow the syntax `oci://<authority>[:<port>]/<name>:<tag>`. The `<authority>` is the URI of the OCI registry (e.g., `ghcr.io`).
 - The encoding rules defined above are solely for internal storage of conda packages within an OCI registry. Outside of dealing with the OCI registry itself, the original forms of the channel, subdir, label, name, version and build string MUST be used.
 
 ## Rationale
@@ -201,7 +201,6 @@ The set of rules defined above ensure that
 Some specific choices were made to ease parsing and avoid edge cases:
 
 - The encoding of labels, versions, and build strings is purposefully short to avoid excessively increasing the length of OCI tags.
-- The encoding of labels, versions, and build strings only generates at most two `_`s in a row and so obeys the OCI spec.
 - The individual version, build string, and label for a conda package can be extracted from the OCI `<tag>` by splitting on `-`.
 - The `main` label, which is the default label for conda packages in a channel, is not explicitly listed in the OCI `<tag>` in order to reduce the length of the OCI `<tag>` and to reduce clutter.
 
