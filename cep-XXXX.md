@@ -1,4 +1,4 @@
-# CEP XYZZ - OCI Storage of Conda Artifacts
+# CEP XXXX - OCI Storage of Conda Artifacts
 
 <table>
 <tr><td> Title </td><td> OCI Storage of Conda Artifacts </td>
@@ -6,7 +6,7 @@
 <tr><td> Author(s) </td><td> Wolf Vollprecht &lt;wolf@prefix.dev&gt;<br> Hind Montassif &lt;hind.montassif@quantstack.net&gt;<br> Matthew R. Becker &lt;becker.mr@gmail.com&gt;</td></tr>
 <tr><td> Created </td><td> April 12, 2024</td></tr>
 <tr><td> Updated </td><td> March 10, 2025</td></tr>
-<tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/OCI </td></tr>
+<tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/115; https://github.com/conda/ceps/pull/70 </td></tr>
 <tr><td> Implementation </td><td>  </td></tr>
 </table>
 
