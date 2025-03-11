@@ -31,6 +31,7 @@ for conda's implementation, all major changes should be submitted as
 | [0018](cep-0018.md) | Migration to the Zulip chat platform |
 | [0019](cep-0019.md) | Computing the hash of the contents in a directory |
 | [0020](cep-0020.md) | Support for `abi3` Python packages |
+| [0021](cep-0021.md) | OCI Storage of Conda Artifacts |
 
 ## References
 
