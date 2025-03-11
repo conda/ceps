@@ -47,6 +47,10 @@ and resolved is specified in [CEP 1](https://github.com/conda/ceps/blob/main/cep
 
 A template for new CEPs is given in [CEP 0](https://github.com/conda/ceps/blob/main/cep-0000.md).
 
+CEPs which are in draft/proposed form should have the number `XXXX` in both their PR title, CEP title, and filename.
+A number will be assigned to the CEP upon acceptance, and all references to the CEP should be updated to reflect the
+CEP's number.
+
 ## Conda capitalization standards
 
 1. Conda should be written in lowercase, whether in reference to the tool, ecosystem, packages, or organization.
