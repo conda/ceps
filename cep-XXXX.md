@@ -1,4 +1,4 @@
-# CEP 21 - OCI Storage of Conda Artifacts
+# CEP XXXX - OCI Storage of Conda Artifacts
 
 <table>
 <tr><td> Title </td><td> OCI Storage of Conda Artifacts </td>
@@ -16,7 +16,7 @@ This CEP defines how to store conda packages in an *OCI registry* as *OCI artifa
 
 ## Specification
 
-The conda OCI package specification has three main parts. First, we define how the data in a conda package is stored as an OCI artifact. Second, we codify the allowed characters and format of conda channels, subdirs, labels, and package names. Finally, we define how to generate the container `<name>` and container image `<tag>` (i.e., `<name>:<tag>`) for a conda package in an OCI registry.
+The conda OCI package specification has three main parts. First, we define how the data in a conda package is stored as an OCI artifact. Second, we codify the allowed characters and format of conda channels, subdirs, labels, and package names for packages that can be stored in an OCI registry. Finally, we define how to generate the container `<name>` and container image `<tag>` (i.e., `<name>:<tag>`) for a conda package in an OCI registry.
 
 Below we use the following terms, some of which are defined by the OCI specs and others of which are specific to conda.
 
@@ -77,14 +77,14 @@ Additional annotations under the `org.conda` namespace are NOT allowed.
 
 ### Allowed Characters and Formats for conda Channels, Subdirs, Labels, and Package Names
 
-The follow regexes define valid conda channel names, labels, and conda package names for the ENTIRE conda ecosystem:
+The follow regexes define valid conda channel names, labels, and conda package names for conda packages that can be stored in an OCI registry.
 
 - channel: `^[a-z0-9]+((-|_|.)[a-z0-9]+)*$`
 - subdirs: `^[a-z0-9]+((-|_|.)[a-z0-9]+)*$`
 - label: `^[a-zA-Z][0-9a-zA-Z_\-\.\/:\s]*`
 - package name: `^(([a-z0-9])|([a-z0-9_](?!_)))[._-]?([a-z0-9]+(\.|-|_|$))*$`
 
-All channels, subdirs, labels, and package names MUST conform to their respective regex in the list above regardless of whether or not they are package inside an OCI registry or a traditional conda package index (e.g., anaconda.org).
+All channels, subdirs, labels, and package names MUST conform to their respective regex in the list above if the package is to be stored in an OCI registry.
 
 Further, the following rule applies to labels:
 
@@ -121,15 +121,14 @@ The `<channel>` and `<subdir>` MUST be used as-is without modification. The OCI-
 
 #### Encoding Package Names, Channels, and Subdirs into OCI Repository `<name>`s
 
-The package name MUST be encoded to OCI-form as follows:
+The package name MUST be encoded to OCI-form using the following rules
 
-- If the package name starts with an `_`, the `_` MUST be replaced with `z`.
-- Otherwise, if the package name does NOT start with an `_`, the package name MUST be prepended by `c`.
-- If the combined string `<channel>/<subdir>/<OCI-encoded package name>` exceeds 128 characters in length, the OCI-encoded package name MUST be replaced by the SHA1 hash of the OCI-encoded package name in hexadecimal form as `h<SHA1 in hexadecimal>`.
+- All package names MUST be prepended by the character `c`.
+- If the combined string `<channel>/<subdir>/<OCI-encoded package name>` exceeds 128 characters in length, the OCI-encoded package name MUST be replaced by the SHA1 hash of the OCI-encoded package name in hexadecimal form as `h<SHA1 in hexadecimal>`. The letter `h` is reserved to indicate a hashed OCI-encoded package name.
 
 Package names in OCI-form which are not hashed can be decoded by reversing the encoding rules above.
 
-For example, the package name `_libgcc_mutex` is encoded to OCI-form as `zlibgcc_mutex`, and the package name `zlibgcc_mutex` is encoded to OCI-form as `czlibgcc_mutex`. A very long package name like `gblah000...000` would be encoded to its OCI-form `cgblah000...000`, then hashed via SHA1, yielding something like `h<hexdigest of SHA1 hash>`.
+For example, the package name `_libgcc_mutex` is encoded to OCI-form as `c_libgcc_mutex`, and the package name `c_libgcc_mutex` is encoded to OCI-form as `cc_zlibgcc_mutex`. A very long package name like `gblah000...000` would be encoded to its OCI-form `cgblah000...000`, then hashed via SHA1, yielding something like `h<hexdigest of SHA1 hash>`.
 
 The channel and subdir MUST be used as-is without modification.
 
@@ -192,7 +191,7 @@ Finally, if the entire OCI tag exceeds 128 characters in length, the entire tag 
 
 The set of rules defined above ensure that
 
-- Nearly all conda packages can be stored in an OCI registry without hashing. As of 2025-03-10, the maximum lengths across `defaults` and `conda-forge` for the various components are ~80 characters, well below the OCI limits.
+- Nearly all conda packages can be stored in an OCI registry without hashing. As of 2025-03-10, the maximum lengths across `defaults` and `conda-forge` for the various components are ~90 characters, well below the OCI limits.
 - conda packages whose OCI artifact `<name>:<tag>` are not hashed retain human-readability.
 - For conda packages whose OCI artifact `<name>:<tag>` are not hashed, the underlying conda package information can be decoded from the OCI artifact `<name>:<tag>` without needing to access the OCI registry or consult a lookup table.
 - For conda packages whose OCI artifact `<name>:<tag>` are hashed, the underlying conda package information can be extracted from the OCI Annotations stored in the OCI manifest.
@@ -210,7 +209,7 @@ Some specific choices were made to ease parsing and avoid edge cases:
 
 This specification is not fully backwards compatible with the original `v0` proof-of-concept implementation/specification of conda packages in an OCI registry in the [conda-oci-mirror](https://github.com/channel-mirrors/conda-oci-mirror) project. See the Alternatives section below. The main differences are the construction of the OCI artifact `<name>:<tag>` from the conda package information and the addition of OCI Annotations to the manifest. However, the OCI blob structure is unchanged, so cheap conversion may be possible by uploading only new OCI manifests with the new OCI artifact `<name>:<tag>` and the required OCI Annotations.
 
-The conda channel, subdir, label, and package name regexes are backwards compatible with the current conda implementation and all existing packages on the `defaults` and `conda-forge` channels, except the `__anaconda_core_depends` package on the `defaults` channel. As of 2025-03-10 the label `NOLABEL` is not in use anywhere on anaconda.org.
+The conda channel, subdir, label, and package name regexes are backwards compatible with the current conda implementation and all existing packages on the `defaults` and `conda-forge` channels, except the `__anaconda_core_depends` package on the `defaults` channel. As of 2025-03-10 the label `NOLABEL` is not in use anywhere on anaconda.org. The regex for labels above was pulled from an anaconda.org error message describing the set of valid labels. Finally, anaconda.org usernames/channel names are case insensitive and cannot begin with an underscore.
 
 ## Alternatives
 
@@ -227,3 +226,17 @@ The [conda-oci](https://github.com/conda-incubator/conda-oci) repository has ref
 ### mamba & rattler
 
 Both [mamba](https://github.com/mamba-org/mamba) and [rattler](https://github.com/conda/rattler) can be used with OCI registries of conda packages conforming to the `v0` specification.
+
+## References
+
+- OCI Distribution Spec v1: https://github.com/opencontainers/distribution-spec/blob/v1.1.1/spec.md
+- OCI Image Spec v1: https://github.com/opencontainers/image-spec/blob/v1.1.1/spec.md
+- channel-mirrors project: https://github.com/channel-mirrors
+- conda-oci-mirror project: https://github.com/channel-mirrors/conda-oci-mirror
+- mamba project: https://github.com/mamba-org/mamba
+- rattler project: https://github.com/conda/rattler
+- conda-oci project: https://github.com/conda-incubator/conda-oci
+
+## Copyright
+
+All CEPs are explicitly [CC0 1.0 Universal](https://creativecommons.org/publicdomain/zero/1.0/).
