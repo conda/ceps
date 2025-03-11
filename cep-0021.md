@@ -84,7 +84,7 @@ The follow regexes define valid conda channel names, labels, and conda package n
 - label: `^[a-zA-Z][0-9a-zA-Z_\-\.\/:\s]*`
 - package name: `^(([a-z0-9])|([a-z0-9_](?!_)))[._-]?([a-z0-9]+(\.|-|_|$))*$`
 
-All channels, subdirs, labels, and package names MUST conform to their respective regex in the list above regardless of whether or not they are package inside an OCI registry or a tradition conda package index (e.g., anaconda.org).
+All channels, subdirs, labels, and package names MUST conform to their respective regex in the list above regardless of whether or not they are package inside an OCI registry or a traditional conda package index (e.g., anaconda.org).
 
 Further, the following rule applies to labels:
 
