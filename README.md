@@ -49,7 +49,7 @@ A template for new CEPs is given in [CEP 0](https://github.com/conda/ceps/blob/m
 
 CEPs which are in draft/proposed form should have the number `XXXX` in both their PR title, CEP title, and filename.
 A number will be assigned to the CEP upon acceptance, and all references to the CEP should be updated to reflect the
-CEP's number.
+CEP's number. To refer to the CEP before it has a number, use its PR number or its title.
 
 ## Conda capitalization standards
 
