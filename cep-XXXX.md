@@ -90,10 +90,6 @@ Further, the following rule applies to labels:
 
 - The label `NOLABEL` is reserved and MUST only be used for conda packages which have no other labels. In other words, in the space of labels, the empty set is represented by the label `NOLABEL`.
 
-> [!NOTE]
-> As 2025-03-10, only a single package name on the `defaults` channel violates the above regex (`__anaconda_core_depends`).
-> Further, on all of `anaconda.org`, the `NOLABEL` label is not in use.
-
 ### Mapping conda Packages with Channels, Subdirs, Labels to OCI Repositories and Tags
 
 Per the [OCI Distribution Spec](https://github.com/opencontainers/distribution-spec) v1.0, the `<name>` and `<tag>` of an OCI repository are subject to the following regexes:
@@ -123,7 +119,7 @@ In the hashed form, the OCI-form of the package name and the string composed of 
 
 The `<channel>` and `<subdir>` MUST be used as-is without modification. The OCI-forms of the package name, label, version, and build string are defined below.
 
-#### Encoded Package Names, Channels, and Subdirs into OCI Repository `<name>`s
+#### Encoding Package Names, Channels, and Subdirs into OCI Repository `<name>`s
 
 The package name MUST be encoded to OCI-form as follows:
 
@@ -200,7 +196,7 @@ The set of rules defined above ensure that
 - conda packages whose OCI artifact `<name>:<tag>` are not hashed retain human-readability.
 - For conda packages whose OCI artifact `<name>:<tag>` are not hashed, the underlying conda package information can be decoded from the OCI artifact `<name>:<tag>` without needing to access the OCI registry or consult a lookup table.
 - For conda packages whose OCI artifact `<name>:<tag>` are hashed, the underlying conda package information can be extracted from the OCI Annotations stored in the OCI manifest.
-- Nearly all labels on `anaconda.org` can be used as-is. As of 2025-03-10 the label `NOLABEL` is not in use anywhere on anaconda.org.
+- All labels on `anaconda.org` can be used as-is.
 - Relabeling a conda package in an OCI registry is a cheap operation since it involves retagging an existing image.
 
 Some specific choices were made to ease parsing and avoid edge cases:
@@ -214,7 +210,7 @@ Some specific choices were made to ease parsing and avoid edge cases:
 
 This specification is not fully backwards compatible with the original `v0` proof-of-concept implementation/specification of conda packages in an OCI registry in the [conda-oci-mirror](https://github.com/channel-mirrors/conda-oci-mirror) project. See the Alternatives section below. The main differences are the construction of the OCI artifact `<name>:<tag>` from the conda package information and the addition of OCI Annotations to the manifest. However, the OCI blob structure is unchanged, so cheap conversion may be possible by uploading only new OCI manifests with the new OCI artifact `<name>:<tag>` and the required OCI Annotations.
 
-The conda channel, subdir, label and package name regexes are backwards compatible with the current conda implementation and all existing packages on the `defaults` and `conda-forge` channels, except the `__anaconda_core_depends` package on the `defaults` channel.
+The conda channel, subdir, label, and package name regexes are backwards compatible with the current conda implementation and all existing packages on the `defaults` and `conda-forge` channels, except the `__anaconda_core_depends` package on the `defaults` channel. As of 2025-03-10 the label `NOLABEL` is not in use anywhere on anaconda.org.
 
 ## Alternatives
 
