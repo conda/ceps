@@ -20,7 +20,7 @@ The conda OCI package specification has three main parts. First, we define how t
 
 Below we use the following terms, some of which are defined by the OCI specs and others of which are specific to conda.
 
-OCI-define terms:
+OCI-defined terms:
 
 - *OCI registry*: A service that implements the OCI Distribution Spec (e.g., `ghcr.io`).
 - *OCI repository*: A collection of container images with the same repository `<name>` in an OCI registry.
