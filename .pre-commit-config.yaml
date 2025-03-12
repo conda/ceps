@@ -26,7 +26,7 @@ repos:
     hooks:
     - id: cep-header
       name: CEP must start with a '# CEP \d - Title' header
-      entry: ^# CEP \d+ - .+$
+      entry: ^# CEP (\d{1,4}|XXXX) - .+$
       language: pygrep
       types: [text]
       args: [--negate]
@@ -60,4 +60,4 @@ repos:
       entry: CEP documents must be named '/cep-XXXX.md'
       language: fail
       files: ^.*cep-.*\.md.*$
-      exclude: ^cep-\d{4}\.md$
+      exclude: ^cep-(\d{4}|XXXX)\.md$
