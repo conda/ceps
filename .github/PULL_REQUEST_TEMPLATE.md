@@ -1,7 +1,7 @@
 ## Checklist for submitter
 
 - [ ] I am submitting a new CEP: [Put your title here](#link-to-markdown-preview-in-branch).
-  - [ ] I am using the CEP template by creating a copy `cep-0000.md` named `cep-????.md` in the root level.
+  - [ ] I am using the CEP template by creating a copy `cep-0000.md` named `cep-XXXX.md` in the root level.
 - [ ] I am submitting modifications to CEP XX. <!-- reflect CEP number here -->
 - [ ] Something else: (add your description here).
 
@@ -10,8 +10,8 @@
 
 - [ ] The vote period has ended and the vote has passed the necessary quorum and approval thresholds.
 - [ ] A new CEP number has been minted. Usually, this is `${greatest-number-in-main} + 1`.
-- [ ] The `cep-????.md` file has been renamed accordingly.
-- [ ] The `# CEP XX - ` header has been edited accordingly.
+- [ ] The `cep-XXXX.md` file has been renamed accordingly.
+- [ ] The `# CEP XXXX - ` header has been edited accordingly.
 - [ ] The CEP status in the table has been changed to approved.
 - [ ] The last modification date in the table has been updated accordingly.
 - [ ] The `pre-commit` checks are passing.
