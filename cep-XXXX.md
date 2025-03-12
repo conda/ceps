@@ -33,7 +33,7 @@ Conda-specific terms:
 
 - *OCI-encoded package name*: The name of a conda package that is encoded to a specific format (defined below) for use in an OCI repository `<name>`. The language "encoded to OCI-form" is used below to refer to this process.
 - *OCI-encoded label/version/build string*: A conda package label, version, or build string that is encoded to a specific format (defined below) for use in an OCI image `<tag>`. The language "encoded to OCI-form" is used below to refer to this process.
-- *hashed OCI-encoded <item>*: An `<item>` that is first encoded to its OCI-form and then hashed to a specific format (defined below) for use in an OCI repository `<name>` and/or `<tag>`.
+- *hashed OCI-encoded `<item>`*: An `<item>` that is first encoded to its OCI-form and then hashed to a specific format (defined below) for use in an OCI repository `<name>` and/or `<tag>`.
 
 For further details on the OCI-defined terms, see the full OCI specifications, the [Image Spec](https://github.com/opencontainers/image-spec) and the [Distribution Spec](https://github.com/opencontainers/distribution-spec).
 
@@ -105,15 +105,15 @@ These constraints motivate the following set of rules for mapping conda packages
 
 A conda package with its channel, subdir, and (optional) label MUST be mapped to an OCI `<repository>:<tag>` in one of two forms.
 
-The unhashed form of the OCI repository and tag for a conda package is:
+The unhashed form of the OCI artifact `<name>:<tag>` for a conda package is:
 
 ```
 <channel>/<subdir>/<OCI-encoded package name>:<OCI-encoded version>-<OCI-encoded build>(-<OCI-encoded label>)
 ```
 
-where the `-<OCI-encoded label>` component is present if the package label is not `main`. 
+where the `-<OCI-encoded label>` component MUST be present if the package label is not `main`.
 
-In the hashed form, the OCI-form of the package name and the string composed of the OCI-forms of the version, build, and (optional) label (i.e., `<version>-<build>(-<label>)`) are each separately hashed via SHA1 and then replaced by the string `h<hexdigest of SHA1 hash>` as follows
+In the hashed form, the OCI-form of the package name and the OCI tag (i.e., `<OCI-encoded version>-<OCI-encoded build>(-<OCI-encoded label>)`) are each separately hashed via SHA1 and then replaced by the string `h<hexdigest of SHA1 hash>` as follows:
 
 ```
 <channel>/<subdir>/h<hexdigest of the SHA1 hash of OCI-encoded package name>:h<hexdigest of the SHA1 hash of the original OCI tag of the conda package>
@@ -156,15 +156,15 @@ The label, version, and build string are encoded to OCI-form as follows. First t
 - `\r` -> `_R`
 - `\n` -> `_L`
 
-This encoding can be undone by applying the rules in reverse, starting at the bottom of the list and moving to the top. Depending on the context, some labels may be percent-encoded for use in URLs. The percent-encoding MUST be undone before the label is encoded via the list of rules above.
+This encoding is undone by applying the rules in reverse, starting at the bottom of the list and moving to the top. Depending on the context, some labels may be percent-encoded for use in URLs. The percent-encoding MUST be undone before the label is encoded via the list of rules above.
 
-After encoding each component to OCI-form, the version, build string, and label MUST be combined with a `-` to form the OCI `<tag>`
+After encoding each component to OCI-form, the version, build string, and label (if present, see below) MUST be combined with a `-` to form the OCI `<tag>`
 
 ```
 <OCI-encoded version>-<OCI-encoded build>(-<OCI-encoded label>)
 ```
 
-where the `-<OCI-encoded label> component is present is the package label is not `main`.
+where the `-<OCI-encoded label>` component is present is the package label is not `main`.
 
 As implied above, if no label is explicitly specified for a package, then package is by definition on the `main` label. This stipulation means the following two OCI tags for conda packages are equivalent:
 
