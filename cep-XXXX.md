@@ -37,7 +37,7 @@ Conda-specific terms:
 
 For further details on the OCI-defined terms, see the full OCI specifications, the [Image Spec](https://github.com/opencontainers/image-spec) and the [Distribution Spec](https://github.com/opencontainers/distribution-spec).
 
-This specification is labeled `v1` and uses only `v1.0` of the OCI specification.
+This specification is labeled `v1` and uses only OCI specifications compatible with the OCI `v1` specification.
 
 ### Conda Packages as OCI Artifacts
 
@@ -92,7 +92,7 @@ Further, the following rule applies to labels:
 
 ### Mapping conda Packages with Channels, Subdirs, Labels to OCI Repositories and Tags
 
-Per the [OCI Distribution Spec](https://github.com/opencontainers/distribution-spec) v1.0, the `<name>` and `<tag>` of an OCI repository are subject to the following regexes:
+Per the [OCI Distribution Spec](https://github.com/opencontainers/distribution-spec) v1, the `<name>` and `<tag>` of an OCI repository are subject to the following regexes:
 
 - `<name>`: `^[a-z0-9]+((\.|_|__|-+)[a-z0-9]+)*(\/[a-z0-9]+((\.|_|__|-+)[a-z0-9]+)*)*$`
 - `<tag>`: `^[a-zA-Z0-9_][a-zA-Z0-9._-]{0,127}$`
