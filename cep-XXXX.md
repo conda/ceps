@@ -108,8 +108,10 @@ A conda package with its channel, subdir, and (optional) label MUST be mapped to
 The unhashed form of the OCI repository and tag for a conda package is:
 
 ```
-<channel>/<subdir>/<OCI-encoded package name>:<OCI-encoded version, build and (optional) label in the form '<version>-<build>(-<label>)'>
+<channel>/<subdir>/<OCI-encoded package name>:<OCI-encoded version>-<OCI-encoded build>(-<OCI-encoded label>)
 ```
+
+where the `-<OCI-encoded label>` component is present if the package label is not `main`. 
 
 In the hashed form, the OCI-form of the package name and the string composed of the OCI-forms of the version, build, and (optional) label (i.e., `<version>-<build>(-<label>)`) are each separately hashed via SHA1 and then replaced by the string `h<hexdigest of SHA1 hash>` as follows
 
@@ -156,19 +158,13 @@ The label, version, and build string are encoded to OCI-form as follows. First t
 
 This encoding can be undone by applying the rules in reverse, starting at the bottom of the list and moving to the top. Depending on the context, some labels may be percent-encoded for use in URLs. The percent-encoding MUST be undone before the label is encoded via the list of rules above.
 
-After encoding each component to OCI-form, the version, build string, and (optional) label MUST be combined with a `-` to form the OCI `<tag>` as either
+After encoding each component to OCI-form, the version, build string, and label MUST be combined with a `-` to form the OCI `<tag>`
 
 ```
-<OCI-encoded version>-<OCI-encoded build>-<OCI-encoded label>
+<OCI-encoded version>-<OCI-encoded build>(-<OCI-encoded label>)
 ```
 
-or if the label is not specified (i.e. the package is on the `main` label), then
-
-```
-<OCI-encoded version>-<OCI-encoded build>
-```
-
-with no trailing `-`.
+where the `-<OCI-encoded label> component is present is the package label is not `main`.
 
 As implied above, if no label is explicitly specified for a package, then package is by definition on the `main` label. This stipulation means the following two OCI tags for conda packages are equivalent:
 
