@@ -164,7 +164,7 @@ After encoding each component to OCI-form, the version, build string, and label 
 <OCI-encoded version>-<OCI-encoded build>(-<OCI-encoded label>)
 ```
 
-where the `-<OCI-encoded label>` component is present is the package label is not `main`.
+where the `-<OCI-encoded label>` component MUST be present if the package label is not `main`.
 
 As implied above, if no label is explicitly specified for a package, then package is by definition on the `main` label. This stipulation means the following two OCI tags for conda packages are equivalent:
 
