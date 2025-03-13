@@ -61,7 +61,7 @@ This specification is labeled `v1`. Any implementation of this specification MUS
 The following are valid example forms of an OCI conda URL:
 
 ```
-oci://<authority>/<OCI-compatible channel path>[/label/<OCI-compatible label>]/<OCI-compatible subdir>/<OCI-encoded package name>:<OCI tag>
+oci://<authority>/<OCI-compatible channel path>[/label/<OCI-compatible label>]/<OCI-compatible subdir>/<OCI-encoded package name>:<OCI-encoded version>-<OCI-encoded build>
 oci://<authority>/<OCI-compatible channel path>[/label/<OCI-compatible label>]/<OCI-compatible subdir>/repodata.json:latest
 oci://<authority>/<OCI-compatible channel path>[/label/<OCI-compatible label>]/<OCI-compatible subdir>/repodata_from_packages.json:latest
 oci://<authority>/<OCI-compatible channel path>[/label/<OCI-compatible label>]/<OCI-compatible subdir>/run_exports.json:latest
@@ -79,7 +79,9 @@ The base URL for an OCI conda channel MUST be formatted as follows:
 oci://<authority>/<OCI-compatible channel path>[/label/<OCI-compatible label>]
 ```
 
-where `<authority>` is any valid [RFC 3986][rfc3986] authority which is also supported by the OCI `v1.*` specification. This string will typically be `<hostname>[:<port>]` (e.g., `ghcr.io` with no port specified). OCI conda channel URLs MUST use `oci` as the scheme. OCI-compatible channel path and labels are defined below. If the `<OCI-encoded label>` is `main`, the entire optional label component can be omitted from the URL. Otherwise, the label MUST be present.
+where `<authority>` is any valid [RFC 3986][rfc3986] authority which is also supported by the OCI `v1.*` specification. This string will typically be `<hostname>[:<port>]` (e.g., `ghcr.io` with no port specified). OCI conda channel URLs MUST use `oci` as the scheme. OCI-compatible channel path and labels are defined below. If the `<OCI-encoded label>` is `main`, the entire optional label component MUST be omitted. Otherwise, the label component MUST be present.
+
+The base URL for an OCI conda channel is the ONLY identifier for the channel itself and it MUST be used in conda ecosystem tools to refer to the channel.
 
 Conda `<subdirs>` are appended to this base URL as follows:
 
@@ -270,7 +272,7 @@ Some specific choices were made to ease parsing and avoid edge cases:
 
 This specification is not fully backwards compatible with the original `v0` proof-of-concept implementation/specification of conda packages in an OCI registry in the [conda-oci-mirror](https://github.com/channel-mirrors/conda-oci-mirror) project. See the Alternatives section below. The main differences are the construction of the OCI artifact `<name>:<tag>` from the conda package information and the addition of OCI Annotations to the manifest. However, the OCI blob structure is unchanged, so cheap conversion may be possible by uploading only new OCI manifests with the new OCI artifact `<name>:<tag>` and the required OCI Annotations.
 
-The conda channel, subdir, label, and package name regexes are fully backwards compatible with the current conda implementation, but not all existing packages on `anaconda.org`, `defaults` and `conda-forge` can be put into an OCI conda channel. In particular, labels that use `/`, `:`, more than `.` in a row, more than two `_`, start with a non-alphanumeric character, end with non-alphanumeric character, use upper letters, or use whitespace characters cannot be distributed in an OCI conda registry. Further, a small percentage of channel names on anaconda.org, ~0.4%, are not compatible with the OCI repository `<name>` regex. Several alternatives, discussed below, would define encodings that would enable these channels and labels to be distributed. However, they come at a significant cost in terms of readability and increasing the length of the OCI conda URLs. Thus we choose to exclude them from the specification.
+The conda channel, subdir, label, and package name regexes are fully backwards compatible with the current conda implementation, but not all existing packages on `anaconda.org`, `defaults` and `conda-forge` can be put into an OCI conda channel. In particular, labels that use `:`, more than `.` in a row, more than two `_` in a row, start with a non-alphanumeric character, end with non-alphanumeric character, use upper letters, or use whitespace characters cannot be distributed in an OCI conda registry. Further, a small percentage of channel names on anaconda.org, ~0.4%, are not compatible with the OCI repository `<name>` regex. Several alternatives, discussed below, would define encodings that would enable these channels and labels to be distributed. However, they come at a significant cost in terms of readability and increasing the length of the OCI conda URLs. Thus we choose to exclude them from the specification.
 
 ## Alternatives
 
