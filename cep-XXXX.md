@@ -1,4 +1,4 @@
-# CEP XXXX - OCI Storage of conda Artifacts
+# CEP XXXX - OCI Registries as conda Channels
 
 <table>
 <tr><td> Title </td><td> OCI Storage of conda Artifacts </td>
@@ -12,47 +12,220 @@
 
 ## Abstract
 
-This CEP defines how to store conda packages in an *OCI registry* as *OCI artifacts* (see the [Open Containers Initiative](https://opencontainers.org/) for more details on these terms). Importantly, this CEP does NOT describe how to store conda repodata in an OCI registry or how to generate repodata from an OCI registry. We leave these topics for future CEPs.
+This CEP defines how to use an *OCI registry* as a conda channel and how store conda packages/repodata in an *OCI registry* as *OCI artifacts* (see the [Open Containers Initiative][oci] (OCI) and the definitions below for more details on these terms). While conda channels are essentially any valid URL (possibly percent-encode and with a specific path hierarchy), OCI registries have comparably tighter constraints (reproduced below for completeness) on the allowed characters, formats, and lengths of the *OCI artifact* `<name>` and the artifact's *OCI tag* (i.e., `<name>:<tag>`). This situation creates the non-trivial problem of how to translate the various conda URL components (e.g., channel, subdir, label) and conda artifact components (e.g., package name, version, and build string) into a valid OCI artifact `<name>:<tag>`. This CEP resolves this situation by first, restricting the set of allowed channel, subdir and label names to a subset that is OCI-compatible, and second, defining a custom encoding of the conda package name, version, and build string into an OCI-compatible form. Finally, this CEP defines how to map the data in a conda package and in conda repodata into OCI artifacts.
 
-## Specification
+This CEP does NOT describe how to generate conda repodata from an existing OCI registry. It also does NOT describe how to store sharded repodata, defined in [CEP 16][cep16], in an OCI registry. We leave these topics for future CEPs.
 
-The conda OCI package specification has three main parts. First, we define how the data in a conda package is stored as an OCI artifact. Second, we codify the allowed characters and format of conda channels, subdirs, labels, and package names for packages that can be stored in an OCI registry. Finally, we define how to generate the container `<name>` and container image `<tag>` (i.e., `<name>:<tag>`) for a conda package in an OCI registry.
+> [!NOTE]
+> The keywords "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT",
+> "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as
+> described in [RFC2119][RFC2119] when, and only when, they appear in all capitals, as shown here.
 
-Below we use the following terms, some of which are defined by the OCI specs and others of which are specific to conda.
+## Background on OCI Registries and OCI Artifacts
 
-OCI-defined terms:
+The [Open Containers Initiative][oci] (OCI) defines an open standard for container images and their distribution. They define the following terms used in this CEP:
 
-- *OCI registry*: A service that implements the OCI Distribution Spec (e.g., `ghcr.io`).
+- *OCI registry*: A service that implements the [OCI Distribution Spec][ocidist] (e.g., `ghcr.io`).
+- *OCI artifact*: A container image stored in an OCI registry, specified by its OCI repository and OCI tag `<name>:<tag>`. Internally, an artifact consists of an OCI manifest and a set of OCI blobs (layers) that hold the artifact's data.
 - *OCI repository*: A collection of OCI artifacts with the same container or image `<name>` in an OCI registry.
 - *OCI tag*: A label for a specific container image within an OCI repository, identified by its `<tag>`.
-- *OCI artifact*: A container image stored in an OCI registry, specified by its OCI repository `<name>:<tag>`. Internally, an artifact consists of an OCI manifest and a set of OCI blobs (layers) that hold the artifact's data.
 - *OCI blob*: A binary blob stored in an OCI registry identified by its mediaType, digest, and size.
 - *OCI manifest*: A JSON document that describes the contents of an OCI artifact, organized as some metadata and a number of blobs. The manifest is also stored in the registry as a blob.
 
-Conda-specific terms:
+We have given informal definitions of the terms above. See the full OCI specifications, the [OCI Image Spec][ociimage] and the [OCI Distribution Spec][ocidist], for precise definitions of these terms.
 
-- *OCI-encoded package name*: The name of a conda package that is encoded to a specific format (defined below) for use in an OCI repository `<name>`. The language "encoded to OCI-form" is used below to refer to this process.
-- *OCI-encoded label/version/build string*: A conda package label, version, or build string that is encoded to a specific format (defined below) for use in an OCI image `<tag>`. The language "encoded to OCI-form" is used below to refer to this process.
-- *hashed OCI-encoded `<item>`*: An `<item>` that is first encoded to its OCI-form and then hashed to a specific format (defined below) for use in an OCI repository `<name>` and/or `<tag>`.
+Finally, per the [OCI Distribution Spec][ocidist] `v1.*`, the `<name>` and `<tag>` of an OCI repository MUST match the following regexes:
 
-For further details on the OCI-defined terms, see the full OCI specifications, the [Image Spec](https://github.com/opencontainers/image-spec) and the [Distribution Spec](https://github.com/opencontainers/distribution-spec).
+- `<name>`: `^[a-z0-9]+((\.|_|__|-+)[a-z0-9]+)*(\/[a-z0-9]+((\.|_|__|-+)[a-z0-9]+)*)*$`
+- `<tag>`: `^[a-zA-Z0-9_][a-zA-Z0-9._-]{0,127}$`
 
-This specification is labeled `v1` and uses only OCI specifications compatible with the OCI `v1` specification.
+The [OCI Distribution Spec][ocidist] further notes that "Many clients impose a limit of 255 characters on the length of the concatenation of the registry hostname (and optional port), /, and `<name>` value."
+
+These constraints play an important role in the design of this specification, as they limit the allowed characters, character ordering, and lengths to a subset of conda's allowed namespace.
+
+## Specification
+
+In this specification, we use the following conda-specific terminology:
+
+- *OCI-compatible `<channel path/subdir/label>`*: A conda channel, subdir, or label that is valid according to the regexes that define valid OCI repository `<name>`s. This regex is given above.
+- *OCI-encoded package name*: The name of a conda package that is encoded to a specific format (defined below) for use in an OCI repository `<name>`. The language "encoded to OCI form" is used below to refer to this process.
+- *OCI-encoded version/build string*: A conda package version or build string that is encoded to a specific format (defined below) for use in an OCI image `<tag>`. The language "encoded to OCI form" is used below to refer to this process.
+- *hashed `<component>`*: A string component of an OCI repository name or OCI tag, possibly the entire `<name>` or `<tag>`, hashed with SHA256 and then formatted as `h<SHA256 in hexadecimal>`.
+
+### Specification Version and Compatible OCI Specifications
+
+This specification is labeled `v1`. Any implementation of this specification MUST use the `v1.*` OCI specification.
+
+### Example Forms of a Valid OCI conda URL
+
+The following are valid example forms of an OCI conda URL:
+
+```
+oci://<authority>/<OCI-compatible channel path>[/label/<OCI-compatible label>]/<OCI-compatible subdir>/<OCI-encoded package name>:<OCI tag>
+oci://<authority>/<OCI-compatible channel path>[/label/<OCI-compatible label>]/<OCI-compatible subdir>/repodata.json:latest
+oci://<authority>/<OCI-compatible channel path>[/label/<OCI-compatible label>]/<OCI-compatible subdir>/repodata_from_packages.json:latest
+oci://<authority>/<OCI-compatible channel path>[/label/<OCI-compatible label>]/<OCI-compatible subdir>/run_exports.json:latest
+oci://<authority>/<OCI-compatible channel path>[/label/<OCI-compatible label>]/<OCI-compatible subdir>/patch_instructions.json:latest
+oci://<authority>/<OCI-compatible channel path>[/label/<OCI-compatible label>]/channeldata.json:latest
+```
+
+The various parts of the URL are defined below.
+
+### OCI conda Channel Base URL and Subdirs
+
+The base URL for an OCI conda channel MUST be formatted as follows:
+
+```
+oci://<authority>/<OCI-compatible channel path>[/label/<OCI-compatible label>]
+```
+
+where `<authority>` is any valid [RF3986](https://datatracker.ietf.org/doc/html/rfc3986#section-3.2) authority which is also supported by the OCI `v1.*` specification. This string will typically be `<hostname>[:<port>]` (e.g., `ghcr.io` with no port specified). OCI conda channel URLs MUST use `oci` as the scheme. OCI-compatible channel path and labels are defined below. If the `<OCI-encoded label>` is `main`, the entire optional label component can be omitted from the URL. Otherwise, the label MUST be present.
+
+Conda `<subdirs>` are appended to this base URL as follows:
+
+```
+<OCI conda channel base URL>/<OCI-compatible subdir>
+```
+
+where `<OCI-compatible subdir>` is defined below.
+
+The following regexes MUST be satisfied by the `<OCI-compatible channel path>`, `<OCI-compatible subdir>`, and `<OCI-compatible label>`:
+
+- `<OCI-compatible channel path>`: `^[a-z0-9]+((\.|_|__|-+)[a-z0-9]+)*(\/[a-z0-9]+((\.|_|__|-+)[a-z0-9]+)*)*$` (same as the regex for an OCI repository `<name>`)
+- `<OCI-compatible label>`: `^[a-z0-9]+((\.|_|__|-+)[a-z0-9]+)*(\/[a-z0-9]+((\.|_|__|-+)[a-z0-9]+)*)*$` (same as the regex for an OCI repository `<name>`)
+- `<OCI-compatible subdir>`: `^[a-z0-9]+(-[a-z0-9]+)*$`
+
+Further, an `<OCI-compatible subdir>` MUST NOT be named `channeldata.json`.
+
+The conda community may, in future CEPs, codify a single authoritative listing of all allowed `<subdir>`s. If that happens and all the entries in the allowed list are compatible with the OCI repository `<name>` regex, the regex requirement for an `<OCI-compatible subdir>` will be replaced the requirement that the `<OCI-compatible subdir>` MUST be an entry in the allowed list. If incompatible entries are found in the list, the situation SHOULD be resolved by the CEP process.
+
+### OCI conda Channel Subdir Repository Namespace designations
+
+The namespace after the combination `<OCI conda channel base URL>/<OCI-compatible subdir>/` has the following designations (where the `*` wildcard indicates any valid OCI repository `<name>` component or part of a component as allowed by the OCI repository `<name>` regex):
+
+- `<OCI conda channel base URL>/<OCI-compatible subdir>/r*`: reserved for repodata JSON artifacts, run exports JSON artifacts, and future CEP-defined extensions for sharded repodata (defined in [CEP 16][cep16]).
+- `<OCI conda channel base URL>/<OCI-compatible subdir>/c*`: reserved for OCI-encoded conda package names (The chaarcter `c` is prepended to the conda package name to indicate that it is an OCI-encoded conda package name as described below.)
+- `<OCI conda channel base URL>/<OCI-compatible subdir>/h*`: reserved for hashed OCI-encoded conda package names
+- `<OCI conda channel base URL>/<OCI-compatible subdir>/p*`: reserved for repodata patch instructions
+
+These designations are used to prevent namespace collisions between the various components of an OCI conda channel.
+
+### OCI conda Channel conda Package Repository Names
+
+Conda artifacts MUST be stored in the OCI repository of an OCI conda channel under their `<OCI-compatible subdir>` as the
+
+```
+<OCI conda channel base URL>/<OCI-compatible subdir>/<OCI-encoded package name>
+```
+
+OCI repository. The contents and mediaTypes of OCI blobs that make up the conda package artifact, along with how to compute the OCI tag, are defined below as well.
+
+The `<OCI-encoded package name>` MUST be computed according to the following rules:
+
+- All package names MUST be prepended by the character `c`.
+- If the combined string `<OCI conda channel base URL>/<OCI-compatible subdir>/<OCI-encoded package name>` exceeds 128 characters in length, the`<OCI-encoded package name>` MUST be replaced by the SHA256 hash of the `<OCI-encoded package name>` in hexadecimal form as `h<SHA256 in hexadecimal>`. The letter `h` is reserved to indicate a hashed OCI-encoded package name as described above.
+
+`<OCI-encoded package name>`s that are not hashed can be decoded by reversing the encoding rules above.
+
+For example, the package name `_libgcc_mutex` is encoded to OCI-form as `c_libgcc_mutex`, and the package name `c_libgcc_mutex` is encoded to OCI-form as `cc_zlibgcc_mutex`. A very long package name like `gblah000...000` would be encoded to its OCI-form `cgblah000...000`, then hashed via SHA256, yielding something like `h<hexdigest of SHA256 hash>`.
+
+### OCI conda Channel conda Package Tags
+
+The OCI tag for a conda package MUST be computed from the packages `<OCI-encoded version>` and `<OCI-encoded build string>` as follows.
+
+First, the `<OCI-encoded version>` and `<OCI-encoded build string>` are computed from conda package's `<version>` and `<build string>` respectively. To do this, one MUST apply the mapping rules below to the conda package's `<version>` or `<build string>` in the order listed, top to bottom:
+
+- `_` -> `_U`
+- `-` -> `_D`
+- `+` -> `_P`
+- `!` -> `_N`
+- `=` -> `_E`
+- `:` -> `_C`
+- `/` -> `_S`
+- ` ` -> `_B`
+- `\t` -> `_T`
+- `\r` -> `_R`
+- `\n` -> `_L`
+
+To undo this encoding, one MUST applying the rules in reverse, starting at the bottom of the list and moving to the top.
+
+Next, the `<OCI-encoded version>` and `<OCI-encoded build string>` MUST be combined with a `-` to form the OCI `<tag>`
+
+```
+<OCI-encoded version>-<OCI-encoded build>
+```
+
+Finally, if the entire OCI `<tag>` exceeds 128 characters in length, the entire tag MUST be hashed with the SHA256 algorithm and the resulting OCI tag is then `h<SHA256 in hexadecimal>`.
+
+### OCI conda Channel Repodata, Run Exports, and Patch Instructions
+
+The unsharded repodata, repodata from packages (if present), run exports (if present) and patch instructions (if present) for an OCI conda channel MUST be stored as an OCI artifact under the `<subdir>` as
+
+```
+<OCI conda channel base URL>/<OCI-compatible subdir>/repodata.json:latest
+<OCI conda channel base URL>/<OCI-compatible subdir>/repodata_from_packages.json:latest
+<OCI conda channel base URL>/<OCI-compatible subdir>/run_exports.json:latest
+<OCI conda channel base URL>/<OCI-compatible subdir>/patch_instructions.json:latest
+```
+
+respectively. The contents and mediaTypes of the OCI blobs that make up each of these kinds of data are defined below. The `repodata_from_packages.json`, `patch_instructions.json`, and `run_exports.json` artifacts MAY not be present
+on all OCI conda channels.
+
+The OCI tag `latest` MUST always refer to the copy of the repodata / run exports currently in use.
+
+Older copies of the repodata / run exports MAY be stored as well. If older copies of the repodata / run exports are stored, they MUST use an OCI tag that is the UTC time formatted as `YYYYMMDDThhmmssZ`.
+
+### OCI conda Channel Channeldata
+
+The `channeldata.json` for an OCI conda channel MUST be stored as an OCI artifact as
+
+```
+<OCI conda channel base URL>/channeldata.json:latest
+```
+
+where the contents and mediaTypes of the OCI blobs that make up the `channeldata.json` artifact are defined below.
+
+The OCI tag `latest` MUST always refer to the copy of the `channeldata.json` currently in use.
+
+Older copies of the `channeldata.json` MAY be stored as well. If older copies of the `channeldata.json` are stored, they MUST use an OCI tag that is the UTC time formatted as `YYYYMMDDThhmmssZ`.
+
+### Further Stipulations Related to OCI conda Chennal Repositories and Tags
+
+- If either of the `<OCI-encoded package name>` or the OCI tag for the conda package are hashed, then both MUST be hashed.
+- If an OCI registry implementation errors due to length when dealing with the full OCI conda URL for the package, then that package cannot be stored in that registry and an error MUST be raised.
+- The encoding rules defined above are solely for internal storage of conda packages within an OCI registry. Outside of dealing with the OCI registry itself, the original forms of the channel, subdir, label, name, version and build string MUST be used.
+
+### OCI conda Channel mediaTypes
+
+We define the following custom media types that MUST be used for the storage of conda repodata, run exports, channel data, and packages in an OCI registry:
+
+| Blob type            | Content type                | mediaType                                      |
+|----------------------|-----------------------------|------------------------------------------------|
+| conda package v1     | .tar.bz2 package            | application/vnd.conda.package.v1               |
+| conda package v2     | .conda package              | application/vnd.conda.package.v2               |
+| package info         | `info` folder as gzip       | application/vnd.conda.info.v1.tar+gzip         |
+| package index        | `info/index.json` file      | application/vnd.conda.info.index.v1+json       |
+| repodata.json        | `repodata.json` file        | application/vnd.conda.repodata.v1+json         |
+| repodata.json.zst    | `repodata.json.zst` file    | application/vnd.conda.repodata.v1+json+zst     |
+| repodata.json.gz     | `repodata.json.gz` file     | application/vnd.conda.repodata.v1+json+gzip    |
+| repodata.json.bz2    | `repodata.json.bz2` file    | application/vnd.conda.repodata.v1+json+bz2     |
+| channeldata.json     | `channeldata.json` file     | application/vnd.conda.channeldata.v1+json      |
+| run_exports.json     | `run_exports.json` file     | application/vnd.conda.run_exports.v1+json      |
+| run_exports.json.zst | `run_exports.json.zst` file | application/vnd.conda.run_exports.v1+json+zst  |
+| run_exports.json.gz  | `run_exports.json.gz` file  | application/vnd.conda.run_exports.v1+json+gzip |
+| run_exports.json.bz2 | `run_exports.json.bz2` file | application/vnd.conda.run_exports.v1+json+bz2  |
+| repodata_from_packages.json | `repodata_from_packages.json` file | application/vnd.conda.repodata_from_packages.v1+json |
+| repodata_from_packages.json.zst | `repodata_from_packages.json.zst` file | application/vnd.conda.repodata_from_packages.v1+json+zst |
+| repodata_from_packages.json.gz | `repodata_from_packages.json.gz` file | application/vnd.conda.repodata_from_packages.v1+json+gzip |
+| repodata_from_packages.json.bz2 | `repodata_from_packages.json.bz2` file | application/vnd.conda.repodata_from_packages.v1+json+bz2 |
+| patch_instructions.json | `patch_instructions.json` file | application/vnd.conda.patch_instructions.v1+json |
+| patch_instructions.json.zst | `patch_instructions.json.zst` file | application/vnd.conda.patch_instructions.v1+json+zst |
+| patch_instructions.json.gz | `patch_instructions.json.gz` file | application/vnd.conda.patch_instructions.v1+json+gzip |
+| patch_instructions.json.bz2 | `patch_instructions.json.bz2` file | application/vnd.conda.patch_instructions.v1+json+bz2 |
 
 ### Conda Packages as OCI Artifacts
 
-In order to store a conda package as an OCI artifact, we need to define how the data within the conda package is mapped into the OCI blobs, the allowed blob mediaTypes, and what additional metadata (if any) is stored in the OCI manifest.
-
-#### Conda OCI Artifact Blob/Layer Media Types
-
-We define the following custom media types that MUST be used for the storage of conda packages in an OCI registry.
-
-| Blob type        | Content type           | mediaType                                   |
-|------------------|------------------------|---------------------------------------------|
-| conda package v1 | .tar.bz2 package       | application/vnd.conda.package.v1            |
-| conda package v2 | .conda package         | application/vnd.conda.package.v2            |
-| package info     | `info` folder as gzip  | application/vnd.conda.info.v1.tar+gzip      |
-| package index    | `info/index.json` file | application/vnd.conda.info.index.v1+json    |
+In order to store a conda package as an OCI artifact, we need to define how the data within the conda package is mapped into the OCI blobs and what additional metadata (if any) is stored in the OCI manifest.
 
 #### Conda OCI Artifact Blob/Layer Structure
 
@@ -75,114 +248,6 @@ The manifest MUST have the following [Annotations](https://github.com/opencontai
 
 Additional annotations under the `org.conda` namespace are NOT allowed.
 
-### Allowed Characters and Formats for conda Channels, Subdirs, Labels, and Package Names
-
-The follow regexes define valid conda channel names, labels, and conda package names for conda packages that can be stored in an OCI registry.
-
-- channel: `^[a-z0-9]+((-|_|.)[a-z0-9]+)*$`
-- subdirs: `^[a-z0-9]+((-|_|.)[a-z0-9]+)*$`
-- label: `^[a-zA-Z][0-9a-zA-Z_\-\.\/:\s]*`
-- package name: `^(([a-z0-9])|([a-z0-9_](?!_)))[._-]?([a-z0-9]+(\.|-|_|$))*$`
-
-All channels, subdirs, labels, and package names MUST conform to their respective regex in the list above if the package is to be stored in an OCI registry.
-
-Further, the following rule applies to labels:
-
-- The label `NOLABEL` is reserved and MUST only be used for conda packages which have no other labels. In other words, in the space of labels, the empty set is represented by the label `NOLABEL`.
-
-### Mapping conda Packages with Channels, Subdirs, Labels to OCI Repositories and Tags
-
-Per the [OCI Distribution Spec](https://github.com/opencontainers/distribution-spec) v1, the `<name>` and `<tag>` of an OCI repository are subject to the following regexes:
-
-- `<name>`: `^[a-z0-9]+((\.|_|__|-+)[a-z0-9]+)*(\/[a-z0-9]+((\.|_|__|-+)[a-z0-9]+)*)*$`
-- `<tag>`: `^[a-zA-Z0-9_][a-zA-Z0-9._-]{0,127}$`
-
-The [OCI Distribution Spec](https://github.com/opencontainers/distribution-spec) further notes that "Many clients impose a limit of 255 characters on the length of the concatenation of the registry hostname (and optional port), /, and <name> value."
-
-These constraints motivate the following set of rules for mapping conda packages to OCI repositories and tags. More explanation is given below in the Rationale section and the example implementation illustrates how these rules work together to create a human-readable and easily parsable OCI repository `<name>` and `<tag>` for a conda package.
-
-#### Overall Form of the OCI Repository and Tag
-
-A conda package with its channel, subdir, and (optional) label MUST be mapped to an OCI `<repository>:<tag>` in one of two forms.
-
-The unhashed form of the OCI artifact `<name>:<tag>` for a conda package is:
-
-```
-<channel>/<subdir>/<OCI-encoded package name>:<OCI-encoded version>-<OCI-encoded build>(-<OCI-encoded label>)
-```
-
-where the `-<OCI-encoded label>` component MUST be present if the package label is not `main`.
-
-In the hashed form, the OCI-form of the package name and the OCI tag (i.e., `<OCI-encoded version>-<OCI-encoded build>(-<OCI-encoded label>)`) are each separately hashed via SHA1 and then replaced by the string `h<hexdigest of SHA1 hash>` as follows:
-
-```
-<channel>/<subdir>/h<hexdigest of the SHA1 hash of OCI-encoded package name>:h<hexdigest of the SHA1 hash of the original OCI tag of the conda package>
-```
-
-The `<channel>` and `<subdir>` MUST be used as-is without modification. The OCI-forms of the package name, label, version, and build string are defined below.
-
-#### Encoding Package Names, Channels, and Subdirs into OCI Repository `<name>`s
-
-The package name MUST be encoded to OCI-form using the following rules
-
-- All package names MUST be prepended by the character `c`.
-- If the combined string `<channel>/<subdir>/<OCI-encoded package name>` exceeds 128 characters in length, the OCI-encoded package name MUST be replaced by the SHA1 hash of the OCI-encoded package name in hexadecimal form as `h<SHA1 in hexadecimal>`. The letter `h` is reserved to indicate a hashed OCI-encoded package name.
-
-Package names in OCI-form which are not hashed can be decoded by reversing the encoding rules above.
-
-For example, the package name `_libgcc_mutex` is encoded to OCI-form as `c_libgcc_mutex`, and the package name `c_libgcc_mutex` is encoded to OCI-form as `cc_zlibgcc_mutex`. A very long package name like `gblah000...000` would be encoded to its OCI-form `cgblah000...000`, then hashed via SHA1, yielding something like `h<hexdigest of SHA1 hash>`.
-
-The channel and subdir MUST be used as-is without modification.
-
-The channel, subdir and OCI-encoded package name (or hashed OCI-encoded package name if required) MUST be combined with `/` to form the OCI repository `<name>`
-
-```
-<channel>/<subdir>/<OCI-encoded package name or its SHA1 hash in hexadecimal>
-```
-
-#### Encoding Labels, Versions and Build Strings into OCI `<tag>`s
-
-The label, version, and build string are encoded to OCI-form as follows. First the following mapping rules MUST be applied to the label, version and build string in the order listed below:
-
-- `_` -> `_U`
-- `-` -> `_D`
-- `+` -> `_P`
-- `!` -> `_N`
-- `=` -> `_E`
-- `:` -> `_C`
-- `/` -> `_S`
-- ` ` -> `_B`
-- `\t` -> `_T`
-- `\r` -> `_R`
-- `\n` -> `_L`
-
-This encoding is undone by applying the rules in reverse, starting at the bottom of the list and moving to the top. Depending on the context, some labels may be percent-encoded for use in URLs. The percent-encoding MUST be undone before the label is encoded via the list of rules above.
-
-After encoding each component to OCI-form, the version, build string, and label (if present, see below) MUST be combined with a `-` to form the OCI `<tag>`
-
-```
-<OCI-encoded version>-<OCI-encoded build>(-<OCI-encoded label>)
-```
-
-where the `-<OCI-encoded label>` component MUST be present if the package label is not `main`.
-
-As implied above, if no label is explicitly specified for a package, then package is by definition on the `main` label. This stipulation means the following two OCI tags for conda packages are equivalent:
-
-```
-v1.0.0-h123456_U0-main
-v1.0.0-h123456_U0
-```
-
-Finally, if the entire OCI tag exceeds 128 characters in length, the entire tag MUST be hashed with the SHA1 algorithm and the resulting OCI tag is then `h<SHA1 in hexadecimal>`.
-
-#### Further Odds and Ends
-
-- If either the OCI-encoded form of package name or the OCI tag for the conda package are hashed, then both MUST be hashed. In other words, only the two forms of the OCI artifact `<name>:<tag>` combination defined above, either unhashed or hashed, are allowed.
-- Once the OCI repository `<name>` and `<tag>` are computed for the conda artifact, the rest of the OCI Distribution Spec MUST be followed.
-- If an OCI registry implementation errors due to length when dealing with the full OCI form of the conda package (e.g., the combination of the registry URL and full OCI repository `<name>` for the conda package exceed some internal limit in the implementation), then that package cannot be stored in that registry and an error MUST be raised.
-- The repodata download URL for a conda package in an OCI registry MUST use the `oci://` scheme to indicate that the artifact will be downloaded from an OCI endpoint. More specifically, it MUST follow the syntax `oci://<authority>[:<port>]/<name>:<tag>`. The `<authority>` is the URI of the OCI registry (e.g., `ghcr.io`).
-- The encoding rules defined above are solely for internal storage of conda packages within an OCI registry. Outside of dealing with the OCI registry itself, the original forms of the channel, subdir, label, name, version and build string MUST be used.
-
 ## Rationale
 
 The set of rules defined above ensure that
@@ -191,26 +256,29 @@ The set of rules defined above ensure that
 - Conda packages whose OCI artifact `<name>:<tag>` are not hashed retain human-readability.
 - For conda packages whose OCI artifact `<name>:<tag>` are not hashed, the underlying conda package information can be decoded from the OCI artifact `<name>:<tag>` without needing to access the OCI registry or consult a lookup table.
 - For conda packages whose OCI artifact `<name>:<tag>` are hashed, the underlying conda package information can be extracted from the OCI Annotations stored in the OCI manifest.
-- All labels on `anaconda.org` can be used as-is.
-- Relabeling a conda package in an OCI registry is a cheap operation since it involves retagging an existing image.
+- Most labels on `anaconda.org` can be used as-is, though a few with capital letters or some special characters will be excluded.
 
 Some specific choices were made to ease parsing and avoid edge cases:
 
-- The encoding of labels, versions, and build strings is purposefully short to avoid excessively increasing the length of OCI tags.
-- The individual version, build string, and label for a conda package can be extracted from the OCI `<tag>` by splitting on `-`.
-- The `main` label, which is the default label for conda packages in a channel, is not explicitly listed in the OCI `<tag>` in order to reduce the length of the OCI `<tag>` and to reduce clutter.
+- The encoding of versions and build strings is purposefully short to avoid excessively increasing the length of OCI tags.
+- The individual version and build string for a conda package can be extracted from the OCI `<tag>` by splitting on `-`.
+- The `main` label, which is the default label for conda packages in a channel, is not explicitly listed in the OCI `<name>` in order to reduce the length of the OCI `<name>` and to reduce clutter.
 
 ## Backwards Compatibility
 
 This specification is not fully backwards compatible with the original `v0` proof-of-concept implementation/specification of conda packages in an OCI registry in the [conda-oci-mirror](https://github.com/channel-mirrors/conda-oci-mirror) project. See the Alternatives section below. The main differences are the construction of the OCI artifact `<name>:<tag>` from the conda package information and the addition of OCI Annotations to the manifest. However, the OCI blob structure is unchanged, so cheap conversion may be possible by uploading only new OCI manifests with the new OCI artifact `<name>:<tag>` and the required OCI Annotations.
 
-The conda channel, subdir, label, and package name regexes are backwards compatible with the current conda implementation and all existing packages on the `defaults` and `conda-forge` channels, except the `__anaconda_core_depends` package on the `defaults` channel. As of 2025-03-10 the label `NOLABEL` is not in use anywhere on anaconda.org. The regex for labels above was pulled from an anaconda.org error message describing the set of valid labels. Finally, anaconda.org usernames/channel names are case insensitive and cannot begin with an underscore.
+The conda channel, subdir, label, and package name regexes are fully backwards compatible with the current conda implementation, but not all existing packages on `anaconda.org`, `defaults` and `conda-forge` can be put into an OCI conda channel. In particular, labels that use `/`, `:`, more than `.` in a row, more than two `_`, start with a non-alphanumeric character, end with non-alphanumeric character, use upper letters, or use whitespace characters cannot be distributed in an OCI conda registry. Further, a small percentage of channel names on anaconda.org, ~0.4%, are not compatible with the OCI repository `<name>` regex. Several alternatives, discussed below, would define encodings that would enable these channels and labels to be distributed. However, they come at a significant cost in terms of readability and increasing the length of the OCI conda URLs. Thus we choose to exclude them from the specification.
 
 ## Alternatives
 
 - An initial version of this specification was proposed in [CEP PR #70](https://github.com/conda/ceps/pull/70) and received substantial feedback from the community. The current version of the specification is a result of that feedback. Particularly notable feedback included the suggestion of [symbol name mangling techniques and the first version of the shortened encoding used above](https://github.com/conda/ceps/pull/70/files#discussion_r1740438239) by [Bas Zalmstra](https://github.com/baszalmstra).
 
 - The [channel-mirrors project](https://github.com/channel-mirrors) with its associated package [conda-oci-mirror](https://github.com/channel-mirrors/conda-oci-mirror) developed a proof-of-concept implementation of conda packages and repodata stored in an OCI registry. This specification is based on the experience gained from that project, but is not fully backwards compatible with the original implementation. See Backwards Compatibility above. This original implementation and implied specification is referred to as `v0`.
+
+- One alternative to excluding certain labels and channels from distribution via an OCI conda channel is to define a further custom encoding of the channel path parts of the URL. For example, one could use an encoding inspired by percent-encoding for URLS. This encoding could, for example, first percent-encode the letter `u` and all characters not in the set `[0-9a-z]`. Then the percent sign could be replaced by the special code `u_`. This encoding would significantly hinder readability, but would allow nearly arbitrary channel names and labels to be used.
+
+- Another alternative which also suffers from readability issues, is to encode all channel and label names to bytes via say UTF-8 and then represent them as hex strings. This would allow arbitrary channel names and labels to be used as well, but would also lengthen channel names towards the OCI limits.
 
 ## Sample Implementation
 
@@ -224,13 +292,24 @@ Both [mamba](https://github.com/mamba-org/mamba) and [rattler](https://github.co
 
 ## References
 
-- OCI Distribution Spec v1: https://github.com/opencontainers/distribution-spec/blob/v1.1.1/spec.md
+- Open Containers Initiative: https://opencontainers.org/
+- CEP 16: https://github.com/conda/ceps/blob/main/cep-0016.md
+- RFC 2119: https://datatracker.ietf.org/doc/html/rfc2119
+- OCI Distribution Spec: https://github.com/opencontainers/distribution-spec
+- OCI Image Spec: https://github.com/opencontainers/image-spec
+
 - OCI Image Spec v1: https://github.com/opencontainers/image-spec/blob/v1.1.1/spec.md
 - channel-mirrors project: https://github.com/channel-mirrors
 - conda-oci-mirror project: https://github.com/channel-mirrors/conda-oci-mirror
 - mamba project: https://github.com/mamba-org/mamba
 - rattler project: https://github.com/conda/rattler
 - conda-oci project: https://github.com/conda-incubator/conda-oci
+
+[oci]: https://opencontainers.org/ (Open Containers Initiative)
+[cep16]: https://github.com/conda/ceps/blob/main/cep-0016.md (CEP 16)
+[RFC2119]: https://datatracker.ietf.org/doc/html/rfc2119 (RFC 2119)
+[ocidist]: https://github.com/opencontainers/distribution-spec (OCI Distribution Spec)
+[ociimage]: https://github.com/opencontainers/image-spec (OCI Image Spec)
 
 ## Copyright
 
