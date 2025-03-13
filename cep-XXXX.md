@@ -248,6 +248,8 @@ The manifest MUST have the following [Annotations](https://github.com/opencontai
 
 Additional annotations under the `org.conda` namespace are NOT allowed.
 
+### TODO Add Manifest Annotations and Required Layers for repodata, run exports, channeldata, and patch instructions
+
 ## Rationale
 
 The set of rules defined above ensure that
