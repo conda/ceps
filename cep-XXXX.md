@@ -79,7 +79,7 @@ The base URL for an OCI conda channel MUST be formatted as follows:
 oci://<authority>/<OCI-compatible channel path>[/label/<OCI-compatible label>]
 ```
 
-where `<authority>` is any valid [RF3986](https://datatracker.ietf.org/doc/html/rfc3986#section-3.2) authority which is also supported by the OCI `v1.*` specification. This string will typically be `<hostname>[:<port>]` (e.g., `ghcr.io` with no port specified). OCI conda channel URLs MUST use `oci` as the scheme. OCI-compatible channel path and labels are defined below. If the `<OCI-encoded label>` is `main`, the entire optional label component can be omitted from the URL. Otherwise, the label MUST be present.
+where `<authority>` is any valid [RFC 3986][rfc3986] authority which is also supported by the OCI `v1.*` specification. This string will typically be `<hostname>[:<port>]` (e.g., `ghcr.io` with no port specified). OCI conda channel URLs MUST use `oci` as the scheme. OCI-compatible channel path and labels are defined below. If the `<OCI-encoded label>` is `main`, the entire optional label component can be omitted from the URL. Otherwise, the label MUST be present.
 
 Conda `<subdirs>` are appended to this base URL as follows:
 
@@ -297,8 +297,7 @@ Both [mamba](https://github.com/mamba-org/mamba) and [rattler](https://github.co
 - RFC 2119: https://datatracker.ietf.org/doc/html/rfc2119
 - OCI Distribution Spec: https://github.com/opencontainers/distribution-spec
 - OCI Image Spec: https://github.com/opencontainers/image-spec
-
-- OCI Image Spec v1: https://github.com/opencontainers/image-spec/blob/v1.1.1/spec.md
+- RFC 3986: https://datatracker.ietf.org/doc/html/rfc3986#section-3.2
 - channel-mirrors project: https://github.com/channel-mirrors
 - conda-oci-mirror project: https://github.com/channel-mirrors/conda-oci-mirror
 - mamba project: https://github.com/mamba-org/mamba
@@ -310,7 +309,7 @@ Both [mamba](https://github.com/mamba-org/mamba) and [rattler](https://github.co
 [RFC2119]: https://datatracker.ietf.org/doc/html/rfc2119 (RFC 2119)
 [ocidist]: https://github.com/opencontainers/distribution-spec (OCI Distribution Spec)
 [ociimage]: https://github.com/opencontainers/image-spec (OCI Image Spec)
-
+[rfc3986]: https://datatracker.ietf.org/doc/html/rfc3986#section-3.2 (RFC 3986)
 ## Copyright
 
 All CEPs are explicitly [CC0 1.0 Universal](https://creativecommons.org/publicdomain/zero/1.0/).
