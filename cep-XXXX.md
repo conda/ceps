@@ -104,7 +104,7 @@ The conda community may, in future CEPs, codify a single authoritative listing o
 The namespace after the combination `<OCI conda channel base URL>/<OCI-compatible subdir>/` has the following designations (where the `*` wildcard indicates any valid OCI repository `<name>` component or part of a component as allowed by the OCI repository `<name>` regex):
 
 - `<OCI conda channel base URL>/<OCI-compatible subdir>/r*`: reserved for repodata JSON artifacts, run exports JSON artifacts, and future CEP-defined extensions for sharded repodata (defined in [CEP 16][cep16]).
-- `<OCI conda channel base URL>/<OCI-compatible subdir>/c*`: reserved for OCI-encoded conda package names (The chaarcter `c` is prepended to the conda package name to indicate that it is an OCI-encoded conda package name as described below.)
+- `<OCI conda channel base URL>/<OCI-compatible subdir>/c*`: reserved for OCI-encoded conda package names (The character `c` is prepended to the conda package name to indicate that it is an OCI-encoded conda package name as described below.)
 - `<OCI conda channel base URL>/<OCI-compatible subdir>/h*`: reserved for hashed OCI-encoded conda package names
 - `<OCI conda channel base URL>/<OCI-compatible subdir>/p*`: reserved for repodata patch instructions
 
