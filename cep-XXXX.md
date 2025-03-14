@@ -24,13 +24,15 @@ The `environment.yml` file format was introduced by `conda env`. It has been tra
 
 ## Specification
 
-`environment.yml` files are YAML documents that encode the necessary information to create a new conda environment. They can contain up to five top-level keys:
+`environment.yml` files are YAML documents that encode the necessary information to create a new conda environment. They can contain up to seven top-level keys:
 
 - `name`: The preferred name for the environment.
 - `prefix`: The preferred full path to the environment. Often ignored.
 - `dependencies`: List of package specifications that MUST be installed in the new environment.
 - `channels`: conda channels that will be used to resolve the dependencies.
 - `variables`: Environment variables that SHOULD be added to the `conda-meta/state` file in the resulting environment.
+- `platforms`: Target subdirs for the solver.
+- `category`: Free-form field to label the dependencies as a group.
 
 Additional sections can be present, but they MUST be ignored and the user SHOULD receive an informative warning about them.
 
