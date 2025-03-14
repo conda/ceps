@@ -12,10 +12,10 @@
 
 ## Abstract
 
-As the conda ecosystem is being standardized and evolving, the existing standards 
-(in many cases only documented by the code that implements them) have been called 
-`v1` in some cases (e.g., `.tar.bz2` versus `.conda`) and `v0` in others (e.g., `v0` versus `v1` recipe formats). 
-This differing nomenclature is confusing. In this CEP, we resolve this issue by declaring all existing `conda` 
+As the conda ecosystem is being standardized and evolving, the existing standards
+(in many cases only documented by the code that implements them) have been called
+`v1` in some cases (e.g., `.tar.bz2` versus `.conda`) and `v0` in others (e.g., `v0` versus `v1` recipe formats).
+This differing nomenclature is confusing. In this CEP, we resolve this issue by declaring all existing `conda`
 standards, documented formally in CEPs or not, the `v0` standards.
 
 ## Specification
@@ -23,9 +23,9 @@ standards, documented formally in CEPs or not, the `v0` standards.
 All existing conda standards which satisfy the following conditions
 
 - are documented formally in CEPs or are only effectively documented through code implementations
-- have not been superceeded by a newer standard labeled `v1`
+- have not been superseded by a newer standard labeled `v1`
 
-MUST be versioned at `v0`. 
+MUST be versioned at `v0`.
 
 The number of conda package formats, `.tar.bz2` and `.conda`, is exempt from this CEP.
 
