@@ -19,14 +19,14 @@
   - [Example Forms of a Valid OCI conda URL](#example-forms-of-a-valid-oci-conda-url)
   - [Channel Base URL and Subdirs](#channel-base-url-and-subdirs)
   - [Subdir Repository Namespace Designations](#subdir-repository-namespace-designations)
-  - [Conda Package Repository Names](#conda-package-repository-names)
-  - [Conda Package OCI Tags](#conda-package-oci-tags)
+  - [Conda Artifact OCI Repository Names](#conda-artifact-oci-repository-names)
+  - [Conda Artifact OCI Tags](#conda-artifact-oci-tags)
   - [Repodata, Run Exports, and Patch Instructions Artifact Names and Tags](#repodata-run-exports-and-patch-instructions-artifact-names-and-tags)
   - [Channeldata Artifact Names and Tags](#channeldata-artifact-names-and-tags)
   - [Further Stipulations Related to OCI conda Chennal Repositories and Tags](#further-stipulations-related-to-oci-conda-chennal-repositories-and-tags)
   - [Allowed Blob mediaTypes](#allowed-blob-mediatypes)
   - [OCI Artifact Structure for Conda Packages](#oci-artifact-structure-for-conda-packages)
-  - [OCI Artifact Structure for Repodata, etc,](#oci-artifact-structure-for-repodata-etc)
+  - [OCI Artifact Structure for Repodata, etc.](#oci-artifact-structure-for-repodata-etc)
 - [Rationale](#rationale)
 - [Backwards Compatibility](#backwards-compatibility)
 - [Alternatives](#alternatives)
@@ -84,7 +84,7 @@ This specification is labeled `v1`. Any implementation of this specification MUS
 
 The following are valid example forms of an OCI conda URL:
 
-```
+```text
 oci://<authority>/<OCI-compatible channel path>[/label/<OCI-compatible label>]/<OCI-compatible subdir>/<OCI-encoded package name>:<OCI-encoded version>-<OCI-encoded build>
 oci://<authority>/<OCI-compatible channel path>[/label/<OCI-compatible label>]/<OCI-compatible subdir>/repodata.json:latest
 oci://<authority>/<OCI-compatible channel path>[/label/<OCI-compatible label>]/<OCI-compatible subdir>/repodata_from_packages.json:latest
@@ -105,11 +105,11 @@ oci://<authority>/<OCI-compatible channel path>[/label/<OCI-compatible label>]
 
 where `<authority>` is any valid [RFC 3986][rfc3986] authority which is also supported by the OCI `v1.*` specification. This string will typically be `<hostname>[:<port>]` (e.g., `ghcr.io` with no port specified). OCI conda channel URLs MUST use `oci` as the scheme. OCI-compatible channel path and labels are defined below. If the `<OCI-encoded label>` is `main`, the entire optional label component MUST be omitted. Otherwise, the label component MUST be present.
 
-The base URL for an OCI conda channel is the ONLY identifier for the channel itself and it MUST be used in conda ecosystem tools to refer to the channel.
+The base URL for an OCI conda channel is the canonical, unique identifier for the channel itself and SHOULD be used in conda ecosystem tools to refer to the channel.
 
 Conda `<OCI-compatible subdir>`s are appended to this base URL as follows:
 
-```
+```text
 <OCI conda channel base URL>/<OCI-compatible subdir>
 ```
 
@@ -132,11 +132,11 @@ The namespace after the combination `<OCI conda channel base URL>/<OCI-compatibl
 
 These designations are used to prevent namespace collisions between the various components of an OCI conda channel.
 
-### Conda Package Repository Names
+### Conda Artifact OCI Repository Names
 
 Conda artifacts MUST be stored in the OCI repository of an OCI conda channel under their `<OCI-compatible subdir>` as the OCI repository
 
-```
+```text
 <OCI conda channel base URL>/<OCI-compatible subdir>/<OCI-encoded package name>
 ```
 
@@ -151,7 +151,7 @@ The `<OCI-encoded package name>` MUST be computed according to the following rul
 
 For example, the package name `_libgcc_mutex` is encoded to OCI-form as `c_libgcc_mutex`, and the package name `c_libgcc_mutex` is encoded to OCI-form as `cc_zlibgcc_mutex`. A very long package name like `gblah000...000` would be encoded to its OCI-form `cgblah000...000`, then hashed via SHA256, yielding something like `h<hexdigest of SHA256 hash>`.
 
-### Conda Package OCI Tags
+### Conda Artifact OCI Tags
 
 The OCI tag for a conda package MUST be computed from the packages `<OCI-encoded version>` and `<OCI-encoded build string>` as follows.
 
@@ -173,7 +173,7 @@ To undo this encoding, one MUST applying the rules in reverse, starting at the b
 
 Next, the `<OCI-encoded version>` and `<OCI-encoded build string>` MUST be combined with a `-` to form the OCI `<tag>`
 
-```
+```text
 <OCI-encoded version>-<OCI-encoded build>
 ```
 
@@ -183,7 +183,7 @@ Finally, if the entire OCI `<tag>` exceeds 128 characters in length, the entire 
 
 The unsharded repodata, repodata from packages (if present), run exports (if present) and patch instructions (if present) for an OCI conda channel MUST be stored as an OCI artifact under the `<OCI-compatible subdir>` as
 
-```
+```text
 <OCI conda channel base URL>/<OCI-compatible subdir>/repodata.json:latest
 <OCI conda channel base URL>/<OCI-compatible subdir>/repodata_from_packages.json:latest
 <OCI conda channel base URL>/<OCI-compatible subdir>/run_exports.json:latest
@@ -201,7 +201,7 @@ Older copies of the repodata / run exports MAY be stored as well. If older copie
 
 The `channeldata.json` for an OCI conda channel MUST be stored as an OCI artifact as
 
-```
+```text
 <OCI conda channel base URL>/channeldata.json:latest
 ```
 
@@ -266,11 +266,11 @@ The manifest MUST have the following [OCI Annotations][annotations]
 
 Additional annotations under the `org.conda` namespace are NOT allowed.
 
-### OCI Artifact Structure for Repodata, etc,
+### OCI Artifact Structure for Repodata, etc.
 
 All artifacts in the following OCI repositories
 
-```
+```text
 <OCI conda channel base URL>/<OCI-compatible subdir>/repodata.json
 <OCI conda channel base URL>/<OCI-compatible subdir>/repodata_from_packages.json
 <OCI conda channel base URL>/<OCI-compatible subdir>/run_exports.json
@@ -329,18 +329,18 @@ Both [mamba](https://github.com/mamba-org/mamba) and [rattler](https://github.co
 
 ## References
 
-- Open Containers Initiative: https://opencontainers.org/
-- CEP 16: https://github.com/conda/ceps/blob/main/cep-0016.md
-- RFC 2119: https://datatracker.ietf.org/doc/html/rfc2119
-- OCI Distribution Spec: https://github.com/opencontainers/distribution-spec
-- OCI Image Spec: https://github.com/opencontainers/image-spec
-- OCI Annotations: https://github.com/opencontainers/image-spec/blob/main/annotations.md#annotations
-- RFC 3986: https://datatracker.ietf.org/doc/html/rfc3986#section-3.2
-- channel-mirrors project: https://github.com/channel-mirrors
-- conda-oci-mirror project: https://github.com/channel-mirrors/conda-oci-mirror
-- mamba project: https://github.com/mamba-org/mamba
-- rattler project: https://github.com/conda/rattler
-- conda-oci project: https://github.com/conda-incubator/conda-oci
+- Open Containers Initiative: <https://opencontainers.org/>
+- CEP 16: <https://github.com/conda/ceps/blob/main/cep-0016.md>
+- RFC 2119: <https://datatracker.ietf.org/doc/html/rfc2119>
+- OCI Distribution Spec: <https://github.com/opencontainers/distribution-spec>
+- OCI Image Spec: <https://github.com/opencontainers/image-spec>
+- OCI Annotations: <https://github.com/opencontainers/image-spec/blob/main/annotations.md#annotations>
+- RFC 3986: <https://datatracker.ietf.org/doc/html/rfc3986#section-3.2>
+- channel-mirrors project: <https://github.com/channel-mirrors>
+- conda-oci-mirror project: <https://github.com/channel-mirrors/conda-oci-mirror>
+- mamba project: <https://github.com/mamba-org/mamba>
+- rattler project: <https://github.com/conda/rattler>
+- conda-oci project: <https://github.com/conda-incubator/conda-oci>
 
 [oci]: https://opencontainers.org/ (Open Containers Initiative)
 [cep16]: https://github.com/conda/ceps/blob/main/cep-0016.md (CEP 16)
