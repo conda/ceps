@@ -34,6 +34,10 @@ The `environment.yml` file format was introduced by `conda env`. It has been tra
 
 The file name is not standardized, but the extension MUST be `yml` or `yaml`.
 
+Notably, this version of the specification does not feature a `version` (or equivalent) top-level
+key. Future revisions MAY include such a field. As such, the version information of this revision
+is omitted and considered to be `1`.
+
 ### Optional extensions
 
 A number of extensions have been implemented by some conda clients. These are not guaranteed
