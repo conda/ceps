@@ -27,6 +27,7 @@ repos:
     rev: v0.17.2
     hooks:
       - id: markdownlint-cli2
+        args: [ --fix ]
   - repo: local
     hooks:
     - id: cep-header
