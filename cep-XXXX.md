@@ -1,7 +1,7 @@
-# CEP XXXX - Versioning of Existing Conda Standards
+# CEP XXXX - Versioning of Existing conda Standards
 
 <table>
-<tr><td> Title </td><td> Versioning of Existing Conda Standards and Specs
+<tr><td> Title </td><td> Versioning of Existing conda Standards and Specs
 <tr><td> Status </td><td> Draft  </td></tr>
 <tr><td> Author(s) </td><td> Matthew R. Becker &lt;becker.mr@gmail.com&gt;</td></tr>
 <tr><td> Created </td><td> Mar 14, 2025</td></tr>
@@ -16,8 +16,7 @@ As the conda ecosystem is being standardized and evolving, the existing standard
 (in many cases only documented by the code that implements them) have been called 
 `v1` in some cases (e.g., `.tar.bz2` versus `.conda`) and `v0` in others (e.g., `v0` versus `v1` recipe formats). 
 This differing nomenclature is confusing. In this CEP, we resolve this issue by declaring all existing `conda` 
-standards, documented formally in CEPs or not, the `v0` standards. Changes to these standards then are labeled `v1`, 
-`v2`, etc. as appropriate.
+standards, documented formally in CEPs or not, the `v0` standards.
 
 ## Specification
 
