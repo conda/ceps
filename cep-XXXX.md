@@ -44,7 +44,7 @@ Optional, `str`.
 
 Both fields refer to the _preferred_ name or path for the newly created environment. Tools SHOULD allow these suggestions to be overridden by the user with additional CLI flags or equivalent. If the proposed environment path exists, tools MUST NOT overwrite silently by default.
 
-Special names `base` and `root` SHOULD NOT be accepted. Prefixes targetting protected system paths SHOULD be rejected. Paths can contain tildes (`~`) and environment variables, and they MUST be expanded when present.
+Special names `base` and `root` SHOULD NOT be accepted. Prefixes targeting protected system paths SHOULD be rejected. Paths can contain tildes (`~`) and environment variables, and they MUST be expanded when present.
 
 The name of the environment (and the last component of the expanded `prefix` path) MUST NOT contain any of these characters: `/`, ` `, `:`, `#`.
 
