@@ -85,6 +85,13 @@ valid `subdirs`, with one exception: `noarch` MUST be rejected as a valid platfo
 In the absence of the field, the single value MUST be assumed to correspond to a user-specified
 value, falling back to the running platform value . For example, running on Linux x86_64 the `platforms` would default to `[linux-64]`.
 
+### `category`
+
+Optional, `str`.
+
+A free-form field where users can annotate the type of dependencies handled in the environment
+file. For example, `dev` or `test`.  Mostly used by tools that generate lockfiles.
+
 ## Examples
 
 Simplest possible `environment.yml`:
