@@ -176,6 +176,8 @@ or Windows, respectively).
 The value MUST be a `MatchSpec`-compatible string. When the expression is true, the dictionary
 entry in the list MUST be replaced with the value.
 
+These are used by `micromamba`.
+
 ## Examples
 
 Simplest possible `environment.yml`:
@@ -248,6 +250,28 @@ channels:
 dependencies:
   - pytest
 category: test
+```
+
+With a comment-based selector:
+
+```yaml
+name: test
+channels:
+  - conda-forge
+dependencies:
+  - python
+  - pywin32  # [win]
+```
+
+With a dictionary-based selector:
+
+```yaml
+name: test
+channels:
+  - conda-forge
+dependencies:
+  - python
+  - sel(win): pywin32
 ```
 
 ## Reference
