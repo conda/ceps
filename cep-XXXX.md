@@ -5,7 +5,7 @@
 <tr><td> Status </td><td> Draft </td></tr>
 <tr><td> Author(s) </td><td> Jaime Rodríguez-Guerra &lt;jaime.rogue@gmail.com&gt;</td></tr>
 <tr><td> Created </td><td> June 4, 2024 </td></tr>
-<tr><td> Updated </td><td> June 4, 2024 </td></tr>
+<tr><td> Updated </td><td> March 14, 2025 </td></tr>
 <tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/81 </td></tr>
 <tr><td> Implementation </td><td> NA </td></tr>
 </table>
@@ -54,11 +54,12 @@ Required, `list[str | dict[str, Any]]`.
 
 The simplest form for this section is a list of `str` encoding `MatchSpec`-compatible requirements. These items MUST be processed as conda requirements and submitted to the solver (along with `channels`) to obtain the contents for the resulting conda environment.
 
-This section can also contain "subsection" dictionaries that map `str` to arbitrary values. Each key refers to a non-conda installer tool that will process the associated contents as necessary. The additional subsections MUST be processed after the conda requirements. They SHOULD only add new contents. These keys SHOULD NOT overwrite existing contents.
+This section can also contain "subsection" dictionaries that map `str` to arbitrary values. Each key refers to a non-conda installer tool that will process the associated contents as necessary. The additional subsections MUST be processed after the conda requirements. They SHOULD only add new contents. Processing these keys SHOULD NOT result in existing contents being overwritten.
 
-Currently known subsections include `pip`, the contents of which encode a list of `str` referring to PyPI requirements. How this list is processed is left as an implementation detail, but common approaches involve invoking the `pip` command-line directly.
+Currently known subsections include `pip`, the contents of which encode a list of `str` referring to PyPI requirements. How this list is processed is left as an implementation detail, but common approaches involve invoking the `pip` or equivalent command line tools directly.
 
-Additional subsections are allowed. The conda client MUST error out if it cannot process unknown sections.
+Additional subsections are allowed. The conda client MUST error out by default if it cannot process
+unknown sections.
 
 ### `channels`
 
@@ -66,7 +67,7 @@ Optional, `list[str]`.
 
 These are the conda channels that will be queried to solve the requirements added in `dependencies`. They can be expressed with names, URLs and local paths.
 
-If not specified, the conda client MUST use the default configuration. When specified, these channels MUST be used to populate the channel list passed to the solver. Then default channel configuration MUST be appended, unless the special name `nodefaults` is present. When this is the case, the default configuration MUST no be appended. The `nodefaults` name MUST NOT be passed to the solver.
+If not specified, the conda client MUST use the default configuration. When specified, these channels MUST be used to populate the channel list passed to the solver. The default channel configuration MUST be appended, unless the special name `nodefaults` is present. When this is the case, the default configuration MUST not be appended. The `nodefaults` name MUST NOT be passed to the solver.
 
 ### `variables`
 
@@ -155,6 +156,17 @@ dependencies:
   - numpy
 platforms:
   - linux-64
+```
+
+With a category:
+
+```yaml
+name: test
+channels:
+  - conda-forge
+dependencies:
+  - pytest
+category: test
 ```
 
 ## Reference
