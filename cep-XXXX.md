@@ -1,5 +1,7 @@
+# CEP XXXX - Specification of <code>environment.yml</code> input files
+
 <table>
-<tr><td> Title </td><td> Specification of <code>environment.yml</code> input files </td>
+<tr><td> Title </td><td> CEP XXXX - Specification of <code>environment.yml</code> input files </td>
 <tr><td> Status </td><td> Draft </td></tr>
 <tr><td> Author(s) </td><td> Jaime Rodríguez-Guerra &lt;jaime.rogue@gmail.com&gt;</td></tr>
 <tr><td> Created </td><td> June 4, 2024 </td></tr>
@@ -40,7 +42,7 @@ Optional, `str`.
 
 Both fields refer to the _preferred_ name or path for the newly created environment. Tools SHOULD allow these suggestions to be overridden by the user with additional CLI flags or equivalent. If the proposed environment path exists, tools MUST NOT overwrite silently by default.
 
-Special names `base` and `root` SHOULD not be accepted. Prefixes targetting protected system paths SHOULD be rejected. Paths can contain tildes (`~`) and environment variables, and they MUST be expanded when present.
+Special names `base` and `root` SHOULD not be accepted. Prefixes targeting protected system paths SHOULD be rejected. Paths can contain tildes (`~`) and environment variables, and they MUST be expanded when present.
 
 The name of the environment (and the last component of the expanded`prefix` path) MUST NOT contain any of these characters: `/`, ` `, `:`, `#`.
 
@@ -71,6 +73,17 @@ Optional, `dict[str, str]`.
 Keys MUST be valid environment variable names for the target operating system. We recommend sticking to names compatible with both Windows and POSIX standards. Values SHOULD be `str`. If they are not, they MUST be converted to `str`.
 
 These contents SHOULD be dumped into the `conda-meta/state` file of the target environment, or equivalent, so they can be set upon environment activation.
+
+### `platforms`
+
+Optional, `list[str]`.
+
+Platforms for which the environment must be solved. Mostly used by tools that generate lockfiles
+without installing to a prefix on the running machine. Each string MUST belong to the set of
+valid `subdirs`, with one exception: `noarch` MUST be rejected as a valid platform value.
+
+In the absence of the field, the single value MUST be assumed to correspond to a user-specified
+value, falling back to the running platform value . For example, running on Linux x86_64 the `platforms` would default to `[linux-64]`.
 
 ## Examples
 
@@ -121,6 +134,18 @@ dependencies:
   - numpy
 variables:
   MY_ENV_VAR: "My Value"
+```
+
+With platforms:
+
+```yaml
+name: test
+channels:
+  - conda-forge
+dependencies:
+  - numpy
+platforms:
+  - linux-64
 ```
 
 ## Reference
