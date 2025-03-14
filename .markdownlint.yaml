@@ -12,4 +12,6 @@ MD033:
 # MD013/line-length : Line length : https://github.com/DavidAnson/markdownlint/blob/v0.32.1/doc/md013.md
 MD013:
   # Number of characters
-  line_length: 120
+  # we have set this to be very high right now due to the linter not
+  # ignoring the limit for inline html and tables
+  line_length: 500
