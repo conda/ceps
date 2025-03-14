@@ -99,7 +99,7 @@ The various parts of the URL are defined below.
 
 The base URL for an OCI conda channel MUST be formatted as follows:
 
-```
+```text
 oci://<authority>/<OCI-compatible channel path>[/label/<OCI-compatible label>]
 ```
 
