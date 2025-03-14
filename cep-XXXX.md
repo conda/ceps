@@ -27,7 +27,7 @@ All existing conda standards which satisfy the following conditions
 
 MUST be versioned at `v0`.
 
-The number of conda package formats, `.tar.bz2` and `.conda`, is exempt from this CEP.
+The numbering of conda package formats, `.tar.bz2` and `.conda`, is exempt from this CEP.
 
 ## Backwards Compatibility
 
