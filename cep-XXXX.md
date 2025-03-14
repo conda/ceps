@@ -157,19 +157,11 @@ The OCI tag for a conda package MUST be computed from the packages `<OCI-encoded
 
 First, the `<OCI-encoded version>` and `<OCI-encoded build string>` are computed from conda package's `<version>` and `<build string>` respectively. To do this, one MUST apply the mapping rules below to the conda package's `<version>` or `<build string>` in the order listed, top to bottom:
 
-- `_` -> `_U`
-- `-` -> `_D`
+- `_` -> `__`
 - `+` -> `_P`
 - `!` -> `_N`
-- `=` -> `_E`
-- `:` -> `_C`
-- `/` -> `_S`
-- ` ` -> `_B`
-- `\t` -> `_T`
-- `\r` -> `_R`
-- `\n` -> `_L`
 
-To undo this encoding, one MUST applying the rules in reverse, starting at the bottom of the list and moving to the top.
+To undo this encoding, one MUST apply the rules in reverse, starting at the bottom of the list and moving to the top. OCI Tags, unlike OCI Repository `<name>`s, have no limit on the number of separators that can be used in a row. Thus, the double underscore `__` is safe to use here as a separator.
 
 Next, the `<OCI-encoded version>` and `<OCI-encoded build string>` MUST be combined with a `-` to form the OCI `<tag>`
 
