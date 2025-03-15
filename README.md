@@ -1,4 +1,4 @@
-## Conda Enhancement Proposals
+# Conda Enhancement Proposals
 
 [Conda](https://docs.conda.io/) is an Open Source project with a diverse and wide-ranging ecosystem.
 
@@ -6,31 +6,31 @@ To better allow community members to provide feedback and proposals
 for conda's implementation, all major changes should be submitted as
 **Conda Enhancement Proposals (CEP)**.
 
-## Accepted CEPS:
+## Accepted CEPS
 
-| CEP | Title |
-| --- | ------- |
-| [0000](cep-0000.md) | CEP template  |
-| [0001](cep-0001.md) | CEP Purpose and Guidelines  |
-| [0002](cep-0002.md) | Add plugin architecture to conda |
-| [0003](cep-0003.md) | Using the Mamba solver in conda |
-| [0004](cep-0004.md) | Implement initial conda plugin mechanism |
-| 0005 | _Does not exist_ |
-| [0006](cep-0006.md) | Add Channel Notices to conda
-| 0007 | _Does not exist_ |
-| [0008](cep-0008.md) | Conda Release Schedule |
-| [0009](cep-0009.md) | Conda Deprecation Schedule |
-| [0010](cep-0010.md) | Conda Version Support |
-| [0011](cep-0011.md) | Define the menuinst standard |
-| [0012](cep-0012.md) | Serving run_exports metadata in conda channels |
-| [0013](cep-0013.md) | A new recipe format – part 1 |
-| [0014](cep-0014.md) | A new recipe format – part 2 - the allowed keys & values |
+| CEP                 | Title                                                                       |
+|---------------------|-----------------------------------------------------------------------------|
+| [0000](cep-0000.md) | CEP template                                                                |
+| [0001](cep-0001.md) | CEP Purpose and Guidelines                                                  |
+| [0002](cep-0002.md) | Add plugin architecture to conda                                            |
+| [0003](cep-0003.md) | Using the Mamba solver in conda                                             |
+| [0004](cep-0004.md) | Implement initial conda plugin mechanism                                    |
+| 0005                | _Does not exist_                                                            |
+| [0006](cep-0006.md) | Add Channel Notices to conda                                                |
+| 0007                | _Does not exist_                                                            |
+| [0008](cep-0008.md) | Conda Release Schedule                                                      |
+| [0009](cep-0009.md) | Conda Deprecation Schedule                                                  |
+| [0010](cep-0010.md) | Conda Version Support                                                       |
+| [0011](cep-0011.md) | Define the menuinst standard                                                |
+| [0012](cep-0012.md) | Serving run_exports metadata in conda channels                              |
+| [0013](cep-0013.md) | A new recipe format – part 1                                                |
+| [0014](cep-0014.md) | A new recipe format – part 2 - the allowed keys & values                    |
 | [0015](cep-0015.md) | Hosting repodata.json and packages separately by adding a base_url property |
-| [0016](cep-0016.md) | Sharded Repodata |
-| [0017](cep-0017.md) | Optional python site-packages path in repodata |
-| [0018](cep-0018.md) | Migration to the Zulip chat platform |
-| [0019](cep-0019.md) | Computing the hash of the contents in a directory |
-| [0020](cep-0020.md) | Support for `abi3` Python packages |
+| [0016](cep-0016.md) | Sharded Repodata                                                            |
+| [0017](cep-0017.md) | Optional python site-packages path in repodata                              |
+| [0018](cep-0018.md) | Migration to the Zulip chat platform                                        |
+| [0019](cep-0019.md) | Computing the hash of the contents in a directory                           |
+| [0020](cep-0020.md) | Support for `abi3` Python packages                                          |
 
 ## References
 
@@ -39,7 +39,7 @@ These proposals are similar to conda-forge's [CFEP](https://github.com/conda-for
 
 ## Writing a new CEP
 
-Community members are encouraged to author a CEP to suggest changes *before*
+Community members are encouraged to author a CEP to suggest changes _before_
 any code is written to allow for the community to discuss the proposed changes.
 
 The formal process by which CEPs should be authored and how they are reviewed
