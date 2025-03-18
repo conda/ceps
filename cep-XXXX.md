@@ -103,6 +103,7 @@ tk[build=h5083fa2_1]
 - [Explicit URL regex](https://github.com/conda/conda/blob/9eb05d85702aa78fd3793b840d79a910764544f1/conda/misc.py#L52-L59)
 - [`explicit()` implementation in `conda`](https://github.com/conda/conda/blob/9eb05d85702aa78fd3793b840d79a910764544f1/conda/misc.py#L95-L158)
 - [`explicit_environment_spec` implementation in `rattler`](https://github.com/conda/rattler/blob/41ae96e57e46d3a52a11fedfd0b72f3fd533accd/crates/rattler_conda_types/src/explicit_environment_spec.rs)
+- [Implementation in `mamba`](https://github.com/mamba-org/mamba/blob/bd591115a1acca0a131289f32f5673886895018b/libmamba/src/api/install.cpp#L904-L940)
 
 ## Copyright
 
