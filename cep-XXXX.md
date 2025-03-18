@@ -53,7 +53,7 @@ The maximum length of a build string MUST NOT exceed 128 characters.
 
 Regular conda artifacts MUST be named following this scheme:
 
-```
+```text
 <package name>-<version string>-<build string>.<extension>
 ```
 
@@ -67,7 +67,7 @@ A conda channel is defined as a URL where one can find one or more `repodata.jso
 
 The base URL for the arbitrary location of a repodata file is defined as:
 
-```
+```text
 <scheme>://[<authority>][/<path>/][/label/<label name>]/<subdir>/repodata.json
 ```
 
@@ -76,7 +76,7 @@ with `<scheme>`, `<authority>` and `<path>` defined by [RFC
 
 Taken the channel definition above, the base URL without trailing slashes is thus:
 
-```
+```text
 <scheme>://[<authority>][/<path>/][/label/<label name>]
 ```
 
