@@ -61,15 +61,39 @@ Virtual conda packages SHOULD NOT need filename standardization.
 
 ### Channels
 
-A conda channel is defined as a location where one can find one or more `repodata.json` files arranged in one subdirectory (_subdir_) each. `noarch/repodata.json` MUST be present to consider the parent location a channel.
+A conda channel is defined as a URL where one can find one or more `repodata.json` files arranged in one subdirectory (_subdir_) each. `noarch/repodata.json` MUST be present to consider the parent location a channel.
 
-#### Channel names
+#### Channel base URLs and names
 
-With that definition in mind, a channel name is understood as the path component of the URI leading to the `noarch/repodata.json` location, without leading or trailing slashes. For example, given `https://conda.anaconda.org/conda-forge/noarch/repodata.json`, the full path component is `conda-forge/noarch/repodata.json`. The part leading to `noarch/repodata.json` is thus `conda-forge`, the channel name. For local repodata such as `file:///home/username/channel/noarch/repodata.json`, the channel name is `home/username/channel`.
+The base URL for the arbitrary location of a repodata file is defined as:
 
-Channel names MUST only consist of lowercase ASCII letters, numbers, hyphens, periods, slashes and underscores. They MUST start and end with a letter or a digit. They MUST NOT contain two consecutive separators (hyphen, underscore, period, slash). In other words, they MUST match this regex: `^[a-z0-9]+((-|_|.)[a-z0-9]+)*$`.
+```
+<scheme>://[<authority>][/<path>/][/label/<label name>]/<subdir>/repodata.json
+```
 
-The maximum length of a channel name SHOULD NOT exceed 128 characters.
+with `<scheme>`, `<authority>` and `<path>` defined by [RFC
+3986](https://datatracker.ietf.org/doc/html/rfc3986#section-3.2).
+
+
+Taken the channel definition above, the base URL without trailing slashes is thus:
+
+```
+<scheme>://[<authority>][/<path>/][/label/<label name>]
+```
+
+For example, given `https://conda.anaconda.org/conda-forge/noarch/repodata.json`, the part leading
+to `noarch/repodata.json` and thus base URL is `https://conda.anaconda.org/conda-forge/conda-forge`. For local repodata such as `file:///home/username/channel/noarch/repodata.json`, the
+channel base URL is `file:///home/username/channel`.
+
+For convenience, the channel _name_ is defined as the concatenation of `scheme`, `authority` and
+`path` components. `scheme` MAY be omitted for `http`, `https` and `file`. At least one of
+`authority` or `path` SHOULD be present. In their absence, the channel name MUST be considered
+empty, regardless the scheme. Empty channel names SHOULD NOT be used.
+
+When present, each path component SHOULD only contain lowercase ASCII letters, numbers, underscores
+and dashes. They SHOULD start and end with a letter or a number.
+
+The maximum length of a channel base URL SHOULD NOT exceed 256 characters.
 
 #### Subdir names
 
@@ -81,7 +105,7 @@ The maximum length of a subdir name MUST NOT exceed 32 characters.
 
 Channel label names MUST only consist of ASCII letters, digits, underscores, hyphens, forward slashes, periods, colons and whitespace. They MUST start with a letter. They MUST match this regex: `^[a-zA-Z][0-9a-zA-Z_\-\.\/:\s]*`. Even if allowed, label names SHOULD NOT contain any whitespace.
 
-The labels `nolabel` is reserved and MUST only be used for conda packages which have no other labels. In other words, in the space of labels, the empty set is represented by the labels `nolabel`.
+The label `nolabel` is reserved and MUST only be used for conda packages which have no other labels. In other words, in the space of labels, the empty set is represented by the labels `nolabel`.
 
 The maximum length of a label name SHOULD NOT exceed 128 characters.
 
