@@ -7,7 +7,7 @@
 <tr><td> Created </td><td> June 3, 2024 </td></tr>
 <tr><td> Updated </td><td> March 18, 2025 </td></tr>
 <tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/79 </td></tr>
-<tr><td> Implementation </td><td> NA </td></tr>
+<tr><td> Implementation </td><td> See references </td></tr>
 </table>
 
 ## Abstract
