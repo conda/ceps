@@ -28,7 +28,7 @@ In this CEP, we will use the term "text spec file".
 
 Text spec files use plain text to specify one package requirement per line. Lines starting with `#` are considered comments and SHOULD be ignored. Empty lines or lines consisting only of whitespace MUST be ignored.
 
-Some conda clients tend to include a comment line specifying the platform the file was written for. This line often follows the syntax `# platform: {SUBDIR}`, where `{SUBDIR}` is a platform identifier like `linux-64` or `osx-arm64`. Other field comments like the version of the generator tool may be found, such as `# conda version: 24.11.0`. These lines are not required, but implementors might choose to parse it if found for logging or verification purposes. 
+Some conda clients tend to include a comment line specifying the platform the file was written for. This line often follows the syntax `# platform: {SUBDIR}`, where `{SUBDIR}` is a platform identifier like `linux-64` or `osx-arm64`. Other field comments like the version of the generator tool may be found, such as `# conda version: 24.11.0`. These lines are not required, but implementers might choose to parse it if found for logging or verification purposes.
 
 There are two flavors of this input file: explicit and not explicit.
 
@@ -36,9 +36,9 @@ There are two flavors of this input file: explicit and not explicit.
 
 If the file includes a line whose only non-whitespace content is the case-sensitive word `@EXPLICIT`, the file MUST be considered and handled as explicit.
 
-In explicit files, each package requirement line MUST specify a single, direct URL (as in RFC 3986) to a conda artifact, or a file path. File paths SHOULD be preferrably expressed as `file://` URLs. Relative paths MAY be used, and SHOULD be processed as relative to the working directory, not the input file parent directory. 
+In explicit files, each package requirement line MUST specify a single, direct URL (as in RFC 3986) to a conda artifact, or a file path. File paths SHOULD be preferably expressed as `file://` URLs. Relative paths MAY be used, and SHOULD be processed as relative to the working directory, not the input file parent directory.
 
-Each URL MAY be immediately followed by an anchor tag (`#<hash>`) that encodes the expected MD5 or SHA256 checksum of the downloaded artifact as a lowercase string of 32 or 64 hexadecimal characters, respectively. The prefix `sha256:` MAY be present in the case of SHA256 checksums. 
+Each URL MAY be immediately followed by an anchor tag (`#<hash>`) that encodes the expected MD5 or SHA256 checksum of the downloaded artifact as a lowercase string of 32 or 64 hexadecimal characters, respectively. The prefix `sha256:` MAY be present in the case of SHA256 checksums.
 
 More specifically, whitespace-stripped lines SHOULD be parsable by this Python-style regex:
 
@@ -58,9 +58,9 @@ In the absence of an `@EXPLICIT` line, the file is considered regular or not exp
 
 An example of an explicit TXT input file:
 
-```
+```text
 # This line is a comment. The one below only consists of whitespace and will also be ignored.
-    
+
 # This file may be used to create an environment using:
 # $ conda create --name <env> --file <this file>
 # platform: osx-arm64
@@ -86,7 +86,7 @@ https://conda.anaconda.org/conda-forge/noarch/pip-24.0-pyhd8ed1ab_0.conda
 
 A regular input file:
 
-```
+```text
 # This file may be used to create an environment using:
 # $ conda create --name <env> --file <this file>
 # platform: osx-arm64
