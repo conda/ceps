@@ -1,6 +1,7 @@
-# CEP XXXX - Specification of text spec input files
+# CEP XXXX - Text spec input files
+
 <table>
-<tr><td> Title </td><td> CEP XXXX - Specification of text spec input files </td>
+<tr><td> Title </td><td> CEP XXXX - Text spec input files </td>
 <tr><td> Status </td><td> Draft </td></tr>
 <tr><td> Author(s) </td><td> Jaime Rodríguez-Guerra &lt;jaime.rogue@gmail.com&gt;</td></tr>
 <tr><td> Created </td><td> June 3, 2024 </td></tr>
