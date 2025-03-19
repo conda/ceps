@@ -157,7 +157,7 @@ the OCI repository `<name>` regex):
 - `<OCI conda channel base URL>/<OCI-compatible subdir>/h*`: reserved for hashed OCI-encoded conda package names
 - `<OCI conda channel base URL>/<OCI-compatible subdir>/p*`: reserved for repodata patch instructions
 
-These designations are used to prevent namespace collisions between the various components of an OCI conda channel.
+These designations are used to prevent namespace collisions between the various components of an OCI conda channel. Any other string prefixes MUST NOT be used.
 
 ### Conda Artifact OCI Repository Names
 
