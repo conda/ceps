@@ -6,7 +6,7 @@
 <tr><td> Author(s) </td><td> Jaime Rodríguez-Guerra &lt;jaime.rogue@gmail.com&gt; <br /> Matthew R. Becker &lt;becker.mr@gmail.com&gt;</td></tr>
 <tr><td> Created </td><td> Mar 11, 2025</td></tr>
 <tr><td> Updated </td><td> Mar 19, 2025</td></tr>
-<tr><td> Discussion </td><td> N/A </td></tr>
+<tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/116 </td></tr>
 <tr><td> Implementation </td><td> N/A </td></tr>
 </table>
 
