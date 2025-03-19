@@ -5,7 +5,7 @@
 <tr><td> Status </td><td> Draft </td></tr>
 <tr><td> Author(s) </td><td> Jaime Rodríguez-Guerra &lt;jaime.rogue@gmail.com&gt; <br /> Matthew R. Becker &lt;becker.mr@gmail.com&gt;</td></tr>
 <tr><td> Created </td><td> Mar 11, 2025</td></tr>
-<tr><td> Updated </td><td> Mar 11, 2025</td></tr>
+<tr><td> Updated </td><td> Mar 19, 2025</td></tr>
 <tr><td> Discussion </td><td> N/A </td></tr>
 <tr><td> Implementation </td><td> N/A </td></tr>
 </table>
@@ -90,7 +90,11 @@ For convenience, the channel _name_ is defined as the concatenation of `scheme`,
 empty, regardless the scheme. Empty channel names SHOULD NOT be used.
 
 When present, each path component SHOULD only contain lowercase ASCII letters, numbers, underscores
-and dashes. They SHOULD start and end with a letter or a number.
+and dashes. They SHOULD start and end with a letter or a number. If present, all path components combined SHOULD match this regex:
+
+```re
+^[a-z0-9]+((\.|_|__|-+)[a-z0-9]+)*(\/[a-z0-9]+((\.|_|__|-+)[a-z0-9]+)*)*$
+```
 
 The maximum length of a channel base URL SHOULD NOT exceed 256 characters.
 
@@ -110,9 +114,17 @@ The maximum length of a label name SHOULD NOT exceed 128 characters.
 
 ## Backwards compatibility
 
-The conda channel, subdir, label, and package name regexes are backwards compatible with the current `conda` implementation (25.3) and all existing packages on the `defaults` and `conda-forge` channels, except the `__anaconda_core_depends` package on the `defaults` channel.
+The conda subdir and package name regexes are backwards compatible with the current `conda` implementation (25.3) and all existing packages on the `defaults` and `conda-forge` channels, except for the `__anaconda_core_depends` package on the `defaults` channel.
 
-The regex for labels above was pulled from an anaconda.org error message describing the set of valid labels. Finally, anaconda.org usernames/channel names are case insensitive and cannot begin with an underscore.
+The regex for labels was pulled from an anaconda.org error message describing the set of valid labels.
+
+As of 2025-03-12T19:00Z, of the ~1.9M channel names on anaconda.org:
+
+* 7,219 violate the regex `^[a-z0-9]+((-|_|.)[a-z0-9]+)*$`;
+* 98 violate the regex `^[a-z0-9][a-z0-9_.-]*$` (allowing channel names to end with `_`, `.`, or `-`); and
+* 6 violate `^[a-z0-9_][a-z0-9_.-]*$` (allowing channel names to start with `_`). Of those six, five start with `.`, and the other starts with `~`. 
+
+Given the low percentage (~0.4%) of mismatches, authors have decided to ignore those entries and err on the side of strictness to maximize compatibility with other storage solutions that have more restrictive naming requirements.
 
 ## Copyright
 
