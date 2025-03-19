@@ -172,7 +172,7 @@ The contents and mediaTypes of OCI blobs that make up the conda package artifact
 The `<OCI-encoded package name>` MUST be computed according to the following rules:
 
 - All package names MUST be prepended by the character `c`.
-- If the combined string `<OCI conda channel base URL>/<OCI-compatible subdir>/<OCI-encoded package name>` exceeds 128 characters
+- If the `<OCI-encoded package name>` exceeds 64 characters
   in length, the`<OCI-encoded package name>` MUST be replaced by the SHA256 hash of the `<OCI-encoded package name>`
   in hexadecimal form as `h<SHA256 in hexadecimal>`. The letter `h` is reserved to indicate a hashed OCI-encoded package name as described above.
 
