@@ -110,11 +110,12 @@ For convenience, the channel _name_ is defined as the concatenation of `scheme`,
 `file`. At least one of `authority` or `path` SHOULD be present. In their absence, the channel name
 MUST be considered empty, regardless the scheme. Empty channel names SHOULD NOT be used.
 
-When present, each path component MUST only contain lowercase ASCII letters, numbers, underscores, periods,
-and dashes. They MUST not start with a period or a dash. They SHOULD start and end with a letter or a number. If present, all path components combined SHOULD match this regex:
+When present, each path component MUST only contain lowercase ASCII letters, numbers, underscores,
+periods, and dashes. They MUST not start with a period or a dash. They SHOULD start and end with a
+letter or a number. If present, each path component MUST match this regex:
 
 ```re
-^[a-z0-9]+((\.|_|__|-+)[a-z0-9]+)*(\/[a-z0-9]+((\.|_|__|-+)[a-z0-9]+)*)*$
+^[a-z0-9_][a-z0-9_.-]*$
 ```
 
 The maximum length of a channel base URL SHOULD NOT exceed 256 characters.
