@@ -24,12 +24,14 @@ More specificlly, violations of a MUST or MUST NOT rule MUST result in an error.
 rules specified by any of the other all-capital terms MAY result in a warning, at discretion of the
 implementation.
 
+### Identifying package artifacts
+
 The conda ecosystem distinguishes between two types of packages:
 
 - Distributable package names: represented by a concrete, downloadable, extractable conda artifact.
 - Virtual package names: not backed by any physical artifact. They only exist on the client side.
 
-### Package names
+#### Package names
 
 A distributable package name MUST only consist of lowercase ASCII letters, numbers, hyphens, periods and underscores. It MUST start with a letter, a number, or a single underscore. It MUST NOT include two consecutive separators (hyphen, period, underscore).
 
@@ -41,7 +43,7 @@ Virtual package names MUST follow this other regex: `^__[a-z0-9][._-]?([a-z0-9]+
 
 In all cases, the maximum length of a package name MUST NOT exceed 128 characters.
 
-### Version strings
+#### Version strings
 
 Version strings MUST only consist of digits, periods, lowercase ASCII letters, underscores, plus
 symbols, and exclamation marks. Additional rules apply but are out of scope in this CEP and will be
@@ -49,23 +51,24 @@ discussed separately.
 
 The maximum length of a version string MUST NOT exceed 128 characters.
 
-### Build strings
+#### Build strings
 
 Builds strings MUST only consist of ASCII letters, numbers, periods, plus symbols, and underscores. They MUST match this regex `^[a-zA-Z0-9_\.+]+$`.
 
 The maximum length of a build string MUST NOT exceed 128 characters.
 
-### Filenames
+#### Filenames
 
-Regular conda artifacts MUST be named following this scheme:
+Distributable conda artifacts MUST have a filename following this scheme:
 
 ```text
 <package name>-<version string>-<build string>.<extension>
 ```
 
-Virtual conda packages SHOULD NOT need filename standardization.
+Virtual conda packages do not exist on disk and SHOULD NOT need filename standardization.
 
-### Channels
+
+### Identifying channels
 
 A conda channel is defined as a URL where one can find one or more `repodata.json` files arranged in one subdirectory (_subdir_) each. `noarch/repodata.json` MUST be present to consider the parent location a channel.
 
