@@ -18,7 +18,7 @@ repos:
       - id: check-useless-excludes
   - repo: https://github.com/codespell-project/codespell
     # see setup.cfg
-    rev: v2.3.0
+    rev: v2.4.1
     hooks:
       - id: codespell
         args: [--write-changes]
