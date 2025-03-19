@@ -12,7 +12,7 @@
 
 ## Abstract
 
-This CEP aims to standardize names and other strings used throughout the conda ecosystem.
+This CEP aims to standardize names and other strings used to identify packages, artifacts and channels in the conda ecosystem.
 
 ## Specification
 
