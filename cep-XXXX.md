@@ -377,7 +377,7 @@ choose to exclude them from the specification.
   fully backwards compatible with the original implementation. See the [Backwards Compatibility](#backwards-compatibility) section above.
   This original implementation and implied specification is referred to as `v0`.
 - One alternative to excluding certain labels and channels from distribution via an OCI conda channel is to define a further custom
-  encoding of the channel path parts of the URL. For example, one could use an encoding inspired by percent-encoding for URLS. This encoding
+  encoding of the channel path parts of the URL. For example, one could use an encoding inspired by percent-encoding for URLs. This encoding
   could, for example, first percent-encode the letter `u` and all characters not in the set `[0-9a-z]`. Then the percent sign could be replaced
   by the special code `u_`. This encoding would significantly hinder readability, but would allow nearly arbitrary channel names and labels to be used.
 - Another alternative which also suffers from readability issues, is to encode all channel and label names to bytes via say UTF-8
