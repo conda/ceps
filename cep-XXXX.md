@@ -138,7 +138,7 @@ Conda `<OCI-compatible subdir>`s are appended to this base URL as follows:
 
 where `<OCI-compatible subdir>` is defined below.
 
-The following regexes MUST be satisfied by the `<OCI-compatible channel path>`, `<OCI-compatible subdir>`, and `<OCI-compatible label>`:
+The following regexes MUST be satisfied by the `<OCI-compatible channel path>`, `<OCI-compatible subdir>`, and `<OCI-compatible label>` strings:
 
 - `<OCI-compatible channel path>`: `^[a-z0-9]+((\.|_|__|-+)[a-z0-9]+)*(\/[a-z0-9]+((\.|_|__|-+)[a-z0-9]+)*)*$` (same as the regex for an OCI repository `<name>`)
 - `<OCI-compatible label>`: `^[a-z0-9]+((\.|_|__|-+)[a-z0-9]+)*(\/[a-z0-9]+((\.|_|__|-+)[a-z0-9]+)*)*$` (same as the regex for an OCI repository `<name>`)
