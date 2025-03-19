@@ -20,7 +20,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as
 described in [RFC2119][RFC2119] when, and only when, they appear in all capitals, as shown here.
 
-More specificlly, violations of a MUST or MUST NOT rule MUST result in an error. Violations of the
+More specifically, violations of a MUST or MUST NOT rule MUST result in an error. Violations of the
 rules specified by any of the other all-capital terms MAY result in a warning, at discretion of the
 implementation.
 
