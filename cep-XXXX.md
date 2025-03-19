@@ -23,7 +23,7 @@ standards, documented formally in CEPs or not, the `v1` standards.
 All existing conda standards which satisfy the following conditions
 
 - are documented formally in CEPs or are only effectively documented through code implementations
-- have not been superseded by a newer standard labeled `v2`
+- have not been superseded by a newer standard labeled `v1`
 
 MUST be versioned at `v1`.
 
