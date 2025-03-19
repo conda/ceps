@@ -67,6 +67,15 @@ Distributable conda artifacts MUST have a filename following this scheme:
 
 Virtual conda packages do not exist on disk and SHOULD NOT need filename standardization.
 
+#### Distribution strings
+
+A "distribution string" MAY be used to identify a package artifact without specifying the extension or the channel. It MUST match the following syntax:
+
+```text
+<package name>-<version string>-<build string>
+```
+
+Distribution strings apply to both distributable and virtual packages. They are used as the name of the directories where artifacts are extracted in the package cache, for example.
 
 ### Identifying channels
 
@@ -138,3 +147,7 @@ Given the low percentage (~0.4%) of mismatches, authors have decided to ignore t
 ## Copyright
 
 All CEPs are explicitly [CC0 1.0 Universal](https://creativecommons.org/publicdomain/zero/1.0/).
+
+<!-- links -->
+
+[RFC2119]: https://www.ietf.org/rfc/rfc2119.txt
