@@ -106,9 +106,9 @@ to `noarch/repodata.json` and thus base URL is `https://conda.anaconda.org/conda
 channel base URL is `file:///home/username/channel`.
 
 For convenience, the channel _name_ is defined as the concatenation of `scheme`, `authority` and
-`path` components. `scheme` MAY be omitted for `http`, `https` and `file`. At least one of
-`authority` or `path` SHOULD be present. In their absence, the channel name MUST be considered
-empty, regardless the scheme. Empty channel names SHOULD NOT be used.
+`path` components. The `<scheme>://` part MAY be omitted if `scheme` is one of `http`, `https` or
+`file`. At least one of `authority` or `path` SHOULD be present. In their absence, the channel name
+MUST be considered empty, regardless the scheme. Empty channel names SHOULD NOT be used.
 
 When present, each path component SHOULD only contain lowercase ASCII letters, numbers, underscores
 and dashes. They SHOULD start and end with a letter or a number. If present, all path components combined SHOULD match this regex:
