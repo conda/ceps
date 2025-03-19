@@ -145,7 +145,7 @@ As of 2025-03-12T19:00Z, of the ~1.9M channel names on anaconda.org:
 - 98 violate the regex `^[a-z0-9][a-z0-9_.-]*$` (allowing channel names to end with `_`, `.`, or `-`); and
 - 6 violate `^[a-z0-9_][a-z0-9_.-]*$` (allowing channel names to start with `_`). Of those six, five start with `.`, and the other starts with `~`.
 
-Given the low percentage (~0.4%) of mismatches, authors have decided to ignore those entries and err on the side of strictness to maximize compatibility with other storage solutions that have more restrictive naming requirements.
+The authors have excluded the channel names in the last case that start with `.` or `~` given possible security implications. A low percentage, ~0.4%, of channels do not match the recommendations for channel names above, but are allowed.
 
 ## Copyright
 
