@@ -77,6 +77,9 @@ A "distribution string" MAY be used to identify a package artifact without speci
 
 Distribution strings apply to both distributable and virtual packages. They are used as the name of the directories where artifacts are extracted in the package cache, for example.
 
+> Note: Despite the similarity, distribution strings are not `MatchSpec`-like specifiers and
+> MUST NOT be used as such.
+
 ### Identifying channels
 
 A conda channel is defined as a URL where one can find one or more `repodata.json` files arranged in one subdirectory (_subdir_) each. `noarch/repodata.json` MUST be present to consider the parent location a channel.
