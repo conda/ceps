@@ -120,9 +120,9 @@ The regex for labels was pulled from an anaconda.org error message describing th
 
 As of 2025-03-12T19:00Z, of the ~1.9M channel names on anaconda.org:
 
-* 7,219 violate the regex `^[a-z0-9]+((-|_|.)[a-z0-9]+)*$`;
-* 98 violate the regex `^[a-z0-9][a-z0-9_.-]*$` (allowing channel names to end with `_`, `.`, or `-`); and
-* 6 violate `^[a-z0-9_][a-z0-9_.-]*$` (allowing channel names to start with `_`). Of those six, five start with `.`, and the other starts with `~`. 
+- 7,219 violate the regex `^[a-z0-9]+((-|_|.)[a-z0-9]+)*$`;
+- 98 violate the regex `^[a-z0-9][a-z0-9_.-]*$` (allowing channel names to end with `_`, `.`, or `-`); and
+- 6 violate `^[a-z0-9_][a-z0-9_.-]*$` (allowing channel names to start with `_`). Of those six, five start with `.`, and the other starts with `~`.
 
 Given the low percentage (~0.4%) of mismatches, authors have decided to ignore those entries and err on the side of strictness to maximize compatibility with other storage solutions that have more restrictive naming requirements.
 
