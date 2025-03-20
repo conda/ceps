@@ -27,7 +27,7 @@ All existing conda standards which satisfy the following conditions
 
 MUST be versioned at `v1`.
 
-The numbering of recipe formats is exempt from this CEP.
+The numbering of build recipe formats is exempt from this CEP.
 
 Standards MUST use a version specifier that matches the regex `^v?[0-9]+($|.[0-9]+$)`. The `v` MAY be omitted.
 
