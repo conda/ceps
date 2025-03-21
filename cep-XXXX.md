@@ -105,10 +105,11 @@ The following are valid example forms of an OCI conda URL:
 
 ```text
 oci://<authority>/<OCI-compatible channel path>[/label/<OCI-compatible label>]/<OCI-compatible subdir>/<OCI-encoded package name>:<OCI-encoded version>-<OCI-encoded build>
-oci://<authority>/<OCI-compatible channel path>[/label/<OCI-compatible label>]/<OCI-compatible subdir>/repodata.json:latest
-oci://<authority>/<OCI-compatible channel path>[/label/<OCI-compatible label>]/<OCI-compatible subdir>/repodata_from_packages.json:latest
-oci://<authority>/<OCI-compatible channel path>[/label/<OCI-compatible label>]/<OCI-compatible subdir>/run_exports.json:latest
-oci://<authority>/<OCI-compatible channel path>[/label/<OCI-compatible label>]/<OCI-compatible subdir>/patch_instructions.json:latest
+oci://<authority>/<OCI-compatible channel path>[/label/<OCI-compatible label>]/<OCI-compatible subdir>/mrepodata.json:latest
+oci://<authority>/<OCI-compatible channel path>[/label/<OCI-compatible label>]/<OCI-compatible subdir>/mcurrent_repodata.json:latest
+oci://<authority>/<OCI-compatible channel path>[/label/<OCI-compatible label>]/<OCI-compatible subdir>/mrepodata_from_packages.json:latest
+oci://<authority>/<OCI-compatible channel path>[/label/<OCI-compatible label>]/<OCI-compatible subdir>/mrun_exports.json:latest
+oci://<authority>/<OCI-compatible channel path>[/label/<OCI-compatible label>]/<OCI-compatible subdir>/mpatch_instructions.json:latest
 oci://<authority>/<OCI-compatible channel path>[/label/<OCI-compatible label>]/channeldata.json:latest
 ```
 
@@ -150,12 +151,11 @@ The namespace after the combination `<OCI conda channel base URL>/<OCI-compatibl
 (where the `*` wildcard indicates any valid OCI repository `<name>` component or part of a component as allowed by
 the OCI repository `<name>` regex):
 
-- `<OCI conda channel base URL>/<OCI-compatible subdir>/r*`: reserved for repodata JSON artifacts, run exports JSON artifacts, and
-  future CEP-defined extensions for sharded repodata (defined in [CEP 16][cep16]).
+- `<OCI conda channel base URL>/<OCI-compatible subdir>/m*`: reserved for metadata specific to subdirs (e.g., various
+  forms of repodata, repodata patches, run exports, etc.)
 - `<OCI conda channel base URL>/<OCI-compatible subdir>/c*`: reserved for OCI-encoded conda package names (The character `c`
   is prepended to the conda package name to indicate that it is an OCI-encoded conda package name as described below.)
 - `<OCI conda channel base URL>/<OCI-compatible subdir>/h*`: reserved for hashed OCI-encoded conda package names
-- `<OCI conda channel base URL>/<OCI-compatible subdir>/p*`: reserved for repodata patch instructions
 
 These designations are used to prevent namespace collisions between the various components of an OCI conda channel. Any other string prefixes MUST NOT be used.
 
@@ -172,9 +172,10 @@ The contents and mediaTypes of OCI blobs that make up the conda package artifact
 The `<OCI-encoded package name>` MUST be computed according to the following rules:
 
 - All package names MUST be prepended by the character `c`.
-- If the `<OCI-encoded package name>` exceeds 64 characters
-  in length, the`<OCI-encoded package name>` MUST be replaced by the SHA256 hash of the `<OCI-encoded package name>`
-  in hexadecimal form as `h<SHA256 in hexadecimal>`. The letter `h` is reserved to indicate a hashed OCI-encoded package name as described above.
+- If the `<OCI-encoded package name>` exceeds 64 characters in length, the
+  `<OCI-encoded package name>` MUST be replaced by the SHA256 hash of the
+  `<OCI-encoded package name>` in hexadecimal form as `h<SHA256 in hexadecimal>`.
+  The letter `h` is reserved to indicate a hashed OCI-encoded package name as described above.
 
 `<OCI-encoded package name>`s that are not hashed can be decoded by reversing the encoding rules above.
 
@@ -209,19 +210,21 @@ and the resulting OCI tag is then `h<SHA256 in hexadecimal>`.
 
 ### Repodata, Run Exports, and Patch Instructions Artifact Names and Tags
 
-The unsharded repodata, repodata from packages (if present), run exports (if present) and patch instructions (if present)
-for an OCI conda channel MUST be stored as an OCI artifact under the `<OCI-compatible subdir>` as
+The unsharded repodata, repodata from packages (if present), run exports (if present), current repodata (if present)
+and patch instructions (if present) for an OCI conda channel MUST be stored as an OCI artifact under the
+`<OCI-compatible subdir>` as
 
 ```text
-<OCI conda channel base URL>/<OCI-compatible subdir>/repodata.json:latest
-<OCI conda channel base URL>/<OCI-compatible subdir>/repodata_from_packages.json:latest
-<OCI conda channel base URL>/<OCI-compatible subdir>/run_exports.json:latest
-<OCI conda channel base URL>/<OCI-compatible subdir>/patch_instructions.json:latest
+<OCI conda channel base URL>/<OCI-compatible subdir>/mrepodata.json:latest
+<OCI conda channel base URL>/<OCI-compatible subdir>/mrepodata_from_packages.json:latest
+<OCI conda channel base URL>/<OCI-compatible subdir>/mrun_exports.json:latest
+<OCI conda channel base URL>/<OCI-compatible subdir>/mcurrent_repodata.json:latest
+<OCI conda channel base URL>/<OCI-compatible subdir>/mpatch_instructions.json:latest
 ```
 
 respectively. The contents and mediaTypes of the OCI blobs that make up each of these kinds of data are defined below.
-The `repodata_from_packages.json`, `patch_instructions.json`, and `run_exports.json` artifacts MAY not be present
-on all OCI conda channels.
+The `mcurrent_repodata.json`, `mrepodata_from_packages.json`, `mpatch_instructions.json`, and `mrun_exports.json`
+artifacts MAY not be present on all OCI conda channels.
 
 The OCI tag `latest` MUST always refer to the copy of the repodata / run exports currently in use.
 
@@ -256,29 +259,29 @@ MUST use an OCI tag that is the UTC time formatted as `YYYYMMDDThhmmssZ`.
 We define the following custom media types that MUST be used for the storage of conda repodata, run exports, channel data,
 and packages in an OCI registry:
 
-| Blob type            | Content type                | mediaType                                      |
-|----------------------|-----------------------------|------------------------------------------------|
-| conda package v1     | .tar.bz2 package            | application/vnd.conda.package.v1               |
-| conda package v2     | .conda package              | application/vnd.conda.package.v2               |
-| package info         | `info` folder as gzip       | application/vnd.conda.info.v1.tar+gzip         |
-| package index        | `info/index.json` file      | application/vnd.conda.info.index.v1+json       |
-| repodata.json        | `repodata.json` file        | application/vnd.conda.repodata.v1+json         |
-| repodata.json.zst    | `repodata.json.zst` file    | application/vnd.conda.repodata.v1+json+zst     |
-| repodata.json.gz     | `repodata.json.gz` file     | application/vnd.conda.repodata.v1+json+gzip    |
-| repodata.json.bz2    | `repodata.json.bz2` file    | application/vnd.conda.repodata.v1+json+bz2     |
-| channeldata.json     | `channeldata.json` file     | application/vnd.conda.channeldata.v1+json      |
-| run_exports.json     | `run_exports.json` file     | application/vnd.conda.run_exports.v1+json      |
-| run_exports.json.zst | `run_exports.json.zst` file | application/vnd.conda.run_exports.v1+json+zst  |
-| run_exports.json.gz  | `run_exports.json.gz` file  | application/vnd.conda.run_exports.v1+json+gzip |
-| run_exports.json.bz2 | `run_exports.json.bz2` file | application/vnd.conda.run_exports.v1+json+bz2  |
-| repodata_from_packages.json | `repodata_from_packages.json` file | application/vnd.conda.repodata_from_packages.v1+json |
-| repodata_from_packages.json.zst | `repodata_from_packages.json.zst` file | application/vnd.conda.repodata_from_packages.v1+json+zst |
-| repodata_from_packages.json.gz | `repodata_from_packages.json.gz` file | application/vnd.conda.repodata_from_packages.v1+json+gzip |
-| repodata_from_packages.json.bz2 | `repodata_from_packages.json.bz2` file | application/vnd.conda.repodata_from_packages.v1+json+bz2 |
-| patch_instructions.json | `patch_instructions.json` file | application/vnd.conda.patch_instructions.v1+json |
-| patch_instructions.json.zst | `patch_instructions.json.zst` file | application/vnd.conda.patch_instructions.v1+json+zst |
-| patch_instructions.json.gz | `patch_instructions.json.gz` file | application/vnd.conda.patch_instructions.v1+json+gzip |
-| patch_instructions.json.bz2 | `patch_instructions.json.bz2` file | application/vnd.conda.patch_instructions.v1+json+bz2 |
+| Blob type                  | Content type                           | mediaType                                             |
+|----------------------------|----------------------------------------|-------------------------------------------------------|
+| conda package v1           | .tar.bz2 package                       | application/vnd.conda.package.v1                      |
+| conda package v2           | .conda package                         | application/vnd.conda.package.v2                      |
+| package info               | `info` folder as gzip                  | application/vnd.conda.info.v1.tar+gzip                |
+| package index              | `info/index.json` file                 | application/vnd.conda.info.index.v1+json              |
+| repodata v1                | v1 repodata JSON                       | application/vnd.conda.repodata.v1+json                |
+| repodata v1 gzipped        | v1 repodata JSON w/ gzip comp.         | application/vnd.conda.repodata.v1+json+gzip           |
+| repodata v1 bzipped        | v1 repodata JSON as bzip2 comp.        | application/vnd.conda.repodata.v1+json+bz2            |
+| repodata v1 zstd           | v1 repodata JSON as zstd comp.         | application/vnd.conda.repodata.v1+json+zst            |
+| repodata v2                | v2 repodata JSON                       | application/vnd.conda.repodata.v2+json                |
+| repodata v2 gzipped        | v2 repodata JSON w/ gzip comp.         | application/vnd.conda.repodata.v2+json+gzip           |
+| repodata v2 bzipped        | v2 repodata JSON as bzip2 comp.        | application/vnd.conda.repodata.v2+json+bz2            |
+| repodata v2 zstd           | v2 repodata JSON as zstd comp.         | application/vnd.conda.repodata.v2+json+zst            |
+| channeldata                | channeldata JSON                       | application/vnd.conda.channeldata.v1+json             |
+| run_exports                | run exports JSON                       | application/vnd.conda.run_exports.v1+json             |
+| run_exports gzipped        | run exports JSON w/ gzip comp.         | application/vnd.conda.run_exports.v1+json+gzip        |
+| run_exports bzipped        | run exports JSON as bzip2 comp.        | application/vnd.conda.run_exports.v1+json+bz2         |
+| run_exports zstd           | run exports JSON as zstd comp.         | application/vnd.conda.run_exports.v1+json+zst         |
+| patch instructions         | patch instructions JSON                | application/vnd.conda.patch_instructions.v1+json      |
+| patch instructions gzipped | patch instructions JSON w/ gzip comp.  | application/vnd.conda.patch_instructions.v1+json+gzip |
+| patch instructions bzipped | patch instructions JSON as bzip2 comp. | application/vnd.conda.patch_instructions.v1+json+bz2  |
+| patch instructions zstd    | patch instructions JSON as zstd comp.  | application/vnd.conda.patch_instructions.v1+json+zst  |
 
 ### OCI Artifact Structure for Conda Packages
 
@@ -309,10 +312,11 @@ Additional annotations under the `org.conda` namespace are NOT allowed.
 All artifacts in the following OCI repositories
 
 ```text
-<OCI conda channel base URL>/<OCI-compatible subdir>/repodata.json
-<OCI conda channel base URL>/<OCI-compatible subdir>/repodata_from_packages.json
-<OCI conda channel base URL>/<OCI-compatible subdir>/run_exports.json
-<OCI conda channel base URL>/<OCI-compatible subdir>/patch_instructions.json
+<OCI conda channel base URL>/<OCI-compatible subdir>/mrepodata.json
+<OCI conda channel base URL>/<OCI-compatible subdir>/mcurrent_repodata.json
+<OCI conda channel base URL>/<OCI-compatible subdir>/mrepodata_from_packages.json
+<OCI conda channel base URL>/<OCI-compatible subdir>/mrun_exports.json
+<OCI conda channel base URL>/<OCI-compatible subdir>/mpatch_instructions.json
 ```
 
 MUST have a layer with the data as JSON and the appropriate mediaType from the table above. Additional layers with
