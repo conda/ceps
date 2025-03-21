@@ -36,7 +36,7 @@ for clarity, but MUST be removed before comparing versions. Version comparisons 
 
 ## Backwards Compatibility
 
-The `v1` versioning is fully backwards compatible with all current standards, except recipe formats 
+The `v1` versioning is fully backwards compatible with all current standards, except recipe formats
 which have been explicitly excluded.
 
 ## Copyright
