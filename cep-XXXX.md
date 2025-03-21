@@ -29,11 +29,15 @@ MUST be versioned at `v1`.
 
 The numbering of build recipe formats is exempt from this CEP.
 
-Standards MUST use a version specifier that consists only of numbers and `.`s, has a major version, and has at most a minor version (i.e. matches the regex `^[0-9]+($|\.[0-9]+$)`). A `v` MAY be prepended for clarity, but MUST be removed before comparing versions. Version comparisons and ordering MUST follow conda's version comparison and ordering conventions.
+Standards MUST use a version specifier that consists only of numbers and `.`s, has a major version,
+and has at most a minor version (i.e. matches the regex `^[0-9]+($|\.[0-9]+$)`). A `v` MAY be prepended
+for clarity, but MUST be removed before comparing versions. Version comparisons and ordering MUST follow
+`conda`'s version comparison and ordering conventions.
 
 ## Backwards Compatibility
 
-The `v1` versioning is fully backwards compatible with all current standards, except recipe formats which have been explicitly excluded.
+The `v1` versioning is fully backwards compatible with all current standards, except recipe formats 
+which have been explicitly excluded.
 
 ## Copyright
 
