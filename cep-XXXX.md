@@ -57,6 +57,14 @@ Builds strings MUST only consist of ASCII letters, numbers, periods, plus symbol
 
 The maximum length of a build string MUST NOT exceed 64 characters.
 
+#### Artifact extensions
+
+Artifact extensions MUST only consist of lowercase ASCII letters, numbers and periods. They must start and end with a letter or a number. They MUST NOT include two consecutive periods. They MUST match this regex `^[a-z0-9](\.?[a-z0-9])*$`.
+
+The maximum length of a file extension MUST NOT exceed 16 characters.
+
+> The conda ecosystem currently recognizes two artifact extensions: `tar.bz2` and `conda`, versioned `v1` and `v2` respectively.
+
 #### Filenames
 
 Distributable conda artifacts MUST have a filename following this scheme:
