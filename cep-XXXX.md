@@ -41,7 +41,7 @@ This means that distributable package names MUST match the following case-insens
 
 Virtual package names MUST follow this other regex: `^__[a-z0-9][._-]?([a-z0-9]+(\.|-|_|$))*$`.
 
-In all cases, the maximum length of a package name MUST NOT exceed 128 characters.
+In all cases, the maximum length of a package name MUST NOT exceed 64 characters.
 
 #### Version strings
 
@@ -49,13 +49,13 @@ Version strings MUST only consist of digits, periods, lowercase ASCII letters, u
 symbols, and exclamation marks. Additional rules apply but are out of scope in this CEP and will be
 discussed separately.
 
-The maximum length of a version string MUST NOT exceed 128 characters.
+The maximum length of a version string MUST NOT exceed 64 characters.
 
 #### Build strings
 
 Builds strings MUST only consist of ASCII letters, numbers, periods, plus symbols, and underscores. They MUST match this regex `^[a-zA-Z0-9_\.+]+$`.
 
-The maximum length of a build string MUST NOT exceed 128 characters.
+The maximum length of a build string MUST NOT exceed 64 characters.
 
 #### Filenames
 
@@ -64,6 +64,8 @@ Distributable conda artifacts MUST have a filename following this scheme:
 ```text
 <package name>-<version string>-<build string>.<extension>
 ```
+
+The maximum length of a filename MUST NOT exceed 192 characters.
 
 Virtual conda packages do not exist on disk and SHOULD NOT need filename standardization.
 
@@ -117,8 +119,7 @@ letter or a number. If present, each path component MUST match this regex:
 ```re
 ^[a-z0-9_][a-z0-9_.-]*$
 ```
-
-The maximum length of a channel base URL SHOULD NOT exceed 256 characters.
+The maximum length of an individual path component in a channel base URL MUST NOT exceed 128 characters. The maximum length of a channel base URL SHOULD NOT exceed 256 characters.
 
 #### Subdir names
 
@@ -132,7 +133,7 @@ Channel label names MUST only consist of ASCII letters, digits, underscores, hyp
 
 The label `nolabel` is reserved and MUST only be used for conda packages which have no other labels. In other words, in the space of labels, the empty set is represented by the labels `nolabel`.
 
-The maximum length of a label name SHOULD NOT exceed 128 characters.
+The maximum length of a label name MUST NOT exceed 128 characters.
 
 ## Backwards compatibility
 
@@ -147,6 +148,8 @@ As of 2025-03-12T19:00Z, of the ~1.9M channel names on anaconda.org:
 - 6 violate `^[a-z0-9_][a-z0-9_.-]*$` (allowing channel names to start with `_`). Of those six, five start with `.`, and the other starts with `~`.
 
 The authors have excluded the channel names in the last case that start with `.` or `~` given possible security implications. A low percentage, ~0.4%, of channels do not match the recommendations for channel names above, but are allowed.
+
+The maximum lengths allowed for the different fields have been chosen so the resulting path components (directory names, filenames) comfortably fit in a the 255-char maximum limit some filesystems impose. As of 2025-03-01T13:00Z, there are no violations of these limits in any of the packages published for `conda-forge`, `bioconda` and `defaults`. See [this comment](https://github.com/conda/ceps/pull/116#issuecomment-2763392999) for more details.
 
 ## Copyright
 
