@@ -156,7 +156,7 @@ The maximum length of a subdir name MUST NOT exceed 32 characters.
 #### Label names
 
 Channel label names MUST only consist of ASCII letters, digits, underscores, hyphens, forward slashes,
-periods, colons and whitespace. They MUST start with a letter. They MUST match this regex: 
+periods, colons and whitespace. They MUST start with a letter. They MUST match this regex:
 `^[a-zA-Z][0-9a-zA-Z_\-\.\/:\s]*`. Even if allowed, label names SHOULD NOT contain any whitespace.
 
 The label `nolabel` is reserved and MUST only be used for conda packages which have no other labels.
