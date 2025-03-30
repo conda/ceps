@@ -143,7 +143,7 @@ The following regexes MUST be satisfied by the `<OCI-compatible channel path>`, 
 
 - `<OCI-compatible channel path>`: `^[a-z0-9]+((\.|_|__|-+)[a-z0-9]+)*(\/[a-z0-9]+((\.|_|__|-+)[a-z0-9]+)*)*$` (same as the regex for an OCI repository `<name>`)
 - `<OCI-compatible label>`: `^[a-z0-9]+((\.|_|__|-+)[a-z0-9]+)*(\/[a-z0-9]+((\.|_|__|-+)[a-z0-9]+)*)*$` (same as the regex for an OCI repository `<name>`)
-- `<OCI-compatible subdir>`: `^[a-z0-9]+(-[a-z0-9]+)*$`
+- `<OCI-compatible subdir>`: `^(([a-z0-9]+-[a-z0-9]+)|noarch)$`
 
 ### Subdir Repository Namespace Designations
 
