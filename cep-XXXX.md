@@ -168,7 +168,8 @@ The maximum length of a label name MUST NOT exceed 128 characters.
 
 The conda subdir and package name regexes are backwards compatible with the current `conda` implementation
 (25.3) and all existing packages on the `defaults` and `conda-forge` channels, except for the
-`__anaconda_core_depends` package on the `defaults` channel.
+`__anaconda_core_depends` package on the `defaults` channel. See
+[this comment](https://github.com/conda/ceps/pull/116#discussion_r1992234677).
 
 The regex for labels was pulled from an anaconda.org error message describing the set of valid labels.
 
@@ -188,7 +189,8 @@ The maximum lengths allowed for the different fields have been chosen so the res
 (directory names, filenames) comfortably fit in a the 255-char maximum limit some filesystems impose.
 As of 2025-03-01T13:00Z, there are no violations of these limits in any of the packages published for
 `conda-forge`, `bioconda` and `defaults`. See
-[this comment](https://github.com/conda/ceps/pull/116#issuecomment-2763392999) for more details.
+[this comment](https://github.com/conda/ceps/pull/116#issuecomment-2763392999) and
+[this comment](https://github.com/conda/ceps/pull/116#issuecomment-2759130187)for more details.
 
 ## Copyright
 
