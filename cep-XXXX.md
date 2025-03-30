@@ -190,7 +190,7 @@ The maximum lengths allowed for the different fields have been chosen so the res
 As of 2025-03-01T13:00Z, there are no violations of these limits in any of the packages published for
 `conda-forge`, `bioconda` and `defaults`. See
 [this comment](https://github.com/conda/ceps/pull/116#issuecomment-2763392999) and
-[this comment](https://github.com/conda/ceps/pull/116#issuecomment-2759130187)for more details.
+[this comment](https://github.com/conda/ceps/pull/116#issuecomment-2759130187) for more details.
 
 ## Copyright
 
