@@ -12,7 +12,8 @@
 
 ## Abstract
 
-This CEP aims to standardize names and other strings used to identify packages, artifacts and channels in the conda ecosystem.
+This CEP aims to standardize names and other strings used to identify packages, artifacts and
+channels in the conda ecosystem.
 
 ## Specification
 
@@ -33,13 +34,18 @@ The conda ecosystem distinguishes between two types of packages:
 
 #### Package names
 
-A distributable package name MUST only consist of lowercase ASCII letters, numbers, hyphens, periods and underscores. It MUST start with a letter, a number, or a single underscore. It MUST NOT include two consecutive separators (hyphen, period, underscore).
+A distributable package name MUST only consist of lowercase ASCII letters, numbers, hyphens, periods
+and underscores. It MUST start with a letter, a number, or a single underscore. It MUST NOT include
+two consecutive separators (hyphen, period, underscore).
 
-Virtual package names MUST only consist of lowercase ASCII letters, numbers, hyphens, periods and underscores. They MUST NOT use two consecutive separators, with one exception: they MUST start with two underscores.
+Virtual package names MUST only consist of lowercase ASCII letters, numbers, hyphens, periods and
+underscores. They MUST NOT use two consecutive separators, with one exception: they MUST start with
+two underscores.
 
-This means that distributable package names MUST match the following case-insensitive regex: `^(([a-z0-9])|([a-z0-9_](?!_)))[._-]?([a-z0-9]+(\.|-|_|$))*$`.
+This means that distributable package names MUST match the following case-insensitive
+regex: `^(([a-z0-9])|([a-z0-9_](?!_)))[._-]?([a-z0-9]+(\.|-|_|$))*$`.
 
-Virtual package names MUST follow this other regex: `^__[a-z0-9][._-]?([a-z0-9]+(\.|-|_|$))*$`.
+Virtual package names MUST follow this regex: `^__[a-z0-9][._-]?([a-z0-9]+(\.|-|_|$))*$`.
 
 In all cases, the maximum length of a package name MUST NOT exceed 64 characters.
 
@@ -53,17 +59,21 @@ The maximum length of a version string MUST NOT exceed 64 characters.
 
 #### Build strings
 
-Builds strings MUST only consist of ASCII letters, numbers, periods, plus symbols, and underscores. They MUST match this regex `^[a-zA-Z0-9_\.+]+$`.
+Builds strings MUST only consist of ASCII letters, numbers, periods, plus symbols, and underscores.
+They MUST match this regex `^[a-zA-Z0-9_\.+]+$`.
 
 The maximum length of a build string MUST NOT exceed 64 characters.
 
 #### Artifact extensions
 
-Artifact extensions MUST only consist of lowercase ASCII letters, numbers and periods. They must start and end with a letter or a number. They MUST NOT include two consecutive periods. They MUST match this regex `^[a-z0-9](\.?[a-z0-9])*$`.
+Artifact extensions MUST only consist of lowercase ASCII letters, numbers and periods. They must start
+and end with a letter or a number. They MUST NOT include two consecutive periods. They MUST match this
+regex `^[a-z0-9](\.?[a-z0-9])*$`.
 
 The maximum length of a file extension MUST NOT exceed 16 characters.
 
-> The conda ecosystem currently recognizes two artifact extensions: `tar.bz2` and `conda`, versioned `v1` and `v2` respectively.
+> The conda ecosystem currently recognizes two artifact extensions: `tar.bz2` and `conda`, versioned
+`v1` and `v2` respectively.
 
 #### Filenames
 
@@ -79,20 +89,23 @@ Virtual conda packages do not exist on disk and SHOULD NOT need filename standar
 
 #### Distribution strings
 
-A "distribution string" MAY be used to identify a package artifact without specifying the extension or the channel. It MUST match the following syntax:
+A "distribution string" MAY be used to identify a package artifact without specifying the extension
+or the channel. It MUST match the following syntax:
 
 ```text
 <package name>-<version string>-<build string>
 ```
 
-Distribution strings apply to both distributable and virtual packages. They are used as the name of the directories where artifacts are extracted in the package cache, for example.
+Distribution strings apply to both distributable and virtual packages. They are used as the name of the
+directories where artifacts are extracted in the package cache, for example.
 
 > Note: Despite the similarity, distribution strings are not `MatchSpec`-like specifiers and
 > MUST NOT be used as such.
 
 ### Identifying channels
 
-A conda channel is defined as a URL where one can find one or more `repodata.json` files arranged in one subdirectory (_subdir_) each. `noarch/repodata.json` MUST be present to consider the parent location a channel.
+A conda channel is defined as a URL where one can find one or more `repodata.json` files arranged in one
+subdirectory (_subdir_) each. `noarch/repodata.json` MUST be present to consider the parent location a channel.
 
 #### Channel base URLs and names
 
@@ -112,7 +125,8 @@ Taken the channel definition above, the base URL without trailing slashes is thu
 ```
 
 For example, given `https://conda.anaconda.org/conda-forge/noarch/repodata.json`, the part leading
-to `noarch/repodata.json` and thus base URL is `https://conda.anaconda.org/conda-forge/conda-forge`. For local repodata such as `file:///home/username/channel/noarch/repodata.json`, the
+to `noarch/repodata.json` and thus base URL is `https://conda.anaconda.org/conda-forge/conda-forge`. For
+local repodata such as `file:///home/username/channel/noarch/repodata.json`, the
 channel base URL is `file:///home/username/channel`.
 
 For convenience, the channel _name_ is defined as the concatenation of `scheme`, `authority` and
@@ -121,31 +135,40 @@ For convenience, the channel _name_ is defined as the concatenation of `scheme`,
 MUST be considered empty, regardless the scheme. Empty channel names SHOULD NOT be used.
 
 When present, each path component MUST only contain lowercase ASCII letters, numbers, underscores,
-periods, and dashes. They MUST not start with a period or a dash. They SHOULD start and end with a
+periods, and dashes. They MUST NOT start with a period or a dash. They SHOULD start and end with a
 letter or a number. If present, each path component MUST match this regex:
 
 ```re
 ^[a-z0-9_][a-z0-9_.-]*$
 ```
-The maximum length of an individual path component in a channel base URL MUST NOT exceed 128 characters. The maximum length of a channel base URL SHOULD NOT exceed 256 characters.
+
+The maximum length of an individual path component in a channel base URL MUST NOT exceed 128 characters.
+The maximum length of a channel base URL SHOULD NOT exceed 256 characters.
 
 #### Subdir names
 
-Channel subdir names MUST either be the literal `noarch` or a string following the syntax `{os}-{arch}`, where `{os}` and `{arch}` MUST only consist of lowercase ASCII letters and numbers. Non-`noarch` subdirs MUST match this regex: `^[a-z0-9]+-[a-z0-9]+$`.
+Channel subdir names MUST either be the literal `noarch` or a string following the syntax `{os}-{arch}`,
+where `{os}` and `{arch}` MUST only consist of lowercase ASCII letters and numbers. Non-`noarch` subdirs
+MUST match this regex: `^[a-z0-9]+-[a-z0-9]+$`.
 
 The maximum length of a subdir name MUST NOT exceed 32 characters.
 
 #### Label names
 
-Channel label names MUST only consist of ASCII letters, digits, underscores, hyphens, forward slashes, periods, colons and whitespace. They MUST start with a letter. They MUST match this regex: `^[a-zA-Z][0-9a-zA-Z_\-\.\/:\s]*`. Even if allowed, label names SHOULD NOT contain any whitespace.
+Channel label names MUST only consist of ASCII letters, digits, underscores, hyphens, forward slashes,
+periods, colons and whitespace. They MUST start with a letter. They MUST match this regex: 
+`^[a-zA-Z][0-9a-zA-Z_\-\.\/:\s]*`. Even if allowed, label names SHOULD NOT contain any whitespace.
 
-The label `nolabel` is reserved and MUST only be used for conda packages which have no other labels. In other words, in the space of labels, the empty set is represented by the labels `nolabel`.
+The label `nolabel` is reserved and MUST only be used for conda packages which have no other labels.
+In other words, in the space of labels, the empty set is represented by the labels `nolabel`.
 
 The maximum length of a label name MUST NOT exceed 128 characters.
 
 ## Backwards compatibility
 
-The conda subdir and package name regexes are backwards compatible with the current `conda` implementation (25.3) and all existing packages on the `defaults` and `conda-forge` channels, except for the `__anaconda_core_depends` package on the `defaults` channel.
+The conda subdir and package name regexes are backwards compatible with the current `conda` implementation
+(25.3) and all existing packages on the `defaults` and `conda-forge` channels, except for the
+`__anaconda_core_depends` package on the `defaults` channel.
 
 The regex for labels was pulled from an anaconda.org error message describing the set of valid labels.
 
@@ -153,11 +176,19 @@ As of 2025-03-12T19:00Z, of the ~1.9M channel names on anaconda.org:
 
 - 7,219 violate the regex `^[a-z0-9]+((-|_|.)[a-z0-9]+)*$`;
 - 98 violate the regex `^[a-z0-9][a-z0-9_.-]*$` (allowing channel names to end with `_`, `.`, or `-`); and
-- 6 violate `^[a-z0-9_][a-z0-9_.-]*$` (allowing channel names to start with `_`). Of those six, five start with `.`, and the other starts with `~`.
+- 6 violate `^[a-z0-9_][a-z0-9_.-]*$` (allowing channel names to start with `_`).
+  Of those six, five start with `.`, and the other starts with `~`.
 
-The authors have excluded the channel names in the last case that start with `.` or `~` given possible security implications. A low percentage, ~0.4%, of channels do not match the recommendations for channel names above, but are allowed.
+See [this comment](https://github.com/conda/ceps/pull/116#discussion_r1992154574) for more details.
+The authors have excluded the channel names in the last case that start with `.` or `~` given possible
+security implications. A low percentage, ~0.4%, of channels do not match the recommendations for channel
+names above, but are allowed.
 
-The maximum lengths allowed for the different fields have been chosen so the resulting path components (directory names, filenames) comfortably fit in a the 255-char maximum limit some filesystems impose. As of 2025-03-01T13:00Z, there are no violations of these limits in any of the packages published for `conda-forge`, `bioconda` and `defaults`. See [this comment](https://github.com/conda/ceps/pull/116#issuecomment-2763392999) for more details.
+The maximum lengths allowed for the different fields have been chosen so the resulting path components
+(directory names, filenames) comfortably fit in a the 255-char maximum limit some filesystems impose.
+As of 2025-03-01T13:00Z, there are no violations of these limits in any of the packages published for
+`conda-forge`, `bioconda` and `defaults`. See
+[this comment](https://github.com/conda/ceps/pull/116#issuecomment-2763392999) for more details.
 
 ## Copyright
 
