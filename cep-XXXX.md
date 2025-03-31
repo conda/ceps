@@ -26,7 +26,8 @@ All existing conda standards which satisfy the following conditions
 
 MUST be versioned at `v1`.
 
-The numbering of build recipe formats is exempt from this CEP.
+The numbering of build recipe formats is exempt from this CEP due to the fact
+that the new recipe format in [CEP 14](https://github.com/conda/ceps/blob/main/cep-0014.md) specified `schema_version: 1`.
 
 Standards MUST use a version specifier that consists only of numbers and a single period `.`, has a major version,
 and has at most a minor version (i.e. matches the regex `^[0-9]+($|\.[0-9]+$)`). A `v` MAY be prepended
