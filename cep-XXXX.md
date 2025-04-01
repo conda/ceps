@@ -3,13 +3,13 @@
 <table>
 <tr><td> Title </td><td> CEP XXXX - Names in conda packages and channels </td>
 <tr><td> Status </td><td> Draft </td></tr>
-<tr><td> Author(s) </td><td> 
+<tr><td> Author(s) </td><td>
   Jaime Rodríguez-Guerra &lt;jaime.rogue@gmail.com&gt; <br />
   Matthew R. Becker &lt;becker.mr@gmail.com&gt; <br />
   Cheng H. Lee &lt;clee@anaconda.com&gt;
 </td></tr>
 <tr><td> Created </td><td> Mar 11, 2025</td></tr>
-<tr><td> Updated </td><td> Mar 30, 2025</td></tr>
+<tr><td> Updated </td><td> Apr 1, 2025</td></tr>
 <tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/116 </td></tr>
 <tr><td> Implementation </td><td> N/A </td></tr>
 </table>
@@ -111,7 +111,7 @@ directories where artifacts are extracted in the package cache, for example.
 A conda channel is defined as a URL where one can find one or more `repodata.json` files arranged in one
 subdirectory (_subdir_) each. `noarch/repodata.json` MUST be present to consider the parent location a channel.
 
-#### Channel base URLs and names
+#### Channel base URLs
 
 The base URL for the arbitrary location of a repodata file is defined as:
 
@@ -133,11 +133,6 @@ to `noarch/repodata.json` and thus base URL is `https://conda.anaconda.org/conda
 local repodata such as `file:///home/username/channel/noarch/repodata.json`, the
 channel base URL is `file:///home/username/channel`.
 
-For convenience, the channel _name_ is defined as the concatenation of `scheme`, `authority` and
-`path` components. The `<scheme>://` part MAY be omitted if `scheme` is one of `http`, `https` or
-`file`. At least one of `authority` or `path` SHOULD be present. In their absence, the channel name
-MUST be considered empty, regardless the scheme. Empty channel names SHOULD NOT be used.
-
 When present, each path component MUST only contain lowercase ASCII letters, numbers, underscores,
 periods, and dashes. They MUST NOT start with a period or a dash. They SHOULD start and end with a
 letter or a number. If present, each path component MUST match this regex:
@@ -150,6 +145,18 @@ For `file://`-based channel URLs, the path component rules MAY be understood as 
 
 The maximum length of an individual path component in a channel base URL MUST NOT exceed 128 characters.
 The maximum length of a channel base URL SHOULD NOT exceed 256 characters.
+
+#### Channel names
+
+For convenience, the channel _name_ is defined as the concatenation of `scheme`, `authority` and
+`path` components of a channel URL. At least one of `authority` or `path` SHOULD be present. In
+their absence, the channel name MUST be considered empty, regardless the scheme. Empty channel
+names SHOULD NOT be used.
+
+When the scheme and authority fields are missing, the full URL can be inferred with these rules:
+
+- If the channel name matches the regex `^\.{0,2}[/\\].*$`, or if it matches the regex `^[A-Z]:([\\/].*)?$` (for Windows drives), it SHOULD be understood as the path component of a `file://` URL.
+- Otherwise, it SHOULD be understood as a `http[s]://` URL. The tool SHOULD assume a default scheme and authority (e.g. `https://conda.anaconda.org`), and take the rest as a path component.
 
 #### Subdir names
 
