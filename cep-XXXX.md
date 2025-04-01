@@ -176,6 +176,7 @@ The label `nolabel` is reserved and MUST only be used for conda packages which h
 In other words, in the space of labels, the empty set is represented by the labels `nolabel`.
 
 A URL for a package, repodata, etc. without a label component MUST be assumed to have the default label `main`.
+
 The maximum length of a label name MUST NOT exceed 128 characters.
 
 ## Backwards compatibility
