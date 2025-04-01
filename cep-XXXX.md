@@ -129,7 +129,7 @@ Taken the channel definition above, the base URL without trailing slashes is thu
 ```
 
 For example, given `https://conda.anaconda.org/conda-forge/noarch/repodata.json`, the part leading
-to `noarch/repodata.json` and thus base URL is `https://conda.anaconda.org/conda-forge/conda-forge`. For
+to `noarch/repodata.json` and thus base URL is `https://conda.anaconda.org/conda-forge`. For
 local repodata such as `file:///home/username/channel/noarch/repodata.json`, the
 channel base URL is `file:///home/username/channel`.
 
@@ -146,6 +146,8 @@ letter or a number. If present, each path component MUST match this regex:
 ^[a-z0-9_][a-z0-9_.-]*$
 ```
 
+For `file://`-based channel URLs, the path component rules MAY be understood as recommendations only.
+
 The maximum length of an individual path component in a channel base URL MUST NOT exceed 128 characters.
 The maximum length of a channel base URL SHOULD NOT exceed 256 characters.
 
@@ -160,8 +162,8 @@ The maximum length of a subdir name MUST NOT exceed 32 characters.
 #### Label names
 
 Channel label names MUST only consist of ASCII letters, digits, underscores, hyphens, forward slashes,
-periods, colons and whitespace. They MUST start with a letter. They MUST match this regex:
-`^[a-zA-Z][0-9a-zA-Z_\-\.\/:\s]*`. Even if allowed, label names SHOULD NOT contain any whitespace.
+periods, and whitespace. They MUST start with a letter. They MUST match this regex:
+`^[a-zA-Z][0-9a-zA-Z_\-\.\/\s]*`. Even if allowed, label names SHOULD NOT contain any whitespace.
 
 The label `nolabel` is reserved and MUST only be used for conda packages which have no other labels.
 In other words, in the space of labels, the empty set is represented by the labels `nolabel`.
