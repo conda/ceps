@@ -34,7 +34,7 @@ implementation.
 The conda ecosystem distinguishes between two types of packages:
 
 - Distributable package names: represented by a concrete, downloadable, extractable conda artifact.
-- Virtual package names: not backed by any physical artifact. They only exist on the client side.
+- Virtual package names: not backed by any concrete artifact. They only exist on the client side.
 
 #### Package names
 
@@ -46,7 +46,7 @@ Virtual package names MUST only consist of lowercase ASCII letters, numbers, hyp
 underscores. They MUST NOT use two consecutive separators, with one exception: they MUST start with
 two underscores.
 
-This means that distributable package names MUST match the following case-insensitive
+Distributable package names MUST match the following case-insensitive
 regex: `^(([a-z0-9])|([a-z0-9_](?!_)))[._-]?([a-z0-9]+(\.|-|_|$))*$`.
 
 Virtual package names MUST follow this regex: `^__[a-z0-9][._-]?([a-z0-9]+(\.|-|_|$))*$`.
@@ -87,7 +87,7 @@ Distributable conda artifacts MUST have a filename following this scheme:
 <package name>-<version string>-<build string>.<extension>
 ```
 
-The maximum length of a filename MUST NOT exceed 192 characters.
+The maximum length of a filename MUST NOT exceed 211 characters.
 
 Virtual conda packages do not exist on disk and SHOULD NOT need filename standardization.
 
