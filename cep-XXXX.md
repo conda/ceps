@@ -79,18 +79,6 @@ The maximum length of a file extension MUST NOT exceed 16 characters.
 > The conda ecosystem currently recognizes two artifact extensions: `tar.bz2` and `conda`, versioned
 `v1` and `v2` respectively.
 
-#### Filenames
-
-Distributable conda artifacts MUST have a filename following this scheme:
-
-```text
-<package name>-<version string>-<build string>.<extension>
-```
-
-The maximum length of a filename MUST NOT exceed 211 characters.
-
-Virtual conda packages do not exist on disk and SHOULD NOT need filename standardization.
-
 #### Distribution strings
 
 A "distribution string" MAY be used to identify a package artifact without specifying the extension
@@ -100,11 +88,23 @@ or the channel. It MUST match the following syntax:
 <package name>-<version string>-<build string>
 ```
 
-Distribution strings apply to both distributable and virtual packages. They are used as the name of the
-directories where artifacts are extracted in the package cache, for example.
+Distribution strings apply to both distributable and virtual packages. They are used as the name of
+the directories where artifacts are extracted in the package cache, for example.
 
 > Note: Despite the similarity, distribution strings are not `MatchSpec`-like specifiers and
 > MUST NOT be used as such.
+
+#### Filenames
+
+The filename of distributable conda artifacts is obtained by adding the artifact extension to its distribution string. It MUST match this syntax:
+
+```text
+<package name>-<version string>-<build string>.<extension>
+```
+
+The maximum length of a filename MUST NOT exceed 211 characters.
+
+Virtual conda packages do not exist on disk and SHOULD NOT need filename standardization.
 
 ### Identifying channels
 
