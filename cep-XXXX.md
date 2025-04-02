@@ -1,7 +1,7 @@
-# CEP XXXX - Names in conda packages and channels
+# CEP XXXX - Identifying Packages and Channels in the conda Ecosystem
 
 <table>
-<tr><td> Title </td><td> CEP XXXX - Names in conda packages and channels </td>
+<tr><td> Title </td><td> CEP XXXX - Identifying Packages and Channels in the conda Ecosystem </td>
 <tr><td> Status </td><td> Draft </td></tr>
 <tr><td> Author(s) </td><td>
   Jaime Rodríguez-Guerra &lt;jaime.rogue@gmail.com&gt; <br />
