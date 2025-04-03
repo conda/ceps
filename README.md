@@ -32,6 +32,7 @@ for conda's implementation, all major changes should be submitted as
 | [0019](cep-0019.md) | Computing the hash of the contents in a directory                           |
 | [0020](cep-0020.md) | Support for `abi3` Python packages                                          |
 | [0021](cep-0021.md) | Run-exports in sharded Repodata                                             |
+| [0023](cep-0023.md) | Text spec input files                                                       |
 
 ## References
 
