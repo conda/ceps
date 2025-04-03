@@ -161,8 +161,10 @@ When the scheme and authority fields are missing, the full URL can be inferred w
 - If the channel name matches the regex `^\.{0,2}[/\\].*$`, or if it matches the regex
   `^[A-Z]:([\\/].*)?$` (for Windows drives), it SHOULD be understood as the path component of a
   `file://` URL.
-- Otherwise, it SHOULD be understood as a `http[s]://` URL. The tool SHOULD assume a default scheme
-  and authority (e.g. `https://conda.anaconda.org`), and take the rest as a path component.
+- Otherwise, the tool SHOULD provide a user-configurable mechanism to use a default scheme and
+  authority, with the provided channel name taken as the rest of the path component. At the time of
+  this CEP's writing, most tools assume the default URL scheme and authority to be
+  `https://conda.anaconda.org`.
 
 #### Subdir names
 
