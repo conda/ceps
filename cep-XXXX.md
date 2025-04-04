@@ -85,7 +85,7 @@ A "distribution string" MAY be used to identify a package artifact without speci
 or the channel. It MUST match the following syntax:
 
 ```text
-<package name>-<version string>-<build string>
+[<subdir>/]<package name>-<version string>-<build string>
 ```
 
 Distribution strings apply to both distributable and virtual packages. They are used as the name of
