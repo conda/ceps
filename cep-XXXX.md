@@ -81,15 +81,17 @@ versioned `v1` and `v2` respectively.
 
 #### Distribution strings
 
-A "distribution string" MAY be used to identify a package artifact without specifying the extension
-or the channel. It MUST match the following syntax:
+A "distribution string" MAY be used to identify a package artifact, without specifying the
+extension or channel. It MUST match the following syntax:
 
 ```text
 [<subdir>/]<package name>-<version string>-<build string>
 ```
 
-Distribution strings apply to both distributable and virtual packages. They are used as the name of
+Distribution strings apply to distributable packages. They are used as the name of
 the directories where artifacts are extracted in the package cache, for example.
+
+Virtual packages MAY be also identified by a distribution string, but in those cases a subdir MUST NOT be present.
 
 > Note: Despite the similarity, distribution strings are not `MatchSpec`-like specifiers and MUST
 > NOT be used as such.
@@ -97,7 +99,7 @@ the directories where artifacts are extracted in the package cache, for example.
 #### Filenames
 
 The filename of distributable conda artifacts is obtained by adding the artifact extension to its
-distribution string. It MUST match this syntax:
+distribution string (without the subdir, if present). It MUST match this syntax:
 
 ```text
 <package name>-<version string>-<build string>.<extension>
