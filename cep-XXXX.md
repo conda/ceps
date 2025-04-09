@@ -5,7 +5,7 @@
 <tr><td> Status </td><td> Draft </td></tr>
 <tr><td> Author(s) </td><td> Jaime Rodríguez-Guerra &lt;jaime.rogue@gmail.com&gt;</td></tr>
 <tr><td> Created </td><td> June 4, 2024 </td></tr>
-<tr><td> Updated </td><td> March 14, 2025 </td></tr>
+<tr><td> Updated </td><td> Apr 9, 2025 </td></tr>
 <tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/81 </td></tr>
 <tr><td> Implementation </td><td> NA </td></tr>
 </table>
@@ -276,8 +276,8 @@ dependencies:
 
 ## Reference
 
-- [Allowed extensions](https://github.com/conda/conda/blob/24.5.0/conda/env/specs/yaml_file.py)
-- [Allowed keys](https://github.com/conda/conda/blob/24.5.0/conda/env/env.py#L25)
+- [Allowed extensions](https://github.com/conda/conda/blob/e50fc3708cb808e24a4c34441ee0aed5de779a0d/conda/env/specs/yaml_file.py#L11)
+- [Allowed keys](https://github.com/conda/conda/blob/e50fc3708cb808e24a4c34441ee0aed5de779a0d/conda/env/env.py#L25)
 - [Extra subsections in
   `dependencies`](https://github.com/conda/conda/blob/841d9d57fd96ad27cda4b7c43549104a96f961ce/conda/cli/main_env_create.py#L167-L185)
 
