@@ -151,6 +151,8 @@ only.
 The maximum length of an individual path component in a channel base URL MUST NOT exceed 128
 characters. The maximum length of a channel base URL SHOULD NOT exceed 256 characters.
 
+To avoid ambiguous `MatchSpec` grammar, the last path component of a channel base URL MUST NOT match any `subdir` identifiers.
+
 #### Channel names
 
 For convenience, the channel _name_ is defined as the concatenation of `scheme`, `authority` and
@@ -180,7 +182,7 @@ The maximum length of a subdir name MUST NOT exceed 32 characters.
 
 Channel label names MUST only consist of ASCII letters, digits, underscores, hyphens, forward
 slashes, periods, and whitespace. They MUST start with a letter. They MUST match this regex:
-`^[a-zA-Z][0-9a-zA-Z_\-\./]*$`.
+`^[a-zA-Z][0-9a-zA-Z_\-\./]*$`. They MUST NOT match any `subdir` identifier.
 
 The label `nolabel` is reserved and MUST only be used for conda packages which have no other
 labels. In other words, in the space of labels, the empty set is represented by the labels
