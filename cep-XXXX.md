@@ -9,7 +9,7 @@
   Cheng H. Lee &lt;clee@anaconda.com&gt;
 </td></tr>
 <tr><td> Created </td><td> Mar 11, 2025</td></tr>
-<tr><td> Updated </td><td> Apr 3, 2025</td></tr>
+<tr><td> Updated </td><td> Apr 15, 2025</td></tr>
 <tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/116 </td></tr>
 <tr><td> Implementation </td><td> N/A </td></tr>
 </table>
