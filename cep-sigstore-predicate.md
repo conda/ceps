@@ -85,25 +85,6 @@ and will enable further integration with signing schemes like
   could be the machine identity of a GitHub Actions workflow that ran from
   `release.yml` within `example/example` against the `v1.2.3` tag.
 
-<!-- ### Sigstore Attestations
-
-Sigstore attestations are cryptographic statements about software artifacts that provide:
-
-- Authenticity: Proof of who created/signed the artifact
-- Integrity: Verification that the artifact hasn't been tampered with
-- Transparency: Public record of signatures in a tamper-evident log
-
-### Key Components
-
-- Predicates: JSON documents containing metadata about the signing event, using the `in-toto` format
-- Signatures: Cryptographic proofs made using ephemeral keys
-- Rekor: A tamper-evident log that stores attestations
-- Fulcio: A certificate authority that issues short-lived certificates
-
-In this document, we want to standardize the sigstore predicate for conda
-packages. The bundle format to be used for sigstore attestations is the `v0.3`
-bundle format. -->
-
 ## Motivation
 
 The conda ecosystem contains metadata that answers the following questions,
@@ -140,37 +121,44 @@ seen adoption in similar and related ecosystems:
 
 ## Specification
 
-The in-toto predicate should contain the following fields:
+### Attestation format
+
+This CEP proposes the following attestation statement layout, using the
+[in-toto Statement schema]:
+
+- `predicateType` **MUST** be `https://schemas.conda.org/publish-v1.json`
+- `subject` **MUST** be a single [`ResourceDescriptor`], with the following
+  constraints:
+    - `subject[0].name` **MUST** be the full filename of the conda package
+      that will be part of the `repodata.json` and under which it will appear on
+      the server.
+    - `subject[0].digest` **MUST** be a [`DigestSet`], and it **MUST** contain
+      a single `sha256` entry with the SHA256 hash of the conda package.
+- `predicate` **MAY** be present. If present and not `null`, it **MUST** be a
+  JSON object with the following fields:
+    - `targetChannel` **MUST** be a string, indicating where the package
+      is being uploaded to. This field **MUST** be a valid URL with no
+      trailing slashes.
+
+An example of a compliant statement is provided below:
 
 ```json
 {
     "_type": "https://in-toto.io/Statement/v0.1",
     "subject": [{
         "name": "file-name-0.0.1-h123456_5.conda",
-        "digest": {"sha256": "..."}, ...
+        "digest": {"sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"},
     }],
-    // Schema URL
-    "predicateType": "https://schemas.conda.org/predicate-v1.json",
+    "predicateType": "https://schemas.conda.org/publish-v1.json",
     "predicate": {
-        // Canonical URL of the target channel
         "targetChannel": "https://prefix.dev/conda-forge",
     }
 }
 ```
 
-The `subject` field is already defined in the in-toto specification and contains
-the name of the package and its digest. For conda packages a SHA256 hash MUST be
-used. The subject MUST be the full filename of the conda package that will be
-part of the repodata.json and under which it will appear on the server.
+### Signing and distributing
 
-The `predicateType` field is used to specify the schema of the predicate. The
-`predicate` field contains the actual predicate data. We propose to publish a
-schema to validate the `predicate` field. The schema will be available at
-`https://schemas.conda.org/predicate-v1.json`.
-
-The predicate MUST contain the `targetChannel` field, to indicate where the
-package is being uploaded to. This field MUST be validated by the receiving
-server. The channel MUST be in canonical form (full URL, no trailing slashes).
+### Verifying
 
 ## Discussion
 
@@ -200,3 +188,6 @@ ecosystem.
 [PyPI - Attestations]: https://docs.pypi.org/attestations/
 [npm - Generating provenance statements]: https://docs.npmjs.com/generating-provenance-statements
 [rubygems/release-gem]: https://github.com/rubygems/release-gem
+[in-toto Statement schema]: https://github.com/in-toto/attestation/blob/main/spec/v1/statement.md
+[`ResourceDescriptor`]: https://github.com/in-toto/attestation/blob/main/spec/v1/resource_descriptor.md
+[`DigestSet`]: https://github.com/in-toto/attestation/blob/main/spec/v1/digest_set.md
