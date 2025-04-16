@@ -151,8 +151,9 @@ only.
 The maximum length of an individual path component in a channel base URL MUST NOT exceed 128
 characters. The maximum length of a channel base URL SHOULD NOT exceed 256 characters.
 
-To avoid ambiguous `MatchSpec` grammar, the last path component of a channel base URL SHOULD NOT match any `subdir` identifiers. If it does, the behavior in this ambiguous
-case is not defined and implementation dependent.
+To avoid ambiguous `MatchSpec` grammar, the last path component of a channel base URL SHOULD NOT
+match any `subdir` identifiers. If it does, the behavior in this ambiguous case is not defined
+and implementation dependent.
 
 #### Channel names
 
