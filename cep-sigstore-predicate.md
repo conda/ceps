@@ -158,7 +158,68 @@ An example of a compliant statement is provided below:
 
 ### Signing and distributing
 
+This CEP recommends the following signing process:
+
+1. The signer (i.e. Alice or Alice's trusted machine identity) uses a
+   [Sigstore]-compatible client to generate an ephemeral keypair and bind it to
+   their identity via a public certificate.
+2. The signer generates an in-toto statement as described above, and
+   produces an attestation by signing that statement with their ephemeral
+   private key.
+3. The signer uploads their attestation to the Sigstore transparency log
+   as a [DSSE] envelope.
+4. The signer produces a [Sigstore bundle] containing their certificate,
+   attestation, and transparency log inclusion proof.
+
+Each of these steps is performed transparently by a Sigstore client like
+[sigstore-python], except for step (2) as it concerns the specific
+layout of the signed-over statement.
+
+The result of this process is a single Sigstore bundle, which can be
+distributed alongside the conda package or otherwise made discoverable.
+
+This CEP does not proscribe a distribution mechanism.
+
 ### Verifying
+
+This CEP recommends the following verification process:
+
+1. The verifier retrieves Alice's conda package and associated
+   Sigstore bundle.
+1. The verifier performs a standard Sigstore verification process against
+   the bundle, using Alice's identity (or machine identity) as the
+   signing identity. This process produces a verified in-toto statement.
+
+   This step requires the verifier to establish trust in the identity
+   being verified against.
+
+   Exact mechanisms for establishing this trust are
+   outside the scope of this CEP. However, one option is a TOFU (trust on first
+   use) scheme with an attestation-aware conda channel, where package names
+   are "locked" to attesting identities on first use, with subsequent updates
+   being verified against that identity.
+
+1. The verifier checks the in-toto statement for consistency against their
+   ground truth:
+
+   - The `predicateType` field **MUST** be `https://schemas.conda.org/publish-v1.json`.
+   - The `subject[0].name` field **MUST** match the filename of the conda package.
+   - The `subject[0].digest` field **MUST** match the SHA256 hash of the conda
+     package.
+   - The `predicate.targetChannel` field **SHOULD** match the channel that
+     the package was retrieved from, if `predicate` is present. However, the
+     verifier **MAY** choose to allow a channel mismatch, e.g. if the known
+     context is a mirroring context (where the conda package was originally
+     published to a different channel, but is now being consumed from
+     a mirror).
+
+At the end of this process, the verifier is confident in the following facts:
+
+- The package was published by the signer (Alice or Alice's machine identity).
+  - If the publisher is a machine identity, this further establishes source
+    provenance via the machine identity's claims. See [Sigstore OID information]
+    for additional information on these claims.
+- The package is authentic and integral modulo trust in the signer.
 
 ## Discussion
 
@@ -191,3 +252,7 @@ ecosystem.
 [in-toto Statement schema]: https://github.com/in-toto/attestation/blob/main/spec/v1/statement.md
 [`ResourceDescriptor`]: https://github.com/in-toto/attestation/blob/main/spec/v1/resource_descriptor.md
 [`DigestSet`]: https://github.com/in-toto/attestation/blob/main/spec/v1/digest_set.md
+[DSSE]: https://github.com/secure-systems-lab/dsse/blob/master/envelope.md
+[Sigstore bundle]: https://docs.sigstore.dev/about/bundle/
+[sigstore-python]: https://github.com/sigstore/sigstore-python
+[Sigstore OID information]: https://github.com/sigstore/fulcio/blob/main/docs/oid-info.md
