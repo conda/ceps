@@ -178,7 +178,9 @@ layout of the signed-over statement.
 The result of this process is a single Sigstore bundle, which can be
 distributed alongside the conda package or otherwise made discoverable.
 
-This CEP does not proscribe a distribution mechanism.
+This CEP does not proscribe a distribution mechanism. Prior art for distribution
+mechanisms can be found in the PyPI and RubyGems ecosystems, e.g.
+[PyPI's Integrity API].
 
 ### Verifying
 
@@ -256,3 +258,4 @@ ecosystem.
 [Sigstore bundle]: https://docs.sigstore.dev/about/bundle/
 [sigstore-python]: https://github.com/sigstore/sigstore-python
 [Sigstore OID information]: https://github.com/sigstore/fulcio/blob/main/docs/oid-info.md
+[PyPI's Integrity API]: https://docs.pypi.org/api/integrity/
