@@ -126,7 +126,7 @@ seen adoption in similar and related ecosystems:
 This CEP proposes the following attestation statement layout, using the
 [in-toto Statement schema]:
 
-- `predicateType` **MUST** be `https://schemas.conda.org/publish-v1.json`
+- `predicateType` **MUST** be `https://schemas.conda.org/attestations/publish/v1`
 - `subject` **MUST** be a single [`ResourceDescriptor`], with the following
   constraints:
     - `subject[0].name` **MUST** be the full filename of the conda package
@@ -149,7 +149,7 @@ An example of a compliant statement is provided below:
         "name": "file-name-0.0.1-h123456_5.conda",
         "digest": {"sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"},
     }],
-    "predicateType": "https://schemas.conda.org/publish-v1.json",
+    "predicateType": "https://schemas.conda.org/attestations/publish/v1",
     "predicate": {
         "targetChannel": "https://prefix.dev/conda-forge",
     }
@@ -204,7 +204,7 @@ This CEP recommends the following verification process:
 1. The verifier checks the in-toto statement for consistency against their
    ground truth:
 
-   - The `predicateType` field **MUST** be `https://schemas.conda.org/publish-v1.json`.
+   - The `predicateType` field **MUST** be `https://schemas.conda.org/attestations/publish/v1`.
    - The `subject[0].name` field **MUST** match the filename of the conda package.
    - The `subject[0].digest` field **MUST** match the SHA256 hash of the conda
      package.
