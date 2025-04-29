@@ -178,9 +178,8 @@ layout of the signed-over statement.
 The result of this process is a single Sigstore bundle, which can be
 distributed alongside the conda package or otherwise made discoverable.
 
-This CEP does not proscribe a distribution mechanism. Prior art for distribution
-mechanisms can be found in the PyPI and RubyGems ecosystems, e.g.
-[PyPI's Integrity API].
+This CEP does not proscribe a distribution mechanism; see
+[Future work](#future-work).
 
 ### Verifying
 
@@ -196,10 +195,7 @@ This CEP recommends the following verification process:
    being verified against.
 
    Exact mechanisms for establishing this trust are
-   outside the scope of this CEP. However, one option is a TOFU (trust on first
-   use) scheme with an attestation-aware conda channel, where package names
-   are "locked" to attesting identities on first use, with subsequent updates
-   being verified against that identity.
+   outside the scope of this CEP; see [Future work](#future-work).
 
 1. The verifier checks the in-toto statement for consistency against their
    ground truth:
@@ -223,24 +219,66 @@ At the end of this process, the verifier is confident in the following facts:
     for additional information on these claims.
 - The package is authentic and integral modulo trust in the signer.
 
+This CEP suggests that attestation verification be performed by
+both clients (i.e. package installers retrieving packages from
+attestation-aware channels) and servers (i.e. attestation-aware channels).
+
+Servers **SHOULD** perform the same verification process as clients,
+with the qualification that the server's trust in the signing identity
+is established latently via the server's publishing and upload mechanism.
+For example, if the server supports [Trusted Publishing], then the package's
+attestation should be verified against the set of Trusted Publisher identities
+for that package.
+
 ## Discussion
 
 This predicate adds basic verifiable facts about the package. It will tie the
-producer of the package to the target channel. This is similar to what PyPI has
-implemented with the [PyPI publish
-attestation](https://docs.pypi.org/attestations/publish/v1/). Since there is no
-single authoritative index in the Conda world, we add the `targetChannel` field
-to reach parity.
+producer of the package to the target channel, if the attestation's producer
+chooses to do so.
 
-On the server, the certificate should be tested against the Trusted Publisher
-used to upload the certificate to establish a chain of trust.
+This is similar to what PyPI has implemented with the
+[PyPI publish attestation]. Since there is no single authoritative index in
+the Conda world, we add the `targetChannel` field to reach parity.
 
 ## Future work
 
-Once sigstore attestations are established and more research has been done, we
-might want to use the [SLSA (Supply-chain Levels for Software
-Artifacts)](https://slsa.dev) spec as base for predicates in the conda
-ecosystem.
+This CEP leaves three aspects of a complete attestation scheme open for
+future discussion and work:
+
+1. This CEP does not specify a mechanism for establishing trust in each
+   conda package's signing identities. This is a non-trivial problem
+   analogous to the key distribution problem in traditional PKI systems,
+   albeit without the complications and operational challenges associated
+   with long-lived key material.
+
+    One potential mechanism for identity trust distribution is a TOFU (trust on
+    first use) scheme with an attestation-aware conda channel, where package
+    names are "locked" to attesting identities on first use, with subsequent
+    updates being verified against that identity. This scheme requires a
+    suitable lockfile format; [PEP 751] and its
+    `[[package.attestation-identities]]` table may serve as prior art
+    for a similar approach in the conda ecosystem.
+
+2. This CEP does not specify a distribution mechanism for attestations
+   (i.e., Sigstore bundles containing attestations).
+
+    One potential distribution mechanism is to have attestation-aware
+    conda channels distribute each package's attestations alongside
+    the package, or via a similarly discoverable channel-side API.
+    Prior art for this type of distribution mechanism can be found in
+    the PyPI and RubyGems ecosystems, e.g. [PyPI's Integrity API].
+
+3. This CEP specifies an single initial in-toto predicate
+   (`https://schemas.conda.org/attestations/publish/v1`), which conveys
+   a binding between a signing identity and its intent to publish
+   a particular conda package to a particular channel.
+
+   Future iterations of conda's attestation design may wish to support
+   and use other predicate types, such as the [SLSA Provenance]
+   (Supply-chain Levels for Software Artifacts) layout. Doing so
+   would expose additional metadata about the package's source and build
+   provenance, giving conda package consumers greater control over
+   their consumption and admission policies.
 
 [in-toto]: https://in-toto.io
 [Sigstore]: https://sigstore.dev
@@ -259,3 +297,7 @@ ecosystem.
 [sigstore-python]: https://github.com/sigstore/sigstore-python
 [Sigstore OID information]: https://github.com/sigstore/fulcio/blob/main/docs/oid-info.md
 [PyPI's Integrity API]: https://docs.pypi.org/api/integrity/
+[PEP 751]: https://peps.python.org/pep-0751/
+[SLSA Provenance]: https://slsa.dev/spec/v1.1/provenance
+[PyPI publish attestation]: https://docs.pypi.org/attestations/publish/v1/
+[Trusted Publishing]: https://repos.openssf.org/trusted-publishers-for-all-package-repositories.html
