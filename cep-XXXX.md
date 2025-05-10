@@ -97,10 +97,10 @@ The following files and directories MUST be handled by the conda client:
 
 The `bin/` and `Scripts/` directories usually contain executables populated by the packages themselves. There are four special paths that SHOULD be handled by conda clients. For files named like `.{package-name}-{action}.{extension}`, where `{package-name}` corresponds to the package name and `{extension}` is either `sh` (Unix) or `bat` (Windows), there are four possible `{action}` values and associated behaviors:
 
-- `pre-link`: Executed before a package is installed/ linked. Deprecated; conda clients MAY ignore them.
-- `post-link`: Executed after a package is installed/ linked.
+- `pre-link`: Executed before a package is installed / linked. Deprecated; conda clients SHOULD ignore them.
+- `post-link`: Executed after a package is installed / linked.
 - `pre-unlink`: Executed before a package is removed / unlinked.
-- `post-unlink`: Executed before a package is removed / unlinked.
+- `post-unlink`: Executed after a package is removed / unlinked. Deprecated; conda clients SHOULD ignore them.
 
 Execution is performed in topological order. The conda clients SHOULD export these environment variables for the scripts to use:
 
