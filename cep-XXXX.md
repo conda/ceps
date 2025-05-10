@@ -16,7 +16,7 @@ This CEP describes the structure of conda environments on disk.
 
 ## Specification
 
-A conda environment is defined as a directory that contains, at least, a `conda-meta/history` file. 
+A conda environment is defined as a directory that contains, at least, a `conda-meta/history` file.
 
 ### Internal metadata: `conda-meta/`
 
@@ -47,7 +47,7 @@ This following files MUST be recognized by conda clients:
 
     </details>
 - `./{name}-{version}-{build-string}.json` files: Serialized [`PrefixRecord`](https://github.com/conda/conda/blob/efd8ac2a991abc5a133724a064928922cb208dbe/conda/models/records.py#L606) contents (or equivalent) for each installed conda package. The following rules apply:
-  - It MUST be named as a CEP 26 "distribution string" (sans subdir), with the three fields matching the corresponding keys in the JSON file. 
+  - It MUST be named as a CEP 26 "distribution string" (sans subdir), with the three fields matching the corresponding keys in the JSON file.
   - The serialized `PrefixRecord` information SHOULD match the relevant fields in the most up-to-date repodata information available for the package (`depends` and `constrains` are of particular importance due to repodata patching). This is generally the channel's `repodata.json`, but it MAY also be an alternative source like the serialized metadata in a lockfile. The package's `info/index.json` MAY be used as a fallback if no other sources are available.
 
 The `conda-meta/` directory MAY also present additional files that condition the behavior of the conda clients:
@@ -55,7 +55,7 @@ The `conda-meta/` directory MAY also present additional files that condition the
 - `./frozen`. As described in [CEP 22](./cep-0022.md).
 - `./state`. JSON document that provides a dictionary with a single key, `env_vars`, whose value is a dictionary that maps strings to strings. These are environment variable names and their values, respectively. conda clients SHOULD parse this document and export the environment variables on environment activation.
 
-### General contents 
+### General contents
 
 The rest of the environment is generally populated by the contents of its installed packages, after extraction and linking. As a result, the structure is arbitrary and determined by which packages are installed. That said, there are some conventions that SHOULD be followed by package builders so the environments are populated consistently.
 
