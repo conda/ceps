@@ -65,12 +65,17 @@ On Unix filesystems, packages generally follow a subset of the [Filesystem Hiera
 - `./lib/`: dynamic and static libraries.
 - `./share/`: miscellaneous data contents.
 
-On Windows, the expected directory structure is:
+On Windows, the expected directory structure is a bit different due to how Python on Windows is organized.
 
-- `./Lib/`: `.lib` files.
-- `./Library/`: Unix-style contents, as above.
-- `./Scripts/`: Executables (`.exe`, `.bat`) and DLLs.
-- Some binaries might be present in the root level, like `python.exe`.
+- `./Library/`, uses the same directories as the Unix structure listed above. Most packages will populate this directory.
+- Python interpreters and Python-related packages stay in the root-level:
+  - `./DLLs/`: Compiled Python extensions (`.pyd`)
+  - `./include/`: Python development headers (`.h`).
+  - `./Lib/`: Equivalent to `./lib/pythonX.Y/site-packages` on Unix.
+  - `./libs/`: Python `.lib` files.
+  - `./Scripts/`: Python entry points (`.exe` trampolines and the corresponding `-script.py` files).
+  - `./Tools/`: Miscellaneous Python scripts.
+  - `./python*.(exe|dll|pdb)`: The Python interpreter executables and libraries.
 
 Within these directories, there are some special paths that conda clients SHOULD handle in a specific way:
 
@@ -197,6 +202,10 @@ Removing a package from the environment SHOULD follow these instructions:
 ### Removing an environment
 
 Once an environment contains no packages, the conda client MAY remove it. This process involves clearing the `conda-meta/` folder and any `condarc` files, and deregistering the environment path from the central manifest, if applicable (e.g. `~/.conda/environments.txt`). If there were any additional files in the environment directory, the conda client SHOULD report that to the user and offer to leave them in place or to proceed and clear all the contents.
+
+## References
+
+- [`Library/` conventions on Windows ](https://github.com/ContinuumIO/anaconda-issues/issues/440)
 
 ## Copyright
 
