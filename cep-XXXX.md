@@ -205,7 +205,7 @@ Once an environment contains no packages, the conda client MAY remove it. This p
 
 ## References
 
-- [`Library/` conventions on Windows ](https://github.com/ContinuumIO/anaconda-issues/issues/440)
+- [`Library/` conventions on Windows](https://github.com/ContinuumIO/anaconda-issues/issues/440)
 
 ## Copyright
 
