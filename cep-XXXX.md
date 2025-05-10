@@ -1,7 +1,7 @@
-# CEP XXXX - Structure of installed conda environments
+# CEP XXXX - Management and structure of conda environments
 
 <table>
-<tr><td> Title </td><td> Structure of installed conda environments </td>
+<tr><td> Title </td><td> Management and structure of conda environments </td>
 <tr><td> Status </td><td> Draft </td></tr>
 <tr><td> Author(s) </td><td> Jaime Rodríguez-Guerra &lt;jaime.rogue@gmail.com&gt;</td></tr>
 <tr><td> Created </td><td> May 9, 2025</td></tr>
@@ -12,7 +12,7 @@
 
 ## Abstract
 
-This CEP describes the structure of conda environments on disk.
+This CEP describes the lifecycle of conda environments and their structure.
 
 ## Specification
 
@@ -46,9 +46,7 @@ This following files MUST be recognized by conda clients:
     ```
 
     </details>
-- `./{name}-{version}-{build-string}.json` files: Serialized [`PrefixRecord`](https://github.com/conda/conda/blob/efd8ac2a991abc5a133724a064928922cb208dbe/conda/models/records.py#L606) contents (or equivalent) for each installed conda package. The following rules apply:
-  - It MUST be named as a CEP 26 "distribution string" (sans subdir), with the three fields matching the corresponding keys in the JSON file.
-  - The serialized `PrefixRecord` information SHOULD match the relevant fields in the most up-to-date repodata information available for the package (`depends` and `constrains` are of particular importance due to repodata patching). This is generally the channel's `repodata.json`, but it MAY also be an alternative source like the serialized metadata in a lockfile. The package's `info/index.json` MAY be used as a fallback if no other sources are available.
+- `./{name}-{version}-{build-string}.json` files: Serialized [`PrefixRecord`](https://github.com/conda/conda/blob/efd8ac2a991abc5a133724a064928922cb208dbe/conda/models/records.py#L606) contents (or equivalent) for each installed conda package.
 
 The `conda-meta/` directory MAY also present additional files that condition the behavior of the conda clients:
 
@@ -107,7 +105,7 @@ Execution is performed in topological order. The conda clients SHOULD export the
 - `PKG_VERSION`: Version of the package.
 - `PKG_BUILDNUM`: Build number of the package.
 
-### Top-level `condarc` file
+### Top-level `condarc` files
 
 This can be used to configure behavior of the conda client performing operations on this environment. The following locations are recognized as valid configuration sources.
 
@@ -115,6 +113,90 @@ This can be used to configure behavior of the conda client performing operations
 - `./condarc`
 - `./condarc.d/*.yml`
 - `./condarc.d/*.yaml`
+
+## Management of a conda environment
+
+## Creating a conda environment
+
+An empty directory `$CONDA_PREFIX` can be turned into a conda environment by creating an empty `conda-meta/history` file. The conda client MAY register this location into a central registry of environments, such as `~/.conda/environments.txt`.
+
+The command used to create that environment MAY be recorded in `conda-meta/history`, along with the version, timestamp and details of the transaction.
+
+### Installing packages
+
+For each package to be installed, assuming it has been already downloaded and extracted:
+
+- For regular (non-`noarch: python`) packages, place the contents of the artifact into `$CONDA_PREFIX`.
+  - If the file contains a prefix placeholder, replace it with the value of `$CONDA_PREFIX` and copy the file.
+  - Otherwise, link into `$CONDA_PREFIX` (or copy if linking is not possible).
+- For `noarch: python` packages, the contents of the artifact MUST be linked or copied under `$CONDA_PREFIX/lib/pythonX.Y` (Unix, where `X.Y` represents the MAJOR.MINOR Python version) or `$CONDA_PREFIX/Lib` (Windows). If the package contains `entry_points`, the necessary scripts MUST be generated under `$CONDA_PREFIX/bin` (Unix) or `$CONDA_PREFIX/Scripts` (Windows).
+
+Once linked, the package metadata MUST be recorded at `$CONDA_PREFIX/conda-meta/{name}-{version}-{build}.json`. This document serves as a manifest of all the files that this package brought into the environment, plus some additional metadata to handle its behavior during the environment lifecycle. It MUST include this information (equivalent to a serialized `PrefixRecord` object):
+
+```js
+{
+    "build": str, // build string
+    "build_number": int,
+    "channel": str, // URL to source channel, no subdir
+    "constrains": list[str], // str must be a "conda-build form" match spec
+    "depends": list[str], // str must be a "conda-build form" match spec
+    "extracted_package_dir": str, // absolute path to extracted contents
+    "files": list[str], // list of paths in artifact, relative to $CONDA_PREFIX, forward-slash normalized
+    "fn": str, // {name}-{version}-{build}.{extension}
+    "license": str, // SPDX expression preferred
+    "link": { // How the package was linked into the prefix
+        "source": str, // original path
+        "type": (1|2|3|4), // hardlink, softlink, copy, directory
+    },
+    "md5": str, // 32-char hex string
+    "name": str, // package name
+    "noarch": "python", // optional, values: python, generic
+    "package_tarball_full_path": str, // absolute path to artifact
+    "package_type": "noarch_python", // optional, values: noarch_python
+    "paths_data": { // Artifact contents + generated files in $CONDA_PREFIX
+        "paths": [  // one dict per file:
+            {
+                "_path": str, // relative path of file to $CONDA_PREFIX, forward-slash normalized
+                "file_mode": str, // optional; one of 'text' or 'binary'
+                "no_link": bool, // optional, whether to force copy or allow link
+                "path_type": str, // one of: softlink, hardlink, directory; MAY also be one of generated types: pyc_file, unix_python_entry_point, windows_python_entry_point_script, windows_python_entry_point_exe, linked_package_record
+                "prefix_placeholder": str, // optional; to be replaced with $CONDA_PREFIX
+                "sha256": str, // optional if generated, 64-char hex string of file in cache
+                "sha256_in_prefix": str, // optional if generated, 64-char hex string of file in prefix (after placeholder has been replaced)
+                "size_in_bytes": int // optional, if generated
+            },
+            ...
+            ]
+        "paths_version": 1
+    },
+    "requested_spec": str, // MatchSpec asked by user; use "None" if not requested (transitive)
+    "sha256": str, // 64-char hex string
+    "size": int, // in bytes
+    "subdir": str, // one of KNOWN_SUBDIRS
+    "timestamp": int, // in ms
+    "url": str, // download URL of the package
+    "version": str, // package version
+}
+```
+
+The serialized `PrefixRecord` information SHOULD match the relevant fields in the most up-to-date repodata information available for the package (`depends` and `constrains` are of particular importance due to repodata patching). This is generally the channel's `repodata.json`, but it MAY also be an alternative source like the serialized metadata in a lockfile. The package's `info/index.json` MAY be used as a fallback if no other sources are available.
+
+While linking paths into their targets, the conda client might run into clobbering conflicts (two or more packages wanting to write to the same path). Tools SHOULD at least warn the user about the conflicts and provide ways to handle the situation.
+
+Once all packages have been linked, the `post-link` scripts SHOULD be executed, as described above.
+
+### Removing a package
+
+Removing a package from the environment SHOULD follow these instructions:
+
+1. Execute the relevant `pre-unlink` scripts.
+2. Remove all the files recorded in its `conda-meta/*.json` file (under `paths_data`).
+3. Remove its `conda-meta/*.json` record.
+4. If there were clobbering conflicts, restore the relevant path from the clobbered sources.
+
+### Removing an environment
+
+Once an environment contains no packages, the conda client MAY remove it. This process involves clearing the `conda-meta/` folder and any `condarc` files, and deregistering the environment path from the central manifest, if applicable (e.g. `~/.conda/environments.txt`). If there were any additional files in the environment directory, the conda client SHOULD report that to the user and offer to leave them in place or to proceed and clear all the contents.
 
 ## Copyright
 
