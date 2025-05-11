@@ -65,7 +65,7 @@ On Unix filesystems, packages generally follow a subset of the [Filesystem Hiera
 - `./lib/`: dynamic and static libraries.
 - `./share/`: miscellaneous data contents.
 
-On Windows, the expected directory structure is a bit different due to how Python on Windows is organized.
+On Windows, the expected directory structure is a bit different due to how Python (and other interpreted languages) are organized in this operating system:
 
 - `./Library/`, uses the same directories as the Unix structure listed above. Most packages will populate this directory.
 - Python interpreters and Python-related packages stay in the root-level:
@@ -76,8 +76,12 @@ On Windows, the expected directory structure is a bit different due to how Pytho
   - `./Scripts/`: Python entry points (`.exe` trampolines and the corresponding `-script.py` files).
   - `./Tools/`: Miscellaneous Python scripts.
   - `./python*.(exe|dll|pdb)`: The Python interpreter executables and libraries.
+- Other interpreted languages might also populate the root-level directly, specially if they rely on `noarch: generic` packages. Some examples:
+  - Node.js places its executables in the root level, and leaves everything else under `./node_modules/`.
+  - R installs to `./lib/R/` using a Unix-style directory structure, but also places some executables in `./Scripts/`.
+  - Ruby installs directly to the root level, using a Unix-style directory structure.
 
-Within these directories, there are some special paths that conda clients SHOULD handle in a specific way:
+Regardless the platform, within these directories there are some special paths that conda clients SHOULD handle in a specific way:
 
 - `./etc/conda/*.d` directories
 - `./(bin|Scripts)/.{package-name}-{action}.{extension}` scripts
@@ -121,7 +125,7 @@ This can be used to configure behavior of the conda client performing operations
 
 ## Management of a conda environment
 
-## Creating a conda environment
+### Creating a conda environment
 
 An empty directory `$CONDA_PREFIX` can be turned into a conda environment by creating an empty `conda-meta/history` file. The conda client MAY register this location into a central registry of environments, such as `~/.conda/environments.txt`.
 
