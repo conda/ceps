@@ -155,11 +155,11 @@ Once linked, the package metadata MUST be recorded at `$CONDA_PREFIX/conda-meta/
     "license": str, // SPDX expression preferred
     "md5": str, // 32-char hex string
     "name": str, // package name
-    "noarch": "python", // optional, values: python, generic
-    "package_type": "noarch_python", // optional, values: noarch_python, noarch_generic.
+    "noarch": "python", // optional, values: 'python', 'generic'
+    "package_type": "noarch_python", // optional, values: 'noarch_python', 'noarch_generic'.
     "sha256": str, // 64-char hex string
     "size": int, // in bytes
-    "subdir": str, // one of KNOWN_SUBDIRS
+    "subdir": str, // one of KNOWN_SUBDIRS, including 'noarch'
     "timestamp": int, // in ms
     "url": str, // download URL of the package
     "version": str, // package version
