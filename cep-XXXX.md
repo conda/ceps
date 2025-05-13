@@ -144,24 +144,39 @@ Once linked, the package metadata MUST be recorded at `$CONDA_PREFIX/conda-meta/
 
 ```js
 {
+    // PackageRecord fields (as provided by repodata or info/index.json)
+
     "build": str, // build string
     "build_number": int,
     "channel": str, // URL to source channel, no subdir
     "constrains": list[str], // str must be a "conda-build form" match spec
     "depends": list[str], // str must be a "conda-build form" match spec
-    "extracted_package_dir": str, // absolute path to extracted contents
-    "files": list[str], // list of paths in artifact, relative to $CONDA_PREFIX, forward-slash normalized
     "fn": str, // {name}-{version}-{build}.{extension}
     "license": str, // SPDX expression preferred
+    "md5": str, // 32-char hex string
+    "name": str, // package name
+    "noarch": "python", // optional, values: python, generic
+    "package_type": "noarch_python", // optional, values: noarch_python, noarch_generic.
+    "sha256": str, // 64-char hex string
+    "size": int, // in bytes
+    "subdir": str, // one of KNOWN_SUBDIRS
+    "timestamp": int, // in ms
+    "url": str, // download URL of the package
+    "version": str, // package version
+
+    // SolvedRecord fields (user-provided)
+
+    "requested_spec": str, // MatchSpec asked by user; use "None" if not requested (transitive)
+
+    // PrefixRecord fields (known once artifact is downloaded, extracted and linked)
+
+    "extracted_package_dir": str, // absolute path to extracted contents
     "link": { // How the package was linked into the prefix
         "source": str, // original path
         "type": (1|2|3|4), // hardlink, softlink, copy, directory
     },
-    "md5": str, // 32-char hex string
-    "name": str, // package name
-    "noarch": "python", // optional, values: python, generic
+    "files": list[str], // list of paths in artifact, relative to $CONDA_PREFIX, forward-slash normalized
     "package_tarball_full_path": str, // absolute path to artifact
-    "package_type": "noarch_python", // optional, values: noarch_python, noarch_generic.
     "paths_data": { // Artifact contents + generated files in $CONDA_PREFIX
         "paths": [  // one dict per file:
             {
@@ -178,20 +193,16 @@ Once linked, the package metadata MUST be recorded at `$CONDA_PREFIX/conda-meta/
             ]
         "paths_version": 1
     },
+
+    // Extra fields added in some implementations
+
     "purls": [ // optional
         str,   // PURL identifier for upstream source (e.g. pkg:pypi/requests for 'requests')
     ]
-    "requested_spec": str, // MatchSpec asked by user; use "None" if not requested (transitive)
-    "sha256": str, // 64-char hex string
-    "size": int, // in bytes
-    "subdir": str, // one of KNOWN_SUBDIRS
-    "timestamp": int, // in ms
-    "url": str, // download URL of the package
-    "version": str, // package version
 }
 ```
 
-The serialized `PrefixRecord` information SHOULD match the relevant fields in the most up-to-date repodata information available for the package (`depends` and `constrains` are of particular importance due to repodata patching). This is generally the channel's `repodata.json`, but it MAY also be an alternative source like the serialized metadata in a lockfile. The package's `info/index.json` MAY be used as a fallback if no other sources are available.
+The serialized fields categorized as `PackageRecord fields` above MUST match the relevant fields in the most up-to-date repodata information available for the package (`depends` and `constrains` are of particular importance due to repodata patching). This is generally the channel's `repodata.json`, but it MAY also be an alternative source like the serialized metadata in a lockfile. The package's `info/index.json` MAY be used as a fallback if no other sources are available.
 
 While linking paths into their targets, the conda client might run into clobbering conflicts (two or more packages wanting to write to the same path). Tools SHOULD at least warn the user about the conflicts and provide ways to handle the situation.
 
