@@ -101,12 +101,19 @@ The following files and directories MUST be handled by the conda client:
 
 The `bin/` and `Scripts/` directories usually contain executables populated by the packages themselves. There are four special paths that SHOULD be handled by conda clients. For files named like `.{package-name}-{action}.{extension}`, where `{package-name}` corresponds to the package name and `{extension}` is either `sh` (Unix) or `bat` (Windows), there are four possible `{action}` values and associated behaviors:
 
-- `pre-link`: Executed before a package is installed / linked. Deprecated; conda clients SHOULD ignore them.
+- `pre-link`: Executed before a package is installed / linked.
 - `post-link`: Executed after a package is installed / linked.
 - `pre-unlink`: Executed before a package is removed / unlinked.
 - `post-unlink`: Executed after a package is removed / unlinked. Deprecated; conda clients SHOULD ignore them.
 
-Execution is performed in topological order. The conda clients SHOULD export these environment variables for the scripts to use:
+These scripts should be avoided whenever possible. If they are indeed necessary, these rules apply:
+
+- They MUST NOT write to stdout, but they MAY write to `$CONDA_PREFIX/.messages.txt`, whose contents SHOULD be reported after the conda client completes all actions.
+- They MUST NOT touch anything other than the files being installed.
+- They MUST NOT depend on any installed or to-be-installed conda packages.
+- They SHOULD depend only on standard system tools such as `rm`, `cp`, `mv`, and `ln`.
+
+Execution SHOULD be performed in topological order. The conda client SHOULD export these environment variables for the scripts to use:
 
 - `ROOT_PREFIX`: Path to the conda client installation root, when applicable.
 - `PREFIX`: Path to the environment where the package is installed.
@@ -135,74 +142,76 @@ The command used to create that environment MAY be recorded in `conda-meta/histo
 
 For each package to be installed, assuming it has been already downloaded and extracted:
 
-- For regular (non-`noarch: python`) packages, place the contents of the artifact into `$CONDA_PREFIX`.
-  - If the file contains a prefix placeholder, replace it with the value of `$CONDA_PREFIX` and copy the file.
-  - Otherwise, place the file in `$CONDA_PREFIX`. Tools MAY offer settings to configure this operation (e.g. prefer hardlinks to copies).
-- `noarch: python` packages follow some extra rules. In particular, they no longer follow a 1:1 correspondence between the path in the artifact and the linked path in `$CONDA_PREFIX`. The target path depends on variables like the Python version, OS and Python ABI modes. Details are discussed in [CEP 17](./cep-0017.md) and [CEP 20](./cep-0020.md) .
+1. Execute the relevant `pre-link` scripts.
+2. Place the contents in the `$CONDA_PREFIX`:
+   - For regular (non-`noarch: python`) packages, place the contents of the artifact into `$CONDA_PREFIX`.
+     - If the file contains a prefix placeholder, replace it with the value of `$CONDA_PREFIX` and copy the file.
+     - Otherwise, place the file in `$CONDA_PREFIX`. Tools MAY offer settings to configure this operation (e.g. prefer hardlinks to copies).
+   - `noarch: python` packages follow some extra rules. In particular, they no longer follow a 1:1 correspondence between the path in the artifact and the linked path in `$CONDA_PREFIX`. The target path depends on variables like the Python version, OS and Python ABI modes. Details are discussed in [CEP 17](./cep-0017.md) and [CEP 20](./cep-0020.md)
+3. Execute the relevant `post-link` scripts.
+4. Record the package metadata at `$CONDA_PREFIX/conda-meta/{name}-{version}-{build}.json`. This document serves as a manifest of all the files that this package brought into the environment, plus some additional metadata to handle its behavior during the environment lifecycle. It MUST include this information (equivalent to a serialized `PrefixRecord` object):
 
-Once linked, the package metadata MUST be recorded at `$CONDA_PREFIX/conda-meta/{name}-{version}-{build}.json`. This document serves as a manifest of all the files that this package brought into the environment, plus some additional metadata to handle its behavior during the environment lifecycle. It MUST include this information (equivalent to a serialized `PrefixRecord` object):
+    ```js
+    {
+        // PackageRecord fields (as provided by repodata or info/index.json)
 
-```js
-{
-    // PackageRecord fields (as provided by repodata or info/index.json)
+        "build": str, // build string
+        "build_number": int,
+        "channel": str, // URL to source channel, no subdir
+        "constrains": list[str], // str must be a "conda-build form" match spec
+        "depends": list[str], // str must be a "conda-build form" match spec
+        "fn": str, // {name}-{version}-{build}.{extension}
+        "license": str, // SPDX expression preferred
+        "md5": str, // 32-char hex string
+        "name": str, // package name
+        "noarch": "python", // optional, values: 'python', 'generic'
+        "package_type": "noarch_python", // optional, values: 'noarch_python', 'noarch_generic'.
+        "sha256": str, // 64-char hex string
+        "size": int, // in bytes
+        "subdir": str, // one of KNOWN_SUBDIRS, including 'noarch'
+        "timestamp": int, // in ms
+        "url": str, // download URL of the package
+        "version": str, // package version
 
-    "build": str, // build string
-    "build_number": int,
-    "channel": str, // URL to source channel, no subdir
-    "constrains": list[str], // str must be a "conda-build form" match spec
-    "depends": list[str], // str must be a "conda-build form" match spec
-    "fn": str, // {name}-{version}-{build}.{extension}
-    "license": str, // SPDX expression preferred
-    "md5": str, // 32-char hex string
-    "name": str, // package name
-    "noarch": "python", // optional, values: 'python', 'generic'
-    "package_type": "noarch_python", // optional, values: 'noarch_python', 'noarch_generic'.
-    "sha256": str, // 64-char hex string
-    "size": int, // in bytes
-    "subdir": str, // one of KNOWN_SUBDIRS, including 'noarch'
-    "timestamp": int, // in ms
-    "url": str, // download URL of the package
-    "version": str, // package version
+        // SolvedRecord fields (user-provided)
 
-    // SolvedRecord fields (user-provided)
+        "requested_spec": str, // MatchSpec asked by user; use "None" if not requested (transitive)
 
-    "requested_spec": str, // MatchSpec asked by user; use "None" if not requested (transitive)
+        // PrefixRecord fields (known once artifact is downloaded, extracted and linked)
 
-    // PrefixRecord fields (known once artifact is downloaded, extracted and linked)
+        "extracted_package_dir": str, // absolute path to extracted contents
+        "link": { // How the package was linked into the prefix
+            "source": str, // original path
+            "type": (1|2|3|4), // hardlink, softlink, copy, directory
+        },
+        "files": list[str], // list of paths in artifact, relative to $CONDA_PREFIX, forward-slash normalized
+        "package_tarball_full_path": str, // absolute path to artifact
+        "paths_data": { // Artifact contents + generated files in $CONDA_PREFIX
+            "paths": [  // one dict per file:
+                {
+                    "_path": str, // relative path of file to $CONDA_PREFIX, forward-slash normalized
+                    "file_mode": str, // optional; one of 'text' or 'binary'
+                    "no_link": bool, // optional, whether to force copy or allow link
+                    "path_type": str, // one of: softlink, hardlink, directory; MAY also be one of generated types: pyc_file, unix_python_entry_point, windows_python_entry_point_script, windows_python_entry_point_exe, linked_package_record
+                    "prefix_placeholder": str, // optional; to be replaced with $CONDA_PREFIX
+                    "sha256": str, // optional if generated, 64-char hex string of file in cache
+                    "sha256_in_prefix": str, // optional if generated, 64-char hex string of file in prefix (after placeholder has been replaced)
+                    "size_in_bytes": int // optional, if generated
+                },
+                ...
+                ]
+            "paths_version": 1
+        },
 
-    "extracted_package_dir": str, // absolute path to extracted contents
-    "link": { // How the package was linked into the prefix
-        "source": str, // original path
-        "type": (1|2|3|4), // hardlink, softlink, copy, directory
-    },
-    "files": list[str], // list of paths in artifact, relative to $CONDA_PREFIX, forward-slash normalized
-    "package_tarball_full_path": str, // absolute path to artifact
-    "paths_data": { // Artifact contents + generated files in $CONDA_PREFIX
-        "paths": [  // one dict per file:
-            {
-                "_path": str, // relative path of file to $CONDA_PREFIX, forward-slash normalized
-                "file_mode": str, // optional; one of 'text' or 'binary'
-                "no_link": bool, // optional, whether to force copy or allow link
-                "path_type": str, // one of: softlink, hardlink, directory; MAY also be one of generated types: pyc_file, unix_python_entry_point, windows_python_entry_point_script, windows_python_entry_point_exe, linked_package_record
-                "prefix_placeholder": str, // optional; to be replaced with $CONDA_PREFIX
-                "sha256": str, // optional if generated, 64-char hex string of file in cache
-                "sha256_in_prefix": str, // optional if generated, 64-char hex string of file in prefix (after placeholder has been replaced)
-                "size_in_bytes": int // optional, if generated
-            },
-            ...
-            ]
-        "paths_version": 1
-    },
+        // Extra fields added in some implementations
 
-    // Extra fields added in some implementations
+        "purls": [ // optional
+            str,   // PURL identifier for upstream source (e.g. pkg:pypi/requests for 'requests')
+        ]
+    }
+    ```
 
-    "purls": [ // optional
-        str,   // PURL identifier for upstream source (e.g. pkg:pypi/requests for 'requests')
-    ]
-}
-```
-
-The serialized fields categorized as `PackageRecord fields` above MUST match the relevant fields in the most up-to-date repodata information available for the package at install time (`depends` and `constrains` are of particular importance due to repodata patching). This is generally the channel's `repodata.json`, but it MAY also be an alternative source like the serialized metadata in a lockfile. The package's `info/index.json` MAY be used as a fallback if no other sources are available.
+    The serialized fields categorized as `PackageRecord fields` above MUST match the relevant fields in the most up-to-date repodata information available for the package at install time (`depends` and `constrains` are of particular importance due to repodata patching). This is generally the channel's `repodata.json`, but it MAY also be an alternative source like the serialized metadata in a lockfile. The package's `info/index.json` MAY be used as a fallback if no other sources are available.
 
 While linking paths into their targets, the conda client might run into clobbering conflicts (two or more packages wanting to write to the same path). Tools SHOULD at least warn the user about the conflicts and provide ways to handle the situation.
 
@@ -214,8 +223,9 @@ Removing a package from the environment SHOULD follow these instructions:
 
 1. Execute the relevant `pre-unlink` scripts.
 2. Remove all the files recorded in its `conda-meta/*.json` file (under `paths_data`).
-3. Remove its `conda-meta/*.json` record.
-4. If there were clobbering conflicts, restore the relevant path from the clobbered sources.
+3. Legacy only. Execute the relevant `post-unlink` scripts.
+4. Remove its `conda-meta/*.json` record.
+5. If there were clobbering conflicts, restore the relevant path from the clobbered sources.
 
 ### Removing an environment
 
@@ -224,6 +234,7 @@ Once an environment contains no packages, the conda client MAY remove it. This p
 ## References
 
 - [`Library/` conventions on Windows](https://github.com/ContinuumIO/anaconda-issues/issues/440)
+- [Adding pre-link, post-link, and pre-unlink scripts](https://docs.conda.io/projects/conda-build/en/stable/resources/link-scripts.html)
 
 ## Copyright
 
