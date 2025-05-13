@@ -202,7 +202,7 @@ Once linked, the package metadata MUST be recorded at `$CONDA_PREFIX/conda-meta/
 }
 ```
 
-The serialized fields categorized as `PackageRecord fields` above MUST match the relevant fields in the most up-to-date repodata information available for the package (`depends` and `constrains` are of particular importance due to repodata patching). This is generally the channel's `repodata.json`, but it MAY also be an alternative source like the serialized metadata in a lockfile. The package's `info/index.json` MAY be used as a fallback if no other sources are available.
+The serialized fields categorized as `PackageRecord fields` above MUST match the relevant fields in the most up-to-date repodata information available for the package at install time (`depends` and `constrains` are of particular importance due to repodata patching). This is generally the channel's `repodata.json`, but it MAY also be an alternative source like the serialized metadata in a lockfile. The package's `info/index.json` MAY be used as a fallback if no other sources are available.
 
 While linking paths into their targets, the conda client might run into clobbering conflicts (two or more packages wanting to write to the same path). Tools SHOULD at least warn the user about the conflicts and provide ways to handle the situation.
 
