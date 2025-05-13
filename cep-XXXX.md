@@ -178,6 +178,9 @@ Once linked, the package metadata MUST be recorded at `$CONDA_PREFIX/conda-meta/
             ]
         "paths_version": 1
     },
+    "purls": [ // optional
+        str,   // PURL identifier for upstream source (e.g. pkg:pypi/requests for 'requests')
+    ]
     "requested_spec": str, // MatchSpec asked by user; use "None" if not requested (transitive)
     "sha256": str, // 64-char hex string
     "size": int, // in bytes
