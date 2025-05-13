@@ -161,7 +161,7 @@ Once linked, the package metadata MUST be recorded at `$CONDA_PREFIX/conda-meta/
     "name": str, // package name
     "noarch": "python", // optional, values: python, generic
     "package_tarball_full_path": str, // absolute path to artifact
-    "package_type": "noarch_python", // optional, values: noarch_python
+    "package_type": "noarch_python", // optional, values: noarch_python, noarch_generic.
     "paths_data": { // Artifact contents + generated files in $CONDA_PREFIX
         "paths": [  // one dict per file:
             {
