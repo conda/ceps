@@ -144,7 +144,7 @@ An example of a compliant statement is provided below:
 
 ```json
 {
-    "_type": "https://in-toto.io/Statement/v0.1",
+    "_type": "https://in-toto.io/Statement/v1",
     "subject": [{
         "name": "file-name-0.0.1-h123456_5.conda",
         "digest": {"sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"},
