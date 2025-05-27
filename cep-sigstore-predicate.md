@@ -230,6 +230,68 @@ For example, if the server supports [Trusted Publishing], then the package's
 attestation should be verified against the set of Trusted Publisher identities
 for that package.
 
+## Security Model
+
+This section provides a high-level security model for the scheme proposed
+in this CEP.
+
+### Unforgeability of provenance
+
+Traditional package distribution schemes depend on untrusted metadata
+for provenance: the package itself describes its source repository,
+its maintainers, etc.
+
+This allows an attacker to forge a package's metadata such that a typical
+downstream unduly trusts the package. For example, a typical downstream
+may observe that the package lists a "trustworthy" GitHub repository
+or organization as its source, and therefore trust the package without
+confirming that its contents actually reflect those of the repository.
+This is compounded when the *distribution format* (such as a conda package
+or Python wheel) does not directly match the claimant repository's
+source layout, making direct comparison nontrivial.
+
+This CEP's design introduces an *unforgeability* property: a package
+that claims a piece of untrusted metadata can be verified by cross-checking
+that metadata against the package's attestation.
+
+An attacker cannot forge or spoof this check, modulo their ability
+to compromise the authentic signing identity itself. This is effectively
+a stronger unforgeability property than traditional signing, as
+the signature binds not only the package's contents, but also the package's
+provenance.
+
+### Transparency and auditability
+
+Traditional signing schemes provide integrity and authenticity
+modulo trust in a signing identity.
+
+This is a strong property, but not a perfect one: an attacker who *does* manage
+to compromise a signing identity can mount a *targeted* attack, wherein a
+the general public observes only legitimate artifacts and signatures while
+the victim receives a malicious artifact with a valid signature from the
+compromised signing identity. In effect, this makes it possible for the
+attacker to maintain their stealth during a *targeted* attack, since
+*untargeted* parties are not made aware of the malicious artifact or
+its signature.
+
+This CEP's design introduces a *transparency* property: attestations
+are not considered valid unless they are included in a publicly
+auditable, append-only transparency log. This log is made up of *entries*,
+which bind over the attestation itself (including the subject),
+the attestation's signature, as well as the attestation's signing identity.
+
+Because a valid transparency log inclusion proof is a requirement during
+verification, an attacker who compromises a signing identity *cannot*
+perform a targeted attack without making the attack itself publicly
+discoverable.
+
+### Pre-established trust in signing identities
+
+Like other signing schemes, this CEP's design does *not* eliminate
+the need for trust establishment: a verifier who blindly accepts
+attestations from any signing identity is effectively only protected
+against opportunistic network-side attackers.
+
 ## Discussion
 
 This predicate adds basic verifiable facts about the package. It will tie the
@@ -301,3 +363,4 @@ future discussion and work:
 [SLSA Provenance]: https://slsa.dev/spec/v1.1/provenance
 [PyPI publish attestation]: https://docs.pypi.org/attestations/publish/v1/
 [Trusted Publishing]: https://repos.openssf.org/trusted-publishers-for-all-package-repositories.html
+[xz-utils backdoor incident]: https://tukaani.org/xz-backdoor/
