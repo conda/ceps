@@ -34,6 +34,9 @@ for conda's implementation, all major changes should be submitted as
 | [0021](cep-0021.md) | Run-exports in sharded Repodata                                             |
 | [0022](cep-0022.md) | Frozen environments                                                         |
 | [0023](cep-0023.md) | Text spec input files                                                       |
+| [0024](cep-0024.md) | Specification of <code>environment.yml</code> input files                   |
+| [0025](cep-0025.md) | Versioning of Existing conda Standards                                      |
+| [0026](cep-0026.md) | Identifying Packages and Channels in the conda Ecosystem                    |
 
 ## References
 

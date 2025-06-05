@@ -14,6 +14,7 @@
 - [ ] The `# CEP XXXX - ` header has been edited accordingly.
 - [ ] The CEP status in the table has been changed to approved.
 - [ ] The last modification date in the table has been updated accordingly.
+- [ ] The table in the README has been updated with the new CEP entry.
 - [ ] The `pre-commit` checks are passing.
 
 
