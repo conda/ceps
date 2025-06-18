@@ -20,40 +20,64 @@ Sometimes it is very useful to build some code once, and then split it into mult
 
 There are many downsides to the behavior of `conda-build`: it's very implicit, hard to understand and hard to debug (for example, if an output is defined with the same name as the top-level recipe, this output will get the same requirements attached as the top-level).
 
-For the v1 spec we are attempting to formalize the workings of the "top-level" build. For this, we introduce a new top-level key `cache`, that has the same values as a regular output.
+For the v1 spec we are attempting to formalize the workings of the "top-level" build. For this, we introduce a new `cache` output, that has the same values as a regular output, but does not produce a package artifact. Instead, we keep changes from the `cache` output in a temporary location on the filesystem and restore from this checkpoint when building other outputs that _inherit_ from this cache.
 
 ## Specification
 
-The top-level `cache` key looks as follows:
+The cache output looks as follows:
 
 ```yaml
-cache:
-  source:
-    - url: https://foo.bar/source.tar.bz
-      sha256: ...
+outputs:
+  - cache:
+      name: foo-cache   # required, string, follows rules of `PackageName`
 
-  requirements:
-    build:
-      - ${{ compiler('c') }}
-      - cmake
-      - ninja
-    host:
-      - libzlib
-      - libfoo
-    # the `run` and `run_constraints` sections are not allowed here
-    ignore_run_exports:
-      by_name:
+    source:
+      - url: https://foo.bar/source.tar.bz
+        sha256: ...
+
+    requirements:
+      build:
+        - ${{ compiler('c') }}
+        - cmake
+        - ninja
+      host:
+        - libzlib
         - libfoo
+      # the `run` and `run_constraints` sections are not allowed here
+      ignore_run_exports:
+        by_name:
+          - libfoo
 
-  build:
-    # only the script key is allowed here
-    script: build.sh
+    build:
+      # only the script key is allowed here
+      script: build_cache.sh
+
+  - package:
+      name: foo-headers
+    
+    # long form of newly added `inherit` key
+    inherit:
+      from: foo-cache
+      run_exports: false
+
+    build:
+      files:
+        - include/
+
+  - package:
+      name: foo
+    
+    # short form, inherits run exports by default
+    inherit: foo-cache
+
+    # will bundle everything else except files already present in `foo-headers`
+    requirements:
+      host:
+        - ${{ pin_subpackage("foo-headers", exact=True) }}
 ```
 
-<details> 
-  <summary>script build.sh default discussion</summary>
-We had some debate wether the cache output should _also_ default to `build.sh` or should not have any default value for the `script`. This is still undecided.
-</details>
+> [!WARNING]  
+> When using `outputs` we are going to remove the implicit `build.script` pointing to `script.sh`. Going forward, the script name / content has to be set explicitly.
 
 When computing variants and used variables, rattler-build looks at the union of a given output and the cache. That means, even if an output does not define any requirements, the cache would still add a variant for the `c_compiler`.
 
@@ -63,27 +87,44 @@ The variant keys that are injected at build time is the subset used by the cache
 
 When the cache build is done, the newly created files are moved outside of the `host-prefix`. Post-processing is not performed on the files beyond memoizing what files contain the `$PREFIX` (which is later replaced in binaries and text files with the actual build-prefix).
 
-The cache restores files that were added to the prefix (conda-build also restored source files).
-The cache work dir folder, including the cache sources, is also recreated at the "dirty" state of the end of the cache build. The individual outputs can add additional source files into the cached source folder.
+The cache restores files that were added to the host environment ($PREFIX) and the "dirty" source directory, including any changes that were made by the build script. They are cloned to a special cache location from which they are restored.
 
-Any new files in the prefix (from the cache) can then be used in the outputs with the `build.files` key:
+If the cache build and the package build are not running in the same exact location, the path leading up to the work dir / host prefix needs to be replaced in the cache artifacts (for example when running time-stamped builds in folders such as `/folder/to/bld/libfoo_1745399500/{work_dir,h_env_...}`).
+
+When a package output adds a `source` and inherits from a cache, care must be taken by the user to not clobber files (e.g. by using `target_directory`). The build program should warn if files are overwritten in the work dir.
+
+New files in the prefix (from the cache) can be used in the outputs with the `build.files` key:
 
 ```yaml
 outputs:
+  - cache:
+      name: foo-cache
+
   - package:
       name: foo-headers
+
+    inherit:
+      name: foo-cache
+      run_exports: false
 
     build:
       files:
         - include/**
+
   - package:
       name: libfoo
+
+    inherit: foo-cache
+
     build:
       files:
         - lib/**
 
   - package:
       name: foo-devel
+
+    inherit: foo-cache
+
     requirements:
       run:
         - ${{ pin_subpackage("libfoo") }}
@@ -100,9 +141,18 @@ files:
     - lib/**
 ```
 
-Special care must be taken for `run-exports`. For example, the `${{ compiler('c') }}` package used to build the cache is going to have run-exports that need to be present at runtime for the package. To compute run-exports for the outputs, we use the union of the requirements - so virtually, the host & build dependencies of the cache are injected into the outputs and will attach their run exports to each output.
+## The `inherit` key and the logic of inheritance
 
-To ignore certain run exports, the usual `ignore_run_exports` specifiers can be used in each output.
+The `inherit` key is used to inherit from a cache output. We also generalize the logic to "top-level" inheritance, which is what happens when the inherit key is set to `null`.
 
-> [!NOTE]  
-> We have pondered other logic for attaching run exports. We could have a more complicated algorithm that attaches the run exports only to the lowest package in a chain of packages connected by `pin_subpackage(..., exact=True)`, however, duplicating the same dependencies should not really matter much to the solver.
+Both, `cache` and `package` outputs can inherit, however, a `cache` cannot inherit from a `package`.
+
+When inheriting, values from `build` and `about` are deeply merged with the values from the cache output, except for the value of `build.script`. 
+
+Requirements are not inherited, however, `run_exports` are. The inheritance of `run_exports` can be disabled by setting the `run_exports` key to `false` in the `inherit` map. To ignore certain run-exports they can be either ignored in the cache output or in the package output (both follow the same rules).
+
+Option B: we also inherit requirements from the cache output but we have a fast path if no `build.script` is set, we don't restore the dependencies and just distribute the files to the packages based on `build.files` (skip env setup).
+
+### Top-level inheritance
+
+Inheriting from the top-level is a special case of regular "cache" inheritance. If the output does not specify any `inherit` key or explicitly sets `inherit: null` then we inherit from the top-level and apply `package.version`, `source`, `build` and `about` from the top-level to each output. In the case of top-level inheritance, requirements and build script are forbidden and thus ignored. This unifies the rules for both cache and top-level.
