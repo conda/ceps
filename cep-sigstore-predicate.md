@@ -3,9 +3,9 @@
 <table>
 <tr><td> Title </td><td> Standardizing a publish attestation for the conda ecosystem </td>
 <tr><td> Status </td><td> Proposed </td></tr>
-<tr><td> Author(s) </td><td> Wolf Vollprecht &lt;wolf@prefix.dev&gt;</td></tr>
+<tr><td> Author(s) </td><td> Wolf Vollprecht &lt;wolf@prefix.dev&gt;, William Woodruff &lt;william.woodruff@trailofbits.com&gt;</td></tr>
 <tr><td> Created </td><td> Feb 18, 2025 </td></tr>
-<tr><td> Updated </td><td> Feb 18, 2025</td></tr>
+<tr><td> Updated </td><td> Jun 18, 2025</td></tr>
 <tr><td> Discussion </td><td>  </td></tr>
 <tr><td> Implementation </td><td>  </td></tr>
 </table>
