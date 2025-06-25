@@ -326,7 +326,7 @@ future discussion and work:
 
     One potential distribution mechanism is to have attestation-aware
     conda channels distribute each package's attestations alongside
-    the package, or via a similarly discoverable channel-side API.
+    the package, or via a similarly discoverable channel-side data.
     Prior art for this type of distribution mechanism can be found in
     the PyPI and RubyGems ecosystems, e.g. [PyPI's Integrity API].
 
