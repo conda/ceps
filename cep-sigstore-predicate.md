@@ -67,7 +67,7 @@ and will enable further integration with signing schemes like
     - Alice signs her attestation with her ephemeral key, and distributes a
       "bundle" containing both her attestation and her signing certificate.
 
-    - Instead of establishing trust a long-lived key from Alice, Bob establishes
+    - Instead of establishing trust with a long-lived key from Alice, Bob establishes
       trust in Alice's identity.
 
     - Bob can verify the attestation's signature against Alice's emphemeral key,
