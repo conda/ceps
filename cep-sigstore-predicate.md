@@ -266,7 +266,7 @@ Traditional signing schemes provide integrity and authenticity
 modulo trust in a signing identity.
 
 This is a strong property, but not a perfect one: an attacker who *does* manage
-to compromise a signing identity can mount a *targeted* attack, wherein a
+to compromise a signing identity can mount a *targeted* attack, wherein
 the general public observes only legitimate artifacts and signatures while
 the victim receives a malicious artifact with a valid signature from the
 compromised signing identity. In effect, this makes it possible for the
