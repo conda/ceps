@@ -300,7 +300,7 @@ chooses to do so.
 
 This is similar to what PyPI has implemented with the
 [PyPI publish attestation]. Since there is no single authoritative index in
-the Conda world, we add the `targetChannel` field to reach parity.
+the conda world, we add the `targetChannel` field to reach parity.
 
 ## Future work
 
