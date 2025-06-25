@@ -41,7 +41,7 @@ and will enable further integration with signing schemes like
 
     - Within in-toto, an attestation's statement is composed of a
       **subject** and a **predicate**. The subject is the resource
-      (or resources) being attested to, and the predicate is a
+      (or resources) being attested to, and the predicate is
       an arbitrary collection of metadata about the subject.
       The predicate is identified by a **predicate type**,
       which defines the predicate's expected schema.
