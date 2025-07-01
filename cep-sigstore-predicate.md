@@ -24,22 +24,22 @@ and will enable further integration with signing schemes like
   verification provides integrity and authenticity guarantees about the
   attestation's subject. For example:
 
-    - Alice is the maintainer of the `widgets` package.
-    - Alice signs a machine readable statement equivalent to the following
+  - Alice is the maintainer of the `widgets` package.
+  - Alice signs a machine readable statement equivalent to the following
       English sentence, producing her attestation:
 
         > Alice published the `widgets` package at version v1.2.3 with
         > hash `sha256:abcd...` to the `conda-forge` channel.
 
-    - Bob establishes trust in Alice's public key.
-    - Bob can verify the attestation's signature against Alice's public key,
+  - Bob establishes trust in Alice's public key.
+  - Bob can verify the attestation's signature against Alice's public key,
       giving him confidence that the statement is true.
-    - Correspondingly, Bob can reject any statement for `widgets` that is not
+  - Correspondingly, Bob can reject any statement for `widgets` that is not
       signed by Alice's public key.
 
 - [in-toto] is a framework and standard for defining attestations.
 
-    - Within in-toto, an attestation's statement is composed of a
+  - Within in-toto, an attestation's statement is composed of a
       **subject** and a **predicate**. The subject is the resource
       (or resources) being attested to, and the predicate is
       an arbitrary collection of metadata about the subject.
@@ -55,7 +55,7 @@ and will enable further integration with signing schemes like
    One of Sigstore's major misuse-resistance contributions is
    the use of *ephemeral keys* for signing. Modifying the example above:
 
-   - Instead of maintaining a long-lived signing key, Alice generates an
+  - Instead of maintaining a long-lived signing key, Alice generates an
      *ephemeral key* and binds it to her *identity*
      ("`alice@trustme.example.com`").
 
@@ -64,13 +64,13 @@ and will enable further integration with signing schemes like
      claimant identity. The certificate issued by Fulcio is, in turn auditable
      via [RFC 6962] Certificate Transparency (CT) logs.
 
-    - Alice signs her attestation with her ephemeral key, and distributes a
+  - Alice signs her attestation with her ephemeral key, and distributes a
       "bundle" containing both her attestation and her signing certificate.
 
-    - Instead of establishing trust with a long-lived key from Alice, Bob establishes
+  - Instead of establishing trust with a long-lived key from Alice, Bob establishes
       trust in Alice's identity.
 
-    - Bob can verify the attestation's signature against Alice's emphemeral key,
+  - Bob can verify the attestation's signature against Alice's emphemeral key,
       which in turn can be verified as authentically Alice's via the Fulcio-
       issued certificate.
 
@@ -90,10 +90,10 @@ and will enable further integration with signing schemes like
 The conda ecosystem contains metadata that answers the following questions,
 in part or in full:
 
-* _Who_ (or _what_) published this package?
-* _What_ is the package's hash?
-* _Where_ was this package _published from_, and where _to_?
-* _When_ was this package published?
+- *Who* (or *what*) published this package?
+- *What* is the package's hash?
+- *Where* was this package *published from*, and where *to*?
+- *When* was this package published?
 
 However, this metadata is not currently **cryptographically verifiable**:
 the consuming party must either trust it as presented, or verify it manually
@@ -102,12 +102,12 @@ against independent sources of truth (such as a project's release history).
 Attestations that present this metadata in a cryptographically
 verifiable manner are desirable for a number of reasons:
 
-* Package maintainers wish to demonstrate the integrity and authenticity
+- Package maintainers wish to demonstrate the integrity and authenticity
   of their package uploads;
-* Individual downstream users wish to verify the integrity and authenticity of
+- Individual downstream users wish to verify the integrity and authenticity of
   packages they consume, without placing additional trust in the
   channel or channel's hosting server;
-* Attestations change the sophistication and risk profile for attackers in
+- Attestations change the sophistication and risk profile for attackers in
   defenders' favor: the attacker must be sufficiently sophisticated
   to access private key material, *and* have a risk tolerance profile that
   accepts exposure via auditable transparency logs.
@@ -115,9 +115,9 @@ verifiable manner are desirable for a number of reasons:
 More broadly, attestation schemes like the one proposed in this CEP have
 seen adoption in similar and related ecosystems:
 
-* Python (PyPA/PyPI): [PEP 740] and [PyPI - Attestations]
-* NodeJS (npm): [npm - Generating provenance statements]
-* Ruby (RubyGems): [rubygems/release-gem]
+- Python (PyPA/PyPI): [PEP 740] and [PyPI - Attestations]
+- NodeJS (npm): [npm - Generating provenance statements]
+- Ruby (RubyGems): [rubygems/release-gem]
 
 ## Specification
 
@@ -129,14 +129,14 @@ This CEP proposes the following attestation statement layout, using the
 - `predicateType` **MUST** be `https://schemas.conda.org/attestations/publish/v1`
 - `subject` **MUST** be a single [`ResourceDescriptor`], with the following
   constraints:
-    - `subject[0].name` **MUST** be the full filename of the conda package
+  - `subject[0].name` **MUST** be the full filename of the conda package
       that will be part of the `repodata.json` and under which it will appear on
       the server.
-    - `subject[0].digest` **MUST** be a [`DigestSet`], and it **MUST** contain
+  - `subject[0].digest` **MUST** be a [`DigestSet`], and it **MUST** contain
       a single `sha256` entry with the SHA256 hash of the conda package.
 - `predicate` **MAY** be present. If present and not `null`, it **MUST** be a
   JSON object with the following fields:
-    - `targetChannel` **MUST** be a string, indicating where the package
+  - `targetChannel` **MUST** be a string, indicating where the package
       is being uploaded to. This field **MUST** be a valid URL with no
       trailing slashes.
 
@@ -363,4 +363,3 @@ future discussion and work:
 [SLSA Provenance]: https://slsa.dev/spec/v1.1/provenance
 [PyPI publish attestation]: https://docs.pypi.org/attestations/publish/v1/
 [Trusted Publishing]: https://repos.openssf.org/trusted-publishers-for-all-package-repositories.html
-[xz-utils backdoor incident]: https://tukaani.org/xz-backdoor/
