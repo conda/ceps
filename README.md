@@ -21,7 +21,7 @@ for conda's implementation, all major changes should be submitted as
 | [0008](cep-0008.md) | Conda Release Schedule                                                      |
 | [0009](cep-0009.md) | Conda Deprecation Schedule                                                  |
 | [0010](cep-0010.md) | Conda Version Support                                                       |
-| [0011](cep-0011.md) | Define the menuinst standard                                                 |
+| [0011](cep-0011.md) | Define the menuinst standard                                                |
 | [0012](cep-0012.md) | Serving run_exports metadata in conda channels                              |
 | [0013](cep-0013.md) | A new recipe format – part 1                                                |
 | [0014](cep-0014.md) | A new recipe format – part 2 - the allowed keys & values                    |
@@ -33,8 +33,8 @@ for conda's implementation, all major changes should be submitted as
 | [0020](cep-0020.md) | Support for `abi3` Python packages                                          |
 | [0021](cep-0021.md) | Run-exports in sharded Repodata                                             |
 | [0022](cep-0022.md) | Frozen environments                                                         |
-| [0023](cep-0023.md) | Text spec input files                                                        |
-| [0024](cep-0024.md) | Specification of <code>environment.yml</code> input files                     |
+| [0023](cep-0023.md) | Text spec input files                                                       |
+| [0024](cep-0024.md) | Specification of <code>environment.yml</code> input files                   |
 | [0025](cep-0025.md) | Versioning of Existing conda Standards                                      |
 | [0026](cep-0026.md) | Identifying Packages and Channels in the conda Ecosystem                    |
 | [0027](cep-0027.md) | Standardizing a publish attestation for the conda ecosystem                 |
