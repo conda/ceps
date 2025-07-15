@@ -128,7 +128,7 @@ Variables that are available in the build process (like `PACKAGE_NAME`, `PACKAGE
 
 Conda packages can mostly repackage packages from other ecosystems.
 Conda-forge and other channels famously repackages a lot of PyPI packages.
-However, without actually downloading the conda package and inspecting its contents there is no reliable way to know whether a certain conda package is a repackaged package.
+However, without actually downloading the conda package and inspecting its contents there is no reliable way to know whether a certain conda package is a repackaged package and which package it repackages.
 
 Tools like pixi or conda-lock try to combine conda and PyPI packages through heuristics. This doesn't work deterministically as package names between the two indices may differ.
 
