@@ -64,7 +64,7 @@ For Windows,
 
 4. If the DSO was in the `DEFAULT_WIN_WHITELIST` location defined by the build tool,
    then these are system libraries and are allowed. `DEFAULT_WIN_WHITELIST` is a
-   harcoded constant in `conda-build` and `rattler-build`.
+   hardcoded constant in `conda-build` and `rattler-build`.
 
 Note that for Linux and macOS, the user has a way of controlling which system
 DSOs are allowed. On Linux, a user can modify the `sysroot_linux-*` package
