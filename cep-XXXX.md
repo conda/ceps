@@ -17,9 +17,9 @@ checks to see that any executable/shared library built links to a set of
 dynamic shared objects (DSOs) that satisfy some constraints. These constraints
 are important to make sure that the built conda package works everywhere.
 
-While conda-build/rattler-build allow the user on Linux/macOS to customize
+While conda build tools allow the user on Linux/macOS to customize
 the set of system DSOs, it is not so on Windows. This CEP aims to provide
-conda-build/rattler-build users with a way to customize the system DSOs on windows.
+conda build tools users with a way to customize the system DSOs on windows.
 
 ## Motivation
 
@@ -30,7 +30,7 @@ as these are not provided by conda packages. We do require any non-system DSO to
 in the environment in a place where the dynamic loader will search,
 i.e. on the `rpath` of the executable/shared library that requires the DSO.
 
-The constraints for the DSOs currently in conda-build/rattler-build are:
+The constraints for the DSOs currently in conda build tools are:
 
 For Linux,
 
@@ -54,7 +54,7 @@ For macOS,
 For Windows,
 
 1. If the DSO was in the specified host environment locations (`$PREFIX/Scripts`,
-   `$PREFIX/Library/bin`, `$PREFIX/bin`, etc), the DSO has to be installed as
+   `$PREFIX/Library/bin`, etc), the DSO has to be installed as
    well; either as part of the same package or one of its dependencies.
 
 2. If the DSO was in `CONDA_BUILD_SYSROOT` (this is unset in most scenarios), then   these are system libraries and are allowed.
@@ -63,7 +63,8 @@ For Windows,
    allowed.
 
 4. If the DSO was in the `DEFAULT_WIN_WHITELIST` location defined by the build tool,
-   then these are system libraries and are allowed.
+   then these are system libraries and are allowed. `DEFAULT_WIN_WHITELIST` is a
+   harcoded constant in `conda-build` and `rattler-build`.
 
 Note that for Linux and macOS, the user has a way of controlling which system
 DSOs are allowed. On Linux, a user can modify the `sysroot_linux-*` package
@@ -71,9 +72,9 @@ and on macOS, the user can specify a custom macOS SDK using `CONDA_BUILD_SYSROOT
 However, the user has no way of controlling which system DSOs are allowed
 on Windows.
 
-### Need for customizability of Windows system libraries
+### Need for customizability of allowed Windows system libraries
 
-A user of conda-build/rattler-build might need to customize the set of system DLLs.
+A user of conda build tools might need to customize the set of system DLLs.
 An example from Linux is the [removal of `libnsl` from `glibc`](https://github.com/conda-forge/linux-sysroot-feedstock/pull/40).
 
 In this case, newer versions of `glibc` dropped `libnsl` and made it a separate package,
@@ -85,7 +86,7 @@ An example for Windows can be found in this issue:
 [Warn when linking to debug VC runtimes](https://github.com/conda/conda-build/issues/5732).
 
 In this case, the CI machines provide debug VC (Visual Studio) runtime DLLs and are
-considered system DLLs by conda-build/rattler-build, but these debug DLLs
+considered system DLLs by conda build tools, but these debug DLLs
 are not always found in user systems. Also, linking to these debug DLLs
 are not desirable and therefore should not be shipped it the corresponding
 conda package (e.g. `vc14_runtime`). Therefore we need a way to tell the build tool
@@ -93,9 +94,9 @@ which DLLs are allowed and which are not.
 
 ## Specification
 
-This CEP proposes a mechanism to control the allowed
-system DLLs on Windows. When a file exists in any of the following locations
-we use those list of files:
+This CEP proposes a mechanism to control the allowed system DLLs on Windows.
+When a file provided by a conda package in `host` or `build` exists in any of
+the following locations we use those list of files:
 
    <BUILD_PREFIX>/etc/conda-build/(allow|deny)list.d/<subdir>/<conda-package-name>.txt
 
@@ -104,13 +105,15 @@ we use those list of files:
 When no allow list is available, but only a deny list is available, a default `C:\Windows\System32\*.dll` glob is assumed.
 When no deny list is available and an allow list is available,
 an empty deny list is assumed. When neither are available,
-conda-build/rattler-build should fall back to the current method (as of August 2025).
+conda build tools should fall back to the current method (as of August 2025).
 
 Each list supports standard POSIX globbing syntax; i.e., the following is allowed:
 
    C:\Windows\System32\*.dll
    C:\foo.dll
    **\R.dll
+
+Note that backslashes are allowed and only absolute paths are allowed.
 
 ## Conclusion
 
