@@ -98,9 +98,9 @@ This CEP proposes a mechanism to control the allowed system DLLs on Windows.
 When a file provided by a conda package in `host` or `build` exists in any of
 the following locations we use those list of files:
 
-   <BUILD_PREFIX>/etc/conda-build/(allow|deny)list.d/<subdir>/<conda-package-name>.txt
+- `<BUILD_PREFIX>/etc/conda-build/(allow|deny)list.d/<subdir>/<conda-package-name>.txt`
 
-   <PREFIX>/etc/conda-build/(allow|deny)list.d/<subdir>/<conda-package-name>.txt
+- `<PREFIX>/etc/conda-build/(allow|deny)list.d/<subdir>/<conda-package-name>.txt`
 
 When no allow list is available, but only a deny list is available, a default `C:\Windows\System32\*.dll` glob is assumed.
 When no deny list is available and an allow list is available,
@@ -109,9 +109,9 @@ conda build tools should fall back to the current method (as of August 2025).
 
 Each list supports standard POSIX globbing syntax; i.e., the following is allowed:
 
-   C:\Windows\System32\*.dll
-   C:\foo.dll
-   **\R.dll
+- `C:\Windows\System32\*.dll`
+- `C:\foo.dll`
+- `**\R.dll`
 
 Note that backslashes are allowed and only absolute paths are allowed.
 
