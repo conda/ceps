@@ -95,25 +95,56 @@ which DLLs are allowed and which are not.
 ## Specification
 
 This CEP proposes a mechanism to control the allowed system DLLs on Windows.
-When a file provided by a conda package in `host` or `build` exists in any of
-the following locations we use those list of files:
+When a JSON file provided by a conda package in `host` or `build` exists in
+any of the following locations we use those list of files:
 
-- `<BUILD_PREFIX>/etc/conda-build/(allow|deny)list.d/<subdir>/<conda-package-name>.txt`
+- `<BUILD_PREFIX>/etc/conda-build/dsolists.d/<conda-package-name>.json`
 
-- `<PREFIX>/etc/conda-build/(allow|deny)list.d/<subdir>/<conda-package-name>.txt`
+- `<PREFIX>/etc/conda-build/dsolists.d/<conda-package-name>.json`
 
-When no allow list is available, but only a deny list is available, a default `C:\Windows\System32\*.dll` glob is assumed.
-When no deny list is available and an allow list is available,
-an empty deny list is assumed. When neither are available,
+The JSON file format is:
+
+```json
+{
+  "version": 1,
+  "allow": [str],
+  "deny": [str],
+  "subdir": str
+}
+```
+
+Here `version` is for the version of the DSO list JSON schema and will always
+be present for these files. The build tools should check the version and
+validate that the `version` is a known and supported version and error out
+if not.
+
+The elements of the two lists `allow` and `deny` supports standard POSIX
+globbing syntax; i.e., the following is allowed:
+
+```json
+{
+  "version": 1,
+  "allow": [
+    "C:/Windows/System32/*.dll",
+    "**/R.dll",
+  ],
+  "deny": [
+    "**/ucrtbased.dll",
+  ],
+  "subdir": "win-64",
+}
+
+Note that forward slashes are used for path separation and only absolute paths
+are allowed.
+
+When no allow list is available among all the JSON files, but only deny lists are
+available, a default `C:/Windows/System32/*.dll` glob is assumed.
+When no deny list is available among all the JSON files, but only allow lists are
+available, an empty deny list is assumed. When neither are available,
 conda build tools should fall back to the current method (as of August 2025).
 
-Each list supports standard POSIX globbing syntax; i.e., the following is allowed:
-
-- `C:\Windows\System32\*.dll`
-- `C:\foo.dll`
-- `**\R.dll`
-
-Note that backslashes are allowed and only absolute paths are allowed.
+When both allow lists and deny lists are available, allow lists among all the JSON
+files are processed first and then deny lists are processed.
 
 ## Conclusion
 
