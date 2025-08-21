@@ -133,6 +133,7 @@ globbing syntax; i.e., the following is allowed:
   ],
   "subdir": "win-64",
 }
+```
 
 Note that forward slashes are used for path separation and only absolute paths
 are allowed.
