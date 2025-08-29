@@ -81,7 +81,7 @@ powerful enough to handle relevant scenarios that are a natural consequence of t
 `build:` / `host:` / `run:` environments.
 
 Abstractly speaking, there are cases where one wants to express relations between environments, e.g.
-from `build:` to `host:` (see https://github.com/conda/ceps/issues/77). In many ways the urgency of this
+from `build:` to `host:` (see <https://github.com/conda/ceps/issues/77>). In many ways the urgency of this
 need was reduced by the fact that it could be passably emulated by using strong run-exports; while this
 would "over-export" things into the `run:` environment, this is harmless in many cases.
 
@@ -90,7 +90,7 @@ not portable between compilers and need to be consumed by the same compiler that
 
 Assuming we have a package `foo-devel` containing Fortran modules, to which we would like to attach a
 `_fortran_modules_abi =*=compiler_flavour*` constraint that ensures that they can only be consumed by
-the approprate compiler. The problem in this case is that
+the appropriate compiler. The problem in this case is that
 
 ```yaml
   - name: i-consume-fortran-modules
@@ -110,7 +110,7 @@ The solution in this case would be to add an export to `{{ compiler("fortran") }
 `_fortran_modules_abi =*=compiler_flavour*` *only* into the `host:` environment; this would impose the
 right constraints (i.e. conflict if ABI between the compiler and the contrainst attached to `foo-devel`
 doesn't match), while avoiding too-tight constraints at runtime. The situation is explained/discussed
-in more detail in https://github.com/conda-forge/conda-forge.github.io/issues/2525.
+in more detail in <https://github.com/conda-forge/conda-forge.github.io/issues/2525>.
 
 ## Design
 
@@ -156,6 +156,7 @@ requirements:
     build_to_build:         # see below
       - a_transitive_dependency
 ```
+
 As indicated by the comments, `host_to_run:` matches the existing weak run-export. If taken together with
 `build_to_run:` this produces the same effect of a strong run-export. Similarly for `host_to_constraints:`
 and `build_to_constraints:`. The other keys introduce new functionality, which is explained below.
@@ -173,7 +174,7 @@ is desirable (e.g. openmp, openmpi, etc.).
 The most surprising additions might be `host_to_host:` and `build_to_build:`. It would be natural to ask
 why whatever is being exported in such a manner could not be a direct (run-)dependency of the package.
 The answer is that there may be transitive dependencies *at compilation time* that we do not want
-consumers to inherit at runtime (similar to the situation with the Fortan modules ABI).
+consumers to inherit at runtime (similar to the situation with the Fortran modules ABI).
 
 An example of this is if a library `foo` depends on the headers of another library `bar` at compile-time,
 but we do not want packages built atop of `foo` to carry along those `bar` headers (because at that point
@@ -181,17 +182,20 @@ they're not needed anymore; the concern is about a compile-time quantity, which 
 `build:` and/or `host:`).
 
 Additionally, to keep the `<valid_requirements_key>_to_<valid_requirements_key>` pattern, we rename
+
 ```yaml
 requirements:
   constraints:  # renamed from run_constraints
     - [...]
 ```
+
 because constraints only make sense when that package gets installed somewhere in any case, so the
 "run_" is superfluous (aside from being inconsistent with the proposed schema). On top of that, the
 "run_" is also confusing, because if a package with `run_constraints:` gets installed into a `host:`
 or `build:` environment, those constraints will still take effect.
 
 Likewise we rename `ignore_run_exports`
+
 ```yaml
   requirements:
     ignore_exports:  # renamed from ignore_run_exports
@@ -200,6 +204,7 @@ Likewise we rename `ignore_run_exports`
       by_name:
         - libzlib
 ```
+
 which should ignore exports from any matching export (whether by source or by name of the export),
 regardless of where the export comes from.
 
