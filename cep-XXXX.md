@@ -90,7 +90,7 @@ not portable between compilers and need to be consumed by the same compiler that
 
 Assuming we have a package `foo-devel` containing Fortran modules, to which we would like to attach a
 `_fortran_modules_abi =*=compiler_flavour*` constraint that ensures that they can only be consumed by
-the appropriate compiler. The problem in this case is that
+the appropriate compiler. The problem in this case is that with a recipe like
 
 ```yaml
   - name: i-consume-fortran-modules
@@ -108,7 +108,7 @@ compiler ABI in `run:` (making the package unusable with other compilers unneces
 
 The solution in this case would be to add an export to `{{ compiler("fortran") }}` that injects
 `_fortran_modules_abi =*=compiler_flavour*` *only* into the `host:` environment; this would impose the
-right constraints (i.e. conflict if ABI between the compiler and the contrainst attached to `foo-devel`
+right constraints (i.e. conflict if ABI between the compiler and the constraint attached to `foo-devel`
 doesn't match), while avoiding too-tight constraints at runtime. The situation is explained/discussed
 in more detail in <https://github.com/conda-forge/conda-forge.github.io/issues/2525>.
 
@@ -118,7 +118,7 @@ We begin with the following observations based on the above:
 
 - There is a need for a flexible mechanism to do cross-environment dependency injection in the conda ecosystem.
 - There are cases where the "run" in `run_exports:` is not appropriate (e.g. `build:` to `host:`), because
-  no aspect of the export in question involves something happening at "run"time.
+  no aspect of the export in question involves something happening related to the `run:` environment or runtime.
 - Just as important as where we're exporting *to* is where we're exporting *from*. Leaving this implicit
   gets exponentially more complicated the more export-flavours there are.
 - Already the existing strong run-exports can be subject to this confusion (e.g. "does a strong run-export
@@ -209,8 +209,8 @@ Likewise we rename `ignore_run_exports`
         - libzlib
 ```
 
-which should ignore exports from any matching export (whether by source or by name of the export),
-regardless of where the export comes from.
+which should ignore any exports into `run:` or `constraints:` matching the conditions (whether
+by source or by name of the export), regardless of where the export comes from.
 
 ## Specification
 
