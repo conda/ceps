@@ -5,7 +5,7 @@
 <tr><td> Status </td><td> Draft </td></tr>
 <tr><td> Author(s) </td><td> Axel Obermeier &lt;h.vetinari@gmx.com&gt;</td></tr>
 <tr><td> Created </td><td> Aug 29, 2025 </td></tr>
-<tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/tbd </td></tr>
+<tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/129 </td></tr>
 <tr><td> Implementation </td><td> N/A </td></tr>
 </table>
 
@@ -181,11 +181,15 @@ but we do not want packages built atop of `foo` to carry along those `bar` heade
 they're not needed anymore; the concern is about a compile-time quantity, which only concerns either
 `build:` and/or `host:`).
 
+This is also why no `run_to_run:` key is proposed here -- dependency exports address constraints arising
+from compilation. At runtime, when the build process is long past, the situation simplifies back to
+the question whether another package is a dependency or not.
+
 Additionally, to keep the `<valid_requirements_key>_to_<valid_requirements_key>` pattern, we rename
 
 ```yaml
 requirements:
-  constraints:  # renamed from run_constraints
+  constraints:  # changed from run_constraints
     - [...]
 ```
 
