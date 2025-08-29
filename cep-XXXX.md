@@ -131,7 +131,7 @@ We begin with the following observations based on the above:
 
 Based on this, we propose the following pattern:
 
-```
+```yaml
 requirements:
   build:
     - [...]
