@@ -11,11 +11,12 @@
 
 ## Abstract
 
-This CEP proposes to overhaul the way that packages "export" some required dependency
-or constraint, in a way that considers both the source environment during the build phase
-(one of `build:`, `host:` and `run:`) as well as the target environment where the respective
-dependency or constraint should be applied. This has a wide variety of important uses which
-are so far difficult or impossible to express, in addition to increasing clarity.
+This CEP proposes to overhaul the way that packages "export" some required dependency or constraint,
+in a way that directly specifies the conditions (of the build phase of a dependent package) which
+need to be met for the export to be triggered, as well as the target environment where the respective
+dependency or constraint should be applied. This has a wide variety of important uses which are so far
+difficult or impossible to express, and increases clarity of the respective recipes, as well as the
+teachability of the underlying concepts.
 
 This document builds upon [CEP 13](cep-0013.md) and [CEP 14](cep-0014.md), which define what
 is known as the "v1" recipe format.
@@ -26,13 +27,13 @@ From the beginning, one of the big advantages of `conda` over `pip` has been the
 track dependencies sufficiently well in order to be able to share artefacts between packages,
 rather than vendoring dependent libraries for every consumer.
 
-In contrast to static or header-only libraries, a shared library `foo` occurs not just during build
-time of `bar` (the headers for `# include <foo.h>` to work and `libfoo.so` for linkage to succeed),
+In contrast to static or header-only libraries, a shared library `foo` is not only required during the
+build phase `bar` (the headers for `# include <foo.h>` to work and `libfoo.so` for linkage to succeed),
 but needs to be present in the final environment for `bar` as well. Aside from corner-cases,
-this runtime dependency *always* follows, and it is therefore natural to ask the build system to do
-this work for us.
+this runtime dependency *always* follows, and it is therefore natural to ask the build tool (together
+with appropriate metadata) to do this work for us.
 
-This is what the original [design discussion](https://github.com/conda/conda-build/issues/1142) started
+This is what the original [design discussion](https://github.com/conda/conda-build/issues/1142) in conda-build started
 out from, which was first implemented first as [`pin_downstream`](https://github.com/conda/conda-build/commit/e344bbae369658ca7e2defab8a3960d8570fbf8a)
 and soon after renamed to [`run_exports`](https://github.com/conda/conda-build/commit/d90aa3135cc81a5db28e8160b521f11d27083453).
 The original [documentation](https://github.com/conda/conda-docs/pull/414) for this feature provides
@@ -71,7 +72,7 @@ between environments, and opens further questions along the lines of:
 ### Run-exports vs. noarch
 
 In 2020, a `noarch:` type of run-exports got [added](https://github.com/conda/conda-build/pull/3868); the
-design for this seems to come only from comments in that PR and boils down to:
+design for this seems to primarily come from comments in that PR and boils down to:
 > > > Ray Donnelly: Do we not really want to use a different run_export type here? Dropping all but the package name?
 > >
 > > Isuru Fernando: I don't understand. Are you suggesting a different run_exports scheme ('noarch' in addition to
@@ -81,7 +82,7 @@ design for this seems to come only from comments in that PR and boils down to:
 
 This is a relatively little-used feature, c.f. this approximate [search](https://github.com/search?q=org%3Aconda-forge+%2F%28%3Fs%29%5Csrun_exports%3A.*noarch%3A%2F+path%3Arecipe%2F*.yaml&type=code)
 (note: many false positives, but should be exhaustive), though crucially including core packages like
-python and R, which are of course key use-cases for building noarch consumers atop of.
+python and R, which are of course key use-cases for building noarch packages atop of.
 
 Perhaps most notably, since the linked PR, regular run-exports (either weak or strong) do not apply to
 `noarch: {generic, python}` packages anymore, as thereafter they had their own special export type.
@@ -112,11 +113,11 @@ in particular, the urgency was reduced by the fact that it could be passably emu
 run-exports; while this would "over-export" things into the `run:` environment, this is harmless in many cases.
 
 However, there are cases where that is not so, and the relevant constraints cannot currently be expressed
-(resp. where abuse of the strong run-export would require all consumers to ignore the run-exports, which
-is not feasible at scale, and would be a constant tripping hazard).
+(resp. where abuse of the strong run-export would require all consumers to ignore the extraneous run-exports,
+which is not feasible at scale, and would be a constant tripping hazard).
 
 For example, C++ and Fortran modules (as of 2025) are not portable between compilers and need to be consumed
-by the same compiler that produced them. Assuming we have a package `foo-devel` containing Fortran modules,
+by the same compiler that produced them. Let's assume we have a package `foo-devel` containing Fortran modules,
 to which we would like to attach a `_fortran_modules_abi =*=compiler_flavour*` constraint that ensures that
 it can only be combined with the appropriate compiler. The problem in this case is that with a recipe like
 
@@ -131,14 +132,16 @@ it can only be combined with the appropriate compiler. The problem in this case 
 ```
 
 there's no way to make the "wrong" fortran compiler conflict with `foo-devel`, because we explicitly
-do not want a strong run-export from the general-purpose `{{ compiler("fortran") }}` to enforce a specific
-compiler ABI in `run:` (making the package unusable with other compilers unnecessarily).
+do not want a strong run-export from the general-purpose `{{ compiler("fortran") }}` (more precisely,
+the underlying package `${fortran_compiler}_${target_platform}`) to enforce a specific compiler ABI in
+`run:`, which would unnecessarily make the package unusable together with packages built by other
+Fortran compilers.
 
-The solution in this case would be to add an export to `{{ compiler("fortran") }}` that injects
-`_fortran_modules_abi =*=compiler_flavour*` *only* into the `host:` environment; this would impose the
-right constraints (i.e. conflict if ABI between the compiler and the constraint attached to `foo-devel`
-doesn't match), while avoiding too-tight constraints at runtime. The situation is explained/discussed
-in more detail in <https://github.com/conda-forge/conda-forge.github.io/issues/2525>.
+The solution in this case would be to add an export to the various `${fortran_compiler}_${target_platform}`
+packages which injects `_fortran_modules_abi =*=compiler_flavour*` *only* into the `host:` environment;
+this would impose the right constraints (i.e. conflict if ABI between the compiler and the constraint
+attached to `foo-devel` doesn't match), while avoiding too-tight constraints at runtime. The situation is
+explained/discussed in more detail in <https://github.com/conda-forge/conda-forge.github.io/issues/2525>.
 
 ### Ecosystem Evolution
 
@@ -150,7 +153,7 @@ from this in a way that avoids inscrutable errors for unsuspecting recipe mainta
 On top of that, the long-in-the-making maturation of C++20 modules (which are subject to the same ABI
 constraints as the Fortran case explained above), means that our infrastructure needs to be ready to
 reliably handle packaging challenges in a world where these C++ modules are beginning to come into more
-wide-spread use. Leaving run-exports in their current state long-term is therefore not a palatable option.
+wide-spread use. Leaving run-exports in their current state indefinitely is therefore not a palatable option.
 
 ### Teachability
 
@@ -199,7 +202,7 @@ requirements:
     host_to_run:            # matches `weak:` run-export
       - a_shared_library
     build_to_host:          # "host-export"
-      - a_build_constraint =*=*foo
+      - a_host_constraint =*=*foo
     build_to_run:           # produces same effect as `strong:` run-export when used together with build_to_host
       - a_compiler_runtime
     host_to_constraints:    # matches `weak_constrains:` (v0) / `weak_constraints:` (v1)
@@ -230,10 +233,11 @@ beyond C++/Fortran modules where the ability to constrain interactions between c
 is desirable (e.g. openmp, openmpi, etc.).
 
 The `noarch_to_run:` breaks from the pattern of using a `<source>` that is an existing type of environment.
-Given how existing run-exports do not apply to noarch packages at all, and how important use-cases like
-python require this functionality, we cannot remove it just for the sake of foolish consistency, and this
-seems like the most natural way to incorporate it. The overall rule can still be summarised as "exports do
-not apply when building noarch packages, unless the export is of type `noarch_to_run:`."
+Despite being used relatively rarely, it is required by important use-cases like python, and so this variant
+cannot be abandoned for the sake of foolish consistency. Given how existing run-exports do not apply to
+noarch packages at all, it's seems natural to consider noarch as just another condition that is either met
+during the build phase of a dependent project, or not. The overall rule still remains easy to summarise as
+"`exports:` do not apply when building noarch packages, unless the export is of type `noarch_to_run:`."
 
 ### Transitive compilation requirements
 
@@ -242,10 +246,10 @@ why whatever is being exported in such a manner could not be a direct (run-)depe
 The answer is that there may be transitive dependencies *at compilation time* that we do not want
 consumers to inherit at runtime (similar to the situation with the Fortran modules ABI).
 
-An example of this is if a library `foo` depends on the headers of another library `bar` at compile-time,
-but we do not want packages built atop of `foo` to carry along those `bar` headers or related version
-constraints (because at that point they're not needed anymore; the concern is about a compile-time
-quantity, which only concerns either `build:` and/or `host:`).
+An example of this is if a library `foo` depends on the headers of another library `bar` at compile-time
+(possibly with restrictive version constraints), but we do not want packages built atop of `foo` to carry
+along those `bar` headers or related constraints (because at that point they're not needed anymore;
+the concern is about a compile-time quantity, which only concerns either `build:` and/or `host:`).
 
 ### Other modifications
 
@@ -259,9 +263,10 @@ requirements:
 ```
 
 because constraints only make sense when that package gets installed somewhere in any case, so the
-"run_" is superfluous (aside from being inconsistent with the proposed schema). On top of that, the
-"run_" is also confusing, because if a package with `run_constraints:` gets installed into a `host:`
-or `build:` environment, those constraints will still take effect.
+"run_" is superfluous (aside from being inconsistent with the proposed pattern for export variants).
+On top of that, the "run_" can also be confusing, because the name might be misinterpreted as being
+specific to the `run:` environment, when in actuality, the `run_constraints:` of a package still
+take effect also when installed into a `host:` or `build:` environment.
 
 Likewise we rename `ignore_run_exports`
 
@@ -353,7 +358,7 @@ to CEP 12, added this to the physically sharded but logically unified repodata.
 
 ### Transition plan
 
-It's easy to map the new export structure to the respective metadata, the complexity lies in providing a smooth
+It's easy to map the new export structure to the respective metadata; the complexity lies in providing a smooth
 transition for the ecosystem across various versions of tools that build or consume packages and metadata.
 
 The approach suggested here is based on the intention to avoid having to introduce a repodata v2, but if such
@@ -366,20 +371,20 @@ simplified. We suggest to:
   - Populate `run_exports.json` with "compatible" metadata derived from `exports:` (see below).
 - Channel-level:
   - Add another `exports.json` to the monolithic channel metadata, to be preferred by tools who which how to handle it.
-  - Indexers should populate `run_exports.json` with "compatible" metadata derived from `exports:` (see below).
   - Add an `exports:` key within sharded metadata without touching `run_exports:`. The same argument with respect to
     the storage footprint as in CEP 21 applies, i.e. the data is highly compressible and will not have more than
     ~5% impact. Long-term, the existing `run_exports:` information should be removed, freeing up the additional
     space again.
 
-The reason to add separate files is that this provides the easiest compatibility story: tools which are aware of this
-CEP can prefer `exports.json` and equivalents, whereas older versions of these tools continue to work unchanged.
+The reason to add separate files and keys is that this provides the easiest compatibility story: tools which are
+aware of this CEP can prefer `exports.json` and equivalents, whereas older versions of these tools continue to
+work unchanged.
 
 ### Compatibility mapping back to `run_exports.json`
 
 To smooth the transition, even tools that are aware of this CEP should still populate `run_exports.json` etc., to
-avoid breaking behaviour changes in older versions during the transition. For setting the values, we propose a
-conservative approach, in the sense that we default to strong exports in case of doubt:
+avoid causing breaking behaviour changes in older versions during the transition. For setting the values, we propose
+a conservative approach, in the sense that we default to strong exports in case of doubt:
 
 - Reuse values for keys which have a 1:1 equivalent in `run_exports:` schema:
   - `host_to_run:` --> `weak:`
