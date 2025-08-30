@@ -313,7 +313,7 @@ To smooth the transition, even tools that are aware of this CEP should still pop
 avoid breaking behaviour changes in older versions during the transition. For setting the values, we propose a
 conservative approach, in the sense that we default to strong exports in case of doubt:
 
-- Re-use values for keys which have a 1:1 equivalent in `run_exports:` schema:
+- Reuse values for keys which have a 1:1 equivalent in `run_exports:` schema:
   - `host_to_run:` --> `weak:`
   - `host_to_constraints:` --> `weak_constrains:`
   - `build_to_constraints:` -- > `strong_constrains:`
