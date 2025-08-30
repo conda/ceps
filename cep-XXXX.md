@@ -75,6 +75,24 @@ The v1 recipe format moved the `run_exports:` key from the `build:` section to t
 respective output, but otherwise did not change the semantics of this feature, aside from renaming
 `run_constrained` to `run_constraints` and `{weak,strong}_constrains` to `{weak,strong}_constraints`.
 
+### Run-exports vs. noarch
+
+In 2020, a `noarch:` type of run-exports got [added](https://github.com/conda/conda-build/pull/3868); the
+design for this seems to come only from comments in that PR and boils down to:
+> Ray Donnelly: Do we not really want to use a different run_export type here? Dropping all but the package name?
+
+> Isuru Fernando: I don't understand. Are you suggesting a different run_exports scheme ('noarch' in addition to
+> 'weak', 'strong') that would be applied if the package is a dependency of a `noarch` package?
+
+> Ray Donnelly: I am.
+
+This is a relatively little-used feature, c.f. this approximate [search](https://github.com/search?q=org%3Aconda-forge+%2F%28%3Fs%29%5Csrun_exports%3A.*noarch%3A%2F+path%3Arecipe%2F*.yaml&type=code)
+(note: many false positives, but should be exhaustive), though crucially including core packages like
+python and R, which are of course key use-cases for building noarch consumers on top.
+
+Perhaps most notably, since the linked PR, regular run-exports (either weak or strong) do not apply to
+`noarch: {generic, python}` packages anymore, as thereafter, those received their own special export type.
+
 ## Motivation
 
 One key motivation for this proposal is that even with the weak/strong distinction, run-exports are not
@@ -144,20 +162,23 @@ requirements:
     - [...]
   # relying on the surrounding "requirements" key for context
   exports:
-    host_to_run:            # matches weak run-export
+    host_to_run:            # matches `weak:` run-export
       - a_shared_library
     build_to_host:          # "host-export"
       - a_build_constraint =*=*foo
-    build_to_run:           # produces same effect as strong run-export when used together with build_to_host
+    build_to_run:           # produces same effect as `strong:` run-export when used together with build_to_host
       - a_compiler_runtime
-    host_to_constraints:    # matches weak_constrains (v0) / weak_constraints (v1)
+    host_to_constraints:    # matches `weak_constrains:` (v0) / `weak_constraints:` (v1)
       - a_run_constraint
-    build_to_constraints:   # matches strong_constrains (v0) / strong_constraints (v1)
+    build_to_constraints:   # matches `strong_constrains:` (v0) / `strong_constraints:` (v1)
       - a_run_constraint
     host_to_host:           # see below
       - a_transitive_dependency
     build_to_build:         # see below
       - a_transitive_dependency
+    # all the above _do not_ apply when building `noarch: generic` or `noarch: python` packages
+    noarch_to_run:          # matches `noarch:` run-export; does apply to noarch packages
+      - a_dependency_exported_when_consumer_is_noarch
 ```
 
 As indicated by the comments, `host_to_run:` matches the existing weak run-export. If taken together with
@@ -174,6 +195,12 @@ The case for `build_to_host:` was already made in the Motivation section, though
 beyond C++/Fortran modules where the ability to constrain interactions between compilers and host variants
 is desirable (e.g. openmp, openmpi, etc.).
 
+The `noarch_to_run:` breaks from the pattern of using a `<source>` that is an existing type of environment.
+Given how existing run-exports do not apply to noarch packages at all, and how important use-cases like
+python require this functionality, we cannot remove it just for the sake of foolish consistency, and this
+seems like the most natural way to incorporate it. The overall rule can still be summarized as "exports do
+not apply when building noarch packages, unless the export is of type `noarch_to_run:`."
+
 ### Transitive compilation requirements
 
 The most surprising additions might be `host_to_host:` and `build_to_build:`. It would be natural to ask
@@ -188,7 +215,8 @@ quantity, which only concerns either `build:` and/or `host:`).
 
 ### Other modifications
 
-Additionally, to keep the `<valid_requirements_key>_to_<valid_requirements_key>` pattern, we rename
+Additionally, to keep the `<valid_requirements_key>_to_<valid_requirements_key>` pattern (aside from
+the special case for `noarch`), we rename
 
 ```yaml
 requirements:
@@ -205,7 +233,7 @@ Likewise we rename `ignore_run_exports`
 
 ```yaml
   requirements:
-    ignore_exports:  # renamed from ignore_run_exports
+    ignore_exports:  # changed from ignore_run_exports
       from_package:
         - zlib
       by_name:
@@ -229,7 +257,8 @@ process unnecessarily, and we believe the relevant use-cases are fully expressib
 together with constraints (such as `_fortran_modules_abi`) attached to packages that appear in `host:`.
 
 Summing up, `build:` can export to all others (i.e. `build:`, `host:`, `run:`, `constraints:`), `host:` can
-export to everything but `build:`, while nothing can be exported from either `run:` or `constraints:`.
+export to everything but `build:`, while nothing can be exported from either `run:` or `constraints:`. None
+of these exports apply when building noarch packages, which have a separate `noarch_to_run:` export type.
 
 ## Specification
 
