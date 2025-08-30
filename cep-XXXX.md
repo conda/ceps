@@ -88,12 +88,14 @@ design for this seems to come only from comments in that PR and boils down to:
 
 This is a relatively little-used feature, c.f. this approximate [search](https://github.com/search?q=org%3Aconda-forge+%2F%28%3Fs%29%5Csrun_exports%3A.*noarch%3A%2F+path%3Arecipe%2F*.yaml&type=code)
 (note: many false positives, but should be exhaustive), though crucially including core packages like
-python and R, which are of course key use-cases for building noarch consumers on top.
+python and R, which are of course key use-cases for building noarch consumers atop of.
 
 Perhaps most notably, since the linked PR, regular run-exports (either weak or strong) do not apply to
 `noarch: {generic, python}` packages anymore, as thereafter they had their own special export type.
 
 ## Motivation
+
+### "Host-exports"
 
 One key motivation for this proposal is that even with the weak/strong distinction, run-exports are not
 powerful enough to handle relevant scenarios that are a natural consequence of the separation into
@@ -132,6 +134,32 @@ The solution in this case would be to add an export to `{{ compiler("fortran") }
 right constraints (i.e. conflict if ABI between the compiler and the constraint attached to `foo-devel`
 doesn't match), while avoiding too-tight constraints at runtime. The situation is explained/discussed
 in more detail in <https://github.com/conda-forge/conda-forge.github.io/issues/2525>.
+
+### Ecosystem Evolution
+
+Zooming out a bit, the conda ecosystem has changed dramatically over the last decade, including less
+visible aspects like build infrastructure. Most platforms nowadays have a choice of multiple different
+compilers (at least for C, C++, Fortran), and we need to be able to able to handle constraints arising
+from this in a way that avoids inscrutable errors for unsuspecting recipe maintainers.
+
+On top of that, the long-in-the-making maturation of C++20 modules (which are subject to the same ABI
+constraints as the Fortran case explained above), means that our infrastructure needs to be ready to
+reliably handle packaging challenges in a world where these C++ modules are beginning to come into more
+wide-spread use. Leaving run-exports in their current state long-term is therefore not a palatable option.
+
+### Teachability
+
+This effort started out with the intention of making minimal changes in the pursuit of effecting change
+as quickly as feasible. However, owing to how organically the run-exports feature has grown over time,
+a sober analysis of the situation must conclude that generalising it even further, towards cases having
+not even the slightest relation to the term "run", risks creating a situation where both the concepts
+and the mechanics would be very confusing.
+
+Run-exports are already among the most arcane and difficult-to-understand aspects of the conda ecosystem,
+which makes it unsustainable to further overload them with complexity. Ideally, a feature designed from
+the ground up based on all the lessons learned in the last decade would be much easier to explain and grasp,
+lowering the barrier to entry into the ecosystem, and helping existing contributors navigate packaging
+challenges more easily.
 
 ## Design
 
@@ -199,7 +227,7 @@ is desirable (e.g. openmp, openmpi, etc.).
 The `noarch_to_run:` breaks from the pattern of using a `<source>` that is an existing type of environment.
 Given how existing run-exports do not apply to noarch packages at all, and how important use-cases like
 python require this functionality, we cannot remove it just for the sake of foolish consistency, and this
-seems like the most natural way to incorporate it. The overall rule can still be summarized as "exports do
+seems like the most natural way to incorporate it. The overall rule can still be summarised as "exports do
 not apply when building noarch packages, unless the export is of type `noarch_to_run:`."
 
 ### Transitive compilation requirements
@@ -301,7 +329,7 @@ the resulting ambiguity. Finally, using `host_to_run:` improves clarity for the 
 Both [CEP 12](cep-0012.md) and [CEP 21](cep-0021.md) worked in the area of specifying how run-exports are
 represented in package and channel metadata.
 
-To the best of our knowledge, the format of `run_exports.json` on a per-package level has not been formalized,
+To the best of our knowledge, the format of `run_exports.json` on a per-package level has not been formalised,
 though, unsurprisingly, it is [simply](https://github.com/conda/conda-build/blob/25.7.0/conda_build/build.py#L1378-L1387)
 a JSON-extract of the relevant `run_exports:` portion of the rendered recipe.
 CB3 originally introduced this as `run_exports.yaml`, which got [switched](https://github.com/conda/conda-build/commit/1347f3df264c57d79ab078f88fae2d8862a58d9f)
@@ -310,7 +338,7 @@ to JSON (by default) in 2018. In practice, it is fair to assume that only `run_e
 CEP 12 introduced a channel-level `run_exports.json` which provides the information in aggregated format, allowing
 extraction of run-export metadata (e.g. for conda-forge's bot infrastructure) at scale without having to download
 every individual package first. This effort refrained from touching `repodata.json`, among other reasons because:
-> It would require extending the `repodata` schema, currently not formally standardized.
+> It would require extending the `repodata` schema, currently not formally standardised.
 
 Indeed, inspection of package-level `repodata_record.json` of contemporary (mid-2025) packages shows that run-exports
 do not appear in the regular package-metadata.
@@ -355,6 +383,11 @@ conservative approach, in the sense that we default to strong exports in case of
   - `noarch_to_run:` --> `noarch:`
 - Add `strong:` run-export in case of doubt, i.e. merge any values of `build_to_host:` & `build_to_run:` into `strong:`.
 - Do not map keys that have no equivalent in `run_exports:`, i.e. omit `host_to_host:` & `build_to_build:`.
+
+### Indexing old artefacts
+
+The same mapping can be inverted to populate the information necessary for `exports.json` of a channel containing a mix
+of new and old artefacts, where the latter cannot be expected to have output-level `exports.json` metadata yet.
 
 ## Specification
 
