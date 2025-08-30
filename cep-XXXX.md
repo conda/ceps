@@ -293,13 +293,13 @@ The suggested transition approach looks as follows. The intention is to avoid ha
 but if such an [effort](https://github.com/conda/ceps/pull/111) should come to fruition, the below should certainly
 be simplified.
 
-* Package-level:
-  * Add another `exports.json` next to `repodata_record.json` and `run_exports.json`, to be preferred by tools
+- Package-level:
+  - Add another `exports.json` next to `repodata_record.json` and `run_exports.json`, to be preferred by tools
     which know how to handle it.
-  * Populate `run_exports.json` with "compatible" metadata
-* Channel-level:
-  * Add another `exports.json` to the monolithic channel metadata, to be preferred by tools who which how to handle it.
-  * Add the structure of run-exports within sharded metadata, as the same argument to footprint applies as in CEP 21,
+  - Populate `run_exports.json` with "compatible" metadata
+- Channel-level:
+  - Add another `exports.json` to the monolithic channel metadata, to be preferred by tools who which how to handle it.
+  - Add the structure of run-exports within sharded metadata, as the same argument to footprint applies as in CEP 21,
     i.e. the data is highly compressible and will not have more than ~5% impact. Long-term, the existing `run_exports:`
     information should be removed, freeing up the additional space again.
 
@@ -312,15 +312,15 @@ To smooth the transition, even tools that are aware of this CEP should still pop
 avoid breaking behaviour changes in older versions during the transition. For setting the values, we propose a
 conservative approach, in the sense that we default to strong exports in case of doubt:
 
-* replace keys that have a 1:1 equivalent
-  * `host_to_run:` --> `weak:`
-  * `host_to_constraints:` --> `weak_constrains:`
-  * `build_to_constraints:` -- > `strong_constrains:`
-  * `noarch_to_run:` --> `noarch:`
-* use strong run-export in case of doubt
-  * `build_to_host:` --> `strong:`
-  * `build_to_run:` --> `strong:`
-* do not map unknown keys `host_to_host:` & `build_to_build:`
+- replace keys that have a 1:1 equivalent
+  - `host_to_run:` --> `weak:`
+  - `host_to_constraints:` --> `weak_constrains:`
+  - `build_to_constraints:` -- > `strong_constrains:`
+  - `noarch_to_run:` --> `noarch:`
+- use strong run-export in case of doubt
+  - `build_to_host:` --> `strong:`
+  - `build_to_run:` --> `strong:`
+- do not map unknown keys `host_to_host:` & `build_to_build:`
 
 ## Specification
 
