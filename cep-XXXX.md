@@ -192,6 +192,13 @@ The above is also why no `run_to_run:` key is proposed here -- dependency export
 from compilation. At runtime, when the build process is long past, the situation simplifies back to
 the question whether another package is a dependency or not.
 
+Furthermore, one could ask about a possible `host_to_build:` key. While this would arguably be an even better
+fit for the C++/Fortran modules ABI issue described above, the reason this proposal refrains from suggesting
+such a key is to limit implementation complexity, by having an implicit order of environment resolution from
+`build:` to `host:` to `run:`. Allowing both `host_to_build:` as well as `build_to_*:` would complicate this
+process unnecessarily, and we believe the relevant use-cases are fully expressible using `build_to_host:`
+together with relevant constraints (such as `_fortran_modules_abi`).
+
 ### Other modifications
 
 Additionally, to keep the `<valid_requirements_key>_to_<valid_requirements_key>` pattern, we rename
