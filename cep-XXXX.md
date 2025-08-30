@@ -242,7 +242,7 @@ Likewise we rename `ignore_run_exports`
 ```
 
 which should ignore any exports into `run:` or `constraints:` matching the conditions (whether
-by originating package or by name of the export), regardless of which `*_to_run:` key it comes from.
+by originating package or by name of the export), regardless of which export type it comes from.
 
 ### Omitted combinations
 
@@ -260,6 +260,39 @@ together with constraints (such as `_fortran_modules_abi`) attached to packages 
 Summing up, `build:` can export to all others (i.e. `build:`, `host:`, `run:`, `constraints:`), `host:` can
 export to everything but `build:`, while nothing can be exported from either `run:` or `constraints:`. None
 of these exports apply when building noarch packages, which only take into account `noarch_to_run:` exports.
+
+### No convenience shorthand
+
+Owing to the twists and turns of the way the feature was introduced, conda-build has allowed
+
+```yaml
+build:
+  run_exports:
+    - libfoo
+```
+
+to be equivalent to
+
+```yaml
+build:
+  run_exports:
+    weak:
+     - libfoo
+```
+
+which was introduced later (as discussed in History section). The v1 recipe format has kept this shorthand.
+Even though it is likely that `host_to_run:` will represent the overwhelming majority of occurrences of exports,
+we do not believe it is worth allowing a similar shortcut
+
+```yaml
+requirements:
+  exports:
+    - libfoo  # NOT PROPOSED!
+```
+
+For one, it complicates the schema definition and handling unnecessarily, and saving a few characters is
+not worth the resulting ambiguity. Finally, using `host_to_run:` improves clarity for the recipe reader
+and will naturally (we believe) lead to understanding the other export types.
 
 ## Impacts on package and channel metadata
 
@@ -294,7 +327,7 @@ The approach suggested here is based on the intention to avoid having to introdu
 an [effort](https://github.com/conda/ceps/pull/111) should come to fruition, the below could certainly be
 simplified. We suggest to:
 
-- Package-level:
+- Output-level:
   - Add another `exports.json` next to `repodata_record.json` and `run_exports.json`, to be preferred by tools
     which know how to handle it.
   - Populate `run_exports.json` with "compatible" metadata derived from `exports:` (see below).
@@ -436,6 +469,8 @@ For sharded repodata following CEP 16 & 21, indexers MUST add an `exports:` key 
 output-level metadata. Where outputs do not yet provide `exports.json` the values of `exports:` MUST be populated
 from the respective keys in `run_exports:` according to the above schema mapping. Furthermore, indexers MUST
 (continue to) populate the value `run_exports:` derived from output-level `run_exports.json`.
+
+Tools MUST take information from `exports:` / `exports.json` (if available) over `run_exports:` / `run_exports.json`.
 
 ### Patching
 
