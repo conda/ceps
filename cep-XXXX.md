@@ -258,7 +258,7 @@ together with constraints (such as `_fortran_modules_abi`) attached to packages 
 
 Summing up, `build:` can export to all others (i.e. `build:`, `host:`, `run:`, `constraints:`), `host:` can
 export to everything but `build:`, while nothing can be exported from either `run:` or `constraints:`. None
-of these exports apply when building noarch packages, which have a separate `noarch_to_run:` export type.
+of these exports apply when building noarch packages, which only take into account `noarch_to_run:` exports.
 
 ## Impacts on package and channel metadata
 
@@ -282,23 +282,24 @@ Indeed, inspection of package-level `repodata_record.json` of contemporary (mid-
 do not appear in the regular package-metadata.
 
 CEP 21 (building on top of [CEP 16](cep-0016.md)) added channel-level run-export information, though in contrast
-to CEP 12, added this to the physically shareded but logically unified repodata.
+to CEP 12, added this to the physically sharded but logically unified repodata.
 
 ### Transition plan
 
 It's easy to map the new export structure to the respective metadata, the complexity lies in providing a smooth
 transition for the ecosystem across various versions of tools that build or consume packages and metadata.
 
-The suggested transition approach looks as follows. The intention is to avoid having to introduce a repodata v2,
-but if such an [effort](https://github.com/conda/ceps/pull/111) should come to fruition, the below should certainly
-be simplified.
+The approach suggested here is based on the intention to avoid having to introduce a repodata v2, but if such
+an [effort](https://github.com/conda/ceps/pull/111) should come to fruition, the below could certainly be
+simplified. We suggest to:
 
 - Package-level:
   - Add another `exports.json` next to `repodata_record.json` and `run_exports.json`, to be preferred by tools
     which know how to handle it.
-  - Populate `run_exports.json` with "compatible" metadata
+  - Populate `run_exports.json` with "compatible" metadata derived from `exports:` (see below).
 - Channel-level:
   - Add another `exports.json` to the monolithic channel metadata, to be preferred by tools who which how to handle it.
+  - Indexers should populate `run_exports.json` with "compatible" metadata derived from `exports:` (see below).
   - Add the structure of run-exports within sharded metadata, as the same argument to footprint applies as in CEP 21,
     i.e. the data is highly compressible and will not have more than ~5% impact. Long-term, the existing `run_exports:`
     information should be removed, freeing up the additional space again.
@@ -312,15 +313,13 @@ To smooth the transition, even tools that are aware of this CEP should still pop
 avoid breaking behaviour changes in older versions during the transition. For setting the values, we propose a
 conservative approach, in the sense that we default to strong exports in case of doubt:
 
-- replace keys that have a 1:1 equivalent
+- Re-use values for keys which have a 1:1 equivalent in `run_exports:` schema:
   - `host_to_run:` --> `weak:`
   - `host_to_constraints:` --> `weak_constrains:`
   - `build_to_constraints:` -- > `strong_constrains:`
   - `noarch_to_run:` --> `noarch:`
-- use strong run-export in case of doubt
-  - `build_to_host:` --> `strong:`
-  - `build_to_run:` --> `strong:`
-- do not map unknown keys `host_to_host:` & `build_to_build:`
+- Add `strong:` run-export in case of doubt, i.e. merge any values of `build_to_host:` & `build_to_run:` into `strong:`.
+- Do not map keys that have no equivalent in `run_exports:`, i.e. omit `host_to_host:` & `build_to_build:`.
 
 ## Specification
 
@@ -364,7 +363,24 @@ If not, it MUST still conform to the schema below, with empty lists as values fo
 }
 ```
 
-On channel-level the `exports.json` file MUST be populated when indexing the channel, in the same way
+We define the following translation between this schema and the previous `run_exports:` schema:
+
+| `exports:` | `run_exports: |
+|---|---|
+| `build_to_build:` | IGNORED |
+| `build_to_constraints:` | `strong_constrains:` |
+| `build_to_host:` | `strong:` |
+| `build_to_run:` | `strong:` |
+| `host_to_constraints:` | `weak_constrains:` |
+| `host_to_host:` | IGNORED |
+| `host_to_run:` | `weak:` |
+| `noarch_to_run:` | `noarch:` |
+
+Except for cells marked with "IGNORED", build tools MUST populate the output-level `run_exports.json` file
+unchanged from the values of `exports:` in the recipe, though duplicates from the merge between `build_to_host:`
+and `build_to_run:` MAY be removed.
+
+On channel-level, the `exports.json` file MUST be populated when indexing the channel, in the same way
 as for `run_exports.json`:
 
 ```json
@@ -408,8 +424,13 @@ as for `run_exports.json`:
 }
 ```
 
-Within the sharded repodata, indexers MUST add an `exports:` key and populate it with the respective
-package-level metadata.
+As for the output-level metadata, indexers MUST populate the channel-level `run_exports.json` in a way that
+is consistent with the output-level metadata: either calculated from `exports:` using the above compatibility
+mapping, or aggregated from the output-level `run_exports.json`.
+
+Within the sharded repodata, indexers MUST add an `exports:` key and populate it with the respective output-level
+metadata. Furthermore, indexers MUST populate the value `run_exports:` derived from the values of `exports:`,
+using the schema mapping specified above.
 
 ### Patching
 
