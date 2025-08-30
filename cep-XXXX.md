@@ -260,7 +260,158 @@ Summing up, `build:` can export to all others (i.e. `build:`, `host:`, `run:`, `
 export to everything but `build:`, while nothing can be exported from either `run:` or `constraints:`. None
 of these exports apply when building noarch packages, which have a separate `noarch_to_run:` export type.
 
+## Impacts on package and channel metadata
+
+### Background
+
+Both [CEP 12](cep-0012.md) and [CEP 21](cep-0021.md) worked in the area of specifying how run-exports are
+represented in package and channel metadata.
+
+To the best of our knowledge, the format of `run_exports.json` on a per-package level has not been formalized,
+though, unsurprisingly, it is [simply](https://github.com/conda/conda-build/blob/25.7.0/conda_build/build.py#L1378-L1387)
+a JSON-extract of the relevant `run_exports:` portion of the rendered recipe.
+CB3 originally introduced this as `run_exports.yaml`, which got [switched](https://github.com/conda/conda-build/commit/1347f3df264c57d79ab078f88fae2d8862a58d9f)
+to JSON (by default) in 2018. In practice, it is fair to assume that only `run_exports.json` files exist nowadays.
+
+CEP 12 introduced a channel-level `run_exports.json` which provides the information in aggregated format, allowing
+extraction of run-export metadata (e.g. for conda-forge's bot infrastructure) at scale without having to download
+every individual package first. This effort refrained from touching `repodata.json`, among other reasons because
+> It would require extending the `repodata` schema, currently not formally standardized.
+
+Indeed, inspection of package-level `repodata_record.json` of contemporary (mid-2025) packages shows that run-exports
+do not appear in the regular package-metadata.
+
+CEP 21 (building on top of [CEP 16](cep-0016.md)) added channel-level run-export information, though in contrast
+to CEP 12, added this to the physically shareded but logically unified repodata.
+
+### Transition plan
+
+It's easy to map the new export structure to the respective metadata, the complexity lies in providing a smooth
+transition for the ecosystem across various versions of tools that build or consume packages and metadata.
+
+The suggested transition approach looks as follows. The intention is to avoid having to introduce a repodata v2,
+but if such an [effort](https://github.com/conda/ceps/pull/111) should come to fruition, the below should certainly
+be simplified.
+
+* Package-level:
+  * Add another `exports.json` next to `repodata_record.json` and `run_exports.json`, to be preferred by tools
+    which know how to handle it.
+  * Populate `run_exports.json` with "compatible" metadata
+* Channel-level:
+  * Add another `exports.json` to the monolithic channel metadata, to be preferred by tools who which how to handle it.
+  * Add the structure of run-exports within sharded metadata, as the same argument to footprint applies as in CEP 21,
+    i.e. the data is highly compressible and will not have more than ~5% impact. Long-term, the existing `run_exports:`
+    information should be removed, freeing up the additional space again.
+
+The reason to add separate files is that this provides the easiest compatibility story: tools which are aware of this
+CEP can prefer `exports.json` and equivalents, whereas older versions of these tools continue to work unchanged.
+
+### Compatibility mapping back to `run_exports.json`
+
+To smooth the transition, even tools that are aware of this CEP should still populate `run_exports.json` etc., to
+avoid breaking behaviour changes in older versions during the transition. For setting the values, we propose a
+conservative approach, in the sense that we default to strong exports in case of doubt:
+
+* replace keys that have a 1:1 equivalent
+  * `host_to_run:` --> `weak:`
+  * `host_to_constraints:` --> `weak_constrains:`
+  * `build_to_constraints:` -- > `strong_constrains:`
+  * `noarch_to_run:` --> `noarch:`
+* use strong run-export in case of doubt
+  * `build_to_host:` --> `strong:`
+  * `build_to_run:` --> `strong:`
+* do not map unknown keys `host_to_host:` & `build_to_build:`
+
 ## Specification
+
+### Recipes, Parsing, Package Building
+
+TODO!
+
+### Package and Channel Metadata
+
+On package-level, if an output has any `exports:` specified, build tools MUST produce an `exports.json` in the
+root of the artefact (next to `index.json` etc.), and populate the following schema with the exports as specified
+in the rendered recipe. If the output has no (or empty) `exports:`, populating `exports.json` MAY be omitted.
+If not, it MUST still conform to the schema below, with empty lists as values for the respective export keys.
+
+```json
+"exports": {
+    "build_to_build": [
+        "string",
+    ],
+    "build_to_constraints": [
+        "string",
+    ],
+    "build_to_host": [
+        "string",
+    ],
+    "build_to_run": [
+        "string",
+    ],
+    "host_to_constraints": [
+        "string",
+    ],
+    "host_to_host": [
+        "string",
+    ],
+    "host_to_run": [
+        "string",
+    ],
+    "noarch_to_run": [
+        "string",
+    ]
+}
+```
+
+On channel-level the `exports.json` file MUST be populated when indexing the channel, in the same way
+as for `run_exports.json`:
+
+```
+{
+    "info": {
+        "platform": "string",
+        "arch": "string",
+        "subdir": "string",
+        "version": 0
+    },
+    "packages": {
+        "package-version-build.conda": {  # or package-version-build.tar.bz
+            "exports": {
+                "build_to_build": [
+                    "string",
+                ],
+                "build_to_constraints": [
+                    "string",
+                ],
+                "build_to_host": [
+                    "string",
+                ],
+                "build_to_run": [
+                    "string",
+                ],
+                "host_to_constraints": [
+                    "string",
+                ],
+                "host_to_host": [
+                    "string",
+                ],
+                "host_to_run": [
+                    "string",
+                ],
+                "noarch_to_run": [
+                    "string",
+                ]
+            }
+        }
+    },
+}
+```
+
+Within the sharded repodata, indexers MUST add an `exports:` key and populate it with the respective
+package-level metadata.
+
+### Patching
 
 TODO!
 
