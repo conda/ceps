@@ -79,11 +79,11 @@ respective output, but otherwise did not change the semantics of this feature, a
 
 In 2020, a `noarch:` type of run-exports got [added](https://github.com/conda/conda-build/pull/3868); the
 design for this seems to come only from comments in that PR and boils down to:
-> Ray Donnelly: Do we not really want to use a different run_export type here? Dropping all but the package name?
-
-> Isuru Fernando: I don't understand. Are you suggesting a different run_exports scheme ('noarch' in addition to
-> 'weak', 'strong') that would be applied if the package is a dependency of a `noarch` package?
-
+> > > Ray Donnelly: Do we not really want to use a different run_export type here? Dropping all but the package name?
+> >
+> > Isuru Fernando: I don't understand. Are you suggesting a different run_exports scheme ('noarch' in addition to
+> > 'weak', 'strong') that would be applied if the package is a dependency of a `noarch` package?
+>
 > Ray Donnelly: I am.
 
 This is a relatively little-used feature, c.f. this approximate [search](https://github.com/search?q=org%3Aconda-forge+%2F%28%3Fs%29%5Csrun_exports%3A.*noarch%3A%2F+path%3Arecipe%2F*.yaml&type=code)
@@ -367,7 +367,7 @@ If not, it MUST still conform to the schema below, with empty lists as values fo
 On channel-level the `exports.json` file MUST be populated when indexing the channel, in the same way
 as for `run_exports.json`:
 
-```
+```json
 {
     "info": {
         "platform": "string",
