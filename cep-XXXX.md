@@ -329,13 +329,14 @@ TODO!
 
 ### Package and Channel Metadata
 
-On package-level, if an output has any `exports:` specified, build tools MUST produce an `exports.json` in the
-root of the artefact (next to `index.json` etc.), and populate the following schema with the exports as specified
-in the rendered recipe. If the output has no (or empty) `exports:`, populating `exports.json` MAY be omitted.
-If not, it MUST still conform to the schema below, with empty lists as values for the respective export keys.
+On output-level, if there are any non-empty `exports:` specified, build tools MUST produce an `exports.json`
+in the root of the artefact (next to `index.json` etc.), and populate the values with the exports as specified
+in the rendered recipe for that output. If the output has no (or empty) `exports:`, populating `exports.json`
+MAY be omitted. If the file `exports.json` gets created, its content MUST be a valid JSON object according to
+the schema below, where keys that have empty values MAY be omitted.
 
 ```json
-"exports": {
+{
     "build_to_build": [
         "string",
     ],
@@ -365,7 +366,7 @@ If not, it MUST still conform to the schema below, with empty lists as values fo
 
 We define the following translation between this schema and the previous `run_exports:` schema:
 
-| `exports:` | `run_exports: |
+| `exports:` | `run_exports:` |
 |---|---|
 | `build_to_build:` | IGNORED |
 | `build_to_constraints:` | `strong_constrains:` |
@@ -377,11 +378,12 @@ We define the following translation between this schema and the previous `run_ex
 | `noarch_to_run:` | `noarch:` |
 
 Except for cells marked with "IGNORED", build tools MUST populate the output-level `run_exports.json` file
-unchanged from the values of `exports:` in the recipe, though duplicates from the merge between `build_to_host:`
-and `build_to_run:` MAY be removed.
+unchanged from the values of `exports:` in the recipe, though exact duplicates from the merge between
+`build_to_host:` and `build_to_run:` MAY be removed. Values from `build_to_build:` and `host_to_host:` MUST
+be ignored when populating `run_exports.json`.
 
 On channel-level, the `exports.json` file MUST be populated when indexing the channel, in the same way
-as for `run_exports.json`:
+as described for `run_exports.json` in CEP 12, but using the following schema.
 
 ```json
 {
@@ -424,13 +426,13 @@ as for `run_exports.json`:
 }
 ```
 
-As for the output-level metadata, indexers MUST populate the channel-level `run_exports.json` in a way that
-is consistent with the output-level metadata: either calculated from `exports:` using the above compatibility
-mapping, or aggregated from the output-level `run_exports.json`.
+Indexers MUST populate the channel-level `run_exports.json` in a way that is consistent with the output-level
+metadata: either calculated from `exports:` using the above compatibility mapping, or aggregated from the
+output-level `run_exports.json`.
 
-Within the sharded repodata, indexers MUST add an `exports:` key and populate it with the respective output-level
-metadata. Furthermore, indexers MUST populate the value `run_exports:` derived from the values of `exports:`,
-using the schema mapping specified above.
+For sharded repodata following CEP 16 & 21, indexers MUST add an `exports:` key and populate it with the
+respective output-level metadata. Furthermore, indexers MUST populate the value `run_exports:` derived
+from the values of `exports:`, using the schema mapping specified above.
 
 ### Patching
 
