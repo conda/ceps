@@ -121,7 +121,7 @@ We begin with the following observations based on the above:
 
 - There is a need for a flexible mechanism to do cross-environment dependency injection in the conda ecosystem.
 - There are cases where the "run" in `run_exports:` is not appropriate (e.g. `build:` to `host:`), because
-  no aspect of the export in question involves something happening related to the `run:` environment or runtime.
+  no aspect of the export in question involves something related to the `run:` environment or runtime.
 - Just as important as where we're exporting *to* is where we're exporting *from*. Leaving this implicit
   gets exponentially more complicated the more export-flavours there are.
 - Already the existing strong run-exports can be subject to this confusion (e.g. "does a strong run-export
@@ -186,19 +186,6 @@ but we do not want packages built atop of `foo` to carry along those `bar` heade
 constraints (because at that point they're not needed anymore; the concern is about a compile-time
 quantity, which only concerns either `build:` and/or `host:`).
 
-### Omitted combinations
-
-The above is also why no `run_to_run:` key is proposed here -- dependency exports address constraints arising
-from compilation. At runtime, when the build process is long past, the situation simplifies back to
-the question whether another package is a dependency or not.
-
-Furthermore, one could ask about a possible `host_to_build:` key. While this would arguably be an even better
-fit for the C++/Fortran modules ABI issue described above, the reason this proposal refrains from suggesting
-such a key is to limit implementation complexity, by having an implicit order of environment resolution from
-`build:` to `host:` to `run:`. Allowing both `host_to_build:` as well as `build_to_*:` would complicate this
-process unnecessarily, and we believe the relevant use-cases are fully expressible using `build_to_host:`
-together with relevant constraints (such as `_fortran_modules_abi`).
-
 ### Other modifications
 
 Additionally, to keep the `<valid_requirements_key>_to_<valid_requirements_key>` pattern, we rename
@@ -226,7 +213,23 @@ Likewise we rename `ignore_run_exports`
 ```
 
 which should ignore any exports into `run:` or `constraints:` matching the conditions (whether
-by source or by name of the export), regardless of where the export comes from.
+by originating package or by name of the export), regardless of which environment it comes from.
+
+### Omitted combinations
+
+In all cases, dependency exports address constraints or interactions arising from compilation. At runtime,
+when the build process is long past, the situation simplifies back to the question whether another package
+is a dependency or not, which is why no `run_to_run:` key is proposed here.
+
+Furthermore, one could ask about a possible `host_to_build:` key. While this would arguably be an even better
+fit for the C++/Fortran modules ABI issue described above, the reason this proposal refrains from suggesting
+such a key is to limit implementation complexity, by having an implicit order of environment resolution from
+`build:` to `host:` to `run:`. Allowing both `host_to_build:` as well as `build_to_*:` would complicate this
+process unnecessarily, and we believe the relevant use-cases are fully expressible using `build_to_host:`
+together with constraints (such as `_fortran_modules_abi`) attached to packages that appear in `host:`.
+
+Summing up, `build:` can export to all others (i.e. `build:`, `host:`, `run:`, `constraints:`), `host:` can
+export to everything but `build:`, while nothing can be exported from either `run:` or `constraints:`.
 
 ## Specification
 
