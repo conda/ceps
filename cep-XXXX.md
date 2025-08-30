@@ -91,7 +91,7 @@ This is a relatively little-used feature, c.f. this approximate [search](https:/
 python and R, which are of course key use-cases for building noarch consumers on top.
 
 Perhaps most notably, since the linked PR, regular run-exports (either weak or strong) do not apply to
-`noarch: {generic, python}` packages anymore, as thereafter, those received their own special export type.
+`noarch: {generic, python}` packages anymore, as thereafter they had their own special export type.
 
 ## Motivation
 
@@ -148,6 +148,7 @@ We begin with the following observations based on the above:
 - It would be nice to cover constraints as well as dependencies with the same pattern.
 - There are other use-cases ([example](https://github.com/conda-forge/ctng-compiler-activation-feedstock/blob/e2bdf15eb170008eda386056a900ce93e0f9cb16/recipe/meta.yaml#L147-L150))
   which have so far been under-served by the existing run-export infrastructure.
+- Run-exports are not applied when building `noarch` packages, except if the export is of type `noarch:`.
 - The v1 recipe format unified all requirement-related topics (including run-exports) under `requirements:`.
 
 Based on this, we propose the following pattern:
@@ -177,7 +178,7 @@ requirements:
     build_to_build:         # see below
       - a_transitive_dependency
     # all the above _do not_ apply when building `noarch: generic` or `noarch: python` packages
-    noarch_to_run:          # matches `noarch:` run-export; does apply to noarch packages
+    noarch_to_run:          # matches `noarch:` run-export; _does_ apply when building noarch packages
       - a_dependency_exported_when_consumer_is_noarch
 ```
 
@@ -187,7 +188,7 @@ and `build_to_constraints:`. The other keys introduce new functionality, which i
 
 Before explaining the transitive case, we note though that this design has the advantage that it's
 immediately clear from the key pattern `<source>_to_<target>` under which conditions a given export
-triggers (i.e. the package carrying the export finds itself in an environment matching `<source>`),
+triggers (i.e. the package carrying the export finds itself in conditions matching `<source>`),
 and what it influences (i.e. the export gets added to `<target>`). This avoids a lot of mental arithmetic
 (and ideally, implementation complexity) in keeping track of which export triggers when.
 
@@ -241,13 +242,13 @@ Likewise we rename `ignore_run_exports`
 ```
 
 which should ignore any exports into `run:` or `constraints:` matching the conditions (whether
-by originating package or by name of the export), regardless of which environment it comes from.
+by originating package or by name of the export), regardless of which `*_to_run:` key it comes from.
 
 ### Omitted combinations
 
-In all cases, dependency exports address constraints or interactions arising from compilation. At runtime,
-when the build process is long past, the situation simplifies back to the question whether another package
-is a dependency or not, which is why no `run_to_run:` key is proposed here.
+In all cases except `noarch` packages, dependency exports address constraints or interactions arising from
+compilation. At runtime, when the build process is long past, the situation simplifies back to the question
+whether another package is a dependency or not, which is why no `run_to_run:` key is proposed here.
 
 Furthermore, one could ask about a possible `host_to_build:` key. While this would arguably be an even better
 fit for the C++/Fortran modules ABI issue described above, the reason this proposal refrains from suggesting
@@ -275,7 +276,7 @@ to JSON (by default) in 2018. In practice, it is fair to assume that only `run_e
 
 CEP 12 introduced a channel-level `run_exports.json` which provides the information in aggregated format, allowing
 extraction of run-export metadata (e.g. for conda-forge's bot infrastructure) at scale without having to download
-every individual package first. This effort refrained from touching `repodata.json`, among other reasons because
+every individual package first. This effort refrained from touching `repodata.json`, among other reasons because:
 > It would require extending the `repodata` schema, currently not formally standardized.
 
 Indeed, inspection of package-level `repodata_record.json` of contemporary (mid-2025) packages shows that run-exports
@@ -300,9 +301,10 @@ simplified. We suggest to:
 - Channel-level:
   - Add another `exports.json` to the monolithic channel metadata, to be preferred by tools who which how to handle it.
   - Indexers should populate `run_exports.json` with "compatible" metadata derived from `exports:` (see below).
-  - Add the structure of run-exports within sharded metadata, as the same argument to footprint applies as in CEP 21,
-    i.e. the data is highly compressible and will not have more than ~5% impact. Long-term, the existing `run_exports:`
-    information should be removed, freeing up the additional space again.
+  - Add an `exports:` key within sharded metadata without touching `run_exports:`. The same argument with respect to
+    the storage footprint as in CEP 21 applies, i.e. the data is highly compressible and will not have more than
+    ~5% impact. Long-term, the existing `run_exports:` information should be removed, freeing up the additional
+    space again.
 
 The reason to add separate files is that this provides the easiest compatibility story: tools which are aware of this
 CEP can prefer `exports.json` and equivalents, whereas older versions of these tools continue to work unchanged.
@@ -379,8 +381,8 @@ We define the following translation between this schema and the previous `run_ex
 
 Except for cells marked with "IGNORED", build tools MUST populate the output-level `run_exports.json` file
 unchanged from the values of `exports:` in the recipe, though exact duplicates from the merge between
-`build_to_host:` and `build_to_run:` MAY be removed. Values from `build_to_build:` and `host_to_host:` MUST
-be ignored when populating `run_exports.json`.
+`build_to_host:` and `build_to_run:` into `strong:` MAY be removed. Values from `build_to_build:` and
+`host_to_host:` MUST be ignored when populating `run_exports.json`.
 
 On channel-level, the `exports.json` file MUST be populated when indexing the channel, in the same way
 as described for `run_exports.json` in CEP 12, but using the following schema. Where artefacts do not yet
@@ -432,8 +434,8 @@ Indexers MUST (continue to) populate the channel-level `run_exports.json` from t
 
 For sharded repodata following CEP 16 & 21, indexers MUST add an `exports:` key and populate it with the respective
 output-level metadata. Where outputs do not yet provide `exports.json` the values of `exports:` MUST be populated
-from the respective keys in `run_exports:` according to the above schema mapping. Furthermore, indexers MUST populate
-the value `run_exports:` derived from output-level `run_exports.json`.
+from the respective keys in `run_exports:` according to the above schema mapping. Furthermore, indexers MUST
+(continue to) populate the value `run_exports:` derived from output-level `run_exports.json`.
 
 ### Patching
 
