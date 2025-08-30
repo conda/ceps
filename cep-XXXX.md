@@ -28,7 +28,7 @@ rather than vendoring dependent libraries for every consumer.
 
 In contrast to static or header-only libraries, a shared library `foo` occurs not just during build
 time of `bar` (the headers for `# include <foo.h>` to work and `libfoo.so` for linkage to succeed),
-but need to be present as well in the final environment for `bar` as well. Aside from corner-cases,
+but needs to be present in the final environment for `bar` as well. Aside from corner-cases,
 this runtime dependency *always* follows, and it is therefore natural to ask the build system to do
 this work for us.
 
@@ -72,7 +72,8 @@ Later still, the constraint variants `weak_constrains` and `strong_constrains` w
 [added](https://github.com/conda/conda-build/pull/4125).
 
 The v1 recipe format moved the `run_exports:` key from the `build:` section to the `requirements:` of the
-respective output, but otherwise did not change the semantics of this feature.
+respective output, but otherwise did not change the semantics of this feature, aside from renaming
+`run_constrained` to `run_constraints` and `{weak,strong}_constrains` to `{weak,strong}_constraints`.
 
 ## Motivation
 
@@ -80,17 +81,19 @@ One key motivation for this proposal is that even with the weak/strong distincti
 powerful enough to handle relevant scenarios that are a natural consequence of the separation into
 `build:` / `host:` / `run:` environments.
 
-Abstractly speaking, there are cases where one wants to express relations between environments, e.g.
-from `build:` to `host:` (see <https://github.com/conda/ceps/issues/77>). In many ways the urgency of this
-need was reduced by the fact that it could be passably emulated by using strong run-exports; while this
-would "over-export" things into the `run:` environment, this is harmless in many cases.
+Abstractly speaking, this separation introduces more cases where one wants to express relations between
+environments, e.g. from `build:` to `host:` (see <https://github.com/conda/ceps/issues/77>). For this case
+in particular, the urgency was reduced by the fact that it could be passably emulated by using strong
+run-exports; while this would "over-export" things into the `run:` environment, this is harmless in many cases.
 
-However, there are cases where that is not so, in particular, C++ and Fortran modules (as of 2025) are
-not portable between compilers and need to be consumed by the same compiler that produced them.
+However, there are cases where that is not so, and the relevant constraints cannot currently be expressed
+(resp. where abuse of the strong run-export would require all consumers to ignore the run-exports, which
+is not feasible at scale, and would be a constant tripping hazard).
 
-Assuming we have a package `foo-devel` containing Fortran modules, to which we would like to attach a
-`_fortran_modules_abi =*=compiler_flavour*` constraint that ensures that they can only be consumed by
-the appropriate compiler. The problem in this case is that with a recipe like
+For example, C++ and Fortran modules (as of 2025) are not portable between compilers and need to be consumed
+by the same compiler that produced them. Assuming we have a package `foo-devel` containing Fortran modules,
+to which we would like to attach a `_fortran_modules_abi =*=compiler_flavour*` constraint that ensures that
+it can only be combined with the appropriate compiler. The problem in this case is that with a recipe like
 
 ```yaml
   - name: i-consume-fortran-modules
@@ -147,9 +150,9 @@ requirements:
       - a_build_constraint =*=*foo
     build_to_run:           # produces same effect as strong run-export when used together with build_to_host
       - a_compiler_runtime
-    host_to_constraints:    # matches weak_constrains
+    host_to_constraints:    # matches weak_constrains (v0) / weak_constraints (v1)
       - a_run_constraint
-    build_to_constraints:   # matches strong_constrains
+    build_to_constraints:   # matches strong_constrains (v0) / strong_constraints (v1)
       - a_run_constraint
     host_to_host:           # see below
       - a_transitive_dependency
@@ -171,19 +174,25 @@ The case for `build_to_host:` was already made in the Motivation section, though
 beyond C++/Fortran modules where the ability to constrain interactions between compilers and host variants
 is desirable (e.g. openmp, openmpi, etc.).
 
+### Transitive compilation requirements
+
 The most surprising additions might be `host_to_host:` and `build_to_build:`. It would be natural to ask
 why whatever is being exported in such a manner could not be a direct (run-)dependency of the package.
 The answer is that there may be transitive dependencies *at compilation time* that we do not want
 consumers to inherit at runtime (similar to the situation with the Fortran modules ABI).
 
 An example of this is if a library `foo` depends on the headers of another library `bar` at compile-time,
-but we do not want packages built atop of `foo` to carry along those `bar` headers (because at that point
-they're not needed anymore; the concern is about a compile-time quantity, which only concerns either
-`build:` and/or `host:`).
+but we do not want packages built atop of `foo` to carry along those `bar` headers or related version
+constraints (because at that point they're not needed anymore; the concern is about a compile-time
+quantity, which only concerns either `build:` and/or `host:`).
 
-This is also why no `run_to_run:` key is proposed here -- dependency exports address constraints arising
+### Omitted combinations
+
+The above is also why no `run_to_run:` key is proposed here -- dependency exports address constraints arising
 from compilation. At runtime, when the build process is long past, the situation simplifies back to
 the question whether another package is a dependency or not.
+
+### Other modifications
 
 Additionally, to keep the `<valid_requirements_key>_to_<valid_requirements_key>` pattern, we rename
 
