@@ -68,13 +68,6 @@ between environments, and opens further questions along the lines of:
 > If `qux` has a strong run-export, and appears in a `run:` environment of another package,
   does the export trigger or not?
 
-Later still, the constraint variants `weak_constrains` and `strong_constrains` were
-[added](https://github.com/conda/conda-build/pull/4125).
-
-The v1 recipe format moved the `run_exports:` key from the `build:` section to the `requirements:` of the
-respective output, but otherwise did not change the semantics of this feature, aside from renaming
-`run_constrained` to `run_constraints` and `{weak,strong}_constrains` to `{weak,strong}_constraints`.
-
 ### Run-exports vs. noarch
 
 In 2020, a `noarch:` type of run-exports got [added](https://github.com/conda/conda-build/pull/3868); the
@@ -92,6 +85,18 @@ python and R, which are of course key use-cases for building noarch consumers at
 
 Perhaps most notably, since the linked PR, regular run-exports (either weak or strong) do not apply to
 `noarch: {generic, python}` packages anymore, as thereafter they had their own special export type.
+
+### Extension to constraints
+
+Later in 2020, the constraint variants `weak_constrains` and `strong_constrains` were
+[added](https://github.com/conda/conda-build/pull/4125). Since then the feature has
+not seen any major changes anymore.
+
+### The v1 recipe format
+
+CEP 14 moved `run_exports:` and `ignore_run_exports:` from the `build:` section to the `requirements:`
+of the respective output, but otherwise did not change the semantics of this feature, aside from renaming
+`run_constrained` to `run_constraints` and `{weak,strong}_constrains` to `{weak,strong}_constraints`.
 
 ## Motivation
 
@@ -386,8 +391,9 @@ conservative approach, in the sense that we default to strong exports in case of
 
 ### Indexing old artefacts
 
-The same mapping can be inverted to populate the information necessary for `exports.json` of a channel containing a mix
-of new and old artefacts, where the latter cannot be expected to have output-level `exports.json` metadata yet.
+The same mapping can be inverted to populate the information necessary for `exports.json` of a channel containing
+a mix of new and old artefacts, where the latter cannot be expected to consistently have output-level `exports.json`
+metadata yet.
 
 ## Specification
 
