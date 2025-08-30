@@ -282,7 +282,7 @@ build:
 
 which was introduced later (as discussed in History section). The v1 recipe format has kept this shorthand.
 Even though it is likely that `host_to_run:` will represent the overwhelming majority of occurrences of exports,
-we do not believe it is worth allowing a similar shortcut
+we do not believe it is worth allowing a similar shortcut for `exports.host_to_run:`
 
 ```yaml
 requirements:
@@ -290,9 +290,9 @@ requirements:
     - libfoo  # NOT PROPOSED!
 ```
 
-For one, it complicates the schema definition and handling unnecessarily, and saving a few characters is
-not worth the resulting ambiguity. Finally, using `host_to_run:` improves clarity for the recipe reader
-and will naturally (we believe) lead to understanding the other export types.
+For one, it complicates the schema definition and handling unnecessarily, and saving a few characters is not worth
+the resulting ambiguity. Finally, using `host_to_run:` improves clarity for the recipe reader and will naturally
+(we believe) lead to understanding the other export types (or even run-exports as a concept in the first place).
 
 ## Impacts on package and channel metadata
 
@@ -351,12 +351,17 @@ conservative approach, in the sense that we default to strong exports in case of
 - Reuse values for keys which have a 1:1 equivalent in `run_exports:` schema:
   - `host_to_run:` --> `weak:`
   - `host_to_constraints:` --> `weak_constrains:`
-  - `build_to_constraints:` -- > `strong_constrains:`
+  - `build_to_constraints:` --> `strong_constrains:`
   - `noarch_to_run:` --> `noarch:`
 - Add `strong:` run-export in case of doubt, i.e. merge any values of `build_to_host:` & `build_to_run:` into `strong:`.
 - Do not map keys that have no equivalent in `run_exports:`, i.e. omit `host_to_host:` & `build_to_build:`.
 
 ## Specification
+
+### Open questions
+
+- if we change the keys, do we need to bump the recipe version to v2?
+- do we need to update `patch_instructions_version` or other changes to patching infrastructure?
 
 ### Recipes, Parsing, Package Building
 
@@ -475,11 +480,3 @@ Tools MUST take information from `exports:` / `exports.json` (if available) over
 ### Patching
 
 TODO!
-
-### Open questions
-
-- if we change the keys, do we need to bump the recipe version to v2?
-- do we want to specify that implementations need to automatically map `run_exports:` to the corresponding newer keys?
-- do we need repodata changes to represent the new, more granular, export metadata?
-- how does this interact with sharded repodata (c.f. [CEP 21](cep-0021.md))?
-- do we need to specify that installers need to be updated to not choke on unknown keys?
