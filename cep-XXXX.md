@@ -383,7 +383,9 @@ unchanged from the values of `exports:` in the recipe, though exact duplicates f
 be ignored when populating `run_exports.json`.
 
 On channel-level, the `exports.json` file MUST be populated when indexing the channel, in the same way
-as described for `run_exports.json` in CEP 12, but using the following schema.
+as described for `run_exports.json` in CEP 12, but using the following schema. Where artefacts do not yet
+have `exports.json` metadata, the values in `exports:` MUST be populated from the respective keys in
+`run_exports:` according to the above schema mapping.
 
 ```json
 {
@@ -426,13 +428,12 @@ as described for `run_exports.json` in CEP 12, but using the following schema.
 }
 ```
 
-Indexers MUST populate the channel-level `run_exports.json` in a way that is consistent with the output-level
-metadata: either calculated from `exports:` using the above compatibility mapping, or aggregated from the
-output-level `run_exports.json`.
+Indexers MUST (continue to) populate the channel-level `run_exports.json` from the output-level `run_exports.json`.
 
-For sharded repodata following CEP 16 & 21, indexers MUST add an `exports:` key and populate it with the
-respective output-level metadata. Furthermore, indexers MUST populate the value `run_exports:` derived
-from the values of `exports:`, using the schema mapping specified above.
+For sharded repodata following CEP 16 & 21, indexers MUST add an `exports:` key and populate it with the respective
+output-level metadata. Where outputs do not yet provide `exports.json` the values of `exports:` MUST be populated
+from the respective keys in `run_exports:` according to the above schema mapping. Furthermore, indexers MUST populate
+the value `run_exports:` derived from output-level `run_exports.json`.
 
 ### Patching
 
