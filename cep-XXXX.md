@@ -371,7 +371,7 @@ simplified. We suggest to:
   - Populate `run_exports.json` with "compatible" metadata derived from `exports:` (see below).
 - Channel-level:
   - Add a `exports.json` file to the monolithic channel metadata, to be preferred over `run_exports.json` by
-    tools who which know how to handle it.
+    tools which know how to handle it.
   - Add an `exports:` key within sharded metadata without altering `run_exports:`. The same argument with respect to
     the storage footprint as in CEP 21 applies, i.e. the data is highly compressible and will not have more than
     ~5% size impact. Long-term, the existing `run_exports:` information should be removed, freeing up the additional
@@ -417,35 +417,26 @@ TODO!
 On output-level, if there are any non-empty `exports:` specified, build tools MUST produce an `exports.json`
 in the root of the artefact (next to `index.json` etc.), and populate the values with the exports as specified
 in the rendered recipe for that output. If the output has no (or empty) `exports:`, creation of `exports.json`
-MAY be omitted. If the file `exports.json` gets created, its content MUST be a valid JSON object according to
-the schema below, where keys that have empty values MAY be omitted.
+MAY be omitted. For the value of each key under `exports:`, before creating `exports.json` and in the following
+order, tools:
+
+- MUST error on illegal `PackageSelector`s (as defined in CEP 14),
+- MAY normalize the contained `PackageSelector`s (including removal of empty ones),
+- MAY remove exact duplicates within the list of `PackageSelector`s, and
+- MAY omit serializing a given key entirely, if its value is an empty list.
+
+If the file `exports.json` gets created, its content MUST be a valid JSON object according to the schema below:
 
 ```json
 {
-    "build_to_build": [
-        "string",
-    ],
-    "build_to_constraints": [
-        "string",
-    ],
-    "build_to_host": [
-        "string",
-    ],
-    "build_to_run": [
-        "string",
-    ],
-    "host_to_constraints": [
-        "string",
-    ],
-    "host_to_host": [
-        "string",
-    ],
-    "host_to_run": [
-        "string",
-    ],
-    "noarch_to_run": [
-        "string",
-    ]
+    "build_to_build": [PackageSelector],
+    "build_to_constraints": [PackageSelector],
+    "build_to_host": [PackageSelector],
+    "build_to_run": [PackageSelector],
+    "host_to_constraints": [PackageSelector],
+    "host_to_host": [PackageSelector],
+    "host_to_run": [PackageSelector],
+    "noarch_to_run": [PackageSelector]
 }
 ```
 
@@ -464,11 +455,10 @@ We define the following translation between this schema and previous versions of
 
 Build tools MUST populate the output-level `run_exports.json` file with the payload of the `exports:` object
 (for the respective output in the rendered recipe) as follows: they MUST translate keys to the v0 schema per
-the table above, MUST error on illegal `PackageSelector`s (in the sense of CEP 14), MAY normalize the contained
-`PackageSelector`s, MAY omit keys with empty values, and MUST omit keys marked "IGNORED" (including the
-corresponding values). If both `build_to_host:` and `build_to_run:` have non-empty values for the output
-in question, those values MUST be concatenated into `strong:`. For each key, exact duplicates (after
-normalization of the contained `PackageSelector`s) in the corresponding value MAY be removed.
+the table above (while leaving the corresponding values unchanged), and MUST omit keys marked "IGNORED" above
+(including the corresponding values). If both `build_to_host:` and `build_to_run:` have non-empty values for
+the output in question, those values MUST be concatenated into `strong:`. Tools MUST apply the same list of
+normalization steps, as specified for `exports.json` above, before creating `run_exports.json`.
 
 On channel-level, the `exports.json` file MUST be populated when indexing the channel, in the same way
 as described for `run_exports.json` in CEP 12, but using the following schema. Where artefacts do not yet
