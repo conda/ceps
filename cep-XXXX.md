@@ -366,13 +366,13 @@ an [effort](https://github.com/conda/ceps/pull/111) should come to fruition, the
 simplified. We suggest to:
 
 - Output-level:
-  - Add another `exports.json` next to `repodata_record.json` and `run_exports.json`, to be preferred by tools
+  - Add another `exports.json` next to `repodata_record.json`, to be preferred over `run_exports.json` by tools
     which know how to handle it.
   - Populate `run_exports.json` with "compatible" metadata derived from `exports:` (see below).
 - Channel-level:
-  - Add another `exports.json` to the monolithic channel metadata, to be preferred by tools who which know how
-    to handle it.
-  - Add an `exports:` key within sharded metadata without touching `run_exports:`. The same argument with respect to
+  - Add a `exports.json` file to the monolithic channel metadata, to be preferred over `run_exports.json` by
+    tools who which know how to handle it.
+  - Add an `exports:` key within sharded metadata without altering `run_exports:`. The same argument with respect to
     the storage footprint as in CEP 21 applies, i.e. the data is highly compressible and will not have more than
     ~5% size impact. Long-term, the existing `run_exports:` information should be removed, freeing up the additional
     space again.
@@ -384,7 +384,7 @@ work unchanged.
 ### Compatibility mapping back to `run_exports.json`
 
 To smooth the transition, even tools that are aware of this CEP should still populate `run_exports.json` etc., to
-avoid causing breaking behaviour changes in while older versions of build tools are still in use. For setting the
+avoid causing breaking behaviour changes for older versions of build tools that are still in use. For setting the
 values, we propose a conservative approach, in the sense that we default to strong exports in case of doubt:
 
 - Reuse values for keys which have a 1:1 equivalent in `run_exports:` schema:
@@ -392,7 +392,7 @@ values, we propose a conservative approach, in the sense that we default to stro
   - `host_to_constraints:` --> `weak_constrains:`
   - `build_to_constraints:` --> `strong_constrains:`
   - `noarch_to_run:` --> `noarch:`
-- Add `strong:` run-export in case of doubt, i.e. merge any values of `build_to_host:` & `build_to_run:` into `strong:`.
+- Add strong run-export in case of doubt, i.e. merge any values of `build_to_host:` & `build_to_run:` into `strong:`.
 - Do not map keys that have no equivalent in `run_exports:`, i.e. omit `host_to_host:` & `build_to_build:`.
 
 ### Indexing old artefacts
@@ -416,7 +416,7 @@ TODO!
 
 On output-level, if there are any non-empty `exports:` specified, build tools MUST produce an `exports.json`
 in the root of the artefact (next to `index.json` etc.), and populate the values with the exports as specified
-in the rendered recipe for that output. If the output has no (or empty) `exports:`, populating `exports.json`
+in the rendered recipe for that output. If the output has no (or empty) `exports:`, creation of `exports.json`
 MAY be omitted. If the file `exports.json` gets created, its content MUST be a valid JSON object according to
 the schema below, where keys that have empty values MAY be omitted.
 
@@ -449,18 +449,18 @@ the schema below, where keys that have empty values MAY be omitted.
 }
 ```
 
-We define the following translation between this schema and the previous `run_exports:` schema:
+We define the following translation between this schema and previous versions of the `run_exports:` schema:
 
-| `exports:` | `run_exports:` |
-|---|---|
-| `build_to_build:` | IGNORED |
-| `build_to_constraints:` | `strong_constrains:` |
-| `build_to_host:` | `strong:` |
-| `build_to_run:` | `strong:` |
-| `host_to_constraints:` | `weak_constrains:` |
-| `host_to_host:` | IGNORED |
-| `host_to_run:` | `weak:` |
-| `noarch_to_run:` | `noarch:` |
+| `exports:` | `run_exports:` (v0) | `run_exports:` (v1) |
+|---|---|--|
+| `build_to_build:` | IGNORED | IGNORED |
+| `build_to_constraints:` | `strong_constrains:` | `strong_constraints:` |
+| `build_to_host:` | `strong:` | `strong:` |
+| `build_to_run:` | `strong:` | `strong:` |
+| `host_to_constraints:` | `weak_constrains:` | `weak_constraints:` |
+| `host_to_host:` | IGNORED | IGNORED |
+| `host_to_run:` | `weak:` | `weak:` |
+| `noarch_to_run:` | `noarch:` | `noarch:` |
 
 Except for cells marked with "IGNORED", build tools MUST populate the output-level `run_exports.json` file
 unchanged from the values of `exports:` in the recipe, though exact duplicates from the merge between
