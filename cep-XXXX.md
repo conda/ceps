@@ -208,10 +208,6 @@ requirements:
     host_to_constraints:    # matches `weak_constrains:` (v0) / `weak_constraints:` (v1)
       - a_run_constraint
     build_to_constraints:   # matches `strong_constrains:` (v0) / `strong_constraints:` (v1)
-      - a_run_constraint
-    host_to_host:           # see below
-      - a_transitive_dependency
-    build_to_build:         # see below
       - a_transitive_dependency
     # all the above _do not_ apply when building `noarch: generic` or `noarch: python` packages
     noarch_to_run:          # matches `noarch:` run-export; _does_ apply when building noarch packages
@@ -222,7 +218,7 @@ As indicated by the comments, `host_to_run:` matches the existing weak run-expor
 `build_to_run:` this produces the same effect of a strong run-export. Similarly for `host_to_constraints:`
 and `build_to_constraints:`. The other keys introduce new functionality, which is explained below.
 
-Before explaining the transitive case, we note though that this design has the advantage that it's
+This design has the advantage that it's
 immediately clear from the key pattern `<source>_to_<target>` under which conditions a given export
 triggers (i.e. the package carrying the export finds itself in conditions matching `<source>`),
 and what it influences (i.e. the export gets added to `<target>`). This avoids a lot of mental arithmetic
@@ -238,18 +234,6 @@ cannot be abandoned for the sake of foolish consistency. Given how existing run-
 noarch packages at all, it's seems natural to consider noarch as just another condition that is either met
 during the build phase of a dependent project, or not. The overall rule still remains easy to summarise as
 "`exports:` do not apply when building noarch packages, unless the export is of type `noarch_to_run:`."
-
-### Transitive compilation requirements
-
-The most surprising additions might be `host_to_host:` and `build_to_build:`. It would be natural to ask
-why whatever is being exported in such a manner could not be a direct (run-)dependency of the package.
-The answer is that there may be transitive dependencies *at compilation time* that we do not want
-consumers to inherit at runtime (similar to the situation with the Fortran modules ABI).
-
-An example of this is if a library `foo` depends on the headers of another library `bar` at compile-time
-(possibly with restrictive version constraints), but we do not want packages built atop of `foo` to carry
-along those `bar` headers or related constraints (because at that point they're not needed anymore;
-the concern is about a compile-time quantity, which only concerns either `build:` and/or `host:`).
 
 ### Other modifications
 
@@ -282,11 +266,32 @@ Likewise we rename `ignore_run_exports`
 which should ignore any exports into `run:` or `constraints:` matching the conditions (whether
 by originating package or by name of the export), regardless of which export type it comes from.
 
-### Omitted combinations
+### Transitive compilation requirements
 
-In all cases except `noarch` packages, dependency exports address constraints or interactions arising from
-compilation. At runtime, when the build process is long past, the situation simplifies back to the question
-whether another package is a dependency or not, which is why no `run_to_run:` key is proposed here.
+A case can be made for `host_to_host:` and `build_to_build:`, despite the natural follow-up question
+why whatever is being exported in such a manner could not be a direct (run-)dependency of the package.
+The answer is that there may be transitive dependencies *at compilation time* that we do not want
+consumers to inherit at runtime (similar to the situation with the Fortran modules ABI).
+
+An example of this is if a library `foo` depends on the headers of another library `bar` at compile-time
+(possibly with restrictive version constraints), but we do not want packages built atop of `foo` to carry
+along those `bar` headers or related constraints (because at that point they're not needed anymore;
+the concern is about a compile-time quantity, which only concerns either `build:` and/or `host:`).
+
+While these exports were proposed in a previous iteration of this CEP, they have now been removed.
+The key reason for this is that it complicates the environment resolution process in a way that is
+difficult to disentangle: for a given set of dependencies, we would have to check whether they have
+any `X_to_X:` exports, but to do so, we already have to resolve the environment, in order to determine
+the exact set of artefacts for which we would look up the respective `exports.json`. Once the initial
+solve has been made, adding further constraints might change the environment, which may go as far as
+removing the artefact that was responsible for the `X_to_X:` export in the first place!
+
+Such use-cases are very likely better solved by conditional dependencies, which can be resolved in a
+single pass, and would avoid substantial implementation complexity stemming from the unavoidable
+multi-phase resolution (and attendant issues), if this were done on the same level as cross-environment
+exports.
+
+### Other omitted combinations
 
 Furthermore, one could ask about a possible `host_to_build:` key. While this would arguably be an even better
 fit for the C++/Fortran modules ABI issue described above, the reason this proposal refrains from suggesting
@@ -295,8 +300,8 @@ such a key is to limit implementation complexity, by having an implicit order of
 process unnecessarily, and we believe the relevant use-cases are fully expressible using `build_to_host:`
 together with constraints (such as `_fortran_modules_abi`) attached to packages that appear in `host:`.
 
-Summing up, `build:` can export to all others (i.e. `build:`, `host:`, `run:`, `constraints:`), `host:` can
-export to everything but `build:`, while nothing can be exported from either `run:` or `constraints:`. None
+Summing up, `build:` can export to all others (i.e. `host:`, `run:`, `constraints:`), `host:` can export
+to `run:` and `constraints:`, while nothing can be exported from either `run:` or `constraints:`. None
 of these exports apply when building noarch packages, which only take into account `noarch_to_run:` exports.
 
 ### No convenience shorthand
@@ -393,7 +398,6 @@ values, we propose a conservative approach, in the sense that we default to stro
   - `build_to_constraints:` --> `strong_constrains:`
   - `noarch_to_run:` --> `noarch:`
 - Add strong run-export in case of doubt, i.e. merge any values of `build_to_host:` & `build_to_run:` into `strong:`.
-- Do not map keys that have no equivalent in `run_exports:`, i.e. omit `host_to_host:` & `build_to_build:`.
 
 ### Indexing old artefacts
 
@@ -429,12 +433,10 @@ If the file `exports.json` gets created, its content MUST be a valid JSON object
 
 ```json
 {
-    "build_to_build": [PackageSelector],
     "build_to_constraints": [PackageSelector],
     "build_to_host": [PackageSelector],
     "build_to_run": [PackageSelector],
     "host_to_constraints": [PackageSelector],
-    "host_to_host": [PackageSelector],
     "host_to_run": [PackageSelector],
     "noarch_to_run": [PackageSelector]
 }
@@ -444,19 +446,17 @@ We define the following translation between this schema and previous versions of
 
 | `exports:` | `run_exports:` (v0) | `run_exports:` (v1) |
 |---|---|--|
-| `build_to_build:` | IGNORED | IGNORED |
 | `build_to_constraints:` | `strong_constrains:` | `strong_constraints:` |
 | `build_to_host:` | `strong:` | `strong:` |
 | `build_to_run:` | `strong:` | `strong:` |
 | `host_to_constraints:` | `weak_constrains:` | `weak_constraints:` |
-| `host_to_host:` | IGNORED | IGNORED |
 | `host_to_run:` | `weak:` | `weak:` |
 | `noarch_to_run:` | `noarch:` | `noarch:` |
 
 Build tools MUST populate the output-level `run_exports.json` file with the payload of the `exports:` object
 (for the respective output in the rendered recipe) as follows: they MUST translate keys to the v0 schema per
-the table above (while leaving the corresponding values unchanged), and MUST omit keys marked "IGNORED" above
-(including the corresponding values). If both `build_to_host:` and `build_to_run:` have non-empty values for
+the table above (while leaving the corresponding values unchanged).
+If both `build_to_host:` and `build_to_run:` have non-empty values for
 the output in question, those values MUST be concatenated into `strong:`. Tools MUST apply the same list of
 normalization steps, as specified for `exports.json` above, before creating `run_exports.json`.
 
@@ -476,9 +476,6 @@ have `exports.json` metadata, the values in `exports:` MUST be populated from th
     "packages": {
         "package-version-build.conda": {  # or package-version-build.tar.bz
             "exports": {
-                "build_to_build": [
-                    "string",
-                ],
                 "build_to_constraints": [
                     "string",
                 ],
@@ -489,9 +486,6 @@ have `exports.json` metadata, the values in `exports:` MUST be populated from th
                     "string",
                 ],
                 "host_to_constraints": [
-                    "string",
-                ],
-                "host_to_host": [
                     "string",
                 ],
                 "host_to_run": [
