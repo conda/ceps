@@ -28,7 +28,7 @@ track dependencies sufficiently well in order to be able to share artefacts betw
 rather than vendoring dependent libraries for every consumer.
 
 In contrast to static or header-only libraries, a shared library `foo` is not only required during the
-build phase `bar` (the headers for `# include <foo.h>` to work and `libfoo.so` for linkage to succeed),
+build phase for `bar` (the headers for `# include <foo.h>` to work and `libfoo.so` for linkage to succeed),
 but needs to be present in the final environment for `bar` as well. Aside from corner-cases,
 this runtime dependency *always* follows, and it is therefore natural to ask the build tool (together
 with appropriate metadata) to do this work for us.
@@ -91,7 +91,7 @@ Perhaps most notably, since the linked PR, regular run-exports (either weak or s
 
 Later in 2020, the constraint variants `weak_constrains` and `strong_constrains` were
 [added](https://github.com/conda/conda-build/pull/4125). Since then the feature has
-not seen any major changes anymore.
+not seen any major changes.
 
 ### The v1 recipe format
 
@@ -134,8 +134,8 @@ it can only be combined with the appropriate compiler. The problem in this case 
 there's no way to make the "wrong" fortran compiler conflict with `foo-devel`, because we explicitly
 do not want a strong run-export from the general-purpose `{{ compiler("fortran") }}` (more precisely,
 the underlying package `${fortran_compiler}_${target_platform}`) to enforce a specific compiler ABI in
-`run:`, which would unnecessarily make the package unusable together with packages built by other
-Fortran compilers.
+`run:`. This would unnecessarily make the package unusable together with packages built by other Fortran
+compilers, as the Fortran modules are a build-only quantity and their ABI is not relevant at runtime.
 
 The solution in this case would be to add an export to the various `${fortran_compiler}_${target_platform}`
 packages which injects `_fortran_modules_abi =*=compiler_flavour*` *only* into the `host:` environment;
@@ -339,7 +339,7 @@ the resulting ambiguity. Finally, using `host_to_run:` improves clarity for the 
 Both [CEP 12](cep-0012.md) and [CEP 21](cep-0021.md) worked in the area of specifying how run-exports are
 represented in package and channel metadata.
 
-To the best of our knowledge, the format of `run_exports.json` on a per-package level has not been formalised,
+To the best of our knowledge, the format of `run_exports.json` on a per-output level has not been formalised,
 though, unsurprisingly, it is [simply](https://github.com/conda/conda-build/blob/25.7.0/conda_build/build.py#L1378-L1387)
 a JSON-extract of the relevant `run_exports:` portion of the rendered recipe.
 CB3 originally introduced this as `run_exports.yaml`, which got [switched](https://github.com/conda/conda-build/commit/1347f3df264c57d79ab078f88fae2d8862a58d9f)
@@ -350,8 +350,8 @@ extraction of run-export metadata (e.g. for conda-forge's bot infrastructure) at
 every individual package first. This effort refrained from touching `repodata.json`, among other reasons because:
 > It would require extending the `repodata` schema, currently not formally standardised.
 
-Indeed, inspection of package-level `repodata_record.json` of contemporary (mid-2025) packages shows that run-exports
-do not appear in the regular package-metadata.
+Indeed, inspection of output-level `repodata_record.json` of contemporary (mid-2025) packages shows that run-exports
+do not even appear in the regular metadata, only in `run_exports.json`.
 
 CEP 21 (building on top of [CEP 16](cep-0016.md)) added channel-level run-export information, though in contrast
 to CEP 12, added this to the physically sharded but logically unified repodata.
@@ -370,10 +370,11 @@ simplified. We suggest to:
     which know how to handle it.
   - Populate `run_exports.json` with "compatible" metadata derived from `exports:` (see below).
 - Channel-level:
-  - Add another `exports.json` to the monolithic channel metadata, to be preferred by tools who which how to handle it.
+  - Add another `exports.json` to the monolithic channel metadata, to be preferred by tools who which know how
+    to handle it.
   - Add an `exports:` key within sharded metadata without touching `run_exports:`. The same argument with respect to
     the storage footprint as in CEP 21 applies, i.e. the data is highly compressible and will not have more than
-    ~5% impact. Long-term, the existing `run_exports:` information should be removed, freeing up the additional
+    ~5% size impact. Long-term, the existing `run_exports:` information should be removed, freeing up the additional
     space again.
 
 The reason to add separate files and keys is that this provides the easiest compatibility story: tools which are
@@ -383,8 +384,8 @@ work unchanged.
 ### Compatibility mapping back to `run_exports.json`
 
 To smooth the transition, even tools that are aware of this CEP should still populate `run_exports.json` etc., to
-avoid causing breaking behaviour changes in older versions during the transition. For setting the values, we propose
-a conservative approach, in the sense that we default to strong exports in case of doubt:
+avoid causing breaking behaviour changes in while older versions of build tools are still in use. For setting the
+values, we propose a conservative approach, in the sense that we default to strong exports in case of doubt:
 
 - Reuse values for keys which have a 1:1 equivalent in `run_exports:` schema:
   - `host_to_run:` --> `weak:`
@@ -515,9 +516,9 @@ have `exports.json` metadata, the values in `exports:` MUST be populated from th
 Indexers MUST (continue to) populate the channel-level `run_exports.json` from the output-level `run_exports.json`.
 
 For sharded repodata following CEP 16 & 21, indexers MUST add an `exports:` key and populate it with the respective
-output-level metadata. Where outputs do not yet provide `exports.json` the values of `exports:` MUST be populated
+output-level metadata. Where outputs do not yet provide `exports.json`, the values of `exports:` MUST be populated
 from the respective keys in `run_exports:` according to the above schema mapping. Furthermore, indexers MUST
-(continue to) populate the value `run_exports:` derived from output-level `run_exports.json`.
+(continue to) populate the value of `run_exports:` with the aggregation of output-level `run_exports.json`.
 
 Tools MUST take information from `exports:` / `exports.json` (if available) over `run_exports:` / `run_exports.json`.
 
