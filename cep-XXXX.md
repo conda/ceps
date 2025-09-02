@@ -462,10 +462,13 @@ We define the following translation between this schema and previous versions of
 | `host_to_run:` | `weak:` | `weak:` |
 | `noarch_to_run:` | `noarch:` | `noarch:` |
 
-Except for cells marked with "IGNORED", build tools MUST populate the output-level `run_exports.json` file
-unchanged from the values of `exports:` in the recipe, though exact duplicates from the merge between
-`build_to_host:` and `build_to_run:` into `strong:` MAY be removed. Values from `build_to_build:` and
-`host_to_host:` MUST be ignored when populating `run_exports.json`.
+Build tools MUST populate the output-level `run_exports.json` file with the payload of the `exports:` object
+(for the respective output in the rendered recipe) as follows: they MUST translate keys to the v0 schema per
+the table above, MUST error on illegal `PackageSelector`s (in the sense of CEP 14), MAY normalize the contained
+`PackageSelector`s, MAY omit keys with empty values, and MUST omit keys marked "IGNORED" (including the
+corresponding values). If both `build_to_host:` and `build_to_run:` have non-empty values for the output
+in question, those values MUST be concatenated into `strong:`. For each key, exact duplicates (after
+normalization of the contained `PackageSelector`s) in the corresponding value MAY be removed.
 
 On channel-level, the `exports.json` file MUST be populated when indexing the channel, in the same way
 as described for `run_exports.json` in CEP 12, but using the following schema. Where artefacts do not yet
