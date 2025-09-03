@@ -116,7 +116,8 @@ The JSON file format is:
 Here `version` is for the version of the DSO list JSON schema and will always
 be present for these files. The build tools should check the version and
 validate that the `version` is a known and supported version and error out
-if not.
+if not. This CEP specifies `version=1` only and subsequent CEPs can revise
+this format by changing the `version` key.
 
 The elements of the two lists `allow` and `deny` supports standard POSIX
 globbing syntax; i.e., the following is allowed:
@@ -136,7 +137,7 @@ globbing syntax; i.e., the following is allowed:
 ```
 
 Note that forward slashes are used for path separation and only absolute paths
-are allowed.
+are allowed. This rule should be enforced by the build tool.
 
 When no allow list is available among all the JSON files, but only deny lists are
 available, a default `C:/Windows/System32/*.dll` glob is assumed.
