@@ -154,3 +154,7 @@ files are processed first and then deny lists are processed.
 In this CEP, we propose a method to allow users of conda build tools
 to control the allowed system DLLs on Windows, bringing it to feature
 parity with Linux and macOS.
+
+## Copyright
+
+All CEPs are explicitly [CC0 1.0 Universal](https://creativecommons.org/publicdomain/zero/1.0/).
