@@ -137,7 +137,8 @@ globbing syntax; i.e., the following is allowed:
 ```
 
 Note that forward slashes are used for path separation and only absolute paths
-are allowed. This rule should be enforced by the build tool.
+are allowed. Paths starting with `**` are considrered to be absolute paths.
+These rules should be enforced by the build tool.
 
 When no allow list is available among all the JSON files, but only deny lists are
 available, a default `C:/Windows/System32/*.dll` glob is assumed.
