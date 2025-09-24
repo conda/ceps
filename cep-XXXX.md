@@ -57,7 +57,8 @@ For Windows,
    `$PREFIX/Library/bin`, etc), the DSO has to be installed as
    well; either as part of the same package or one of its dependencies.
 
-2. If the DSO was in `CONDA_BUILD_SYSROOT` (this is unset in most scenarios), then   these are system libraries and are allowed.
+2. If the DSO was in `CONDA_BUILD_SYSROOT` (this is unset in most scenarios), then
+   these are system libraries and are allowed.
 
 3. If the DSO was in `C:\Windows\System32`, then these are system libraries and are
    allowed.
