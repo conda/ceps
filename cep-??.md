@@ -1,3 +1,5 @@
+# CEP XXXX - The `MatchSpec` grammar
+
 <table>
 <tr><td> Title </td><td> The <code>MatchSpec</code> grammar </td>
 <tr><td> Status </td><td> Draft </td></tr>
@@ -62,7 +64,7 @@ When both positional and keyword arguments are used, the keyword arguments overr
 
 Since there are several ways of specifying the same information, a canonical representation is welcome. The currently accepted notation is:
 
-```
+```text
 (channel(/subdir):(namespace):)name(version(build))[key1='value 1',key2=value2]
 ```
 
@@ -113,20 +115,21 @@ The version field uses a PEP-440-like ordering defined in [`conda.models.version
 > followed by `!` - can proceed the actual version string
 > (this is useful to indicate a change in the versioning
 > scheme itself). Version comparison is case-insensitive.
-> 
+>
 > Conda supports six types of version strings:
-> * Release versions contain only integers, e.g. `1.0`, `2.3.5`.
-> * Pre-release versions use additional letters such as `a` or `rc`,
+>
+> - Release versions contain only integers, e.g. `1.0`, `2.3.5`.
+> - Pre-release versions use additional letters such as `a` or `rc`,
 >   for example `1.0a1`, `1.2.beta3`, `2.3.5rc3`.
-> * Development versions are indicated by the string `dev`,
+> - Development versions are indicated by the string `dev`,
 >   for example `1.0dev42`, `2.3.5.dev12`.
-> * Post-release versions are indicated by the string `post`,
+> - Post-release versions are indicated by the string `post`,
 >   for example `1.0post1`, `2.3.5.post2`.
-> * Tagged versions have a suffix that specifies a particular
+> - Tagged versions have a suffix that specifies a particular
 >   property of interest, e.g. `1.1.parallel`. Tags can be added
 >   to any of the preceding four types. As far as sorting is concerned,
 >   tags are treated like strings in pre-release versions.
-> * An optional local version string separated by `+` can be appended
+> - An optional local version string separated by `+` can be appended
 >   to the main (upstream) version string. It is only considered
 >   in comparisons when the main versions are equal, but otherwise
 >   handled in exactly the same manner.
@@ -134,26 +137,27 @@ The version field uses a PEP-440-like ordering defined in [`conda.models.version
 > To obtain a predictable version ordering, it is crucial to keep the
 > version number scheme of a given package consistent over time.
 > Specifically,
-> * version strings should always have the same number of components
+>
+> - version strings should always have the same number of components
 >   (except for an optional tag suffix or local version string),
-> * letters/strings indicating non-release versions should always
+> - letters/strings indicating non-release versions should always
 >   occur at the same position.
 > Before comparison, version strings are parsed as follows:
-> * They are first split into epoch, version number, and local version
+> - They are first split into epoch, version number, and local version
 >   number at `!` and `+` respectively. If there is no `!`, the epoch is
 >   set to 0. If there is no `+`, the local version is empty.
-> * The version part is then split into components at `.` and `_`.
-> * Each component is split again into runs of numerals and non-numerals
-> * Subcomponents containing only numerals are converted to integers.
-> * Strings are converted to lower case, with special treatment for `dev`
+> - The version part is then split into components at `.` and `_`.
+> - Each component is split again into runs of numerals and non-numerals
+> - Subcomponents containing only numerals are converted to integers.
+> - Strings are converted to lower case, with special treatment for `dev`
 >   and `post`.
-> * When a component starts with a letter, the fillvalue 0 is inserted
+> - When a component starts with a letter, the fillvalue 0 is inserted
 >   to keep numbers and strings in phase, resulting in `1.1.a1 == 1.1.0a1`.
-> * The same is repeated for the local version part.
+> - The same is repeated for the local version part.
 >
 > Examples:
 >
-> ```
+> ```text
 > 1.2g.beta15.rc  =>  [[0], [1], [2, 'g'], [0, 'beta', 15], [0, 'rc']]
 > 1!2.15.1_ALPHA  =>  [[1], [2], [15], [1, '_alpha']]
 > ```
@@ -161,17 +165,17 @@ The version field uses a PEP-440-like ordering defined in [`conda.models.version
 > The resulting lists are compared lexicographically, where the following
 > rules are applied to each pair of corresponding subcomponents:
 >
-> * integers are compared numerically
-> * strings are compared lexicographically, case-insensitive
-> * strings are smaller than integers, except
->   * `dev` versions are smaller than all corresponding versions of other types
->   * `post` versions are greater than all corresponding versions of other types
-> * if a subcomponent has no correspondent, the missing correspondent is
+> - integers are compared numerically
+> - strings are compared lexicographically, case-insensitive
+> - strings are smaller than integers, except
+>   - `dev` versions are smaller than all corresponding versions of other types
+>   - `post` versions are greater than all corresponding versions of other types
+> - if a subcomponent has no correspondent, the missing correspondent is
 >   treated as integer 0 to ensure `1.1` == `1.1.0`.
 >
 > The resulting order is:
 >
-> ```
+> ```text
 >    0.4
 >  < 0.4.0
 >  < 0.4.1.rc
@@ -206,14 +210,14 @@ The version field uses a PEP-440-like ordering defined in [`conda.models.version
 > In particular, openssl interprets letters as version counters rather than
 > pre-release identifiers. For openssl, the relation:
 >
-> ```
+> ```text
 > 1.0.1 < 1.0.1a  =>  False  # should be true for openssl
 > ```
 >
 > holds, whereas conda packages use the opposite ordering. You can work-around
 > this problem by appending an underscore to plain version numbers:
 >
-> ```
+> ```text
 > 1.0.1_ < 1.0.1a =>  True   # ensure correct ordering for openssl
 > ```
 
@@ -229,7 +233,7 @@ No spaces are allowed between operators. `1.8*` and `1.8.*` are equivalent, but 
 
 ### Exact matches
 
-To fully-specify a package record with a full, exact spec, these fields must be given as exact values: `channel` (preferrably by URL), `subdir`, `name`, `version`, `build`. Alternatively, an exact spec can also be given by `*[md5=12345678901234567890123456789012]` or `*[sha256=f453db4ffe2271ec492a2913af4e61d4a6c118201f07de757df0eff769b65d2e]`.
+To fully-specify a package record with a full, exact spec, these fields must be given as exact values: `channel` (preferably by URL), `subdir`, `name`, `version`, `build`. Alternatively, an exact spec can also be given by `*[md5=12345678901234567890123456789012]` or `*[sha256=f453db4ffe2271ec492a2913af4e61d4a6c118201f07de757df0eff769b65d2e]`.
 
 ## Examples
 
