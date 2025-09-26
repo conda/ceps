@@ -213,7 +213,7 @@ With that ordering in mind, the following operators are allowed:
 - Exact equality and negated equality: `==`, `!=`.
 - Fuzzy equality: `=`, `*`. `=1.0` and `1.0.*` are equivalent, and both would match `1.0.0` and `1.0.1`, but not `1.1` or `0.9`.
 - Logical operators: `|` means OR, `,` means AND. `1.0|1.2` would match both `1.0` and `1.2`. `>=1.0,<2.0a0` would match everything between `1.0` and the last version before `2.0a0`. `,` (AND) has higher precedence than `|` (OR). `>=1,<2|>3` means `(>=1,<2)|(>3)`; i.e. greater than or equal to `1` AND less than `2` or greater than `3`, which matches `1`, `1.3` and `3.0`, but not `2.2`.
-- Semver-like operator: `~=`. `~=0.5.3` is equivalent to `>=0.5.3, <0.6.0a` and this syntax is preferred for backwards compatibility.
+- Semver-like operator: `~=`. `~=0.5.3` is equivalent to `>=0.5.3,0.5.*` and this syntax is preferred for backwards compatibility.
 
 No spaces are allowed between operators. `1.8*` and `1.8.*` are equivalent, but the latter is preferred for clarity.
 
@@ -236,9 +236,10 @@ To fully-specify a package record with a full, exact spec, these fields must be 
 "foo[subdir=linux-64,version='>=1.0']"
 ```
 
-## Reference
+## References
 
 - [`conda.models.match_spec.MatchSpec`](https://github.com/conda/conda/blob/24.5.0/conda/models/match_spec.py)
+- [`rattler_conda_types::match_spec`](https://github.com/conda/rattler/blob/rattler-v0.37.4/crates/rattler_conda_types/src/match_spec/mod.rs)
 - [Package match specifications at conda-build docs](https://docs.conda.io/projects/conda-build/en/latest/resources/package-spec.html#package-match-specifications)
 
 ## Copyright
