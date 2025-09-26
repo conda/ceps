@@ -54,7 +54,7 @@ When both positional and keyword arguments are used, the keyword arguments overr
 Since there are several ways of specifying the same information, a canonical representation is welcome. The currently accepted notation is:
 
 ```
-(channel(/subdir)::)name(version(build))[key1='value 1',key2=value2]
+(channel(/subdir):(namespace):)name(version(build))[key1='value 1',key2=value2]
 ```
 
 where `()` indicate optional fields. The rules for constructing a canonical string
