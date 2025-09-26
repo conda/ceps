@@ -1,7 +1,7 @@
 # CEP for the cache output in v1 recipes / rattler-build
 
 <table>
-<tr><td> Title </td><td> The cache output in v1 recipes / rattler-build </td>
+<tr><td> Title </td><td> The staging output in v1 recipes / rattler-build </td>
 <tr><td> Status </td><td> In Discussion </td></tr>
 <tr><td> Author(s) </td><td> Wolf Vollprecht &ltw.vollprecht@gmail.com&gt; </td></tr>
 <tr><td> Created </td><td> Nov 27, 2024</td></tr>
@@ -12,7 +12,7 @@
 
 ## Abstract
 
-This CEP aims to define the cache output for v1 multi-output recipes.
+This CEP aims to define the staging output for v1 multi-output recipes.
 
 ## Background
 
@@ -20,7 +20,7 @@ Sometimes it is very useful to build some code once, and then split it into mult
 
 There are many downsides to the behavior of `conda-build`: it's very implicit, hard to understand and hard to debug (for example, if an output is defined with the same name as the top-level recipe, this output will get the same requirements attached as the top-level).
 
-For the v1 spec we are attempting to formalize the workings of the "top-level" build. For this, we introduce a new `cache` output, that has the same values as a regular output, but does not produce a package artifact. Instead, we keep changes from the `cache` output in a temporary location on the filesystem and restore from this checkpoint when building other outputs that _inherit_ from this cache.
+For the v1 spec we are attempting to formalize the workings of the "top-level" build. For this, we introduce a new `staging` output, that has the same values as a regular output, but does not produce a package artifact. Instead, we keep changes from the `staging` output in a temporary location on the filesystem and restore from this checkpoint when building other outputs that _inherit_ from this `staging` cache.
 
 ## Specification
 
@@ -28,7 +28,7 @@ The cache output looks as follows:
 
 ```yaml
 outputs:
-  - cache:
+  - staging:
       name: foo-cache   # required, string, follows rules of `PackageName`
 
     source:
@@ -54,7 +54,7 @@ outputs:
 
   - package:
       name: foo-headers
-    
+
     # long form of newly added `inherit` key
     inherit:
       from: foo-cache
@@ -66,7 +66,7 @@ outputs:
 
   - package:
       name: foo
-    
+
     # short form, inherits run exports by default
     inherit: foo-cache
 
@@ -76,7 +76,7 @@ outputs:
         - ${{ pin_subpackage("foo-headers", exact=True) }}
 ```
 
-> [!WARNING]  
+> [!WARNING]
 > When using `outputs` we are going to remove the implicit `build.script` pointing to `script.sh`. Going forward, the script name / content has to be set explicitly.
 
 When computing variants and used variables, rattler-build looks at the union of a given output and the cache. That means, even if an output does not define any requirements, the cache would still add a variant for the `c_compiler`.
@@ -147,12 +147,10 @@ The `inherit` key is used to inherit from a cache output. We also generalize the
 
 Both, `cache` and `package` outputs can inherit, however, a `cache` cannot inherit from a `package`.
 
-When inheriting, values from `build` and `about` are deeply merged with the values from the cache output, except for the value of `build.script`. 
+When inheriting, values from `build` and `about` are deeply merged with the values from the cache output, except for the value of `build.script`.
 
 Requirements are not inherited, however, `run_exports` are. The inheritance of `run_exports` can be disabled by setting the `run_exports` key to `false` in the `inherit` map. To ignore certain run-exports they can be either ignored in the cache output or in the package output (both follow the same rules).
 
-Option B: we also inherit requirements from the cache output but we have a fast path if no `build.script` is set, we don't restore the dependencies and just distribute the files to the packages based on `build.files` (skip env setup).
-
 ### Top-level inheritance
 
-Inheriting from the top-level is a special case of regular "cache" inheritance. If the output does not specify any `inherit` key or explicitly sets `inherit: null` then we inherit from the top-level and apply `package.version`, `source`, `build` and `about` from the top-level to each output. In the case of top-level inheritance, requirements and build script are forbidden and thus ignored. This unifies the rules for both cache and top-level.
+Inheriting from the top-level is a special case of regular "cache" inheritance. If the output does not specify any `inherit` key or explicitly sets `inherit: null` then we inherit from the top-level and apply `recipe.version`, `source`, `build` and `about` from the top-level to each output. In the case of top-level inheritance, requirements and build script are forbidden and thus ignored. This unifies the rules for both cache and top-level.
