@@ -22,11 +22,20 @@ The `MatchSpec` query syntax is a mini-language designed to query package record
 
 ## Mini language
 
-The `MatchSpec` mini language has gone through several iterations.
+The `MatchSpec` mini language has gone through several iterations:
 
-The simplest form merely consists of up to three positional arguments: `name [version [build]]`. Only `name` is required. `version` can be any version specifier. `build` can be any string matcher. See "Match conventions" below.
+- Positional syntax, with two variants: space- and `=`-separated.
+- Square brackets syntax.
 
-The positional syntax also allows the `=` character as a separator, instead of a space. When this is the case, versions are interpreted differently. `pkg=1.8` will be taken as `1.8.*` (fuzzy), but `pkg 1.8` will give `1.8` (exact). To have fuzzy matches with the space syntax, you need to use `pkg =1.8`. This nuance does not apply if a `build` string is present; both `foo==1.0=*` and `foo=1.0=*` are equivalent (they both understand the version as `1.0`, exact).
+### Space-separated positional syntax
+
+The simplest form merely consists of up to six positional arguments: `[channel[/subdir]:[namespace]:]name [version [build]]`. Only `name` is required. `version` can be any version specifier. `build` can be any string matcher. See "Match conventions" below.
+
+### `=`-separated positional syntax
+
+The positional syntax also allows the `=` character as a separator, instead of a space, between `name`, `version` and `build`. When this is the case, versions are interpreted differently. `pkg=1.8` will be taken as `1.8.*` (fuzzy), but `pkg 1.8` will give `1.8` (exact). To have fuzzy matches with the space syntax, you need to use `pkg =1.8`. This nuance does not apply if a `build` string is present; both `foo==1.0=*` and `foo=1.0=*` are equivalent (they both understand the version as `1.0`, exact).
+
+### Square brackets syntax
 
 `MatchSpec` queries can be also specified with keyword arguments between square brackets. Key-value pairs can be delimited by comma, space, or comma+space. Value can optionally be wrapped in single or double quotes, but must be wrapped if `value` contains a comma, space, or equal sign. Their values can be quoted with single or double quotes. The accepted keys are:
 
@@ -47,7 +56,7 @@ These are also accepted but have reduced utility. Their usage is discouraged:
 - `license_family`
 - `fn`
 
-When both positional and keyword arguments are used, the keyword arguments override the positional information.
+When both positional and keyword arguments are used, the keyword arguments override the positional information, except for `name` (positional value wins).
 
 ## Canonical representation
 
@@ -57,7 +66,8 @@ Since there are several ways of specifying the same information, a canonical rep
 (channel(/subdir):(namespace):)name(version(build))[key1='value 1',key2=value2]
 ```
 
-where `()` indicate optional fields. The rules for constructing a canonical string
+where `()` indicate optional fields. `version` and `build` can be separated by a
+space or `=` (see above). The rules for constructing a canonical string
 representation are:
 
 1. `name` (i.e. "package name") is required, but its value can be `*`. Its position is always
