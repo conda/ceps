@@ -89,7 +89,7 @@ When `MatchSpec` queries attribute values are simple strings, they are interpret
 following conventions:
 
 - If the string begins with `^` and ends with `$`, it is converted to a regex.
-- If the string contains an asterisk (`*`), it is transformed from a glob to a regex.
+- If the string contains an asterisk (`*`), it is transformed from a glob to a regex. For example, `*cuda` becomes `^.*cuda$`.
 - Otherwise, an exact match to the string is sought.
 
 ### Version specifiers
