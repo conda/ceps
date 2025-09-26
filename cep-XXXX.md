@@ -117,7 +117,9 @@ The version MUST be overridable with the `CONDA_OVERRIDE_LINUX` environment vari
 
 #### `__osx`
 
-This virtual package MUST be present when the target platform is `osx-*`. Its version value MUST be set to the first two numeric components of macOS version formatted as `{major}.{minor}`. If applicable, the `SYSTEM_VERSION_COMPAT` environment variable workaround MUST NOT be enabled; e.g. the version reported for Big Sur should be 11.x and not 10.16. If the version cannot be estimated (e.g. because the native platform is not macOS), the fallback value MUST be set to `0`. The build string MUST be `0`.
+This virtual package MUST be present when the target platform is `osx-*`. Its version value MUST be set to the first two numeric components of macOS version formatted as `{major}.{minor}`. If applicable, the `SYSTEM_VERSION_COMPAT` environment variable workaround MUST NOT be enabled; e.g. the version reported for Big Sur should be 11.x and not 10.16.
+
+If the version cannot be estimated (e.g. because the native platform is not macOS), the fallback value MUST be set to `0`. The build string MUST be `0`.
 
 The version MUST be overridable with the `CONDA_OVERRIDE_OSX` environment variable if set to a non-empty value that can be parsed as a version string. The environment variable MUST be ignored when the target platform is not `osx-*`.
 
