@@ -94,7 +94,7 @@ following conventions:
 
 ### Version specifiers
 
-The version field uses a PEP-440 derivative ordering defined in [`conda.models.version.VersionOrder`](https://github.com/conda/conda/blob/c9348478751c57d136a25058c79aef1fc91d2863/conda/models/version.py#L52). Excerpts of its contents are submitted here for reference:
+The version field uses a PEP-440-like ordering defined in [`conda.models.version.VersionOrder`](https://github.com/conda/conda/blob/c9348478751c57d136a25058c79aef1fc91d2863/conda/models/version.py#L52). Excerpts of its contents are submitted here for reference:
 
 > Version strings can contain the usual alphanumeric characters
 > (A-Za-z0-9), separated into components by dots and underscores. Empty
