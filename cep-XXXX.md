@@ -1,7 +1,7 @@
-# CEP ???? - Virtual packages
+# CEP XXXX - Virtual packages
 
 <table>
-<tr><td> Title </td><td> Virtual packages </td>
+<tr><td> Title </td><td> CEP XXXX - Virtual packages </td>
 <tr><td> Status </td><td> Draft </td></tr>
 <tr><td> Author(s) </td><td> Jaime Rodríguez-Guerra &lt;jaime.rogue@gmail.com&gt;</td></tr>
 <tr><td> Created </td><td> Dec 17, 2024</td></tr>
@@ -33,33 +33,33 @@ Virtual packages are used to expose details of the system configuration to a con
 A virtual package is defined as a package record with three fields: name, version and build string.
 The name MUST start with double underscore (`__`). The version and build string MUST follow the same semantics as in regular package records. More specifically, the version field MUST follow the version string specifications, regardless its origin (computed from a system property, overridden by the user or configuration, or provided by default by the tool).
 
-Some general considerations: 
+Some general considerations:
 
-- The version or build string of a virtual package MAY be overridden by the value of `CONDA_OVERRIDE_{NAME}` environment variable, with `{NAME}` being the uppercased name of the virtual package (excluding the leading underscores). Many exceptions apply so please observe the details in the section below.
-- The build string MAY be zero (`0`). Some exceptions apply. See below.
-- When the tool used a fallback default value instead of a computed one, it SHOULD also inform the user of that choice and its possible override options (e.g. `CONDA_OVERRIDE_{NAME}` variables, CLI flags, configuration file, etc).
+* The version or build string of a virtual package MAY be overridden by the value of `CONDA_OVERRIDE_{NAME}` environment variable, with `{NAME}` being the uppercased name of the virtual package (excluding the leading underscores). Many exceptions apply so please observe the details in the section below.
+* The build string MAY be zero (`0`). Some exceptions apply. See below.
+* When the tool used a fallback default value instead of a computed one, it SHOULD also inform the user of that choice and its possible override options (e.g. `CONDA_OVERRIDE_{NAME}` variables, CLI flags, configuration file, etc).
 
 ### List of virtual packages
 
 In alphabetical order, every conda client MUST support the following virtual packages:
 
-- `__archspec`
-- `__cuda`
-- `__glibc`
-- `__linux`
-- `__osx`
-- `__unix`
-- `__win`
+* `__archspec`
+* `__cuda`
+* `__glibc`
+* `__linux`
+* `__osx`
+* `__unix`
+* `__win`
 
 #### `__archspec`
 
-This virtual package MUST be always present, with the version set to `1`. 
+This virtual package MUST be always present, with the version set to `1`.
 
 The build string MUST reflect one of:
 
-- If the target platform matches the native platform, the best fitting CPU microarchitecture in the [`archspec/archspec-json` database](https://github.com/archspec/archspec-json/blob/v0.2.5/cpu/microarchitectures.json). The reference CPU detection implementation is [`archspec.cpu.detect.host()`](https://github.com/archspec/archspec/blob/v0.2.5/archspec/cpu/detect.py#L338).
+* If the target platform matches the native platform, the best fitting CPU microarchitecture in the [`archspec/archspec-json` database](https://github.com/archspec/archspec-json/blob/v0.2.5/cpu/microarchitectures.json). The reference CPU detection implementation is [`archspec.cpu.detect.host()`](https://github.com/archspec/archspec/blob/v0.2.5/archspec/cpu/detect.py#L338).
 
-- The target platform architecture (second component of the platform string), mapped as: 
+* The target platform architecture (second component of the platform string), mapped as:
 
   | Target platform | Reported `archspec` build string |
   | --------------- | -------------------------------- |
@@ -89,20 +89,19 @@ The version MUST be overridable with the `CONDA_OVERRIDE_CUDA` environment varia
 
 This virtual package MUST NOT be present if the target platform is not `linux-*`.
 
-This virtual package MUST be present when the native and target platforms are both the same type of `linux-*` and GNU `libc` is installed in the system. The version value MUST be set to the system GNU `libc` version, constrained to the first two components (major and minor) formatted as `{major}.{minor}`. If the version cannot be estimated, the tool MUST set the version to a default value (e.g. `2.17`). 
+This virtual package MUST be present when the native and target platforms are both the same type of `linux-*` and GNU `libc` is installed in the system. The version value MUST be set to the system GNU `libc` version, constrained to the first two components (major and minor) formatted as `{major}.{minor}`. If the version cannot be estimated, the tool MUST set the version to a default value (e.g. `2.17`).
 
-If the native platform does not match the target platform, the tool MAY export `__glibc` with its `version` field set to a default value (e.g. `2.17`) of its choice.  
+If the native platform does not match the target platform, the tool MAY export `__glibc` with its `version` field set to a default value (e.g. `2.17`) of its choice.
 
-If the `CONDA_OVERRIDE_GLIBC` environment variable if set to a non-empty value that complies to the version string specification, the tool MUST export `__glibc` with its version value set to the value of the environemnt variable.
+If the `CONDA_OVERRIDE_GLIBC` environment variable if set to a non-empty value that complies to the version string specification, the tool MUST export `__glibc` with its version value set to the value of the environment variable.
 
-The build string MUST always be `0`. 
-
+The build string MUST always be `0`.
 
 > The GNU `libc` version can be computed via:
 >
-> - Python's `os.confstr("CS_GNU_LIBC_VERSION")`
-> - `getconf GNU_LIBC_VERSION`
-> - `ldd --version`. Please verify that it references GNU `libc` or GLIBC. For non-standard installs, using a GLIBC compatibility layer, this may require locating the implementation and directly querying.
+> * Python's `os.confstr("CS_GNU_LIBC_VERSION")`
+> * `getconf GNU_LIBC_VERSION`
+> * `ldd --version`. Please verify that it references GNU `libc` or GLIBC. For non-standard installs, using a GLIBC compatibility layer, this may require locating the implementation and directly querying.
 
 #### `__linux`
 
@@ -111,10 +110,10 @@ This virtual package MUST be present when the target platform is `linux-*`. Its 
 The version MUST be overridable with the `CONDA_OVERRIDE_LINUX` environment variable, if set to a non-empty value that matches the regex `"\d+\.\d+(\.\d+)?(\.\d+)?"`. The environment variable MUST be ignored when the target platform is not `linux-*`.
 
 > The Linux kernel version can be obtained via:
-> 
-> - Python's `platform.release()`
-> - `uname -r`
-> - `cat /proc/version`
+>
+> * Python's `platform.release()`
+> * `uname -r`
+> * `cat /proc/version`
 
 #### `__osx`
 
@@ -123,9 +122,9 @@ This virtual package MUST be present when the target platform is `osx-*`. Its ve
 The version MUST be overridable with the `CONDA_OVERRIDE_OSX` environment variable if set to a non-empty value that can be parsed as a version string. The environment variable MUST be ignored when the target platform is not `osx-*`.
 
 > The macOS version can be obtained via:
-> 
-> - Python's `platform.mac_ver()[0]`
-> -  `SYSTEM_VERSION_COMPAT=0 sw_vers -productVersion`
+>
+> * Python's `platform.mac_ver()[0]`
+> * `SYSTEM_VERSION_COMPAT=0 sw_vers -productVersion`
 
 #### `__unix`
 
@@ -142,11 +141,13 @@ The version MUST be overridable with the `CONDA_OVERRIDE_WIN` environment variab
 The build string MUST be `0`.
 
 > The version string `{major}.{minor}.{build}` can be obtained from:
-> 
-> - Python's `platform.win32_ver()`
-> - CMD's `ver`
-- Powershell's `[System.Environment]::OSVersion.Version`, `(Get-CimInstance Win32_OperatingSystem).version`
-> - The command `wmic os get version`
+>
+> * Python's `platform.win32_ver()`
+> * CMD's `ver`
+>
+* Powershell's `[System.Environment]::OSVersion.Version`, `(Get-CimInstance Win32_OperatingSystem).version`
+>
+> * The command `wmic os get version`
 
 ## Potential future work
 
@@ -154,9 +155,9 @@ This CEP focuses on the standardization of existing virtual package implementati
 
 The following items are not considered here. Though would be open for discussion in future CEP work:
 
-- Additional OSes, like `__freebsd` or `__netbsd`.
-- Coarse grain architecture information, like `__x86_64` or `__arm64`, or, more generally, [`__arch`](https://github.com/conda/conda/issues/13420).
-- More `libc` implementations, like `__musl`.
+* Additional OSes, like `__freebsd` or `__netbsd`.
+* Coarse grain architecture information, like `__x86_64` or `__arm64`, or, more generally, [`__arch`](https://github.com/conda/conda/issues/13420).
+* More `libc` implementations, like `__musl`.
 
 ## References
 
@@ -170,3 +171,5 @@ The following items are not considered here. Though would be open for discussion
 ## Copyright
 
 All CEPs are explicitly [CC0 1.0 Universal](https://creativecommons.org/publicdomain/zero/1.0/).
+
+[RFC2119]: https://datatracker.ietf.org/doc/html/rfc2119
