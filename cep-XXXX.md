@@ -6,7 +6,7 @@
 <tr><td> Author(s) </td><td> Jaime Rodríguez-Guerra &lt;jaime.rogue@gmail.com&gt;</td></tr>
 <tr><td> Created </td><td> Sep 27, 2025</td></tr>
 <tr><td> Updated </td><td> Sep 27, 2025</td></tr>
-<tr><td> Discussion </td><td> N/A </td></tr>
+<tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/133 </td></tr>
 <tr><td> Implementation </td><td> N/A </td></tr>
 </table>
 
@@ -253,6 +253,8 @@ Some keys or files have been proposed for formal deprecation because they are no
 
 - <https://docs.conda.io/projects/conda-build/en/latest/resources/package-spec.html#package-metadata>
 - <https://rattler.build/latest/package_spec/>
+- <https://github.com/conda/ceps/pull/124#discussion_r2083137907>
+- [`Library/` conventions on Windows](https://github.com/ContinuumIO/anaconda-issues/issues/440)
 
 ## Copyright
 
