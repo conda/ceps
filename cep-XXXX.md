@@ -1,7 +1,7 @@
-# CEP ???? - Build provenance metadata
+# CEP XXXX - Build provenance metadata
 
 <table>
-<tr><td> Title </td><td> CEP ???? -  Build provenance metadata </td>
+<tr><td> Title </td><td> CEP XXXX - Build provenance metadata </td>
 <tr><td> Status </td><td> Draft </td></tr>
 <tr><td> Author(s) </td><td> Jaime Rodríguez-Guerra &lt;jaime.rogue@gmail.com&gt;</td></tr>
 <tr><td> Created </td><td> Mar 10, 2025</td></tr>
@@ -29,7 +29,8 @@ This was possible thanks to a new `--extra-meta` flag added in
 [conda-build#4303](https://github.com/conda/conda-build/pull/4303/files) and released in 3.21.8.
 Rattler-build also offers the same functionality using the same CLI flag. `--extra-meta` allows
 passing arbitrary key-value pairs that will be added to the `info/about.json`, under the `extra`
-key. For example, if a user passes `--extra-meta date=2025-03-11`, `about.json` will contain:
+key (as defined in [CEP PR#133](https://github.com/conda/ceps/pull/133)). For example, if a user
+passes `--extra-meta date=2025-03-11`, `about.json` will contain:
 
 ```js
 {
@@ -43,7 +44,7 @@ key. For example, if a user passes `--extra-meta date=2025-03-11`, `about.json` 
 
 Additional provenance metadata can be collected for source origins, which can be useful for efforts
 like dependency mapping across ecosystems. See [PEP 725](https://peps.python.org/pep-0725/) for
-practical applications in the context of PyPI <> conda interoperability. This type of provenance is
+practical applications in the context of PyPI/conda interoperability. This type of provenance is
 out of scope for this CEP and may be discussed separately.
 
 ## Specification
@@ -60,15 +61,15 @@ provenance metadata:
 
 ```json
 {
-    "sha":"50a4e2d4203f05082fcbb93e14541180de3aa8ac",
-    "remote_url":"https://github.com/conda-forge/python-feedstock",
-    "flow_run_id":"azure_20250217.3.1",
+    "sha": "50a4e2d4203f05082fcbb93e14541180de3aa8ac",
+    "remote_url": "https://github.com/conda-forge/python-feedstock",
+    "flow_run_id": "azure_20250217.3.1"
 }
 ```
 
-CI pipelines are strongly encouraged to add this metadata via `--extra-meta`. Local workflows may
-not have this information available, but they are still recommended to burn in the metadata with
-empty strings.
+CI pipelines are strongly encouraged to add this metadata via `--extra-meta` (or equivalent). Local
+workflows may not have this information available, but they are still recommended to burn in the
+metadata with empty strings.
 
 ## Acknowledgements
 
