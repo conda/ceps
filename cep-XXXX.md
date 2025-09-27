@@ -5,7 +5,7 @@
 <tr><td> Status </td><td> Draft </td></tr>
 <tr><td> Author(s) </td><td> Jaime Rodríguez-Guerra &lt;jaime.rogue@gmail.com&gt;</td></tr>
 <tr><td> Created </td><td> Mar 10, 2025</td></tr>
-<tr><td> Updated </td><td> Mar 11, 2025</td></tr>
+<tr><td> Updated </td><td> Sep 27, 2025</td></tr>
 <tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/113 </td></tr>
 <tr><td> Implementation </td><td> https://github.com/conda/conda-build/pull/4303, https://github.com/conda-forge/conda-smithy/pull/1577 </td></tr>
 </table>
