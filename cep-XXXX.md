@@ -6,8 +6,8 @@
 <tr><td> Author(s) </td><td> Jaime Rodríguez-Guerra &lt;jaime.rogue@gmail.com&gt;</td></tr>
 <tr><td> Created </td><td> Sep 27, 2025</td></tr>
 <tr><td> Updated </td><td> Sep 27, 2025</td></tr>
-<tr><td> Discussion </td><td> N/A </td></tr>
-<tr><td> Implementation </td><td> N/A </td></tr>
+<tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/134 </td></tr>
+<tr><td> Implementation </td><td> https://github.com/conda/conda-package-handling/blob/2.4.0/src/conda_package_handling/tarball.py, https://github.com/conda/conda-package-handling/blob/2.4.0/src/conda_package_handling/conda_fmt.py </td></tr>
 </table>
 
 ## Abstract
@@ -29,8 +29,8 @@ The motivation of this CEP is merely informative. It describes the details exist
 
 conda packages, whose contents are described and standardized in [CEP PR#133](https://github.com/conda/ceps/pull/133), MAY be archived and distributed in two formats:
 
-- `.tar.bz2`: The first generation of conda archives.
-- `.conda`: The second generation of conda archives.
+- `.tar.bz2`: The first generation of conda archives. Referred to as version 1.
+- `.conda`: The second generation of conda archives. Referred to as version 2.
 
 ### `.tar.bz2`
 
