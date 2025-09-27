@@ -6,7 +6,7 @@
 <tr><td> Author(s) </td><td> Jaime Rodríguez-Guerra &lt;jaime.rogue@gmail.com&gt;</td></tr>
 <tr><td> Created </td><td> Sep 27, 2025</td></tr>
 <tr><td> Updated </td><td> Sep 27, 2025</td></tr>
-<tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/134 </td></tr>
+<tr><td> Discussion </td><td> https://github.com/conda/ceps/issues/42, https://github.com/conda/ceps/pull/134 </td></tr>
 <tr><td> Implementation </td><td> https://github.com/conda/conda-package-handling/blob/2.4.0/src/conda_package_handling/tarball.py, https://github.com/conda/conda-package-handling/blob/2.4.0/src/conda_package_handling/conda_fmt.py </td></tr>
 </table>
 
@@ -89,12 +89,32 @@ tar --use-compress-program=zstd xvf pkg-project-1.2.3-0.tar.zstd
 
 ## Rationale
 
-`.tar.bz2` archives can be slow to unpack and do not support arbitrary lookups without prior extraction. BZ2 is not as effective as more modern compression schemes. Hence, `.conda` was introduced as a replacement. The outer `.zip` archive layer with two inner component allows for individual component extraction, so it's possible to check the `info/` folder without downloading the whole artifact. The inner ZSTD compression allows for faster and more efficient compression and decompression.
+`.conda` was introduced as a replacement for `.tar.bz2` for the following reasons:
+
+- Uncompressing `.tar.bz2` tarballs is very slow compared to other modern solutions, which tend to be between 4 and 10 times faster.
+- BZ2 is not at the cutting edge of compression in terms of ratio. By utilizing modern compression algorithms, artifacts can get as 60% smaller than the equivalent .tar.bz2 file.
+- It relies on `unbzip2` being installed on the system. Sometimes it is not (e.g. Docker images).
+- Metadata reading from packages currently requires complete extraction of a `.tar.bz2` file. This prevents tools from indexing and performing other metadata tasks much more quickly if the `info/` folder was more accessible.
+- Package signing currently would require signing either all files in a package, or having a sidecar signature file shipped alongside `.tar.bz2` files.  It is desirable to ship a signature within a package, but to have that signature apply to an archive within the package.
+
+The two layer strategy was inspired by the [Debian (`.deb`) package format](https://en.wikipedia.org/wiki/Deb_(file_format)).
+
+The outer format should be:
+
+- extractable, using standard tools that are present on every platform
+- indexable, so that subsections of the file can be accessed and extracted quickly
+- uncompressed, because the inner containers handle the compression of any real data
+
+Zip files were chosen because they are the most ubiquitous format that matches all of these criteria.
+
+The inner format should be a compressed tarball using efficient and performant compression schemes. The most fitting format for that description is ZSTD with `.tar.zstd`.
 
 ## References
 
+- <https://docs.conda.io/projects/conda/en/stable/user-guide/concepts/packages.html#conda-file-format>
 - <https://docs.conda.io/projects/conda-build/en/stable/resources/package-spec.html>
 - <https://www.anaconda.com/blog/understanding-and-improving-condas-performance>
+- [conda pkg format v2 design draft](https://docs.google.com/document/d/1HGKsbg_j69rKXPihhpCb1kNQSE8Iy3yOsUU2x68x8uw/edit?tab=t.0#heading=h.ucm6j9fiz6f9)
 
 ## Copyright
 
