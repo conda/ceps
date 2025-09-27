@@ -184,10 +184,10 @@ For each package to be installed, conda clients:
 Once extracted, the packages MUST be installed in the target prefix `$CONDA_PREFIX` by following these steps:
 
 1. Execute the relevant `pre-link` scripts.
-2. Place the contents in the `$CONDA_PREFIX`:
-   - For regular (non-`noarch: python`) packages, place the contents of the artifact into `$CONDA_PREFIX`.
+2. Link or copy the non-`info/` contents of the package into `$CONDA_PREFIX`. Tools SHOULD follow the manifest file at `info/paths.json`. This means that:
+   - For non-`noarch: python` packages, place the contents of the artifact into `$CONDA_PREFIX`.
      - If the file contains a prefix placeholder, replace it with the value of `$CONDA_PREFIX` and copy the file.
-     - Otherwise, place the file in `$CONDA_PREFIX`. Tools MAY offer settings to configure this operation (e.g. prefer hardlinks to copies).
+     - Otherwise, place the file in `$CONDA_PREFIX`, as instructed by the `paths.json` metadata. Tools MAY offer settings to override this operation (e.g. prefer copies to hardlinks).
    - `noarch: python` packages follow some extra rules. In particular, they no longer follow a 1:1 correspondence between the path in the artifact and the linked path in `$CONDA_PREFIX`. The target path depends on variables like the Python version, OS and Python ABI modes. Details are discussed in [CEP 17](./cep-0017.md) and [CEP 20](./cep-0020.md)
 3. Execute the relevant `post-link` scripts.
 4. Record the package metadata at `$CONDA_PREFIX/conda-meta/{name}-{version}-{build}.json`, as instructed above.
