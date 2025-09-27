@@ -100,7 +100,7 @@ The contents of this file usually include the `about` section of the originating
 - `dev_url: str`. URL pointing to the development website (often a repository) of the package.
 - `doc_url: str`. URL pointing to the documentation website of the package.
 - `env_vars: dict[str, str]`. Allow-listed environment variables set during the package build.
-- `extra: dict[str, Any]`: A free-form dictionary of arbitrary metadata.
+- `extra: dict[str, Any]`: A free-form dictionary of arbitrary metadata. This MAY be used to record provenance metadata as described in [CEP PR#113](https://github.com/conda/ceps/pull/113).
 - `home: str`. URL pointing to the homepage of the package.
 - `license: str`. SPDX license identifier for the package.
 - `summary: str`: A short summary of the package (usually one sentence).
