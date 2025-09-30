@@ -39,30 +39,32 @@ Each `repodata.json` MUST represent a dictionary with the keys listed below. All
 - `info: dict[str, dict]`. Metadata about the `repodata.json` itself. See [info metadata](#info-metadata).
 - `packages: dict[str, dict]`. This entry maps `*.tar.bz2` filenames to their [package record metadata](#package-record-metadata).
 - `packages.conda: dict[str, dict]`. This entry maps `*.conda` filenames to [package record metadata](#package-record-metadata).
-- `removed: list[str]`. List of filenames that were once included in either `packages` or `packages.conda`, but they were removed. See [repodata patching](#repodata-patching) for more information.
+- `removed: list[str]`. List of filenames that were once included in either `packages` or `packages.conda`, but are now removed. The corresponding artifacts SHOULD still be accessible via their direct URL.
 
 #### `info` metadata
 
 This dictionary stores information about the repodata file. It MUST follow this schema:
 
-- `subdir: str`. Recommended. The channel subdirectory this `repodata.json` belongs to.
-- "... TODO"
+- `arch: str`. Deprecated. Same meaning as in [CEP PR#133](https://github.com/conda/ceps/pull/133)'s `index.json` key.
+- `base_url: str`. Optional. See [CEP 15](./cep-0015.md).
+- `platform: str`. Deprecated. Same meaning as in [CEP PR#133](https://github.com/conda/ceps/pull/133)'s `index.json` key.
+- `repodata_version: int`. Optional. Version of the `repodata.json` schema. In its absence, tools MUST assume its value is `1`. See [CEP 15](./cep-0015.md) for `repodata_version = 2`.
+- `subdir: str`. Recommended. The channel subdirectory this `repodata.json` belongs to. If its absence, its value MAY be inferred from the parent component of the `repodata.json` path.
 
 #### Package record metadata
 
-Each entry in `packages` and `packages.conda` MUST follow the `index.json` schema (see [CEP PR#133](https://github.com/conda/ceps/pull/133)), augmented with these keys:
+Each entry in `packages` and `packages.conda`:
 
-- `md5: str | None`. Hexadecimal string of the MD5 checksum of the compressed artifact.
-- `sha256: str | None`. Hexadecimal string of the SHA256 checksum of the compressed artifact.
-- `size: int`. Size, in bytes, of the compressed artifact.
+- MUST follow the `index.json` schema (see [CEP PR#133](https://github.com/conda/ceps/pull/133)).
+- SHOULD report the same values as the artifact's `info/index.json` metadata. Small modifications MAY be introduced to apply metadata fixes (e.g. correct the constraints of a requirement in the `depends` field) without needing to rebuild the artifact.
+- MUST additionally include the following keys:
+  - `md5: str | None`. Hexadecimal string of the MD5 checksum of the compressed artifact.
+  - `sha256: str | None`. Hexadecimal string of the SHA256 checksum of the compressed artifact.
+  - `size: int`. Size, in bytes, of the compressed artifact.
 
 #### Repodata variants
 
-... TODO. `current_repodata.json` and timebased snapshots.
-
-#### Repodata patching
-
-... TODO.
+A conda channel MAY serve additional `repodata.json` paths in each subdir. Their name SHOULD match the glob `*repodata*.json`, and their contents MUST follow the `repodata.json` schema.
 
 ### `channeldata.json`
 
