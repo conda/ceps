@@ -41,6 +41,8 @@ Each `repodata.json` MUST represent a dictionary with the keys listed below. All
 - `packages.conda: dict[str, dict]`. This entry maps `*.conda` filenames to [package record metadata](#package-record-metadata).
 - `removed: list[str]`. List of filenames that were once included in either `packages` or `packages.conda`, but are now removed. The corresponding artifacts SHOULD still be accessible via their direct URL.
 
+Additional keys SHOULD NOT be present and SHOULD be ignored.
+
 #### `info` metadata
 
 This dictionary stores information about the repodata file. It MUST follow this schema:
@@ -50,6 +52,8 @@ This dictionary stores information about the repodata file. It MUST follow this 
 - `platform: str`. Deprecated. Same meaning as in [CEP PR#133](https://github.com/conda/ceps/pull/133)'s `index.json` key.
 - `repodata_version: int`. Optional. Version of the `repodata.json` schema. In its absence, tools MUST assume its value is `1`. See [CEP 15](./cep-0015.md) for `repodata_version = 2`.
 - `subdir: str`. Recommended. The channel subdirectory this `repodata.json` belongs to. If its absence, its value MAY be inferred from the parent component of the `repodata.json` path.
+
+Additional keys SHOULD NOT be present and SHOULD be ignored.
 
 #### Package record metadata
 
@@ -61,6 +65,11 @@ Each entry in `packages` and `packages.conda`:
   - `md5: str | None`. Hexadecimal string of the MD5 checksum of the compressed artifact.
   - `sha256: str | None`. Hexadecimal string of the SHA256 checksum of the compressed artifact.
   - `size: int`. Size, in bytes, of the compressed artifact.
+- If the entry corresponds to a `.tar.bz2` package that was transmuted to `.conda`, it SHOULD include these keys:
+  - `legacy_bz2_md5: str`: Hexadecimal string of the SHA256 checksum of the original `.tar.bz2` artifact.
+  - `legacy_bz2_size: int`: Size, in bytes, of the original `.tar.bz2` artifact.
+
+Additional keys SHOULD NOT be present and SHOULD be ignored.
 
 #### Repodata variants
 
