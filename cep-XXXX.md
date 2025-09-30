@@ -22,13 +22,17 @@ The motivation of this CEP is merely informative. It describes the schema of exi
 
 ## Specification
 
-As per [CEP 26](./cep-0026.md), a conda channel MUST include a `noarch/repodata.json` file. It MAY also serve additional, platform-specific `repodata.json` files under subdirectories, which MUST follow [CEP 26](./cep-0026.md) naming conventions for `subdirs`.
+As per [CEP 26](./cep-0026.md), a conda channel is defined as a location that MUST serve a `noarch/repodata.json` path. It MAY also serve additional, platform-specific `repodata.json` paths under other subdirectories of the same depth, which MUST follow the `subdir` naming conventions described in [CEP 26](./cep-0026.md).
 
-A conda channel MAY also serve a `channeldata.json` file in the top-level directory.
+A conda channel MAY also serve a `channeldata.json` path in its root level.
+
+Note that there are no requirements for these paths to be backed by a proper filesystem; the contents of these locations can also be provided by API endpoints.
+
+The contents of the `repodata.json` and `channeldata.json` documents MUST follow the schemas described below.
 
 ### `repodata.json`
 
-`repodata.json` files are subdir-specific JSON documents that aggregate the `index.json` metadata of the included conda artifacts (see [CEP PR#133](https://github.com/conda/ceps/pull/133)), and extend them with details only known when the compressed artifact has been generated (such as size, timestamp, or checksums).
+`repodata.json` documents are subdir-specific JSON dictionaries that aggregate the `index.json` metadata of the included conda artifacts (see [CEP PR#133](https://github.com/conda/ceps/pull/133)), and extend them with details only known when the compressed artifact has been generated (such as size, timestamp, or checksums).
 
 Each `repodata.json` MUST represent a dictionary with the keys listed below. All of them are optional. Additional top-level keys MUST be allowed but they MUST be ignored if not recognized.
 
