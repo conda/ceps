@@ -209,6 +209,19 @@ Removing a package from the environment SHOULD follow these instructions:
 
 Once an environment contains no packages, the conda client MAY remove it. This process involves clearing the `conda-meta/` folder and any `condarc` files, and deregistering the environment path from the central manifest, if applicable (e.g. `~/.conda/environments.txt`). If there were any additional files in the environment directory, the conda client SHOULD report that to the user and offer to leave them in place or to proceed and clear all the contents.
 
+### Activating and deactivating an environment
+
+Environment management tools SHOULD implement a mechanism to _activate_ an environment. They MAY also implement logic to _deactivate_ it.
+
+Given a target environment located at `$PREFIX`, the activation logic MUST involve the following tasks:
+
+- Temporarily modifying the `PATH` environment variable to include directories that usually contain executables, as discussed in [CEP PR#133](https://github.com/conda/ceps/pull/133):
+  - On Unix systems, it MUST include `$PREFIX/bin`.
+  - On Windows systems, it MUST include `$PREFIX/Library/bin` and `$PREFIX/Scripts`. It SHOULD also include `$PREFIX/Library/mingw-w64/bin` and `$PREFIX/Library/usr/bin`.
+- Handling the activation logic detailed in the `etc/conda/*.d` directories section.
+
+For deactivation, the effects of the actions above MUST be reverted.
+
 ## References
 
 - [Adding pre-link, post-link, and pre-unlink scripts](https://docs.conda.io/projects/conda-build/en/stable/resources/link-scripts.html)
