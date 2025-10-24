@@ -34,7 +34,7 @@ implementation.
 
 > [...] version strings MUST only consist of digits, periods, lowercase ASCII letters, underscores, plus symbols, and exclamation marks. The maximum length of a version string MUST NOT exceed 64 characters.
 
-The present CEP _extends_ this rules with additional constraints:
+The present CEP _extends_ these rules with additional constraints:
 
 - Version strings MUST be composed of alphanumeric characters `[A-Za-z0-9]`, separated into segments by periods `.` and underscores `_`.
 - The first segment MUST start with a digit.
@@ -54,7 +54,7 @@ Before being compared, version strings MUST be parsed into a list of segments (w
   - Each component is split again into consecutive runs of numerals and non-numerals.
   - Subcomponents containing only numerals are converted to integers.
   - Strings are converted to lowercase, with special treatment for `dev` and `post`.
-  - When a component starts with a letter, the fill value `0` is inserted.
+  - When a component starts with a letter, the fill value `0` is inserted before the letter.
 - The epoch and main version segments are concatenated.
 - The same is repeated for the local version part, and stored as a separate list of segments.
 
