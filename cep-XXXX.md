@@ -198,7 +198,8 @@ On Linux, some sysroot packages may also populate a top-level directory named as
 
 On Windows, the expected directory structure is a bit different due to how Python (and other interpreted languages) are organized in this operating system:
 
-- `./Library/`, uses the same directories as the Unix structure listed above. Most packages will populate this directory. It is also common to have some FHS-structured contents under `./Library/usr/` or `./Library/mingw-w64/`, for MSYS2 or MinGW-w64 packages, respectively.
+- `./Library/`, uses the same directories as the Unix structure listed above. Most packages will populate this directory. 
+- MSYS2 or MinGW-w64 packages usually present FHS-structured contents under `./Library/usr/` or `./Library/mingw-w64/`, respectively. Additional variants like `./Library/ucrt64/`, `./Library/clang64/`, `./Library/mingw64/`, `./Library/clangarm64/` may also be found.
 - Python interpreters and Python-related packages stay in the root-level:
   - `./DLLs/`: Compiled Python extensions (`.pyd`)
   - `./include/`: Python development headers (`.h`).
