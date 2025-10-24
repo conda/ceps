@@ -8,6 +8,7 @@
 <tr><td> Updated </td><td> Sep 27, 2025</td></tr>
 <tr><td> Discussion </td><td> https://github.com/conda/ceps/issues/42, https://github.com/conda/ceps/pull/134 </td></tr>
 <tr><td> Implementation </td><td> https://github.com/conda/conda-package-handling/blob/2.4.0/src/conda_package_handling/tarball.py, https://github.com/conda/conda-package-handling/blob/2.4.0/src/conda_package_handling/conda_fmt.py </td></tr>
+<tr><td> Requires </td><td> https://github.com/conda/ceps/pull/133 </td></tr>
 </table>
 
 ## Abstract
