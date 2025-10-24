@@ -186,7 +186,7 @@ Lists all files that cannot be linked into environments and are copied instead.
 
 ### Recommendations for installed files
 
-On Unix filesystems, packages generally follow a subset of the [Filesystem Hierarchy Standard](https://en.wikipedia.org/wiki/Filesystem_Hierarchy_Standard):
+On Unix filesystems, packages generally follow a subset of the [Filesystem Hierarchy Standard (FHS)](https://en.wikipedia.org/wiki/Filesystem_Hierarchy_Standard):
 
 - `./bin/`: executables and scripts.
 - `./etc/`: configuration files.
@@ -194,9 +194,11 @@ On Unix filesystems, packages generally follow a subset of the [Filesystem Hiera
 - `./lib/`: dynamic and static libraries.
 - `./share/`: miscellaneous data contents.
 
+On Linux, some sysroot packages may also populate a top-level directory named as a [target triplet](https://www.gnu.org/software/autoconf/manual/autoconf-2.65/html_node/Specifying-Target-Triplets.html) with a single subdirectory `sysroot/` populated with a FHS-like tree.
+
 On Windows, the expected directory structure is a bit different due to how Python (and other interpreted languages) are organized in this operating system:
 
-- `./Library/`, uses the same directories as the Unix structure listed above. Most packages will populate this directory.
+- `./Library/`, uses the same directories as the Unix structure listed above. Most packages will populate this directory. It is also common to have some FHS-structured contents under `./Library/usr/` or `./Library/mingw-w64/`, for MSYS2 or MinGW-w64 packages, respectively.
 - Python interpreters and Python-related packages stay in the root-level:
   - `./DLLs/`: Compiled Python extensions (`.pyd`)
   - `./include/`: Python development headers (`.h`).
