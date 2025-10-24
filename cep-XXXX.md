@@ -8,6 +8,7 @@
 <tr><td> Updated </td><td> Sep 30, 2025 </td></tr>
 <tr><td> Discussion </td><td> N/A </td></tr>
 <tr><td> Implementation </td><td> N/A </td></tr>
+<tr><td> Requires </td><td> https://github.com/conda/ceps/pull/133 </td></tr>
 </table>
 
 ## Abstract
