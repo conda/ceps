@@ -8,6 +8,7 @@
 <tr><td> Updated </td><td> Sep 27, 2025</td></tr>
 <tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/124 </td></tr>
 <tr><td> Implementation </td><td> NA </td></tr>
+<tr><td> Requires </td><td>https://github.com/conda/ceps/pull/82, https://github.com/conda/ceps/pull/124, https://github.com/conda/ceps/pull/132, https://github.com/conda/ceps/pull/133 </td></tr>
 </table>
 
 ## Abstract
