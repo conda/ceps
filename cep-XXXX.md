@@ -217,7 +217,14 @@ Given a target environment located at `$PREFIX`, the activation logic MUST invol
 
 - Temporarily modifying the `PATH` environment variable to include directories that usually contain executables, as discussed in [CEP PR#133](https://github.com/conda/ceps/pull/133):
   - On Unix systems, it MUST include `$PREFIX/bin`.
-  - On Windows systems, it MUST include `$PREFIX/Library/bin` and `$PREFIX/Scripts`. It SHOULD also include `$PREFIX/Library/mingw-w64/bin` and `$PREFIX/Library/usr/bin`.
+  - On Windows systems, it MUST include (in this order):
+    - `$PREFIX`.
+    - The first directory that exists in this list, if any:`$PREFIX/Library/ucrt64/bin`, `$PREFIX/Library/clang64/bin`, `$PREFIX/Library/mingw64/bin`, `$PREFIX/Library/clangarm64/bin`.
+    - `$PREFIX/Library/mingw-w64/bin`.
+    - `$PREFIX/Library/usr/bin`.
+    - `$PREFIX/Library/bin`.
+    - `$PREFIX/Scripts`.
+    - `$PREFIX/bin`.
 - Handling the activation logic detailed in the `etc/conda/*.d` directories section.
 
 For deactivation, the effects of the actions above MUST be reverted.
