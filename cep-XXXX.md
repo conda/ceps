@@ -1,4 +1,4 @@
-# CEP 9999 - The `MatchSpec` query language
+# CEP XXXX - The `MatchSpec` query language
 
 <table>
 <tr><td> Title </td><td> The <code>MatchSpec</code> query language </td>
