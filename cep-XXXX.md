@@ -8,6 +8,8 @@
 <tr><td> Updated </td><td> Dec 17, 2024</td></tr>
 <tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/103 </td></tr>
 <tr><td> Implementation </td><td> https://github.com/conda/conda/tree/24.11.1/conda/plugins/virtual_packages, https://github.com/mamba-org/mamba/blob/libmamba-2.0.5/libmamba/src/core/virtual_packages.cpp, https://github.com/conda/rattler/tree/rattler-v0.28.8/crates/rattler_virtual_packages/src </td></tr>
+<tr><td> Requires </td><td> https://github.com/conda/ceps/pull/132 </td></tr>
+
 </table>
 
 > The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT",
@@ -31,7 +33,7 @@ Virtual packages are used to expose details of the system configuration to a con
 ## Specification
 
 A virtual package is defined as a package record with three fields: name, version and build string.
-The name MUST start with double underscore (`__`). The version and build string MUST follow the same semantics as in regular package records. More specifically, the version field MUST follow the version string specifications, regardless its origin (computed from a system property, overridden by the user or configuration, or provided by default by the tool).
+These fields MUST comply with [CEP 26](./cep-0026.md). More specifically, the version field MUST follow the version string specifications as discussed in [CEP PR #132](https://github.com/conda/ceps/pull/132), regardless its origin (computed from a system property, overridden by the user or configuration, or provided by default by the tool).
 
 Some general considerations:
 
