@@ -1,4 +1,4 @@
-# CEP 9999 - Version strings and their ordering
+# CEP XXXX - Version strings and their ordering
 
 <table>
 <tr><td> Title </td><td> Version strings and their ordering </td>
