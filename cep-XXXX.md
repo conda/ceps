@@ -6,7 +6,7 @@
 <tr><td> Author(s) </td><td> Jaime Rodríguez-Guerra &lt;jaime.rogue@gmail.com&gt;</td></tr>
 <tr><td> Created </td><td> Oct 26, 2025 </td></tr>
 <tr><td> Updated </td><td> Oct 26, 2025 </td></tr>
-<tr><td> Discussion </td><td> N/A </td></tr>
+<tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/138 </td></tr>
 <tr><td> Implementation </td><td> https://github.com/conda/conda-lock/blob/v3.0.4/conda_lock/lockfile/v1/models.py </td></tr>
 <tr><td> Requires </td><td> https://github.com/conda/ceps/pull/82 </td></tr>
 </table>
