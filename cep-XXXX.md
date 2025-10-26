@@ -258,6 +258,9 @@ package:
 ## References
 
 - <https://github.com/conda/conda-lock/blob/v3.0.4/conda_lock/lockfile/v1/models.py>
+- <https://github.com/mamba-org/mamba/blob/2.3.3/libmamba/src/core/env_lockfile.cpp>
+- <https://github.com/basnijholt/pixi-to-conda-lock/blob/v0.4.0/pixi_to_conda_lock.py>
+- <https://github.com/conda-incubator/conda-lockfiles/blob/0.1.1/conda_lockfiles/conda_lock/v1.py>
 
 ## Copyright
 
