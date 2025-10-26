@@ -109,7 +109,7 @@ Free form metadata, as key-value string pairs.
 
 `list[LockedDependency]`, required.
 
-This list enumerates the lockfile contents. Each item MUST be a dictionary, termed `LockedDependency` with the following keys:
+This list enumerates the lockfile contents. Each item MUST be a dictionary, termed `LockedDependency` with keys as described below. All items in the list MUST be unique with respect to the fields `(name, manager, platform, category)`.
 
 ##### `name`
 
