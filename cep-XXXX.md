@@ -154,9 +154,9 @@ Direct download URL for this package.
 
 ##### `hash`
 
-`dict[str, str]` required.
+`dict[str, str]`, required.
 
-A dictionary with only two keys, `md5` and `sha256`, which MUST map to the hexadecimal digest strings of the MD5 and SHA256 hashes of the downloaded artifact, respectively.
+A dictionary which MUST only contain at most two keys, `md5` and `sha256`, which MUST map to the hexadecimal digest strings of the MD5 and SHA256 hashes of the downloaded artifact, respectively.
 
 ##### `source`
 
