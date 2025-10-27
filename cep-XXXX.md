@@ -84,7 +84,7 @@ The resulting list of components MUST be compared as follows:
 
 ## Rationale
 
-- The first segment of a version must start with a digit to avoid confusing situations like `v13.2.1` being smaller than `3.1.0`.
+- The first segment of a version must start with a digit to avoid confusing situations like `v13.2.1` being smaller than `3.1.0`. See [conda/conda#14255](https://github.com/conda/conda/issues/14255).
 - The `dev` substring is handled differently to allow `dev` pre-releases to sort before alphas, betas and release candidates.
 - The `post` substring is handled differently to allow `post` releases to sort after any equivalent final release.
 - Missing components are treated like `0` to allow equivalences like `'1.1' == '1.1.0'`.
