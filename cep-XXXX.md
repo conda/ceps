@@ -74,7 +74,12 @@ Additional keys SHOULD NOT be present and SHOULD be ignored.
 
 #### Repodata variants
 
-A conda channel MAY serve additional `repodata.json` paths in each subdir. Their name SHOULD match the glob `*repodata*.json`, and their contents MUST follow the `repodata.json` schema.
+A conda channel MAY serve additional `repodata.json` documents in each subdir. Their name SHOULD match the glob `*repodata*.json`, and their contents MUST follow the `repodata.json` schema. Common variants include `current_repodata.json`.
+
+Channels SHOULD serve compressed versions of every repodata file. The following compression schemes are recognized:
+
+- BZ2: MUST append the `.bz2` extension; e.g. `repodata.json.bz2`.
+- ZSTD: MUST append the `.zst` extension; e.g. `repodata.json.zst`. Recommended.
 
 ### `channeldata.json`
 
