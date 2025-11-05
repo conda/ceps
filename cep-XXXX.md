@@ -101,7 +101,6 @@ A conda channel with a Linux x64 specific subdirectory:
 
 This dictionary maps conda package filenames (with extension) to a signature metadata dictionary. Each subdictionary then maps the signing key identifier to the signature value. This value is expressed as a dictionary with a key `signature` that maps to the actual signature of the corresponding package record. See example:
 
-
 ```js
 "packages": {
   ...
