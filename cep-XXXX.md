@@ -35,9 +35,8 @@ Each `repodata.json` MUST represent a dictionary with the keys listed below. All
 - `packages: dict[str, dict]`. This entry maps `*.tar.bz2` filenames to their [package record metadata](#package-record-metadata).
 - `packages.conda: dict[str, dict]`. This entry maps `*.conda` filenames to [package record metadata](#package-record-metadata).
 - `removed: list[str]`. List of filenames that were once included in either `packages` or `packages.conda`, but are now removed. The corresponding artifacts SHOULD still be accessible via their direct URL.
-- `signatures: dict[str, dict[str, [dict[Literal['signature'], str]]]]`. A dictionary that maps package filenames to their signature metadata.
 
-Additional keys SHOULD NOT be present and SHOULD be ignored.
+A `signatures: dict[str, dict]` key MAY be present, but SHOULD be ignored. This key was introduced as a proprietary extension by Anaconda, but it is not part of the repodata v1 specification.
 
 #### `info` metadata
 
@@ -67,31 +66,6 @@ Each entry in `packages` and `packages.conda`:
 
 Additional keys SHOULD NOT be present and SHOULD be ignored.
 
-### `signatures` metadata
-
-This dictionary MUST map conda package filenames (with extension) to dictionary that SHOULD map a hash key to another dictionary whose only key is `signature` and the value is the hexadecimal string of the signature value.
-
-<!-- TODO: What's the first hash? -->
-
-```json
-"signatures": {
-  "_anaconda_depends-2018.12-py27_0.tar.bz2": {
-    "4a044c3445b9d8bc5429a2b1d7d42bdb4d8404285b76322e8eacdfdae8b0e4cd": {
-      "signature": "a0ffab3f954c3dc64373ba16bee5e9ba9683a625fa3e4a6c4263d9de550bcafd233c2522789c9b31b40c35a87775d6f8fa2498a3bec3647c36c0a2f5cd2eb10c"
-    }
-  },
-  "zstd-1.3.7-h0b5b093_0.conda": {
-    "4a044c3445b9d8bc5429a2b1d7d42bdb4d8404285b76322e8eacdfdae8b0e4cd": {
-      "signature": "ea1f11a74c081298fe243c6982f676d9838bfee81e74a24bef6474f3be1243b4624f6d12dc8196f8db909cf049e9e344151e44c5b950cbab8583641c7b661a0d"
-    }
-  },
-  "zstd-1.4.4-h0b5b093_3.conda": {
-    "4a044c3445b9d8bc5429a2b1d7d42bdb4d8404285b76322e8eacdfdae8b0e4cd": {
-      "signature": "db7b2fe5f9d48fe60bb7da5d1eaca15d300a00787df8ca1098b7093ceb9942ea9fb350f92e8ff14f4df13ad66899c2b8f4efe86fe7897e820ed20f1765021803"
-    }
-  }
-```
-
 ### Repodata variants
 
 A conda channel MAY serve additional `repodata.json` documents in each subdir. Their name SHOULD match the glob `*repodata*.json`, and their contents MUST follow the `repodata.json` schema.
@@ -120,6 +94,34 @@ A conda channel with a Linux x64 specific subdirectory:
 ## References
 
 - <https://docs.conda.io/projects/conda-build/en/stable/concepts/generating-index.html>
+
+## Appendices
+
+### Appendix A: `signatures` section
+
+This dictionary maps conda package filenames (with extension) to a signature metadata dictionary. Each subdictionary then maps the signing key identifier to the signature value. This value is expressed as a dictionary with a key `signature` that maps to the actual signature of the corresponding package record. See example:
+
+
+```js
+"packages": {
+  ...
+},
+"packages.conda": {
+  ...
+},
+"signatures": {
+  "_anaconda_depends-2018.12-py27_0.tar.bz2": {
+    "4a044c3445b9d8bc5429a2b1d7d42bdb4d8404285b76322e8eacdfdae8b0e4cd": {  // signing key id
+      "signature": "a0ffab3f954c3dc64373ba16bee5e9ba9683a625fa3e4a6c4263d9de550bcafd233c2522789c9b31b40c35a87775d6f8fa2498a3bec3647c36c0a2f5cd2eb10c" // signature value
+    }
+  },
+  "zstd-1.3.7-h0b5b093_0.conda": {
+    "4a044c3445b9d8bc5429a2b1d7d42bdb4d8404285b76322e8eacdfdae8b0e4cd": {
+      "signature": "ea1f11a74c081298fe243c6982f676d9838bfee81e74a24bef6474f3be1243b4624f6d12dc8196f8db909cf049e9e344151e44c5b950cbab8583641c7b661a0d"
+    }
+  }
+}
+```
 
 ## Copyright
 
