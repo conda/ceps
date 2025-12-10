@@ -150,6 +150,7 @@ The following is an abbreviated example of a `.sigs` response containing a singl
 Channels MUST return `200 OK` with an empty array `[]` when a package exists but has no attestations. Channels MUST return `404 Not Found` only when the underlying package does not exist.
 
 This distinction allows clients to differentiate between:
+
 - "This package has no attestations" (expected during transition period)
 - "This package does not exist" (client error or tampering)
 
