@@ -85,6 +85,8 @@ The build string MUST be overridable with the `CONDA_OVERRIDE_ARCHSPEC` environm
 
 This virtual package MUST be present when the system exhibits GPU drivers compatible with the CUDA runtimes. When available, the version value MUST be set to the oldest CUDA version supported by the detected drivers (i.e. the formatted value of `libcuda.cuDriverGetVersion()`), constrained to the first two components (major and minor) and formatted as `{major}.{minor}`. The build string MUST be `0`.
 
+If no CUDA runtime is detected, this virtual package MUST NOT be exposed.
+
 The version MUST be overridable with the `CONDA_OVERRIDE_CUDA` environment variable, if set to a non-empty value that can be parsed as a version string.
 
 #### `__glibc`
