@@ -79,15 +79,15 @@ The build string MUST reflect one of:
   | `zos-z`         | `0`                              |
   | Any other value | `0`                              |
 
-The build string MUST be overridable with the `CONDA_OVERRIDE_ARCHSPEC` environment variable, if set to a non-empty value.
+The build string MUST be overridable with the `CONDA_OVERRIDE_ARCHSPEC` environment variable, if set to a non-empty value that can be parsed as a build string.
 
 #### `__cuda`
 
 This virtual package MUST be present when the system exhibits GPU drivers compatible with the CUDA runtimes. When available, the version value MUST be set to the oldest CUDA version supported by the detected drivers (i.e. the formatted value of `libcuda.cuDriverGetVersion()`), constrained to the first two components (major and minor) and formatted as `{major}.{minor}`. The build string MUST be `0`.
 
-If no CUDA runtime is detected, this virtual package MUST NOT be exposed.
-
 The version MUST be overridable with the `CONDA_OVERRIDE_CUDA` environment variable, if set to a non-empty value that can be parsed as a version string.
+
+If no CUDA runtime is detected, this virtual package MUST NOT be exposed, unless manually overridden.
 
 #### `__glibc`
 
@@ -97,7 +97,7 @@ This virtual package MUST be present when the native and target platforms are bo
 
 If the native platform does not match the target platform, the tool MAY export `__glibc` with its `version` field set to a default value (e.g. `2.17`) of its choice.
 
-If the `CONDA_OVERRIDE_GLIBC` environment variable if set to a non-empty value that complies to the version string specification, the tool MUST export `__glibc` with its version value set to the value of the environment variable.
+If the `CONDA_OVERRIDE_GLIBC` environment variable if set to a non-empty value that complies to the version string specification and the target platform is `linux-*`, the tool MUST export `__glibc` with its version value set to the value of the environment variable.
 
 The build string MUST always be `0`.
 
@@ -111,7 +111,7 @@ The build string MUST always be `0`.
 
 This virtual package MUST be present when the target platform is `linux-*`. Its version value MUST be set to the upstream (mainline) Linux kernel version, but it MUST exclude any and all [distribution-specific components](https://www.kernel.org/releases.html#distribution-kernels) of the kernel version. If the version cannot be estimated (e.g. because the native platform is not Linux), the tool MUST set `version` to a fallback value of its choice. The build string MUST be `0`.
 
-The version MUST be overridable with the `CONDA_OVERRIDE_LINUX` environment variable, if set to a non-empty value that matches the regex `"\d+\.\d+(\.\d+)?(\.\d+)?"`. The environment variable MUST be ignored when the target platform is not `linux-*`.
+The version MUST be overridable with the `CONDA_OVERRIDE_LINUX` environment variable, if set to a non-empty value that matches the regex `"[0-9]+\.[0-9]+(\.[0-9]+)?(\.[0-9]+)?"`. The environment variable MUST be ignored when the target platform is not `linux-*`.
 
 > The Linux kernel version can be obtained via:
 >
@@ -151,7 +151,7 @@ The build string MUST be `0`.
 > * Python's `platform.win32_ver()`
 > * CMD's `ver`
 >
-* Powershell's `[System.Environment]::OSVersion.Version`, `(Get-CimInstance Win32_OperatingSystem).version`
+> * Powershell's `[System.Environment]::OSVersion.Version`, `(Get-CimInstance Win32_OperatingSystem).version`
 >
 > * The command `wmic os get version`
 
