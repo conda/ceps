@@ -18,15 +18,22 @@ repos:
       - id: check-useless-excludes
   - repo: https://github.com/codespell-project/codespell
     # see setup.cfg
-    rev: v2.3.0
+    rev: v2.4.1
     hooks:
       - id: codespell
         args: [--write-changes]
+  # lint markdown
+  - repo: https://github.com/DavidAnson/markdownlint-cli2
+    rev: v0.17.2
+    hooks:
+      - id: markdownlint-cli2
+        args: ['--fix']
+        exclude: ^.github/.*\.md$
   - repo: local
     hooks:
     - id: cep-header
       name: CEP must start with a '# CEP \d - Title' header
-      entry: ^# CEP \d+ - .+$
+      entry: ^# CEP (\d{1,4}|XXXX) - .+$
       language: pygrep
       types: [text]
       args: [--negate]
@@ -60,4 +67,4 @@ repos:
       entry: CEP documents must be named '/cep-XXXX.md'
       language: fail
       files: ^.*cep-.*\.md.*$
-      exclude: ^cep-\d{4}\.md$
+      exclude: ^cep-(\d{4}|XXXX)\.md$
