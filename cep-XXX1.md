@@ -49,7 +49,7 @@ Classic `MatchSpec` queries have traditionally matched fields present in candida
 
 ### Syntax
 
-A conditional dependency is defined as a `MatchSpec` that features a `when` keyword, the value of which MUST be a string that encodes a logical expression of one or more `MatchSpec` queries. The logical expression follows Python syntax: `MatchSpec` strings MAY be joined by operators `and` (logical AND), `or` (logical OR), `not` (logical NOT), and grouped within parentheses `()` for precedence overrides.
+A conditional dependency is defined as a `MatchSpec` string that features a `when` keyword, the value of which MUST be a string that encodes a logical expression of one or more `MatchSpec` queries. The logical expression follows a Python-like syntax: `MatchSpec` strings MAY be joined with operators `and` (logical AND) and `or` (logical OR), negated with `not`, and grouped within parentheses `()` for precedence overrides.
 
 The inner `MatchSpec` queries MUST be expressed in their square brackets syntax, with the exception of simple `name` and `version` queries that MAY be expressed as `{name}{operator}{version}` (no space separators). These inner `MatchSpec` queries MUST NOT feature their own `when` field.
 
@@ -67,7 +67,7 @@ A condition MUST evaluate to true when the logical concatenation of the `MatchSp
 
 ### Impact in `info/index.json`
 
-This is a backwards incompatible change. To guarantee backwards compatibility, the `info/index.json` schema version field MUST be bumped to `2`.
+This is a backwards incompatible change. To guarantee backwards compatibility, the `info/index.json` schema version field MUST be bumped to `3`.
 
 ## Examples
 

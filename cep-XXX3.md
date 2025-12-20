@@ -37,7 +37,7 @@ The answer to this problem is to provide a specific field that is designed to pr
 
 ### Repodata record syntax
 
-The `info/index.json` file of each conda artifact MUST support a new field, `flags`, the value of which MUST be a list of non-empty strings matching the regex `^[a-z0-9\-_:+\.]+$`. Subsequently, the `schema_version` value MUST be bumped to 4.
+The `info/index.json` file of each conda artifact MUST support a new field, `flags`, the value of which MUST be a list of non-empty strings matching the regex `^[a-z0-9\-_:+\.]+$`. Subsequently, the `schema_version` value MUST be bumped to `5`.
 
 In recipes, this value MUST be supported in the `build` section of each output (i.e. sibling to `number` and `track_features`).
 
