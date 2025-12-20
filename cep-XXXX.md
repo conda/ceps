@@ -69,6 +69,11 @@ Required.
 
 This file MUST list the contents of the package as a list of _path entries_, as described below. It MUST not list the contents of the `./info/` folder.
 
+The `./info/paths.json` file MUST be JSON parsable into a dictionary that complies with the following schema:
+
+- `paths_version: int`. Required. The version schema of this file
+- `paths: list[dict[str, Any]]`. Required. A list of the _path entries_ representing the non-info files shipped by the package.
+
 Each _path entry_ MUST be a dictionary that complies to the following schema:
 
 - `_path: str`. The path of the file, relative to the root of the package. It MUST use `/` as a path separator, even on Windows.
@@ -127,7 +132,9 @@ A dictionary containing important metadata for installation (linking) operations
 - `noarch: dict[str, Any]`. A dictionary describing the `noarch` configuration of the package. Its keys MUST conform to:
   - `type: Literal["generic", "python"]`. Type of `noarch` package.
   - `entry_points: list[str]`. If `type == "python"`, this key MUST list the console entry points of the Python package, as a list of strings with syntax `{executable-name}={dotted-import-path}:{function-name}` (for example `bsdiff4 = bsdiff4.cli:main_bsdiff4`).
-- `preferred_env: dict[str, str]`. Deprecated, optional. It MUST have two keys: `name: str` (name of the preferred environment) and `executable_paths: list[str]` (list of preferred executable paths in that environment).
+These keys are commonly found, but are now considered deprecated:
+
+- `preferred_env: dict[str, str]`. It MUST have two keys: `name: str` (name of the preferred environment) and `executable_paths: list[str]` (list of preferred executable paths in that environment).
 
 #### `./info/licenses/`
 
@@ -169,7 +176,7 @@ Lists all files that are part of the package itself, 1 per line. All of these fi
 
 #### `./info/has_prefix`
 
-Deprecated. Optional.
+Deprecated.
 
 Lists all files that contain a hard-coded build prefix or placeholder prefix, which needs to be replaced by the install prefix at installation time.
 
@@ -238,7 +245,7 @@ These scripts should be avoided whenever possible. If they are indeed necessary,
 - They MUST NOT write to stdout, but they MAY write to `$CONDA_PREFIX/.messages.txt`, whose contents SHOULD be reported after the conda client completes all actions.
 - They MUST NOT touch anything other than the files being installed.
 - They MUST NOT depend on any installed or to-be-installed conda packages.
-- They SHOULD depend only on standard system tools such as `rm`, `cp`, `mv`, and `ln`.
+- They SHOULD depend only on standard system tools. For example, `rm`, `cp`, `mv`, and `ln` on Unix machines. Or `del`, `ren`, `copy`, and `mklink` on Windows machines.
 
 ### `Menu/*.json` files
 
