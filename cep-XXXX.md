@@ -40,6 +40,7 @@ This file contains essential metadata about the package, such as its name, versi
 
 This file MUST conform to the following schema:
 
+- `schema_version: int`: A non-negative integer representing the version of the `index.json` format. This CEP specifies version 2. If absent, it MUST be understood as `1`; in other words, prior to this CEP and hence non-standardized.
 - `name: str`. Lowercased name of the package. It MUST comply with [CEP 26](./cep-0026.md).
 - `version: str`. Normalized package version. It MUST comply with [CEP XX (Version strings)](https://github.com/conda/ceps/pull/132).
 - `build: str`. A string that helps disambiguate different variant builds of the same package version. It MUST comply with [CEP 26](./cep-0026.md). It SHOULD contain the `build_number` field at the end of the string, preceded by an underscore `_`. It MAY contain the hexadecimal string of the SHA1-hash of the key-sorted dictionary provided in `./info/hash_input.json`, preceded by `h`, usually trimmed to the first seven characters.
@@ -49,7 +50,7 @@ This file MUST conform to the following schema:
 - `subdir: str`. The target platform for this package, or `noarch` if platform-agnostic. It MUST comply with [CEP 26](./cep-0026.md).
 - `noarch: Literal['generic', 'noarch']`. Optional. When `subdir` is `noarch`, this field indicates the type of `noarch` package. It MUST be one of: `generic`, `python`.
 - `timestamp: int`. Starting time of the package build. It MUST be expressed as [Unix time](https://en.wikipedia.org/wiki/Unix_time) in milliseconds.
-- `track_features: str`. Space-separated string of unique identifiers.
+- `track_features: str`. Space-separated or comma-separated string of unique identifiers.
 - `python_site_packages_path: str`. Site-packages path, as introduced in [CEP 20](./cep-0020.md).
 
 Additional keys MAY be present. The following ones are well-known but deprecated:
