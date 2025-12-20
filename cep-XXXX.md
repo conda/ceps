@@ -89,6 +89,12 @@ A free-form dictionary that maps `str` keys to `str` values. The dictionary MAY 
 
 Its contents MAY be used to generate a hash string that uniquely identifies the package.
 
+#### `./info/run_exports.json`
+
+Optional.
+
+This JSON document MUST be either a list of `MatchSpec` strings, or a dictionary that maps string keys (`weak`, `strong`, `weak_constrains`, `strong_constrains`, `noarch`) to a list of `MatchSpec` strings. When provided as a `list[str]`, it MUST be considered equivalent to `{"weak": list[str]}`.
+
 #### `./info/about.json`
 
 Optional.
