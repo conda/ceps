@@ -21,7 +21,7 @@ The motivation of this CEP is mostly informative, but will also try to clarify s
 
 ## Specification
 
-An extracted conda package is a directory that MUST at least include an `./info/index.json` file. Other important metadata files SHOULD be included under `./info/`.
+An extracted conda package is a directory that MUST at least include three files: `./info/index.json`, `./info/paths.json`, and `./info/hash_input.json`. Other important metadata files SHOULD be included under `./info/`.
 
 Additionally, the package directory MAY contain any number of files in any subdirectories.
 Some locations MAY receive special handling by conda clients.
