@@ -62,12 +62,12 @@ A conditional dependency MUST only be taken into account when the `when` conditi
 A condition MUST evaluate to true when the logical concatenation of the `MatchSpec` queries is truthy. Each `MatchSpec` expression would evaluate to true if:
 
 - It matches a package record potentially present in the proposed solution.
-- It matches a virtual package present in the system.
-- It matches a field injected in the evaluation context.
+- It matches a virtual package present in the target system.
+- For `run_exports` only: it matches a field injected in the evaluation context.
 
-### Impact in `info/index.json`
+### Impact in `info/*.json`
 
-This is a backwards incompatible change. To guarantee backwards compatibility, the `info/index.json` schema version field MUST be bumped to `3`.
+This is a backwards incompatible change. To guarantee backwards compatibility, the `info/index.json` schema version field MUST be bumped to `3`. When present in `run_exports.json`, its `schema_version` value MUST be bumped to `2`.
 
 ## Examples
 
