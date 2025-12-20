@@ -100,6 +100,8 @@ Optional.
 
 This JSON document MUST be either a list of `MatchSpec` strings, or a dictionary that maps string keys (`weak`, `strong`, `weak_constrains`, `strong_constrains`, `noarch`) to a list of `MatchSpec` strings. When provided as a `list[str]`, it MUST be considered equivalent to `{"weak": list[str]}`.
 
+In its dictionary form, the field `schema_version` MUST be present and map to a positive integer when its value is `2` or greater. In its absence, this value is assumed to be `1`.
+
 #### `./info/about.json`
 
 Optional.
