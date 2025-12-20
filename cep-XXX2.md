@@ -37,7 +37,7 @@ The chosen keyword is `extras` given its popularity in Python packaging.
 
 ## Specification
 
-The `info/index.json` dictionary of each conda artifact MUST allow a new field, `extras`, the value of which MUST be a dictionary that maps non-empty strings (the group name) to a list of `MatchSpec` strings encoding the optional dependencies. Since this is backwards incompatible behavior-wise, the `schema_version` value MUST be bumped to 3.
+The `info/index.json` dictionary of each conda artifact MUST allow a new field, `extras`, the value of which MUST be a dictionary that maps non-empty strings (the group name) to a list of `MatchSpec` strings encoding the optional dependencies. Since this is backwards incompatible behavior-wise, the `schema_version` value MUST be bumped to `4`.
 
 The `extras` field MUST also be exposed in recipe formats v1 and above, under the `requirements.extras` section (sibling to `build`, `host`, `run`, etc), that renders to the same schema (`dict[str, list[MatchSpec]]`).
 
