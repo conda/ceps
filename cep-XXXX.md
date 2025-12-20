@@ -21,12 +21,12 @@ The motivation of this CEP is mostly informative, but will also try to clarify s
 
 ## Specification
 
-An extracted conda package is a directory that MUST at least include an `info/index.json` file. Other important metadata files SHOULD be included under `info/`.
+An extracted conda package is a directory that MUST at least include an `./info/index.json` file. Other important metadata files SHOULD be included under `./info/`.
 
 Additionally, the package directory MAY contain any number of files in any subdirectories.
 Some locations MAY receive special handling by conda clients.
 
-### `info/` directory
+### `./info/` directory
 
 This special directory contains all the metadata necessary to provide a functional conda package.
 
@@ -67,7 +67,7 @@ Additional keys MAY be present. The following ones are well-known but deprecated
 
 Required.
 
-This file MUST list the contents of the package as a list of _path entries_, as described below. It MUST not list the contents of the `info/` folder.
+This file MUST list the contents of the package as a list of _path entries_, as described below. It MUST not list the contents of the `./info/` folder.
 
 Each _path entry_ MUST be a dictionary that complies to the following schema:
 
@@ -79,7 +79,7 @@ Each _path entry_ MUST be a dictionary that complies to the following schema:
 - `sha256: str`. The hexadecimal string of SHA256 hash of the file contents. It MUST be a 64 character string containing only characters in the `[a-z0-9]` range. If the path is a softlink, the contents of the target file are hashed.
 - `size_in_bytes: int`. The size of the file, in bytes. If the path is a softlink, the size of the target file is reported.
 
-`paths.json` supersedes `info/files`, `info/has_prefix`, and `info/no_link`. If both are present, `paths.json` takes precedence.
+`./info/paths.json` supersedes `./info/files`, `./info/has_prefix`, and `./info/no_link`. If both are present, `./info/paths.json` MUST take precedence.
 
 #### `./info/hash_input.json`
 
