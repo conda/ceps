@@ -117,6 +117,7 @@ requirements:
 ```
 
 Likewise, the expanded form of `ignore_exports` gains a key:
+
 ```yaml
 requirements:
   ignore_exports:
@@ -150,7 +151,7 @@ with conditional dependencies, before it can be handed over to the SAT solver.
 
 To clarify this further, we need to look at the process for how this would work concretely. Assuming an
 already-parsed recipe for some package `mypkg`, let us follow the resolution order mandated by CEP XXXX and
-thus begin begin with a `build:`, which contains some named dependencies `[foo, baz, qux]`. Let's call this
+thus begin begin with `build:`, which shall contain some named dependencies `[foo, baz, qux]`. Let's call this
 set `B`. Further, let `foo` have `exports: build_to_build: bar`, `bar` have `exports: build_to_build: fizz`,
 `fizz` have `exports: build_to_host: bang` and `bang` have `exports: host_to_run: boink`. Finally, let `baz`
 have `exports: build_to_run: bla`.
@@ -167,8 +168,8 @@ exports (`[cross]`) and saving the package metadata (`[save]`).
 - [self] Filter conditional dependencies of all involved packages (or the entire channel) based on current context
   (here: the fact that we're solving for a `build:` environment) before handing to the SAT solver.
   - In the example above, this pre-processing turns `bar` and `fizz` into regular transitive dependencies of `foo`.
-  - Compare with `ignore_exports.{to_build,to_any}` and remove `bar` and/or `fizz` again if they match.
-  - Let `B2B` be the set of `build_to_build:` exports that were not ignored.
+  - Compare with `ignore_exports.{to_build,to_any}` and remove any exports that match.
+  - Let `B2B` be the set of `build_to_build:` exports that were not ignored; here `B2B=[bar, fizz]`.
   - Translate other conditional dependencies (unrelated to self-exports) into solver constraints, see
     [here](https://github.com/prefix-dev/resolvo/blob/main/src/solver/conditions.rs).
 - [solve] Solve constraints to receive a concrete set of artefacts per dependency for the final `build:` environment.
