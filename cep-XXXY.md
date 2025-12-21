@@ -93,7 +93,8 @@ could add constraints that end up evicting the package that caused the export in
 
 ## Design
 
-The design of CEP XXXX explicitly considered self-exports from the beginning, so the changes are purely additive:
+CEP XXXX explicitly considered self-exports from the beginning for the overall design of the exports overhaul,
+so the changes are purely additive:
 
 ```yaml
 requirements:
@@ -168,14 +169,15 @@ exports (`[cross]`) and saving the package metadata (`[save]`).
   - Do the same for `host:` and `run:` dependencies, including their exports and all transitive dependencies.
 - [self] Filter conditional dependencies of all involved packages (or the entire channel) based on current context
   (here: the fact that we're solving for a `build:` environment) before handing to the SAT solver.
-  - In the example above, this pre-processing turns `bar` and `fizz` into regular transitive dependencies of `foo`.
+  - In the example above, this pre-processing turns `bar` into a regular dependency of `foo`, while `fizz` becomes
+    a regular dependency of `bar` (and thus a transitive dependency of `foo`).
   - Compare with `ignore_exports.{to_build,to_any}` and remove any exports that match.
   - Let `B2B` be the set of `build_to_build:` exports that were not ignored; here `B2B=[bar, fizz]`.
   - Translate other conditional dependencies (unrelated to self-exports) into solver constraints, see
     [here](https://github.com/prefix-dev/resolvo/blob/main/src/solver/conditions.rs).
 - [solve] Solve constraints to receive a concrete set of artefacts per dependency for the final `build:` environment.
   - Loosely speaking, we're passing `B+B2B` to the solver.
-  - Assuming no matching `ignore_exports` being specified in the `mypkg` recipe, this would amount to
+  - Assuming no matching `ignore_exports` in the `mypkg` recipe, this would amount to
     `[foo, baz, qux, bar, fizz]` (including their various constraints) for the above example.
 - [cross] Determine `exports:` for the concrete artefacts in resolved `build:` environment.
   - Collect exports, but only for packages in the set `B+B2B` (this is where we extend the "only named packages
@@ -184,16 +186,19 @@ exports (`[cross]`) and saving the package metadata (`[save]`).
   - Do the same (including filtering by `ignore_exports:`) for `build_to_run:` exports, call this set `B2R`.
   - Do the same for `build_to_constraints:`, call the resulting set `B2C`.
   - In the above example, `B2H=[bang]`, `B2R=[bla]` and `B2C` is empty.
-- [self] Filter conditional dependencies of `host:` packages (as for `build:` above)
+- [self] Filter conditional dependencies of `host:` packages (as for `build:` above).
   - Calculate `H2H` as the set of `host_to_host:` exports, not including those that match a corresponding
     `ignore_export` rule.
   - In the above example, `H2H` is empty.
-- [solve] Solve constraints for named `host:` dependencies + `B2H` + `H2H` to get the final `host:` environment
+- [solve] Solve constraints for `H` (named `host:` dependencies) + `B2H` + `H2H` to get the final `host:`
+   environment
 - [cross] Determine `exports: host_to_run` for the concrete artefacts in resolved `host:` environment
   - Collect exports, but only for packages in the set `H+B2H+H2H`.
   - Filter `host_to_run:` exports by `ignore_exports.{to_run,to_any}`, call the resulting set `H2R`.
   - Do the same for `host_to_constraints:`, call the resulting set `H2C`
-  - In the above example, `H2R=[boink]` and `H2C` is empty.
+  - For the above example we did not specify `host:` dependencies or their exports; we can assume them to be
+    empty. Nevertheless, `H2R=[boink]` would not be empty, due to a chain of exports originating from the
+    `build:` environment. Since there was no `host_to_constraints:` export in the example, `H2C` remains empty.
 - [save] Save `run:` + `B2R` + `H2R` as dependencies of `mypkg`, save `B2C` + `H2C` as constraints.
 
 ## Specification
