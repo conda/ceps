@@ -255,7 +255,7 @@ exports (`[cross]`) and saving the package metadata (`[save]`).
   - For the above example we did not specify `host:` dependencies or their exports; we can assume them to be
     empty. Nevertheless, `H2R=[boink]` would not be empty, due to a chain of exports originating from the
     `build:` environment. Since there was no `host_to_constraints:` export in the example, `H2C` remains empty.
-- [save] Save `run:` + `B2R` + `H2R` as dependencies of `mypkg`, save `B2C` + `H2C` as constraints.
+- [save] Save `run:` + `B2R` + `H2R` as dependencies of `mypkg`, save `constraints:` + `B2C` + `H2C` as constraints.
 
 ## Specification
 
