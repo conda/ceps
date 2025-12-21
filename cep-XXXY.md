@@ -98,7 +98,7 @@ The design of CEP XXXX explicitly considered self-exports from the beginning, so
 requirements:
   exports:
     build_to_build:                 # NEW
-      - a_transitive_dependency
+      - a_compile_time_only_dependency
     build_to_host:
       - a_host_constraint =*=*foo
     build_to_run:
@@ -106,7 +106,7 @@ requirements:
     build_to_constraints:
       - a_run_constraint
     host_to_host:                   # NEW
-      - a_transitive_dependency
+      - a_compile_time_only_dependency
     host_to_run:
       - a_shared_library
     host_to_constraints:

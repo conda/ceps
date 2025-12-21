@@ -214,9 +214,9 @@ requirements:
       - a_dependency_exported_when_consumer_is_noarch
     # potential future additions, not proposed by this CEP, but included for completeness
     build_to_build:
-      - a_transitive_dependency
+      - a_compile_time_only_dependency
     host_to_host:
-      - a_transitive_dependency
+      - a_compile_time_only_dependency
 ```
 
 As indicated by the comments, `host_to_run:` matches the existing weak run-export. If taken together with
