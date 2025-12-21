@@ -395,24 +395,40 @@ the consistent rule then becomes:
 
 ### Ignoring exports
 
-For the most common use, it suffices to rename `ignore_run_exports`
+As a natural counterpart to increased variety of exports, we need to consider the facilities for overriding
+exports where necessary. For the most common use, it would be tempting to simply rename `ignore_run_exports`
 
 ```yaml
   requirements:
     ignore_exports:  # changed from ignore_run_exports
-      from_package:
+      from_package:  # NOT PROPOSED, see below
         - zlib
       by_name:
         - libzlib
 ```
 
-which should ignore the application of any exports matching the conditions (whether
-by originating package or by name of the export), regardless of which export type it comes from.
+However, more complicated scenarios need to be expressible now (see below). Together with a desire to avoid
+dynamic schemas where not absolutely necessary (c.f. also the next section about convenience shorthands),
+this leads us to propose the following syntax for the general case:
 
-For cases where the same package is exported into several environments, or the same package is exporting
-_from_ different environments, it may be necessary to ignore exports more granularly. For this purpose,
-we allow qualifying the same ignore schema (i.e. `from_package:` / `by_name:`) by the target environment
-(which is a more natural fit here than the originating environment of a given export).
+```yaml
+  requirements:
+    ignore_exports:  # changed from ignore_run_exports
+      to_any:
+        from_package:
+          - zlib
+        by_name:
+          - libzlib
+```
+
+Unsurprisingly, the above instructs the build tool to ignore the application of any exports matching the
+conditions (whether by originating package or by name of the export), regardless of where it comes from.
+
+For more complicated cases, e.g. where the same package is exported into several environments, or where the
+same package is exporting _from_ different environments, it may be necessary to ignore exports more granularly.
+For this purpose, we allow qualifying the same ignore schema (i.e. `from_package:` / `by_name:`) by the target
+environment (which is a more natural fit here than the originating environment of a given export).
+
 ```yaml
 requirements:
   ignore_exports:
@@ -424,6 +440,8 @@ requirements:
     to_run:     # covers exports to both `run:` and `constraints:`
       [...]
     to_build:   # for completeness; only relevant once `build_to_build:` exports exist
+      [...]
+    to_any:     # trivially compatible with "general" ignore_exports
       [...]
 ```
 
