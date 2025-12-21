@@ -413,8 +413,8 @@ this leads us to propose the following syntax for the general case:
 
 ```yaml
   requirements:
-    ignore_exports:  # changed from ignore_run_exports
-      to_any:
+    ignore_exports:     # changed from ignore_run_exports
+      to_any:           # additional key!
         from_package:
           - zlib
         by_name:
@@ -438,10 +438,10 @@ requirements:
       by_name:
         - libzlib
     to_run:     # covers exports to both `run:` and `constraints:`
+      [...]     # same inner schema
+    to_build:   # potential future addition; only relevant once `build_to_build:` exports exist
       [...]
-    to_build:   # for completeness; only relevant once `build_to_build:` exports exist
-      [...]
-    to_any:     # trivially compatible with "general" ignore_exports
+    to_any:     # trivially combineable with "general" ignore_exports
       [...]
 ```
 
