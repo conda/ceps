@@ -97,20 +97,20 @@ The design of CEP XXXX explicitly considered self-exports from the beginning, so
 ```yaml
 requirements:
   exports:
-    host_to_run:
-      - a_shared_library
+    build_to_build:                 # NEW
+      - a_transitive_dependency
     build_to_host:
       - a_host_constraint =*=*foo
     build_to_run:
       - a_compiler_runtime
-    host_to_constraints:
-      - a_run_constraint
     build_to_constraints:
       - a_run_constraint
-    build_to_build:                 # NEW
-      - a_transitive_dependency
     host_to_host:                   # NEW
       - a_transitive_dependency
+    host_to_run:
+      - a_shared_library
+    host_to_constraints:
+      - a_run_constraint
     # all the above _do not_ apply when building `noarch: generic` or `noarch: python` packages
     noarch_to_run:
       - a_dependency_exported_when_consumer_is_noarch
