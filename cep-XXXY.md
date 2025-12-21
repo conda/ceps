@@ -158,6 +158,62 @@ set `B`. Further, let `foo` have `exports: build_to_build: bar`, `bar` have `exp
 `fizz` have `exports: build_to_host: bang` and `bang` have `exports: host_to_run: boink`. Finally, let `baz`
 have `exports: build_to_run: bla`.
 
+To illustrate this, the following graph indicates named dependencies in white, exported dependencies in black,
+and exports as red arrows:
+
+```mermaid
+flowchart TB
+    classDef yamlSection fill:#b0b0b0,stroke:#e6e6e6,stroke-width:0.5px,font-family:monospace,color:#000;
+    classDef namedDep fill:#ffffff,stroke:#ffffff,font-family:monospace,color:#000;
+    classDef implicitDep fill:#000000,stroke:#00000,font-family:monospace,color:#fff;
+
+    subgraph build["build:"]
+        direction TB
+        foo["- foo"]
+        bar["# - bar"]
+        fizz["# - fizz"]
+        baz["- baz"]
+        qux["- qux"]
+    end
+
+    subgraph host["host:"]
+        direction TB
+        bang["# - bang"]
+    end
+
+    subgraph run["run:"]
+        direction TB
+        bla["# - bla"]
+        boink["# - boink"]
+    end
+
+    %% main exports
+    foo-->bar
+    bar-->fizz
+    fizz-->bang
+    bang-->boink
+
+    %% enforce vertical ordering
+    baz~~~host
+    qux~~~host
+    foo~~~bar
+    baz~~~qux
+    bar~~~fizz
+    fizz~~~baz
+    bang~~~bla
+    bla~~~boink
+
+    %% main export, but needs sorting at the end to appear on RHS of graph
+    baz-->bla
+
+    %% apply line style; corresponding to index of edges as they appear in definition
+    linkStyle 0,1,2,3,12 stroke:#ff0000,stroke-width:3px;
+
+    class build,host,run yamlSection;
+    class foo,baz,qux namedDep;
+    class bar,fizz,bang,boink,bla implicitDep;
+```
+
 Then, the way to build `mypkg` works as follows. The tags distinguish between metadata fetching (`[meta]`),
 handling self-exports (`[self]`), solver interactions (`[solve]`), as well as regular cross-environment
 exports (`[cross]`) and saving the package metadata (`[save]`).
