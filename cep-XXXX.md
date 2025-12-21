@@ -208,10 +208,15 @@ requirements:
     host_to_constraints:    # matches `weak_constrains:` (v0) / `weak_constraints:` (v1)
       - a_run_constraint
     build_to_constraints:   # matches `strong_constrains:` (v0) / `strong_constraints:` (v1)
-      - a_transitive_dependency
+      - a_run_constraint
     # all the above _do not_ apply when building `noarch: generic` or `noarch: python` packages
     noarch_to_run:          # matches `noarch:` run-export; _does_ apply when building noarch packages
       - a_dependency_exported_when_consumer_is_noarch
+    # potential future additions, not proposed by this CEP, but included for completeness
+    build_to_build:
+      - a_transitive_dependency
+    host_to_host:
+      - a_transitive_dependency
 ```
 
 As indicated by the comments, `host_to_run:` matches the existing weak run-export. If taken together with
@@ -235,24 +240,162 @@ noarch packages at all, it's seems natural to consider noarch as just another co
 during the build phase of a dependent project, or not. The overall rule still remains easy to summarise as
 "`exports:` do not apply when building noarch packages, unless the export is of type `noarch_to_run:`."
 
-### Other modifications
+Combined with the consistent `<from>_to_<to>` naming scheme, `exports: noarch_to_run: ...` is also more
+self-explanatory than the current `run_exports: noarch: ...`.
 
-Additionally, to keep the `<valid_requirements_key>_to_<valid_requirements_key>` pattern (aside from
-the special case for `noarch`), we rename
+### Omitted combinations
+
+One could ask about a possible `host_to_build:` key. While this would arguably be an even better
+fit for the C++/Fortran modules ABI issue described above, the reason this proposal refrains from suggesting
+such a key is to limit implementation complexity, by having an explicit order of environment resolution from
+`build:` to `host:` to `run:`. Allowing both `host_to_build:` as well as `build_to_*:` would complicate this
+process unnecessarily, and we believe the relevant use-cases are fully expressible using `build_to_host:`
+together with constraints (such as `_fortran_modules_abi`) attached to packages that appear in `host:`.
+
+### Exporting happens more than once during the build
+
+While the `build:` to `host:` to `run:` order described above reduces procedural complexity, it still enlarges
+the space of possible scenarios. Specifically, there are now at least two distinct points where exports happen,
+once for `build_to_*:` and once for `host_to_run:`. This leads to new questions, of how chained exports interact.
+
+For example, if we have
 
 ```yaml
+# output: a_complicated_package
 requirements:
-  constraints:  # changed from run_constraints
-    - [...]
+  exports:
+    build_to_host:
+      - some_package_with_a_run_export
 ```
 
-because constraints only make sense when that package gets installed somewhere in any case, so the
-"run_" is superfluous (aside from being inconsistent with the proposed pattern for export variants).
-On top of that, the "run_" can also be confusing, because the name might be misinterpreted as being
-specific to the `run:` environment, when in actuality, the `run_constraints:` of a package still
-take effect also when installed into a `host:` or `build:` environment.
+and
 
-Likewise we rename `ignore_run_exports`
+```yaml
+# output: some_package_with_a_run_export
+requirements:
+  exports:
+    host_to_run:
+      - the_export_in_question
+```
+
+and then consume it
+
+```yaml
+# output: mypkg
+requirements:
+  build:
+    - a_complicated_package
+  host:
+    # from a_complicated_package's build_to_host export
+    # - some_package_with_a_run_export
+  run:
+    # ...should the host_to_run export of some_package_with_a_run_export get triggered here?!
+    # - the_export_in_question
+```
+
+the question arises how to handle export of a package _that's not explicitly named_ in the recipe.
+
+Obviously this is quite an impactful question, as it is certainly not desirable to trigger the exports of all
+packages that happen to transitively make it into a build or host environment.
+
+Taken in isolation, it would be understandable to conclude from the above that the rule "only packages named
+explicitly in the recipe may have their exports applied" should remain sacrosanct, and that consequently, the
+answer to the above question would be that `the_export_in_question` should not get added.
+
+There is however an important other use-case on the horizon that needs to be taken into account for the design
+here. There are technical constraints (dependencies on other efforts) why this CEP does not propose the resulting
+mechanism directly, but that should not hinder us from approaching the design space holistically.
+
+### Future-proofing: self-exports
+
+Consider the following use-case: `libB` depends on `libA` as usual, but compiling against `libB` needs
+*the specific version* of `libA` used to build `libB`, e.g. due to the way ABI and headers between
+`libA` and `libB` interact. This is a scenario that happens with increasing frequency for C++ for example,
+where the adoption of templates and `contexpr` functions effectively push dependencies into public headers.
+
+This can be regarded as a "compile-time-only" dependency of `libB`; `libA` is not necessary at runtime, but
+_compiling against_ `libB` requires the correct `libA` to be present. For example, if `libB 1.0.0 *_1` is built
+against `libA=1` and `libB 1.0.0 *_2` is built against `libA=2`, then a package `mypkg` that (generically) depends
+on `libB` needs to match the `libA` version that was used to build the *specific* artefact of `libB` that is in
+`host:` at build time of `mypkg`.
+
+To illustrate this better, let us look at some example recipes:
+
+```yaml
+# output: libA
+requirements:
+  # omitted: regular build/host/run environments
+  exports:
+    host_to_run:
+      - ${{ pin_compatible("libA") }}
+```
+
+This matches the operations of `run_export:` so far. Before we consider the recipe of `libB`, let us consider
+`mypkg` first, because it illustrates that using `libB` _necessarily_ needs to inject a constraint on `libA`
+that's not present in the consuming recipe:
+
+```yaml
+# output: mypkg
+requirements:
+  # omitted: regular build environment
+  host:
+    - libB
+    # injected!
+    # - libA  # matches libA-constraint of libB
+  run:
+    # regular run-export from libB
+    # - libB >={{ver_B}},<{{next_ver_B}}
+    # run-export from injected libA!
+    # - libA >={{ver_A}},<{{next_ver_A}}
+    - some_other_regular_dependency
+```
+
+Clearly, this is an usual situation deserving of very explicit syntax. Fortunately, the `<from>_to_<to>`
+pattern provides a very natural way to do this:
+
+```yaml
+# output: libB
+requirements:
+  # omitted: regular build environment
+  host:
+    - libA
+  run:
+    # regular host_to_run export from libA
+    # - libA >={{ver_A}},<{{next_ver_A}}
+  exports:
+    host_to_run:
+      - ${{ pin_compatible("libB") }}
+    # export that injects libA whenever libB is a named dependency in a host environment!
+    host_to_host:
+      - ${{ pin_compatible("libA") }}
+```
+
+The main additional complication this introduces (and why it is not being proposed in this CEP yet), is that
+one cannot simply follow the previous process of:
+- resolve environment
+- collect any exports of concrete packages
+- inject those packages into next environment
+
+anymore, because the resolution process becomes entangled with the exports. Doing this iteratively is not an
+option because arbitrarily pathological behaviour is possible (e.g. the addition of a `host_to_host:` export
+could add constraints that end up evicting the package that caused the export in the first place!).
+
+This can be solved in conjunction with conditional dependencies, and will be handled in a separate CEP.
+
+### Applying exports transitively
+
+The fact that there are important use cases where it is necessary to apply exports of packages not explicitly
+named in the recipe provides us a concrete answer to the question about what should happen with `the_export_in_question`
+in the example further up: it should be applied.
+
+This provides consistent behaviour between `build_to_host:` with how `build_to_build:` resp. `host_to_host:`
+necessarily must operate. Instead of only applying exports from packages named in the respective environment,
+the consistent rule then becomes:
+"exports are applied from packages that are either explicitly named in the environment, or have been injected via exports."
+
+### Ignoring exports
+
+For the most common use, it suffices to rename `ignore_run_exports`
 
 ```yaml
   requirements:
@@ -263,46 +406,26 @@ Likewise we rename `ignore_run_exports`
         - libzlib
 ```
 
-which should ignore any exports into `run:` or `constraints:` matching the conditions (whether
+which should ignore the application of any exports matching the conditions (whether
 by originating package or by name of the export), regardless of which export type it comes from.
 
-### Transitive compilation requirements
-
-A case can be made for `host_to_host:` and `build_to_build:`, despite the natural follow-up question
-why whatever is being exported in such a manner could not be a direct (run-)dependency of the package.
-The answer is that there may be transitive dependencies *at compilation time* that we do not want
-consumers to inherit at runtime (similar to the situation with the Fortran modules ABI).
-
-An example of this is if a library `foo` depends on the headers of another library `bar` at compile-time
-(possibly with restrictive version constraints), but we do not want packages built atop of `foo` to carry
-along those `bar` headers or related constraints (because at that point they're not needed anymore;
-the concern is about a compile-time quantity, which only concerns either `build:` and/or `host:`).
-
-While these exports were proposed in a previous iteration of this CEP, they have now been removed.
-The key reason for this is that it complicates the environment resolution process in a way that is
-difficult to disentangle: for a given set of dependencies, we would have to check whether they have
-any `X_to_X:` exports, but to do so, we already have to resolve the environment, in order to determine
-the exact set of artefacts for which we would look up the respective `exports.json`. Once the initial
-solve has been made, adding further constraints might change the environment, which may go as far as
-removing the artefact that was responsible for the `X_to_X:` export in the first place!
-
-Such use-cases are very likely better solved by conditional dependencies, which can be resolved in a
-single pass, and would avoid substantial implementation complexity stemming from the unavoidable
-multi-phase resolution (and attendant issues), if this were done on the same level as cross-environment
-exports.
-
-### Other omitted combinations
-
-Furthermore, one could ask about a possible `host_to_build:` key. While this would arguably be an even better
-fit for the C++/Fortran modules ABI issue described above, the reason this proposal refrains from suggesting
-such a key is to limit implementation complexity, by having an implicit order of environment resolution from
-`build:` to `host:` to `run:`. Allowing both `host_to_build:` as well as `build_to_*:` would complicate this
-process unnecessarily, and we believe the relevant use-cases are fully expressible using `build_to_host:`
-together with constraints (such as `_fortran_modules_abi`) attached to packages that appear in `host:`.
-
-Summing up, `build:` can export to all others (i.e. `host:`, `run:`, `constraints:`), `host:` can export
-to `run:` and `constraints:`, while nothing can be exported from either `run:` or `constraints:`. None
-of these exports apply when building noarch packages, which only take into account `noarch_to_run:` exports.
+For cases where the same package is exported into several environments, or the same package is exporting
+_from_ different environments, it may be necessary to ignore exports more granularly. For this purpose,
+we allow qualifying the same ignore schema (i.e. `from_package:` / `by_name:`) by the target environment
+(which is a more natural fit here than the originating environment of a given export).
+```yaml
+requirements:
+  ignore_exports:
+    to_host:
+      from_package:
+        - zlib
+      by_name:
+        - libzlib
+    to_run:     # covers exports to both `run:` and `constraints:`
+      [...]
+    to_build:   # for completeness; only relevant once `build_to_build:` exports exist
+      [...]
+```
 
 ### No convenience shorthand
 
@@ -336,6 +459,34 @@ requirements:
 For one, it complicates the schema definition and handling unnecessarily, and saving a few characters is not worth
 the resulting ambiguity. Finally, using `host_to_run:` improves clarity for the recipe reader and will naturally
 (we believe) lead to understanding the other export types (or even run-exports as a concept in the first place).
+
+### Other modifications
+
+Additionally, to keep the `<valid_requirements_key>_to_<valid_requirements_key>` pattern (aside from
+the special case for `noarch`), we rename
+
+```yaml
+requirements:
+  constraints:  # changed from run_constraints
+    - [...]
+```
+
+because constraints only make sense when that package gets installed somewhere in any case, so the
+"run_" is superfluous (aside from being inconsistent with the proposed pattern for export variants).
+On top of that, the "run_" can also be confusing, because the name might be misinterpreted as being
+specific to the `run:` environment, when in actuality, the `run_constraints:` of a package still
+take effect also when installed into a `host:` or `build:` environment.
+
+### Summary
+
+To recap, `build:` can export to all others (i.e. `host:`, `run:`, `constraints:`), `host:` can export
+to `run:` and `constraints:`, while nothing can be exported from either `run:` or `constraints:`. None
+of these exports apply when building noarch packages, which only take into account `noarch_to_run:` exports.
+
+Packages that have been added through an export to an environment will in turn have their own exports be
+applied, even if not explicitly named in the recipe.
+
+Finally, granular facilities exist for ignoring exports overall or into specific environments.
 
 ## Impacts on package and channel metadata
 
