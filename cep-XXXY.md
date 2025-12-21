@@ -54,9 +54,9 @@ requirements:
     # injected!
     # - libA  # matches libA-constraint of libB
   run:
-    # regular run-export from libB
+    # regular host_to_run export from libB
     # - libB >={{ver_B}},<{{next_ver_B}}
-    # run-export from injected libA!
+    # host_to_run export from injected libA!
     # - libA >={{ver_A}},<{{next_ver_A}}
     - some_other_regular_dependency
 ```
@@ -82,6 +82,7 @@ requirements:
 ```
 
 The main additional complication this introduces, is that one cannot simply follow the previous process of:
+
 - resolve environment
 - collect any exports of concrete packages
 - inject those packages into next environment

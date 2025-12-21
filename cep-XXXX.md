@@ -343,9 +343,9 @@ requirements:
     # injected!
     # - libA  # matches libA-constraint of libB
   run:
-    # regular run-export from libB
+    # regular host_to_run export from libB
     # - libB >={{ver_B}},<{{next_ver_B}}
-    # run-export from injected libA!
+    # host_to_run export from injected libA!
     # - libA >={{ver_A}},<{{next_ver_A}}
     - some_other_regular_dependency
 ```
@@ -372,6 +372,7 @@ requirements:
 
 The main additional complication this introduces (and why it is not being proposed in this CEP yet), is that
 one cannot simply follow the previous process of:
+
 - resolve environment
 - collect any exports of concrete packages
 - inject those packages into next environment
@@ -476,7 +477,7 @@ requirements:
 
 For one, it complicates the schema definition and handling unnecessarily, and saving a few characters is not worth
 the resulting ambiguity. Finally, using `host_to_run:` improves clarity for the recipe reader and will naturally
-(we believe) lead to understanding the other export types (or even run-exports as a concept in the first place).
+(we believe) lead to understanding the other export types (or even exports as a concept in the first place).
 
 ### Other modifications
 
