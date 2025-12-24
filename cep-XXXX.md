@@ -53,7 +53,7 @@ level keys:
 - removed
 - signatures
 
-This CEP proposes the addition of a new `packages.whl` section to account for the wheel format. This key points to a mapping that MUST contain [repodata record][repodata-record-schema] objects. The key of this mapping MUST be the wheel file name, and the contents of the package record MUST contain metadata related to that wheel.
+This CEP proposes the addition of a new `packages.whl` section to account for the wheel format. This key points to a mapping that MUST contain [repodata record][repodata-record-schema] objects. The key of this mapping MUST follow the specification described below in [Key naming requirements](#key-naming-requirements).
 
 ### Record structure and naming convention
 
@@ -61,7 +61,7 @@ To support sparse repodata processing and maintain compatibility with conda's ex
 
 ### Key naming requirements
 
-The key for each entry in `packages.whl` must follow this format:
+The key for each entry in `packages.whl` MUST follow this format:
 
 ```
 {name}-{version}
@@ -77,13 +77,13 @@ Examples:
 
 Several factors can cause wheel names to differ from conda-style names:
 
-1. Name normalization: PyPI normalizes dashes to underscores (PEP 503)
+1. **Name normalization:** PyPI normalizes dashes to underscores (PEP 503)
   - Example: `lazy-loader` (conda-forge) vs `lazy_loader` (PyPI wheel)
-2. Python-specific clarification: PyPI packages are implicitly Python libraries
+2. **Python-specific clarification:** PyPI packages are implicitly Python libraries
   - Example: `authzed-py` (conda-forge) vs `authzed` (PyPI)
-3. Variant differences: Conda may offer multiple variants with different dependencies
+3. **Variant differences:** Conda may offer multiple variants with different dependencies
   - Example: `seaborn-base` (conda-forge) vs `seaborn` (PyPI)
-4. Cross-channel naming: Different conda channels may use different names
+4. **Cross-channel naming:** Different conda channels may use different names
   - Example: `pyperformance` (conda-forge) vs `performance` (main)
 
 ### Naming standard
@@ -91,7 +91,6 @@ Several factors can cause wheel names to differ from conda-style names:
 When there are naming differences between channels, wheel records MUST use the conda-forge package name as the standard. This choice is made because:
 
 - conda-forge is the largest community channel with the most packages
-- conda-forge naming conventions are well-established and documented
 - Using a single standard prevents ambiguity and tooling complexity
 - Channel operators adding wheels to repodata MUST determine the appropriate conda-style name by:
   - Checking if the package already exists in conda-forge and using that exact name
@@ -104,7 +103,7 @@ This CEP introduces a new optional `artifact_url` field in package records to sp
 
 > Note for this draft: The `artifact_url` field could also be added as a separate CEP to allow it for other record types.
 
-When present, the url field follows these semantics:
+When present, the `artifact_url` field follows these semantics:
 
 - If `base_url` is defined in the repodata info object (per [CEP 15][cep-15]), `artifact_url` contains the path relative to `base_url`
 - If `base_url` is not defined, `artifact_url` contains the complete download URL
@@ -121,10 +120,10 @@ This approach allows packages to be served from:
 
 When populating repodata records for pure Python wheels:
 
-- `build: MUST be py3_0
+- `build`: MUST be py3_0
 - `build_number`: MUST be 0 for the initial addition of a wheel version. MAY be incremented for subsequent rebuilds of the same - wheel version (e.g., to correct dependencies or metadata)
 - `fn`: MUST be the wheel filename (e.g., package-1.0.0-py3-none-any.whl)
-- `subdir`: MUST be noarch
+- `subdir`: MUST be "noarch"
 - `noarch`: MUST be "python"
 - `artifact_url`: MUST be present and follow the semantics described above
 
@@ -196,22 +195,23 @@ By default, channels with conda packages MUST prefer conda packages when they ar
 
 - Channel priority configuration (prefer channels with wheels).
 - Explicit wheel requests through `<channel name>::<package name>` syntax.
+- Explicit configuration in the client itself (e.g. `prefer_conda` or `prefer_wheel`)
 
 ### Limitations
 
 This CEP has the following known limitations:
 
-1. No support for version exclusions: Conda does not support `!=` version constraints. Packages with exclusion requirements will have those constraints omitted, which may lead to incompatible versions being selected in rare cases.
-2. Pure Python only: This CEP explicitly does not address wheels with binary extensions, which require platform-specific compatibility guarantees beyond the current scope. Conda’s strength is binary compatibility, so using conda packages may be the optimal solution.
-3. Environment markers: Only Python version markers are converted to dependencies. Other environment markers (OS, platform, etc.) are ignored based on the pure Python assumption.
-4. Conditionals and Extras: Conditional dependencies and extras are specified by a separate CEP.
-5. Repodata size: Supporting a significant portion of pure Python packages from PyPI (potentially hundreds of thousands of packages with multiple versions each) will substantially increase repodata size. Channels adopting wheel support at scale will need to implement sharded repodata ([CEP 16][cep-16]) to maintain acceptable performance. Alternatively, channels may choose to curate a subset of popular or requested packages rather than mirroring all of PyPI.
+1. **No support for version exclusions:** Conda does not support `!=` version constraints. Packages with exclusion requirements will have those constraints omitted, which may lead to incompatible versions being selected in rare cases.
+2. **Pure Python only:** This CEP explicitly does not address wheels with binary extensions, which require platform-specific compatibility guarantees beyond the current scope. Conda’s strength is binary compatibility, so using conda packages may be the optimal solution.
+3. **Environment markers:** Only Python version markers are converted to dependencies. Other environment markers (OS, platform, etc.) are ignored based on the pure Python assumption.
+4. **Conditionals and Extras:** Conditional dependencies and extras are specified by a separate CEP.
+5. **Repodata size:** Supporting a significant portion of pure Python packages from PyPI (potentially hundreds of thousands of packages with multiple versions each) will substantially increase repodata size. Channels adopting wheel support at scale will need to implement sharded repodata ([CEP 16][cep-16]) to maintain acceptable performance. Alternatively, channels may choose to curate a subset of popular or requested packages rather than mirroring all of PyPI.
 
 ## Implementation Notes
 
 ### For conda clients
 
-Clients implementing this CEP should:
+Clients implementing this CEP SHOULD:
 
 - Parse the new `packages.whl` section alongside existing package sections
 - Apply the same filtering and preference logic used for conda packages
@@ -398,7 +398,7 @@ Despite its safety for environment management, relying solely on conda for this 
 
 ### Editable installs with conda for dependencies only
 
-Conda provides all the dependencies of a given package. Then that package is installed on top in editable mode, without addressing dependencies to make sure we don’t accidentally overwrite conda files:
+Conda provides all the dependencies of a given package. Then that package is installed on top in editable mode, without addressing dependencies to make sure conda files aren't accidentally overwritten:
 
 ```
 git clone https://github.com/owner/package.git
@@ -415,18 +415,18 @@ Create and maintain new conda packages for each PyPI dependency needed. Tools li
 
 The original version of the conda-pypi plugin called `pip` with the `--dry-run` option to analyze the solution to install a package. With a list of all the dependencies needed, the plugin installed everything available in conda channels first and what was left over would be installed with `pip install --no-deps`. Disadvantages of this approach include:
 
-- Users still have to know which packages they want from PyPI and then have to `conda pip install` them.
+- Users still have to know which packages they want from PyPI and then have to run `conda pip install` to install them.
 - There is no guarantee that the conda and pip packages installed have ABI compatibility.
 - Calling pip and conda multiple times is slow.
 
 ### Add interoperability to tools through on-the-fly conversion
 
-This is the approach that the [conda-pupa][conda-pupa] plugin used and was then implemented in [conda-pypi][conda-pypi]. When `conda pypi install <package>` is called, it fetches its set of required dependencies iteratively from PyPI just like `pip`. Similar to the dependency scanning option above, it then attempts to install as many dependencies as it can from conda. After this is where these two approaches start to differ. While conda-pypi simply used `pip` to install the remain Python dependencies, conda-pupa converts wheel packages to conda and stores it in a local channel, essentially caching these converted wheels on disk. This means that a repodata.json is also generated allowing us to perform a solve entirely in conda.
+This is the approach that the [conda-pupa][conda-pupa] plugin used and was then implemented in [conda-pypi][conda-pypi]. When `conda pypi install <package>` is called, it fetches its set of required dependencies iteratively from PyPI just like `pip`. Similar to the dependency scanning option above, it then attempts to install as many dependencies as it can from conda. Subsequently, this is where these two approaches start to differ. While conda-pypi simply used `pip` to install the remaining Python dependencies, conda-pupa converts wheel packages to conda and stores them in a local channel, essentially caching these converted wheels on disk. This means that a repodata.json is also generated allowing us to perform a solve entirely in conda.
 
 Unfortunately, there are also disadvantages with this approach. Like the solution above, users still have to know which packages they want from PyPI and then have to run `conda pypi install` to install them. Additionally, the following problems also arise:
 
 - Package conversion can take some time, especially for larger packages.
-- Users must rely on a local cache for installing wheels, and this cache cannot easily be shared.
+- Users must rely on a local cache for installing wheels, and this cache cannot easily be shared across computers.
 - The current version must solve multiple times which is slow, although this could be optimized.
 
 ### Add interoperability to tools through uv integration
@@ -449,7 +449,7 @@ Another alternative would be for conda clients to query PyPI's API directly duri
 Another alternative would be establishing a build farm to automatically convert wheels to conda packages and host them on a channel, with conversion triggered by popularity, community requests, or on-demand.
 
 #### Advantages of automatic conversion
-- Unified format: All packages are conda packages, simplifying client implementation
+- All packages are conda packages, simplifying client implementation
 - Leverages mature conda infrastructure and tooling without client changes
 - Enables metadata enrichment, quality control, and validation before publishing
 
@@ -457,11 +457,11 @@ Another alternative would be establishing a build farm to automatically convert 
 
 Despite these advantages, this approach was rejected because:
 
-- Infrastructure burden: Requires significant storage and bandwidth to host and serve converted packages that duplicate PyPI's CDN infrastructure, plus ongoing maintenance of the conversion pipeline and synchronization automation
-- Resource inefficiency: Wheels are already an excellent format for pure Python packages; conversion adds no technical value and wastes resources
-- Timeliness: Creates lag between PyPI publication and availability, with curation decisions needed about which packages to convert
-- Maintenance complexity: Every wheel format change requires tooling updates; bugs affect all converted packages
-- Ecosystem misalignment: Converting away from wheels moves conda further from Python packaging standards
+- **Infrastructure burden:** Requires significant storage and bandwidth to host and serve converted packages that duplicate PyPI's CDN infrastructure, plus ongoing maintenance of the conversion pipeline and synchronization automation
+- **Resource inefficiency:** Wheels are already an excellent format for pure Python packages; conversion adds no technical value and wastes resources
+- **Timeliness:** Creates lag between PyPI publication and availability, with curation decisions needed about which packages to convert
+- **Maintenance complexity:** Every wheel format change requires tooling updates; bugs affect all converted packages
+- **Ecosystem misalignment:** Converting away from wheels moves conda further from Python packaging standards
 
 Native wheel support provides the same user experience (transparent PyPI access) while avoiding infrastructure burden and maintaining alignment with Python packaging standards. Channel operators who prefer converted packages can continue building conda packages from PyPI sources.
 
