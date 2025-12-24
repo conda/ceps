@@ -540,7 +540,7 @@ conda-pupa is merged into conda-pypi which adds a `conda pypi install <package>`
 
 ### conda-pypi integrates parts of conda-whl-support (Nov 2025)
 
-Conda wheel detection logic is added to conda-pypi which is the functionality needed besides the solver changes required for the `packages.whl` section proposed in this CEP.
+Conda-pypi incorporates the wheel detection logic from conda-whl-support, providing the core functionality needed beyond the solver and index changes required to support the `packages.whl` section proposed in this CEP.
 
 ## References
 
