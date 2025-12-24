@@ -530,10 +530,17 @@ Pixi changes course to use uv directly instead of rip, which unlocks features li
 
 Daniel Holth creates a conda plugin that supports on-the-fly conversion of conda packages to wheels in a local channel.
 
+### conda-whl-channel creates proof-of-concept wheel channel from repodata (Nov 2024)
+
+Jonathan Helmus and Anil Kulkarni begin development on [conda-whl-channel](https://github.com/Anaconda/conda-whl-channel, a proof-of-concept that adds wheels to the `packages` section of repodata and patches conda to recognize them. The implementation supports conditional dependencies through additional meta packages. In February 2025, the conda-specific functionality is extracted into a separate plugin called [conda-whl-support](https://github.com/Anaconda/conda-whl-support.
+
 ### conda-pypi merges in conda-pupa functionality (Oct 2025)
 
 conda-pupa is merged into conda-pypi which adds a `conda pypi install <package>` command and support for editable installations.
 
+### conda-pypi integrates parts of conda-whl-support (Nov 2025)
+
+Conda wheel detection logic is added to conda-pypi which is the functionality needed besides the solver changes required for the `packages.whl` section proposed in this CEP.
 
 ## References
 
