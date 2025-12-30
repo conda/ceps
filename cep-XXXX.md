@@ -105,6 +105,7 @@ To help users understand which channel's naming conventions are being used, chan
 ```
 
 When `name_mapping_channel` is present, channel operators SHOULD:
+
 - Use the declared channel's package names as the standard for name mapping
 - Document any naming mappings specific to their channel
 - Ensure consistency with the declared channel's naming conventions
@@ -164,10 +165,11 @@ Channel operators MAY patch `packages.whl` entries in repodata, just like conda 
 - Add or modify metadata fields as needed
 
 This patching capability is essential for:
-- **Quality control**: Test and validate packages before exposing to users
-- **Ecosystem needs**: Resolve naming conflicts and dependency incompatibilities
-- **Reproducibility**: Optionally mirror and store wheel artifacts locally to prevent external deletions
-- **Downstream fixes**: Address metadata issues that would break environments
+
+- **Quality control:** Test and validate packages before exposing to users
+- **Ecosystem needs:** Resolve naming conflicts and dependency incompatibilities
+- **Reproducibility:** Optionally mirror and store wheel artifacts locally to prevent external deletions
+- **Downstream fixes:** Address metadata issues that would break environments
 
 Channels SHOULD document their patching policies and maintain transparency about which packages have been modified from their upstream PyPI metadata.
 
@@ -619,7 +621,6 @@ All CEPs are explicitly [CC0 1.0 Universal](https://creativecommons.org/publicdo
 [repodata-schema]: https://schemas.conda.org/repodata-1.schema.json
 [repodata-record-schema]: https://schemas.conda.org/repodata-record-1.schema.json
 [cep-15]: https://conda.org/learn/ceps/cep-0015
-[cep-16]: https://conda.org/learn/ceps/cep-0016
 [cep-26]: https://conda.org/learn/ceps/cep-0026
 [version-specifiers]: https://packaging.python.org/en/latest/specifications/version-specifiers/#id5
 [conda-pypi]: https://github.com/conda-incubator/conda-pypi
