@@ -111,6 +111,8 @@ When `name_mapping_channel` is present, channel operators SHOULD:
 
 Channel operators MUST document any naming conventions and mappings specific to their channel, regardless of whether `name_mapping_channel` is declared.
 
+If a centralized name mapping standard becomes available (such as the external dependency registry proposed in [PEP 804][pep-804]), channels MAY use that standard for name mapping instead of or in addition to channel-specific conventions. This would provide a unified approach to name mapping across ecosystems and reduce discrepancies.
+
 ### Wheel download URLs
 
 This CEP introduces a new optional `artifact_url` field in package records to specify download locations for individual packages.
@@ -625,3 +627,4 @@ All CEPs are explicitly [CC0 1.0 Universal](https://creativecommons.org/publicdo
 [uv-in-pixi]: https://prefix.dev/blog/uv_in_pixi
 [rip]: https://github.com/prefix-dev/rip
 [grayskull]: https://conda.github.io/grayskull/
+[pep-804]: https://peps.python.org/pep-0804/
