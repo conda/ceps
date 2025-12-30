@@ -37,8 +37,10 @@ By adding native support for pure Python wheels to repodata, conda clients can:
 - Provide users with transparent access to the broader Python ecosystem
 - Maintain environment consistency and reproducibility
 - Eliminate the cognitive burden of managing two package managers
-- Fill gaps in conda package availability without requiring new conda builds
-- Reduce the maintenance burden by fully or partially eliminating the need to create and maintain conda recipes for pure-Python packages
+- Fill gaps in conda package availability for simpler pure-Python packages
+- Reduce the maintenance burden for straightforward pure-Python packages that don't require metadata modifications
+
+Note that this CEP does not eliminate the need for conda recipes entirely. Many packages will still require proper conda feedstocks due to metadata differences, dependency corrections, or other ecosystem-specific needs. This CEP provides an additional tool for handling simpler pure-Python cases more efficiently.
 
 ## Specification
 
@@ -86,16 +88,28 @@ Several factors can cause wheel names to differ from conda-style names:
 4. **Cross-channel naming:** Different conda channels may use different names
     - Example: `pyperformance` (conda-forge) vs `performance` (main)
 
-### Naming standard
+### Naming standard and channel mapping
 
-When there are naming differences between channels, wheel records MUST use the conda-forge package name as the standard. This choice is made because:
+When there are naming differences between PyPI wheels and conda packages, channel operators MUST determine the appropriate conda-style name by applying conda naming conventions per [CEP 26 - Identifying Packages and Channels in the conda Ecosystem][cep-26].
 
-- conda-forge is the largest community channel with the most packages
-- Using a single standard prevents ambiguity and tooling complexity
-- Channel operators adding wheels to repodata MUST determine the appropriate conda-style name by:
-  - Checking if the package already exists in conda-forge and using that exact name
-  - If not in conda-forge, applying conda naming conventions per [CEP 26 - Identifying Packages and Channels in the conda Ecosystem][cep-26]
-  - Documenting any naming mappings for their channel
+To help users understand which channel's naming conventions are being used, channels MAY declare an optional `name_mapping_channel` field in the `info` section of repodata. This field indicates which channel's package names are used as the standard for wheel-to-conda name mapping in this repodata.
+
+```json
+{
+  "info": {
+    "subdir": "noarch",
+    "base_url": "https://repo.example.com/channel/",
+    "name_mapping_channel": "conda-forge"
+  }
+}
+```
+
+When `name_mapping_channel` is present, channel operators SHOULD:
+- Use the declared channel's package names as the standard for name mapping
+- Document any naming mappings specific to their channel
+- Ensure consistency with the declared channel's naming conventions
+
+Channel operators MUST document any naming conventions and mappings specific to their channel, regardless of whether `name_mapping_channel` is declared.
 
 ### Wheel download URLs
 
@@ -137,6 +151,24 @@ Before adding a wheel to packages.whl, channel operators MUST verify:
 
 Wheels that fail these checks MUST NOT be added to packages.whl.
 
+### Repodata patching support
+
+Channel operators MAY patch `packages.whl` entries in repodata, just like conda packages, to:
+
+- Correct dependency metadata errors or conflicts
+- Apply immediate fixes without waiting for upstream releases
+- Adjust version constraints for conda ecosystem compatibility
+- Correct dependency name mappings that were incorrectly converted
+- Add or modify metadata fields as needed
+
+This patching capability is essential for:
+- **Quality control**: Test and validate packages before exposing to users
+- **Ecosystem needs**: Resolve naming conflicts and dependency incompatibilities
+- **Reproducibility**: Optionally mirror and store wheel artifacts locally to prevent external deletions
+- **Downstream fixes**: Address metadata issues that would break environments
+
+Channels SHOULD document their patching policies and maintain transparency about which packages have been modified from their upstream PyPI metadata.
+
 ### Dependency conversion
 
 Wheel dependencies (from METADATA file's Requires-Dist entries) MUST be converted to conda format following these rules:
@@ -149,7 +181,7 @@ Wheel dependencies (from METADATA file's Requires-Dist entries) MUST be converte
   - `<X.Y.Z` → `<X.Y.Z`
   - `>X.Y.Z` → `>X.Y.Z`
   - `~=X.Y` → `>=X.Y,<X+1.0` (compatible release)
-  - `!=X.Y.Z` → Omit dependency (conda does not support version exclusions; see Limitations section)
+  - `!=X.Y.Z` → Add to `constrains` field
 - **Multiple specifiers:** Combine with commas (e.g., >=1.0,<2.0)
 - **Python version requirements:** Convert Requires-Python to explicit python dependency
 - **Environment markers:** Ignore markers other than Python version (pure Python assumption)
@@ -161,17 +193,24 @@ Example conversion:
 Requires-Python: >=3.8
 Requires-Dist: requests (>=2.20.0,<3.0.0)
 Requires-Dist: click (>=7.0)
+Requires-Dist: numpy (>=1.20.0,!=1.24.0)
 Requires-Dist: importlib-metadata (>=1.0) ; python_version < '3.8'
 ```
 
-Resulting conda depends:
+Resulting conda record:
 
-```text
-depends:
-  - python >=3.8
-  - requests >=2.20.0,<3.0
-  - click >=7.0
-```
+```json
+{
+  "depends": [
+    "python >=3.8",
+    "requests >=2.20.0,<3.0",
+    "click >=7.0",
+    "numpy >=1.20.0"
+  ],
+  "constrains": [
+    "numpy !=1.24.0"
+  ]
+}
 
 > **Note:** The `importlib-metadata` dependency is omitted because the `Requires-Python: >=3.8 makes its environment marker always false because the package requires Python >=3.8, making the python_version < '3.8' marker always false.
 
@@ -201,11 +240,11 @@ By default, channels with conda packages MUST prefer conda packages when they ar
 
 This CEP has the following known limitations:
 
-1. **No support for version exclusions:** Conda does not support `!=` version constraints. Packages with exclusion requirements will have those constraints omitted, which may lead to incompatible versions being selected in rare cases.
-2. **Pure Python only:** This CEP explicitly does not address wheels with binary extensions, which require platform-specific compatibility guarantees beyond the current scope. Conda’s strength is binary compatibility, so using conda packages may be the optimal solution.
-3. **Environment markers:** Only Python version markers are converted to dependencies. Other environment markers (OS, platform, etc.) are ignored based on the pure Python assumption.
-4. **Conditionals and Extras:** Conditional dependencies and extras are specified by a separate CEP.
-5. **Repodata size:** Supporting a significant portion of pure Python packages from PyPI (potentially hundreds of thousands of packages with multiple versions each) will substantially increase repodata size. Channels adopting wheel support at scale will need to implement sharded repodata ([CEP 16][cep-16]) to maintain acceptable performance. Alternatively, channels may choose to curate a subset of popular or requested packages rather than mirroring all of PyPI.
+1. **Pure Python only:** This CEP explicitly does not address wheels with binary extensions, which require platform-specific compatibility guarantees beyond the current scope. Conda’s strength is binary compatibility, so using conda packages may be the optimal solution.
+2. **Environment markers**:** Only Python version markers are converted to dependencies. Other environment markers (OS, platform, etc.) are ignored based on the pure Python assumption.
+3. **Conditionals and Extras:** Conditional dependencies and extras are specified by a separate CEP.
+4. **Repodata size:** Supporting a significant portion of pure Python packages from PyPI (potentially hundreds of thousands of packages with multiple versions each) will substantially increase repodata size. Channels adopting wheel support at scale will need to implement sharded repodata ([CEP 16][cep-16]) to maintain acceptable performance. Alternatively, channels may choose to curate a subset of popular or requested packages rather than mirroring all of PyPI.
+5. **PyPI package deletion:** PyPI allows package maintainers to delete packages (as opposed to just yanking them), which can break locked environments that reference those packages. Channels using external PyPI URLs directly are subject to this risk. For production use and reproducible environments, channels SHOULD mirror and store wheel artifacts locally rather than relying solely on external PyPI URLs. This ensures that packages referenced in lock files remain available even if deleted from PyPI.
 
 ## Implementation Notes
 
@@ -226,6 +265,19 @@ Channel operators adding wheel support should:
 - Maintain a mapping of PyPI to conda-style names for their channel
 - Consider automation to keep wheel metadata synchronized with PyPI
 - Document any naming conventions specific to their channel
+- For production channels, consider mirroring wheel artifacts locally to ensure reproducibility and protect against PyPI deletions
+- Establish patching workflows to correct metadata issues and resolve dependency conflicts
+- Document patching policies and maintain transparency about modified packages
+
+### Implementation approaches
+
+Channels may implement wheel support through various approaches:
+
+- **Manual curation**: Channels can manually add specific pure-Python wheels via repodata patching, providing full control over which packages are included and allowing for quality control and metadata validation before exposure to users.
+- **Semi-automated**: Channels can implement automated processes to discover and add wheels, with manual review and patching workflows for quality assurance.
+- **Full automation**: Channels can automatically mirror and index wheels from PyPI, though this requires robust validation, patching infrastructure, and consideration of repodata size impacts.
+
+A phased approach starting with manual curation and moving toward increased automation as processes mature is RECOMMENDED. This balances the lower barrier to entry (no recipes needed for many packages) with quality control. Complex packages with metadata conflicts or special requirements should still use traditional conda feedstocks.
 
 ## Examples
 
@@ -249,6 +301,7 @@ Below represents the default behavior and shows when the `artifact_url` field is
         "certifi >=2017.4.17",
         "python >=3.9"
       ],
+      "constrains": [],
       "fn": "requests-2.32.5-py3-none-any.whl",
       "sha256": "78820a3e5d9d3b25ce8e1c99c1c89cd19caa904a92973a3e50f8426009e8a4b3",
       "size": 6899,
@@ -273,7 +326,8 @@ The `artifact_url` can also be relative as described above. Here's an example of
 {
   "info": {
     "subdir": "noarch",
-    "base_url": "https://repo.example.com/channel/"
+    "base_url": "https://repo.example.com/channel/",
+    "name_mapping_channel": "conda-forge"
   },
   "packages.whl": {
     "requests-2.32.5": {
@@ -289,6 +343,7 @@ The `artifact_url` can also be relative as described above. Here's an example of
         "certifi >=2017.4.17",
         "python >=3.9"
       ],
+      "constrains": [],
       "fn": "requests-2.32.5-py3-none-any.whl",
       "sha256": "78820a3e5d9d3b25ce8e1c99c1c89cd19caa904a92973a3e50f8426009e8a4b3",
       "size": 6899,
@@ -325,6 +380,7 @@ The following shows an example of using an external location to download the whe
         "certifi >=2017.4.17",
         "python >=3.9"
       ],
+      "constrains": [],
       "fn": "requests-2.32.5-py3-none-any.whl",
       "sha256": "78820a3e5d9d3b25ce8e1c99c1c89cd19caa904a92973a3e50f8426009e8a4b3",
       "size": 6899,
@@ -354,6 +410,7 @@ Here is an example of name mapping and normalization of the record name and depe
         "typing_extensions >=4.0.0",
         "python >=3.8"
       ],
+      "constrains": [],
       "fn": "annotated_types-0.7.0-py3-none-any.whl",
       "sha256": "1f02e8b43a8fbbc3f3e0d4f0f4bfc8131bcb4eebe8849b8e5c773f3a1c582a53",
       "size": 13643,
