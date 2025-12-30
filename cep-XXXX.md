@@ -215,6 +215,7 @@ Resulting conda record:
     "numpy !=1.24.0"
   ]
 }
+```
 
 > **Note:** The `importlib-metadata` dependency is omitted because the `Requires-Python: >=3.8 makes its environment marker always false because the package requires Python >=3.8, making the python_version < '3.8' marker always false.
 
@@ -621,6 +622,7 @@ All CEPs are explicitly [CC0 1.0 Universal](https://creativecommons.org/publicdo
 [repodata-schema]: https://schemas.conda.org/repodata-1.schema.json
 [repodata-record-schema]: https://schemas.conda.org/repodata-record-1.schema.json
 [cep-15]: https://conda.org/learn/ceps/cep-0015
+[cep-16]: https://conda.org/learn/ceps/cep-0016
 [cep-26]: https://conda.org/learn/ceps/cep-0026
 [version-specifiers]: https://packaging.python.org/en/latest/specifications/version-specifiers/#id5
 [conda-pypi]: https://github.com/conda-incubator/conda-pypi
