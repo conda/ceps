@@ -76,8 +76,8 @@ Examples:
 
 Several factors can cause wheel names to differ from conda-style names:
 
-1. **Name normalization:** PyPI normalizes dashes to underscores (PEP 503)
-    - Example: `lazy-loader` (conda-forge) vs `lazy_loader` (PyPI wheel)
+1. **Wheel filename normalization:** Wheel filenames normalize hyphens to underscores per PEP 427, but the METADATA `Name` field contains the canonical name (which may have hyphens).
+    - Example: `lazy-loader` (METADATA name) vs `lazy_loader` (wheel filename)
 
 2. **Python-specific clarification:** PyPI packages are implicitly Python libraries
     - Example: `authzed-py` (conda-forge) vs `authzed` (PyPI)
@@ -89,6 +89,8 @@ Several factors can cause wheel names to differ from conda-style names:
     - Example: `pyperformance` (conda-forge) vs `performance` (main)
 
 ### Naming standard and channel mapping
+
+The key name for wheel records MUST be derived from the wheel's METADATA file (the `Name` field), normalized according to conda naming conventions per [CEP 26 - Identifying Packages and Channels in the conda Ecosystem][cep-26]. The wheel filename (stored in the `fn` field) MUST NOT be used as the key, as wheel filenames may differ from the canonical package name due to PEP 427 normalization.
 
 When there are naming differences between PyPI wheels and conda packages, channel operators MUST determine the appropriate conda-style name by applying conda naming conventions per [CEP 26 - Identifying Packages and Channels in the conda Ecosystem][cep-26].
 
