@@ -120,11 +120,12 @@ This CEP introduces a new optional `artifact_url` field in package records to sp
 
 > Note for this draft: The `artifact_url` field could also be added as a separate CEP to allow it for other record types.
 
-When present, the `artifact_url` field follows these semantics:
+When present, the `artifact_url` field SHALL follow these semantics:
 
 - If `base_url` is defined in the repodata info object (per [CEP 15][cep-15]), `artifact_url` contains the path relative to `base_url`
 - If `base_url` is not defined, `artifact_url` contains the complete download URL
-- If `artifact_url` is not present (`null`), the download location is constructed from `base_url` and `fn` (existing behavior)
+
+When not present (`null`), the download location is constructed from `base_url` and `fn` (existing behavior).
 
 This approach allows packages to be served from:
 
@@ -137,7 +138,7 @@ This approach allows packages to be served from:
 
 When populating repodata records for pure Python wheels:
 
-- `build`: MUST be py3_0
+- `build`: MUST be py`PY_MAJOR_VERSION`_`build_number` (e.g. py3_0)
 - `build_number`: MUST be 0 for the initial addition of a wheel version. MAY be incremented for subsequent rebuilds of the same - wheel version (e.g., to correct dependencies or metadata)
 - `fn`: MUST be the wheel filename (e.g., package-1.0.0-py3-none-any.whl)
 - `subdir`: MUST be "noarch"
@@ -249,7 +250,7 @@ This CEP has the following known limitations:
 2. **Environment markers**:** Only Python version markers are converted to dependencies. Other environment markers (OS, platform, etc.) are ignored based on the pure Python assumption.
 3. **Conditionals and Extras:** Conditional dependencies and extras are specified by a separate CEP.
 4. **Repodata size:** Supporting a significant portion of pure Python packages from PyPI (potentially hundreds of thousands of packages with multiple versions each) will substantially increase repodata size. Channels adopting wheel support at scale will need to implement sharded repodata ([CEP 16][cep-16]) to maintain acceptable performance. Alternatively, channels may choose to curate a subset of popular or requested packages rather than mirroring all of PyPI.
-5. **PyPI package deletion:** PyPI allows package maintainers to delete packages (as opposed to just yanking them), which can break locked environments that reference those packages. Channels using external PyPI URLs directly are subject to this risk. For production use and reproducible environments, channels SHOULD mirror and store wheel artifacts locally rather than relying solely on external PyPI URLs. This ensures that packages referenced in lock files remain available even if deleted from PyPI.
+5. **PyPI package deletion:** PyPI allows package maintainers to delete packages (as opposed to just yanking them), which can break locked environments that reference those packages. Channels using external PyPI URLs directly are subject to this risk. For production use and reproducible environments, channels MAY mirror and store wheel artifacts locally rather than relying solely on external PyPI URLs.
 
 ## Implementation Notes
 
@@ -264,11 +265,11 @@ Clients implementing this CEP SHOULD:
 
 ### For channel operators
 
-Channel operators adding wheel support should:
+Channel operators adding wheel support SHOULD:
 
 - Implement validation to ensure only pure Python wheels are included
 - Maintain a mapping of PyPI to conda-style names for their channel
-- Consider automation to keep wheel metadata synchronized with PyPI
+- Consider automation to keep the repodata up to date with newer releases on PyPI
 - Document any naming conventions specific to their channel
 - For production channels, consider mirroring wheel artifacts locally to ensure reproducibility and protect against PyPI deletions
 - Establish patching workflows to correct metadata issues and resolve dependency conflicts
@@ -276,7 +277,7 @@ Channel operators adding wheel support should:
 
 ### Implementation approaches
 
-Channels may implement wheel support through various approaches:
+Channels MAY implement wheel support through various approaches:
 
 - **Manual curation**: Channels can manually add specific pure-Python wheels via repodata patching, providing full control over which packages are included and allowing for quality control and metadata validation before exposure to users.
 - **Semi-automated**: Channels can implement automated processes to discover and add wheels, with manual review and patching workflows for quality assurance.
