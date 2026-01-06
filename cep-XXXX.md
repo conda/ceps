@@ -112,7 +112,7 @@ When `name_mapping_channel` is present, channel operators SHOULD:
 - Document any naming mappings specific to their channel
 - Ensure consistency with the declared channel's naming conventions
 
-Channel operators MUST document any naming conventions and mappings specific to their channel, regardless of whether `name_mapping_channel` is declared.
+Channel operators SHOULD document any naming conventions and mappings specific to their channel, regardless of whether `name_mapping_channel` is declared.
 
 If a centralized name mapping standard becomes available (such as the external dependency registry proposed in [PEP 804][pep-804]), channels MAY use that standard for name mapping instead of or in addition to channel-specific conventions. This would provide a unified approach to name mapping across ecosystems and reduce discrepancies.
 
