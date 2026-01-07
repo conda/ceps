@@ -64,13 +64,18 @@ To support sparse repodata processing and maintain compatibility with conda's ex
 
 ### Key naming requirements
 
-The key for each entry in `packages.whl` MUST follow the format `{name}-{version}`.
+The key for each entry in `packages.whl` SHALL follow the format `{name}-{version}-{build}-{abi_tag}-{platform_tag}`, where:
+
+- `{name}` is derived from the wheel's METADATA file (the `Name` field), normalized according to conda naming conventions per [CEP 26 - Identifying Packages and Channels in the conda Ecosystem][cep-26] and any name mappings specified in `name_mapping_channel`
+- `{version}` is the package version from METADATA
+- `{build}` is the build string (e.g., `py3_0`, `py3_1`) from the `build` field
+- `{abi_tag}-{platform_tag}` are extracted from the wheel filename (stored in the `fn` field)
 
 Examples:
 
-- `httpx-0.28.1`
-- `typing_extensions-4.15.0`
-- `lazy-loader-0.4`
+- `httpx-0.28.1-py3_0-none-any`
+- `typing_extensions-4.15.0-py3_0-none-any` (METADATA name `typing-extensions` mapped to conda name `typing_extensions`)
+- `requests-2.32.5-py3_1-none-any` (rebuild with build_number 1)
 
 ### Why wheel names may differ from conda names
 
@@ -90,31 +95,54 @@ Several factors can cause wheel names to differ from conda-style names:
 
 ### Naming standard and channel mapping
 
-The key name for wheel records MUST be derived from the wheel's METADATA file (the `Name` field), normalized according to conda naming conventions per [CEP 26 - Identifying Packages and Channels in the conda Ecosystem][cep-26]. The wheel filename (stored in the `fn` field) MUST NOT be used as the key, as wheel filenames may differ from the canonical package name due to PEP 427 normalization.
+The key name for wheel records SHALL be constructed by combining the conda-style name (derived from METADATA and normalized per conda conventions) with the version, build string, and wheel tags (abi_tag-platform_tag) extracted from the filename. The python_tag is omitted as it is redundant with the build string. This ensures the name portion follows conda naming conventions, supports multiple rebuilds, and the tags portion aligns with the wheel filename structure.
 
 When there are naming differences between PyPI wheels and conda packages, channel operators MUST determine the appropriate conda-style name by applying conda naming conventions per [CEP 26 - Identifying Packages and Channels in the conda Ecosystem][cep-26].
 
-To help users understand which channel's naming conventions are being used, channels MAY declare an optional `name_mapping_channel` field in the `info` section of repodata. This field indicates which channel's package names are used as the standard for wheel-to-conda name mapping in this repodata.
+To help users understand which naming conventions are being used, channels MAY declare an optional `name_mapping_channel` field in the `info` section of repodata. This field SHALL be a URL to a JSON file containing package name mappings used for wheel-to-conda name translation in this repodata.
+
+The URL MAY be absolute or relative to `base_url` (following the same semantics as `artifact_url`). The JSON file SHALL contain a JSON object mapping PyPI package names to conda package names.
+
+Example with a relative URL:
 
 ```json
 {
   "info": {
     "subdir": "noarch",
     "base_url": "https://repo.example.com/channel/",
-    "name_mapping_channel": "conda-forge"
+    "name_mapping_channel": "name-mappings.json"
   }
+}
+```
+
+Example with an absolute URL:
+
+```json
+{
+  "info": {
+    "subdir": "noarch",
+    "base_url": "https://repo.example.com/channel/",
+    "name_mapping_channel": "https://example.com/mappings/conda-forge-mappings.json"
+  }
+}
+```
+
+Example JSON file structure (`name-mappings.json`):
+
+```json
+{
+  "typing-extensions": "typing_extensions",
+  "importlib-metadata": "importlib_metadata",
+  "setuptools-scm": "setuptools_scm"
 }
 ```
 
 When `name_mapping_channel` is present, channel operators SHOULD:
 
-- Use the declared channel's package names as the standard for name mapping
-- Document any naming mappings specific to their channel
-- Ensure consistency with the declared channel's naming conventions
+- Use the mappings from the JSON file as the standard for name mapping
+- Ensure the JSON file is accessible and kept up to date
 
 Channel operators SHOULD document any naming conventions and mappings specific to their channel, regardless of whether `name_mapping_channel` is declared.
-
-If a centralized name mapping standard becomes available (such as the external dependency registry proposed in [PEP 804][pep-804]), channels MAY use that standard for name mapping instead of or in addition to channel-specific conventions. This would provide a unified approach to name mapping across ecosystems and reduce discrepancies.
 
 ### Wheel download URLs
 
@@ -124,8 +152,8 @@ This CEP introduces a new optional `artifact_url` field in package records to sp
 
 When present, the `artifact_url` field SHALL follow these semantics:
 
-- If `base_url` is defined in the repodata info object (per [CEP 15][cep-15]), `artifact_url` contains the path relative to `base_url`
-- If `base_url` is not defined, `artifact_url` contains the complete download URL
+- If `artifact_url` is an absolute URL, use it as is.
+- If `artifact_url` is a relative URL, append it to the `base_url`.
 
 When not present (`null`), the download location is constructed from `base_url` and `fn` (existing behavior).
 
@@ -145,17 +173,18 @@ When populating repodata records for pure Python wheels:
 - `fn`: MUST be the wheel filename (e.g., package-1.0.0-py3-none-any.whl)
 - `subdir`: MUST be "noarch"
 - `noarch`: MUST be "python"
-- `artifact_url`: MUST be present and follow the semantics described above
+- `artifact_url`: MAY be present and follow the semantics described above
 
 ### Pure Python wheel validation
 
-Before adding a wheel to packages.whl, channel operators MUST verify:
+Before adding a wheel to `packages.whl`, channel operators MUST verify:
 
-- The wheel platform tag is any (e.g., py3-none-any, py2.py3-none-any)
-- The wheel contains no compiled extensions (.so, .pyd, .dylib files)
-- The wheel METADATA file is present and valid
+- The wheel's platform tag is `any` (e.g., `py3-none-any`, `py2.py3-none-any`)
+- The wheel's ABI tag is `none`
+- The wheel contains no compiled extensions (`.so`, `.pyd`, `.dylib` files)
+- The wheel's `METADATA` file is present and valid
 
-Wheels that fail these checks MUST NOT be added to packages.whl.
+Wheels that fail any of these checks MUST NOT be added to `packages.whl`.
 
 ### Repodata patching support
 
@@ -187,8 +216,8 @@ Wheel dependencies (from METADATA file's Requires-Dist entries) MUST be converte
   - `<=X.Y.Z` → `<=X.Y.Z`
   - `<X.Y.Z` → `<X.Y.Z`
   - `>X.Y.Z` → `>X.Y.Z`
-  - `~=X.Y` → `>=X.Y,<X+1.0` (compatible release)
-  - `!=X.Y.Z` → Add to `constrains` field
+  - `~=X.Y` → `~=X.Y` (compatible release)
+  - `!=X.Y.Z` → `!=X.Y.Z`
 - **Multiple specifiers:** Combine with commas (e.g., >=1.0,<2.0)
 - **Python version requirements:** Convert Requires-Python to explicit python dependency
 - **Environment markers:** Ignore markers other than Python version (pure Python assumption)
@@ -212,15 +241,10 @@ Resulting conda record:
     "python >=3.8",
     "requests >=2.20.0,<3.0",
     "click >=7.0",
-    "numpy >=1.20.0"
-  ],
-  "constrains": [
-    "numpy !=1.24.0"
+    "numpy >=1.20.0,!=1.24.0"
   ]
 }
 ```
-
-> **Note:** The `importlib-metadata` dependency is omitted because the `Requires-Python: >=3.8 makes its environment marker always false because the package requires Python >=3.8, making the python_version < '3.8' marker always false.
 
 ### Handling conditional and extra dependencies
 
@@ -233,7 +257,7 @@ Like in the example above of only requiring `importlib-metadata` for certain Pyt
 Solvers MUST treat pure Python wheels as valid package candidates during dependency resolution with these constraints:
 
 - **Exclusivity:** Solvers MUST NOT install both a conda package and wheel for the same package name.
-- **Dependency satisfaction:** When a wheel is selected, its `depends` list MUST be satisfied like any conda package.
+- **Dependency satisfaction:** When a wheel is selected, its `depends` list MUST be satisfied like any conda package. Dependencies in the `depends` list MAY be satisfied by either wheels or conda packages.
 - **Platform matching:** Since all wheels in `packages.whl` are pure Python (noarch), no platform filtering is needed.
 
 #### User control of precedence
@@ -296,7 +320,7 @@ Below represents the default behavior and shows when the `artifact_url` field is
 ```json
 {
   "packages.whl": {
-    "requests-2.32.5": {
+    "requests-2.32.5-py3_0-none-any": {
       "record_version": 3,
       "name": "requests",
       "version": "2.32.5",
@@ -335,10 +359,10 @@ The `artifact_url` can also be relative as described above. Here's an example of
   "info": {
     "subdir": "noarch",
     "base_url": "https://repo.example.com/channel/",
-    "name_mapping_channel": "conda-forge"
+    "name_mapping_channel": "name-mappings.json"
   },
   "packages.whl": {
-    "requests-2.32.5": {
+    "requests-2.32.5-py3_0-none-any": {
       "record_version": 3,
       "name": "requests",
       "version": "2.32.5",
@@ -375,7 +399,7 @@ The following shows an example of using an external location to download the whe
 ```json
 {
   "packages.whl": {
-    "requests-2.32.5": {
+    "requests-2.32.5-py3_0-none-any": {
       "record_version": 3,
       "name": "requests",
       "version": "2.32.5",
@@ -408,14 +432,14 @@ Here is an example of name mapping and normalization of the record name and depe
 ```json
 {
   "packages.whl": {
-    "annotated-types-0.7.0": {
+    "annotated_types-0.7.0-py3_0-none-any": {
       "record_version": 3,
       "name": "annotated-types",
       "version": "0.7.0",
       "build": "py3_0",
       "build_number": 0,
       "depends": [
-        "typing_extensions >=4.0.0",
+        "typing_extensions >=4.0.0; if python < 3.9",
         "python >=3.8"
       ],
       "constrains": [],
@@ -433,7 +457,8 @@ Here is an example of name mapping and normalization of the record name and depe
 
 This example demonstrates two types of name normalization:
 
-1. Record key format: The package is indexed using the `{name}-{version}` format: `annotated-types-0.7.0`. The conda name uses hyphens which matches the canonical PyPI package name. The actual wheel filename in the fn field (`annotated_types-0.7.0-py3-none-any.whl`) normalizes the package name to underscores per PEP 427.
+1. Record key format: The package is indexed using the format `{conda_name}-{version}-{build}-{abi_tag}-{platform_tag}`: `annotated_types-0.7.0-py3_0-none-any`. The name portion (`annotated_types`) comes from the METADATA `Name` field (`annotated-types`), normalized to conda conventions (mapped to `annotated_types` to match conda-forge naming).
+The build portion (`py3_0`) comes from the `build` field. The tags portion (`none-any`) is extracted from the wheel filename (`annotated_types-0.7.0-py3-none-any.whl`), which normalizes the package name to underscores per PEP 427.
 2. Dependency name mapping: This package depends on `typing_extensions`, which is listed in the `depends` field. On PyPI, this package is named `typing-extensions` (with a hyphen), but it has been mapped to the name `typing_extensions` (with an underscore) to match the existing conda-forge package name.
 
 This example also demonstrates conditional dependencies. The original `METADATA` file from the wheel has the following dependency information:
@@ -443,7 +468,7 @@ Requires-Python: >=3.8
 Requires-Dist: typing-extensions>=4.0.0; python_version < '3.9'
 ```
 
-Once conditional dependencies are supported in a separate CEP, the package record should only declare `typing_extensions` as a dependency when the Python version is < 3.9. In this example, the dependency is declared unconditionally for all Python versions. The Python version constraint of >=3.8 is directly mapped.
+The package record uses conditional dependency syntax (`; if python < 3.9`) to declare `typing_extensions` only when the Python version is < 3.9, matching the original wheel METADATA. The Python version constraint of >=3.8 is directly mapped.
 
 ## Rejected ideas
 
@@ -506,9 +531,9 @@ Pixi has integrated uv for installing packages from PyPI. The user adds the depe
 
 Another alternative would be for conda clients to query PyPI's API directly during solving, fetching wheel metadata on-demand rather than including it in repodata. This idea was rejected due to:
 
-- Conda's SAT-based solvers (libsolv, resolvo) require complete package metadata upfront to solve in a single pass, while PyPI's API is designed for lazy evaluation with incremental fetching and backtracking (as pip and uv do). Adapting conda's solvers would require fundamental architectural changes.
+- While resolvo (used by Rattler) supports dynamic metadata fetching during solving (as showcased in [rip](https://github.com/prefix-dev/rip)), libsolv requires complete package metadata upfront. This inconsistency across solvers would complicate implementation and limit compatibility.
 
-- On-demand fetching would also require hundreds of sequential HTTP requests during solving, making solves slow and network-dependent while breaking offline capability and reproducibility guarantees.
+- While on-demand fetching works well for pip and uv, using repodata provides consistency with conda's existing infrastructure, enables better caching strategies, and allows channels to curate and validate packages before they're available to users.
 
 ### Automatic wheel to conda package conversion and hosting
 
@@ -567,7 +592,7 @@ Arguments to for maintaining an independent packaging ecosystem prevailed at the
 
 ### Wheel Support Proposal (2017)
 
-Issue [#5202](https://github.com/conda/conda/issue/5202) proposed direct wheel installation support, recognizing:
+Issue [#5202](https://github.com/conda/conda/issues/5202) proposed direct wheel installation support, recognizing:
 
 - Wheels provide binary distributions similar to conda packages
 - Growing wheel availability on PyPI reduced build complexity
@@ -624,7 +649,6 @@ All CEPs are explicitly [CC0 1.0 Universal](https://creativecommons.org/publicdo
 [RFC2119]: https://datatracker.ietf.org/doc/html/rfc2119
 [repodata-schema]: https://schemas.conda.org/repodata-1.schema.json
 [repodata-record-schema]: https://schemas.conda.org/repodata-record-1.schema.json
-[cep-15]: https://conda.org/learn/ceps/cep-0015
 [cep-16]: https://conda.org/learn/ceps/cep-0016
 [cep-26]: https://conda.org/learn/ceps/cep-0026
 [version-specifiers]: https://packaging.python.org/en/latest/specifications/version-specifiers/#id5
@@ -633,4 +657,3 @@ All CEPs are explicitly [CC0 1.0 Universal](https://creativecommons.org/publicdo
 [uv-in-pixi]: https://prefix.dev/blog/uv_in_pixi
 [rip]: https://github.com/prefix-dev/rip
 [grayskull]: https://conda.github.io/grayskull/
-[pep-804]: https://peps.python.org/pep-0804/
