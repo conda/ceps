@@ -171,13 +171,10 @@ Wheel dependencies (from METADATA file's Requires-Dist entries) MUST be converte
 
 - **Package names:** Names per [CEP 26][cep-26] and match existing conda-forge package names where they exist
 - **Version specifiers:** Map PEP 440 [version specifiers][version-specifiers] to conda format:
-  - `==X.Y.Z` → `X.Y.Z` (exact pin)
-  - `>=X.Y.Z` → `>=X.Y.Z`
-  - `<=X.Y.Z` → `<=X.Y.Z`
-  - `<X.Y.Z` → `<X.Y.Z`
-  - `>X.Y.Z` → `>X.Y.Z`
-  - `~=X.Y` → `~=X.Y` (compatible release)
-  - `!=X.Y.Z` → `!=X.Y.Z`
+  - The `==` operator is converted to an exact pin (removing the `==`)
+  - All other PEP 440 operators (`>=`, `<=`, `<`, `>`, `~=`, `!=`) are used as-is
+  - Multiple version specifiers are combined with commas (e.g., `>=1.0,<2.0`)
+
 - **Multiple specifiers:** Combine with commas (e.g., >=1.0,<2.0)
 - **Python version requirements:** Convert Requires-Python to explicit python dependency
 - **Environment markers:** Ignore markers other than Python version (pure Python assumption)
