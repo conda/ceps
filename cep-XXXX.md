@@ -66,7 +66,7 @@ To support sparse repodata processing and maintain compatibility with conda's ex
 
 The key for each entry in `packages.whl` SHALL follow the format `{name}-{version}-{build}-{abi_tag}-{platform_tag}`, where:
 
-- `{name}` is derived from the wheel's METADATA file (the `Name` field), normalized according to conda naming conventions per [CEP 26 - Identifying Packages and Channels in the conda Ecosystem][cep-26] and any name mappings specified in `name_mapping_channel`
+- `{name}` is derived from the wheel's METADATA file (the `Name` field), normalized according to conda naming conventions per [CEP 26 - Identifying Packages and Channels in the conda Ecosystem][cep-26] and any name mappings specified in `name_mappings`
 - `{version}` is the package version from METADATA
 - `{build}` is the build string (e.g., `py3_0`, `py3_1`) from the `build` field
 - `{abi_tag}-{platform_tag}` are extracted from the wheel filename (stored in the `fn` field)
@@ -99,7 +99,7 @@ The key name for wheel records SHALL be constructed by combining the conda-style
 
 When there are naming differences between PyPI wheels and conda packages, channel operators MUST determine the appropriate conda-style name by applying conda naming conventions per [CEP 26 - Identifying Packages and Channels in the conda Ecosystem][cep-26].
 
-To help users understand which naming conventions are being used, channels MAY declare an optional `name_mapping_channel` field in the `info` section of repodata. This field SHALL be a URL to a JSON file containing package name mappings used for wheel-to-conda name translation in this repodata.
+To help users understand which naming conventions are being used, channels MAY declare an optional `name_mappings` field in the `info` section of repodata. This field SHALL be a URL to a JSON file containing package name mappings used for wheel-to-conda name translation in this repodata.
 
 The URL MAY be absolute or relative to `base_url` (following the same semantics as `artifact_url`). The JSON file SHALL contain a JSON object mapping PyPI package names to conda package names.
 
@@ -110,7 +110,7 @@ Example with a relative URL:
   "info": {
     "subdir": "noarch",
     "base_url": "https://repo.example.com/channel/",
-    "name_mapping_channel": "name-mappings.json"
+    "name_mappings": "name-mappings.json"
   }
 }
 ```
@@ -122,7 +122,7 @@ Example with an absolute URL:
   "info": {
     "subdir": "noarch",
     "base_url": "https://repo.example.com/channel/",
-    "name_mapping_channel": "https://example.com/mappings/conda-forge-mappings.json"
+    "name_mappings": "https://example.com/mappings/conda-forge-mappings.json"
   }
 }
 ```
@@ -137,12 +137,12 @@ Example JSON file structure (`name-mappings.json`):
 }
 ```
 
-When `name_mapping_channel` is present, channel operators SHOULD:
+When `name_mappings` is present, channel operators SHOULD:
 
 - Use the mappings from the JSON file as the standard for name mapping
 - Ensure the JSON file is accessible and kept up to date
 
-Channel operators SHOULD document any naming conventions and mappings specific to their channel, regardless of whether `name_mapping_channel` is declared.
+Channel operators SHOULD document any naming conventions and mappings specific to their channel, regardless of whether `name_mappings` is declared.
 
 ### Wheel download URLs
 
@@ -359,7 +359,7 @@ The `artifact_url` can also be relative as described above. Here's an example of
   "info": {
     "subdir": "noarch",
     "base_url": "https://repo.example.com/channel/",
-    "name_mapping_channel": "name-mappings.json"
+    "name_mappings": "name-mappings.json"
   },
   "packages.whl": {
     "requests-2.32.5-py3_0-none-any": {
