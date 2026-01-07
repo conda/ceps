@@ -549,13 +549,10 @@ Another alternative would be establishing a build farm to automatically convert 
 
 Despite these advantages, this approach was rejected because:
 
-- **Infrastructure burden:** Requires significant storage and bandwidth to host and serve converted packages that duplicate PyPI's CDN infrastructure, plus ongoing maintenance of the conversion pipeline and synchronization automation
+- **Infrastructure burden:** Requires significant storage and bandwidth to host and serve converted packages that duplicate PyPI's CDN infrastructure
 - **Resource inefficiency:** Wheels are already an excellent format for pure Python packages; conversion adds no technical value and wastes resources
-- **Timeliness:** Creates lag between PyPI publication and availability, with curation decisions needed about which packages to convert
-- **Maintenance complexity:** Every wheel format change requires tooling updates; bugs affect all converted packages
-- **Ecosystem misalignment:** Converting away from wheels moves conda further from Python packaging standards
 
-Native wheel support provides the same user experience (transparent PyPI access) while avoiding infrastructure burden and maintaining alignment with Python packaging standards. Channel operators who prefer converted packages can continue building conda packages from PyPI sources.
+Native wheel support provides the same user experience (transparent PyPI access) while avoiding the infrastructure burden and resource inefficiency of conversion. Channel operators who prefer converted packages can continue building conda packages from PyPI sources.
 
 ## History
 
