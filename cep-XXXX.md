@@ -66,7 +66,7 @@ To support sparse repodata processing and maintain compatibility with conda's ex
 
 The key for each entry in `packages.whl` SHALL follow the format `{name}-{version}-{build}-{abi_tag}-{platform_tag}`, where:
 
-- `{name}` is derived from the wheel's METADATA file (the `Name` field), normalized according to conda naming conventions per [CEP 26 - Identifying Packages and Channels in the conda Ecosystem][cep-26] and any name mappings specified in `name_mappings`
+- `{name}` is derived from the wheel's METADATA file (the `Name` field), normalized according to conda naming conventions per [CEP 26 - Identifying Packages and Channels in the conda Ecosystem][cep-26] and any name mappings inherited from a parent channel (see [Naming standard and channel mapping](#naming-standard-and-channel-mapping))
 - `{version}` is the package version from METADATA
 - `{build}` is the build string (e.g., `py3_0`, `py3_1`) from the `build` field
 - `{abi_tag}-{platform_tag}` are extracted from the wheel filename (stored in the `fn` field)
@@ -99,50 +99,10 @@ The key name for wheel records SHALL be constructed by combining the conda-style
 
 When there are naming differences between PyPI wheels and conda packages, channel operators MUST determine the appropriate conda-style name by applying conda naming conventions per [CEP 26 - Identifying Packages and Channels in the conda Ecosystem][cep-26].
 
-To help users understand which naming conventions are being used, channels MAY declare an optional `name_mappings` field in the `info` section of repodata. This field SHALL be a URL to a JSON file containing package name mappings used for wheel-to-conda name translation in this repodata.
+To help users understand which naming conventions are being used, channels MAY reference a parent channel that defines the naming conventions and mappings for wheel-to-conda name translation. Parent/child channel relationships will be defined in a separate CEP, which will specify how channels can declare a `parent_channel` field in the `info` section of repodata to inherit naming conventions and mappings from another channel.
+For example, a wheel channel could reference conda-forge as its parent channel, inheriting conda-forge's established naming conventions and package name mappings. This allows channels to avoid duplicating name mapping definitions and ensures consistency across related channels.
 
-The URL MAY be absolute or relative to `base_url` (following the same semantics as `artifact_url`). The JSON file SHALL contain a JSON object mapping PyPI package names to conda package names.
-
-Example with a relative URL:
-
-```json
-{
-  "info": {
-    "subdir": "noarch",
-    "base_url": "https://repo.example.com/channel/",
-    "name_mappings": "name-mappings.json"
-  }
-}
-```
-
-Example with an absolute URL:
-
-```json
-{
-  "info": {
-    "subdir": "noarch",
-    "base_url": "https://repo.example.com/channel/",
-    "name_mappings": "https://example.com/mappings/conda-forge-mappings.json"
-  }
-}
-```
-
-Example JSON file structure (`name-mappings.json`):
-
-```json
-{
-  "typing-extensions": "typing_extensions",
-  "importlib-metadata": "importlib_metadata",
-  "setuptools-scm": "setuptools_scm"
-}
-```
-
-When `name_mappings` is present, channel operators SHOULD:
-
-- Use the mappings from the JSON file as the standard for name mapping
-- Ensure the JSON file is accessible and kept up to date
-
-Channel operators SHOULD document any naming conventions and mappings specific to their channel, regardless of whether `name_mappings` is declared.
+Channel operators SHOULD document any naming conventions and mappings specific to their channel, including whether they reference a parent channel for naming conventions.
 
 ### Wheel download URLs
 
@@ -294,7 +254,7 @@ Clients implementing this CEP SHOULD:
 Channel operators adding wheel support SHOULD:
 
 - Implement validation to ensure only pure Python wheels are included
-- Maintain a mapping of PyPI to conda-style names for their channel
+- Maintain a mapping of PyPI to conda-style names for their channel, or reference a parent channel that provides these mappings (see [Naming standard and channel mapping](#naming-standard-and-channel-mapping))
 - Consider automation to keep the repodata up to date with newer releases on PyPI
 - Document any naming conventions specific to their channel
 - For production channels, consider mirroring wheel artifacts locally to ensure reproducibility and protect against PyPI deletions
@@ -352,14 +312,14 @@ With this configuration, the wheel file will be downloaded from the following lo
 
 ### Downloading wheels from a relative location with `base_url`
 
-The `artifact_url` can also be relative as described above. Here's an example of what that looks like combined with setting the `base_url` property at the top level:
+The `artifact_url` can also be relative as described above. Here's an example of what that looks like combined with setting the `base_url` property at the top level, and also showing how a channel can reference a parent channel:
 
 ```json
 {
   "info": {
     "subdir": "noarch",
     "base_url": "https://repo.example.com/channel/",
-    "name_mappings": "name-mappings.json"
+    "parent_channel": "https://conda.anaconda.org/conda-forge"
   },
   "packages.whl": {
     "requests-2.32.5-py3_0-none-any": {
@@ -459,7 +419,7 @@ This example demonstrates two types of name normalization:
 
 1. Record key format: The package is indexed using the format `{conda_name}-{version}-{build}-{abi_tag}-{platform_tag}`: `annotated_types-0.7.0-py3_0-none-any`. The name portion (`annotated_types`) comes from the METADATA `Name` field (`annotated-types`), normalized to conda conventions (mapped to `annotated_types` to match conda-forge naming).
 The build portion (`py3_0`) comes from the `build` field. The tags portion (`none-any`) is extracted from the wheel filename (`annotated_types-0.7.0-py3-none-any.whl`), which normalizes the package name to underscores per PEP 427.
-2. Dependency name mapping: This package depends on `typing_extensions`, which is listed in the `depends` field. On PyPI, this package is named `typing-extensions` (with a hyphen), but it has been mapped to the name `typing_extensions` (with an underscore) to match the existing conda-forge package name.
+2. Dependency name mapping: This package depends on `typing_extensions`, which is listed in the `depends` field. On PyPI, this package is named `typing-extensions` (with a hyphen), but it has been mapped to the name `typing_extensions` (with an underscore) to match the existing conda-forge package name. Such mappings may be inherited from a parent channel (see [Naming standard and channel mapping](#naming-standard-and-channel-mapping)).
 
 This example also demonstrates conditional dependencies. The original `METADATA` file from the wheel has the following dependency information:
 
