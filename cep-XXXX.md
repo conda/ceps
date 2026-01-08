@@ -54,13 +54,28 @@ level keys:
 - packages
 - packages.conda
 - removed
-- signatures
 
-This CEP proposes the addition of a new `packages.whl` section to account for the wheel format. This key points to a mapping that MUST contain [repodata record][repodata-record-schema] objects. The key of this mapping MUST follow the specification described below in [Key naming requirements](#key-naming-requirements).
+This CEP proposes the addition of a new `packages.whl` section to account for the wheel format. This key points to a mapping that MUST contain [repodata record][repodata-record-schema] objects.
 
-### Record structure and naming convention
+### `packages.whl` dictionary structure
 
-To support sparse repodata processing and maintain compatibility with conda's existing infrastructure, wheel records MUST use conda-style naming conventions rather than wheel filenames as keys. This allows solvers to efficiently filter packages by name without parsing the full package record.
+The `packages.whl` dictionary maps conda-like filenames to repodata records. The key MUST follow the format specified in [Key naming requirements](#key-naming-requirements). The value MUST be a repodata record object that conforms to the [repodata record schema][repodata-record-schema] with the following field specifications:
+
+- **`name`**: Taken from the wheel's METADATA `Name` field, normalized per [CEP 26][cep-26] and any parent channel name mappings.
+- **`version`**: Taken from the wheel's METADATA `Version` field, normalized per PEP 440.
+- **`build`**: Format `py{PY_MAJOR_VERSION}_{build_number}` (e.g., `py3_0`), conforming to CEP 26 build string conventions.
+- **`build_number`**: As in regular conda packages. MUST be 0 initially; MAY be incremented for rebuilds.
+- **`depends`**: Array including:
+  - `python` dependency from `Requires-Python` (if present), converted to conda format
+  - All `Requires-Dist` entries from METADATA, converted from PEP 440 to conda format per [Dependency conversion](#dependency-conversion)
+  - Package names normalized to conda-style names per [CEP 26][cep-26]
+- **`constrains`**: Contains `!=` version specifiers from PEP 440 (not included in `depends`).
+- **`fn`**: The wheel filename (e.g., `package-1.0.0-py3-none-any.whl`).
+- **`subdir`**: MUST be `"noarch"`.
+- **`noarch`**: MUST be `"python"`.
+- **`artifact_url`**: MAY be present. See [Wheel download URLs](#wheel-download-urls) for semantics.
+- **`sha256`**, **`size`**, **`timestamp`**: Standard repodata fields for the wheel file.
+- **`record_version`**: MUST be present (currently 3).
 
 ### Key naming requirements
 
