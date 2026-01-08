@@ -1,7 +1,7 @@
 # CEP XXXX - Repodata Wheel Support
 
 <table>
-<tr><td> Title </td><td> Repodata Wheel Support</td>
+<tr><td> Title </td><td> Repodata Wheel Support</td></tr>
 <tr><td> Status </td><td> Draft </td></tr>
 <tr><td> Author(s) </td><td>
   Dan Yeaw &lt;dyeaw@anaconda.com&gt; <br/>
@@ -9,9 +9,9 @@
 </td></tr>
 <tr><td> Created </td><td> Dec 23, 2025</td></tr>
 <tr><td> Updated </td><td> Dec 23, 2025</td></tr>
-<tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/ </td></tr>
+<tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/145 </td></tr>
 <tr><td> Implementation </td><td> TBD </td></tr>
-<tr><td> Requires </td>N/A</tr>
+<tr><td> Requires </td><td>N/A</td></tr>
 </table>
 
 > The keywords "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT",
@@ -25,7 +25,7 @@ We explicitly limit the scope of this CEP to pure Python wheels to avoid platfor
 
 ## Motivation
 
-While conda remains a language-agnostic packaging distribution, installing packages for use with Python represents the majority of conda usage. Users frequently encounter packages only available as wheels on PyPI, forcing them to use hybrid workflows that mix conda and pip installations. This approach creates several problems:
+While conda remains a language-agnostic packaging distribution, installing packages for use with Python represents the majority of conda usage. Users frequently encounter packages only available as wheels on PyPI, forcing them to use hybrid workflows that mix conda and PyPI installations. This approach creates several problems:
 
 - Mixing of conda and pip or uv can result in overwritten files and broken environments
 - Users must understand two package managers, their interaction points, and which of their dependencies are available from which  ecosystem
@@ -33,10 +33,10 @@ While conda remains a language-agnostic packaging distribution, installing packa
 
 By adding native support for pure Python wheels to repodata, conda clients can:
 
-- Resolve dependencies across conda and PyPI packages in a single solve
+- Eliminate the cognitive burden of managing two package managers
 - Provide users with transparent access to the broader Python ecosystem
 - Maintain environment consistency and reproducibility
-- Eliminate the cognitive burden of managing two package managers
+- Resolve dependencies across conda and PyPI packages in a single solve
 - Fill gaps in conda package availability for simpler pure-Python packages
 - Reduce the maintenance burden for straightforward pure-Python packages that don't require metadata modifications
 
@@ -64,9 +64,9 @@ To support sparse repodata processing and maintain compatibility with conda's ex
 
 ### Key naming requirements
 
-The key for each entry in `packages.whl` SHALL follow the format `{name}-{version}-{build}-{abi_tag}-{platform_tag}`, where:
+The key for each entry in `packages.whl` MUST follow the format `{name}-{version}-{build}__{abi_tag}__{platform_tag}`, where:
 
-- `{name}` is derived from the wheel's METADATA file (the `Name` field), normalized according to conda naming conventions per [CEP 26 - Identifying Packages and Channels in the conda Ecosystem][cep-26] and any name mappings inherited from a parent channel (see [Naming standard and channel mapping](#naming-standard-and-channel-mapping))
+- `{name}` is derived from the wheel's METADATA file (the `Name` field), normalized according to conda naming conventions per [CEP 26][cep-26] and any name mappings inherited from a parent channel (see [Naming standard and channel mapping](#naming-standard-and-channel-mapping))
 - `{version}` is the package version from METADATA
 - `{build}` is the build string (e.g., `py3_0`, `py3_1`) from the `build` field
 - `{abi_tag}-{platform_tag}` are extracted from the wheel filename (stored in the `fn` field)
@@ -145,25 +145,6 @@ Before adding a wheel to `packages.whl`, channel operators MUST verify:
 - The wheel's `METADATA` file is present and valid
 
 Wheels that fail any of these checks MUST NOT be added to `packages.whl`.
-
-### Repodata patching support
-
-Channel operators MAY patch `packages.whl` entries in repodata, just like conda packages, to:
-
-- Correct dependency metadata errors or conflicts
-- Apply immediate fixes without waiting for upstream releases
-- Adjust version constraints for conda ecosystem compatibility
-- Correct dependency name mappings that were incorrectly converted
-- Add or modify metadata fields as needed
-
-This patching capability is essential for:
-
-- **Quality control:** Test and validate packages before exposing to users
-- **Ecosystem needs:** Resolve naming conflicts and dependency incompatibilities
-- **Reproducibility:** Optionally mirror and store wheel artifacts locally to prevent external deletions
-- **Downstream fixes:** Address metadata issues that would break environments
-
-Channels SHOULD document their patching policies and maintain transparency about which packages have been modified from their upstream PyPI metadata.
 
 ### Dependency conversion
 
@@ -491,6 +472,17 @@ Another alternative would be for conda clients to query PyPI's API directly duri
 - While resolvo (used by Rattler) supports dynamic metadata fetching during solving (as showcased in [rip](https://github.com/prefix-dev/rip)), libsolv requires complete package metadata upfront. This inconsistency across solvers would complicate implementation and limit compatibility.
 
 - While on-demand fetching works well for pip and uv, using repodata provides consistency with conda's existing infrastructure, enables better caching strategies, and allows channels to curate and validate packages before they're available to users.
+
+### Magic local channel approach
+
+The "magic local channel" approach (<https://github.com/jaimergp/conda-pypi-channel>) was considered but rejected. This approach involves:
+
+- A local FastAPI app intercepts the CLI and detects PyPI specs
+- Fetches metadata on the fly and converts it to repodata (following some of the ideas discussed above)
+- Downloads the wheels and converts them to .conda via whl2conda
+- Caches and installs the .conda artifacts
+
+While this approach provides on-demand conversion and caching, it requires a separate service to be running and adds complexity to the user workflow. The chosen approach of native repodata wheel support provides a more seamless experience where wheels are pre-indexed in channels and work with standard conda workflows without requiring additional services.
 
 ### Automatic wheel to conda package conversion and hosting
 
