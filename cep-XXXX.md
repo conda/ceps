@@ -92,22 +92,6 @@ Examples:
 - `typing_extensions-4.15.0-py3_0-none-any` (METADATA name `typing-extensions` mapped to conda name `typing_extensions`)
 - `requests-2.32.5-py3_1-none-any` (rebuild with build_number 1)
 
-### Why wheel names may differ from conda names
-
-Several factors can cause wheel names to differ from conda-style names:
-
-1. **Wheel filename normalization:** Wheel filenames normalize hyphens to underscores per PEP 427, but the METADATA `Name` field contains the canonical name (which may have hyphens).
-    - Example: `lazy-loader` (METADATA name) vs `lazy_loader` (wheel filename)
-
-2. **Python-specific clarification:** PyPI packages are implicitly Python libraries
-    - Example: `authzed-py` (conda-forge) vs `authzed` (PyPI)
-
-3. **Variant differences:** Conda may offer multiple variants with different dependencies
-    - Example: `seaborn-base` (conda-forge) vs `seaborn` (PyPI)
-
-4. **Cross-channel naming:** Different conda channels may use different names
-    - Example: `pyperformance` (conda-forge) vs `performance` (main)
-
 ### Naming standard and channel mapping
 
 The key name for wheel records SHALL be constructed by combining the conda-style name (derived from METADATA and normalized per conda conventions) with the version, build string, and wheel tags (abi_tag-platform_tag) extracted from the filename. The python_tag is omitted as it is redundant with the build string. This ensures the name portion follows conda naming conventions, supports multiple rebuilds, and the tags portion aligns with the wheel filename structure.
@@ -231,6 +215,24 @@ This CEP has the following known limitations:
 4. **Repodata size:** Supporting a significant portion of pure Python packages from PyPI (potentially hundreds of thousands of packages with multiple versions each) will substantially increase repodata size. Channels adopting wheel support at scale will need to implement sharded repodata ([CEP 16][cep-16]) to maintain acceptable performance. Alternatively, channels may choose to curate a subset of popular or requested packages rather than mirroring all of PyPI.
 5. **PyPI package deletion:** PyPI allows package maintainers to delete packages (as opposed to just yanking them), which can break locked environments that reference those packages. Channels using external PyPI URLs directly are subject to this risk. For production use and reproducible environments, channels MAY mirror and store wheel artifacts locally rather than relying solely on external PyPI URLs.
 
+## Rationale
+
+### Why wheel names may differ from conda names
+
+Several factors can cause wheel names to differ from conda-style names:
+
+1. **Wheel filename normalization:** Wheel filenames normalize hyphens to underscores per PEP 427, but the METADATA `Name` field contains the canonical name (which may have hyphens).
+    - Example: `lazy-loader` (METADATA name) vs `lazy_loader` (wheel filename)
+
+2. **Python-specific clarification:** PyPI packages are implicitly Python libraries
+    - Example: `authzed-py` (conda-forge) vs `authzed` (PyPI)
+
+3. **Variant differences:** Conda may offer multiple variants with different dependencies
+    - Example: `seaborn-base` (conda-forge) vs `seaborn` (PyPI)
+
+4. **Cross-channel naming:** Different conda channels may use different names
+    - Example: `pyperformance` (conda-forge) vs `performance` (main)
+
 ## Implementation Notes
 
 ### For conda clients
@@ -247,6 +249,7 @@ Clients implementing this CEP SHOULD:
 Channel operators adding wheel support SHOULD:
 
 - Implement validation to ensure only pure Python wheels are included
+- Ensure that dependencies are solvable, including that compiled dependencies exist on the parent conda channel
 - Maintain a mapping of PyPI to conda-style names for their channel, or reference a parent channel that provides these mappings (see [Naming standard and channel mapping](#naming-standard-and-channel-mapping))
 - Consider automation to keep the repodata up to date with newer releases on PyPI
 - Document any naming conventions specific to their channel
