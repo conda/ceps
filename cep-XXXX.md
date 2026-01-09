@@ -73,7 +73,7 @@ The `packages.whl` dictionary maps conda-like filenames to repodata records. The
 - **`fn`**: The wheel filename (e.g., `package-1.0.0-py3-none-any.whl`).
 - **`subdir`**: MUST be `"noarch"`.
 - **`noarch`**: MUST be `"python"`.
-- **`artifact_url`**: MAY be present. See [Wheel download URLs](#wheel-download-urls) for semantics.
+- **`url`**: MAY be present. See [Wheel download URLs](#wheel-download-urls) for semantics.
 - **`sha256`**, **`size`**, **`timestamp`**: Standard repodata fields for the wheel file.
 - **`record_version`**: MUST be present (currently 3).
 
@@ -105,22 +105,22 @@ Channel operators SHOULD document any naming conventions and mappings specific t
 
 ### Wheel download URLs
 
-This CEP introduces a new optional `artifact_url` field in package records to specify download locations for individual packages.
+This CEP introduces a new optional `url` field in package records to specify download locations for individual packages.
 
-> Note for this draft: The `artifact_url` field could also be added as a separate CEP to allow it for other record types.
+> Note for this draft: The `url` field could also be added as a separate CEP to allow it for other record types.
 
-When present, the `artifact_url` field SHALL follow these semantics:
+When present, the `url` field SHALL follow these semantics:
 
-- If `artifact_url` is an absolute URL, use it as is.
-- If `artifact_url` is a relative URL, append it to the `base_url`.
+- If `url` is an absolute URL, use it as is.
+- If `url` is a relative URL, append it to the `base_url`.
 
 When not present (`null`), the download location is constructed from `base_url` and `fn` (existing behavior).
 
 This approach allows packages to be served from:
 
-- A shared relative or absolute `base_url` with all wheels in the same directory, by populating the `base_url` field and leaving the `artifact_url` field empty.
-- A manual PyPI repository with wheels in directories by the package name by populating the absolute URL in the `artifact_url` field, or the `base_url` and a relative path in the `artifact_url` field.
-- External PyPI mirrors or CDNs using absolute URLs by populating the `artifact_url` field, for example to <https://files.pythonhosted.org/packages/.../package-1.0.0-py3-none-any.whl>
+- A shared relative or absolute `base_url` with all wheels in the same directory, by populating the `base_url` field and leaving the `url` field empty.
+- A manual PyPI repository with wheels in directories by the package name by populating the absolute URL in the `url` field, or the `base_url` and a relative path in the `url` field.
+- External PyPI mirrors or CDNs using absolute URLs by populating the `url` field, for example to <https://files.pythonhosted.org/packages/.../package-1.0.0-py3-none-any.whl>
 - Mixed sources within the same repodata file
 
 ### Wheel-Specific Record Values
@@ -132,7 +132,7 @@ When populating repodata records for pure Python wheels:
 - `fn`: MUST be the wheel filename (e.g., package-1.0.0-py3-none-any.whl)
 - `subdir`: MUST be "noarch"
 - `noarch`: MUST be "python"
-- `artifact_url`: MAY be present and follow the semantics described above
+- `url`: MAY be present and follow the semantics described above
 
 ### Pure Python wheel validation
 
@@ -271,7 +271,7 @@ A phased approach starting with manual curation and moving toward increased auto
 
 ### Download wheels from the default location
 
-Below represents the default behavior and shows when the `artifact_url` field is not set:
+Below represents the default behavior and shows when the `url` field is not set:
 
 ```json
 {
@@ -296,7 +296,7 @@ Below represents the default behavior and shows when the `artifact_url` field is
       "subdir": "noarch",
       "timestamp": 1764005009,
       "noarch": "python",
-      "artifact_url": null
+      "url": null
     }
  }
 }
@@ -308,7 +308,7 @@ With this configuration, the wheel file will be downloaded from the following lo
 
 ### Downloading wheels from a relative location with `base_url`
 
-The `artifact_url` can also be relative as described above. Here's an example of what that looks like combined with setting the `base_url` property at the top level, and also showing how a channel can reference a parent channel:
+The `url` can also be relative as described above. Here's an example of what that looks like combined with setting the `base_url` property at the top level, and also showing how a channel can reference a parent channel:
 
 ```json
 {
@@ -338,7 +338,7 @@ The `artifact_url` can also be relative as described above. Here's an example of
       "subdir": "noarch",
       "timestamp": 1764005009,
       "noarch": "python",
-      "artifact_url": "requests/requests-2.32.5-py3-none-any.whl"
+      "url": "requests/requests-2.32.5-py3-none-any.whl"
     }
   }
 }
@@ -375,7 +375,7 @@ The following shows an example of using an external location to download the whe
       "subdir": "noarch",
       "timestamp": 1764005009,
       "noarch": "python",
-      "artifact_url": "https://files.pythonhosted.org/packages/1e/db/4254e3eabe8020b458f1a747140d32277ec7a271daf1d235b70dc0b4e6e3/requests-2.32.5-py3-none-any.whl"
+      "url": "https://files.pythonhosted.org/packages/1e/db/4254e3eabe8020b458f1a747140d32277ec7a271daf1d235b70dc0b4e6e3/requests-2.32.5-py3-none-any.whl"
     }
   }
 }
@@ -405,7 +405,7 @@ Here is an example of name mapping and normalization of the record name and depe
       "subdir": "noarch",
       "timestamp": 1756405206,
       "noarch": "python",
-      "artifact_url": "https://files.pythonhosted.org/packages/78/b6/6307fbef88d9b5ee7421e68d78a9f162e0da4900bc5f5793f6d3d0e34fb8/annotated_types-0.7.0-py3-none-any.whl"
+      "url": "https://files.pythonhosted.org/packages/78/b6/6307fbef88d9b5ee7421e68d78a9f162e0da4900bc5f5793f6d3d0e34fb8/annotated_types-0.7.0-py3-none-any.whl"
     }
   }
 }
