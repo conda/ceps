@@ -12,7 +12,7 @@
 </tr>
 <tr><td> Created </td><td> Jan 12, 2026 </td></tr>
 <tr><td> Updated </td><td> Jan 12, 2026  </td></tr>
-<tr><td> Discussion </td><td> ... </td></tr>
+<tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/146 </td></tr>
 <tr><td> Implementation </td><td> N/A </td></tr>
 <tr><td> Requires </td><td> N/A </td></tr>
 </table>
