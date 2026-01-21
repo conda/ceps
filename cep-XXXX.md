@@ -56,7 +56,7 @@ record the corresponding information:
 - `remote_url`: String. CVS URL of the recipe repository being built. HTTP(S) preferred.
 - `flow_run_id`: String. CI-specific identifier for the workflow run.
 
-For example, ``conda-forge/linux-64::python-3.13.2-hf636f53_101_cp313.conda` has the following
+For example, `conda-forge/linux-64::python-3.13.2-hf636f53_101_cp313.conda` has the following
 provenance metadata:
 
 ```json
