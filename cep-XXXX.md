@@ -136,7 +136,7 @@ The version MUST be overridable with the `CONDA_OVERRIDE_OSX` environment variab
 
 #### `__unix`
 
-This virtual package MUST be present when the target platform is `linux-*`, `osx-*` or `freebsd-*`. The version and build string fields MUST be set to `0`.
+This virtual package MUST be present when the target platform is `linux-*`, `osx-*`, `freebsd-*`. It SHOULD be present for any other sufficiently POSIX-y platforms (e.g. using `/` as path delimiters, supporting `fork(3)`, etc). The version and build string fields MUST be set to `0`.
 
 The `CONDA_OVERRIDE_UNIX` environment variable MUST NOT have any effect.
 
