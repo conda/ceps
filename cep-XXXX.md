@@ -61,7 +61,7 @@ The build string MUST reflect one of:
 
 * If the target platform matches the native platform, the best fitting CPU microarchitecture in the [`archspec/archspec-json` database](https://github.com/archspec/archspec-json/blob/v0.2.5/cpu/microarchitectures.json). The reference CPU detection implementation is [`archspec.cpu.detect.host()`](https://github.com/archspec/archspec/blob/v0.2.5/archspec/cpu/detect.py#L338).
 
-* The target platform architecture (second component of the platform string), mapped as:
+* Otherwise, the target platform architecture (second component of the platform string), mapped as:
 
   | Target platform | Reported `archspec` build string |
   | --------------- | -------------------------------- |
@@ -73,10 +73,10 @@ The build string MUST reflect one of:
   | `*-armv7l`      | `armv7l`                         |
   | `*-ppc64`       | `ppc64`                          |
   | `*-ppc64le`     | `ppc64le`                        |
-  | `*-riscv32`     | `riscv32`                        |
   | `*-riscv64`     | `riscv64`                        |
   | `*-s390x`       | `s390x`                          |
-  | `zos-z`         | `0`                              |
+  | `*-wasm32`      | `wasm32`                         |
+  | `zos-z`         | `z`                              |
   | Any other value | `0`                              |
 
 The build string MUST be overridable with the `CONDA_OVERRIDE_ARCHSPEC` environment variable, if set to a non-empty value that can be parsed as a build string.
