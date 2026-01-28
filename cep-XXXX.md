@@ -5,7 +5,7 @@
 <tr><td> Status </td><td> Draft </td></tr>
 <tr><td> Author(s) </td><td> Jaime Rodríguez-Guerra &lt;jaime.rogue@gmail.com&gt;</td></tr>
 <tr><td> Created </td><td> Dec 17, 2024</td></tr>
-<tr><td> Updated </td><td> Dec 17, 2024</td></tr>
+<tr><td> Updated </td><td> Jan 28, 2026</td></tr>
 <tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/103 </td></tr>
 <tr><td> Implementation </td><td> https://github.com/conda/conda/tree/24.11.1/conda/plugins/virtual_packages, https://github.com/mamba-org/mamba/blob/libmamba-2.0.5/libmamba/src/core/virtual_packages.cpp, https://github.com/conda/rattler/tree/rattler-v0.28.8/crates/rattler_virtual_packages/src </td></tr>
 <tr><td> Requires </td><td> https://github.com/conda/ceps/pull/132 </td></tr>
@@ -28,7 +28,7 @@ Virtual packages are used to expose details of the system configuration to a con
 * The oldest macOS version compatible with the package via the `__osx` virtual package.
 * Whether a `noarch` package should be constrained to a single operating system via the `__linux`, `__osx` or `__win` virtual packages (often with no version constraint).
 * The minimum CPU microarchitecture level that the binaries require via the `__archspec` virtual package.
-* The lowest CUDA version the GPU driver is compatible with via `__cuda`.
+* The latest CUDA version the GPU driver is compatible with via `__cuda`.
 
 ## Specification
 
@@ -83,11 +83,13 @@ The build string MUST be overridable with the `CONDA_OVERRIDE_ARCHSPEC` environm
 
 #### `__cuda`
 
-This virtual package MUST be present when the system exhibits GPU drivers compatible with the CUDA runtimes. When available, the version value MUST be set to the oldest CUDA version supported by the detected drivers (i.e. the formatted value of `libcuda.cuDriverGetVersion()`), constrained to the first two components (major and minor) and formatted as `{major}.{minor}`. The build string MUST be `0`.
+This virtual package MUST be present when the system exhibits NVIDIA GPU drivers compatible with the CUDA runtimes. For systems without such support the virtual package MUST NOT be present.
 
-The version MUST be overridable with the `CONDA_OVERRIDE_CUDA` environment variable, if set to a non-empty value that can be parsed as a version string.
+When available, the version value MUST be set to the latest CUDA version supported by the detected drivers (i.e. the formatted value of [`cuDriverGetVersion()`](https://docs.nvidia.com/cuda/cuda-driver-api/group__CUDA__VERSION.html)), constrained to the first two components (major and minor) and formatted as `{major}.{minor}`.
 
-If no CUDA runtime is detected, this virtual package MUST NOT be exposed, unless manually overridden.
+The build string MUST be `0`.
+
+If the `CONDA_OVERRIDE_CUDA` environment variable is set to a non-empty value that can be parsed as a version string, the `__cuda` virtual package MUST be exposed with that version.
 
 #### `__glibc`
 
@@ -173,6 +175,7 @@ The following items are not considered here. Though would be open for discussion
 * [ENH: make `__win` version usable for package metadata (conda/conda#14443)](https://github.com/conda/conda/issues/14443)
 * [Drop `CONDA_OVERRIDE_WIN` environment variable (mamba-org/mamba#2815)](https://github.com/mamba-org/mamba/pull/2815)
 * [`__arch` feature request](https://github.com/conda/conda/issues/13420)
+* [Explanation about `__cuda` version value](https://github.com/conda/ceps/pull/103#discussion_r1919554066)
 
 ## Copyright
 
