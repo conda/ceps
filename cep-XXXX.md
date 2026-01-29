@@ -29,7 +29,7 @@ As per [CEP 26](./cep-0026.md), a conda channel is defined as a location that MU
 
 ### Schema
 
-Each `repodata.json` MUST represent a dictionary with the keys listed below. All of them are optional. Additional top-level keys MUST be allowed but they MUST be ignored if not recognized.
+Each `repodata.json` MUST represent a dictionary with the keys listed below. All of them are optional. Additional top-level keys MUST be allowed but they MUST be ignored if not recognized. An empty file MUST be considered equivalent to an empty dictionary.
 
 - `info: dict[str, dict]`. Metadata about the `repodata.json` itself. See [info metadata](#info-metadata).
 - `packages: dict[str, dict]`. This entry maps `*.tar.bz2` filenames to their [package record metadata](#package-record-metadata).
