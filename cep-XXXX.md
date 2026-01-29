@@ -25,7 +25,7 @@ As per [CEP 26](./cep-0026.md), a conda channel is defined as a location that MU
 
 > Note that there are no requirements for these paths to be backed by a proper filesystem; the contents of these locations can also be provided by API endpoints.
 
-`repodata.json` documents are subdir-specific JSON dictionaries that aggregate the `index.json` metadata of the included conda artifacts (see [CEP PR#133](https://github.com/conda/ceps/pull/133)), and extend them with details only known when the compressed artifact has been generated (such as size, timestamp, or checksums).
+`repodata.json` documents are subdir-specific JSON dictionaries that aggregate the `index.json` metadata of the included conda artifacts (see [CEP PR#133](https://github.com/conda/ceps/pull/133)), and extend them with details only known when the compressed artifact has been generated (such as size, or checksums).
 
 ### Schema
 
