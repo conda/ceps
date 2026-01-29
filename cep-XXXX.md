@@ -3,9 +3,9 @@
 <table>
 <tr><td> Title </td><td> Version strings and their ordering </td>
 <tr><td> Status </td><td> Draft </td></tr>
-<tr><td> Author(s) </td><td> 
+<tr><td> Author(s) </td><td>
   Jaime Rodríguez-Guerra &lt;jaime.rogue@gmail.com&gt;,
-  Bas Zalmstra &lt;bas@prefix.dev&gt;  
+  Bas Zalmstra &lt;bas@prefix.dev&gt;
 </td></tr>
 <tr><td> Created </td><td> Sep 26, 2025 </td></tr>
 <tr><td> Updated </td><td> Jan 29, 2026 </td></tr>
