@@ -43,7 +43,7 @@ It SHOULD record the operations performed during the lifetime of the environment
 +channel/subdir::name_of_linked_package4-version-build_string
 -channel/subdir::name_of_unlinked_package1-version-build_string
 -channel/subdir::name_of_unlinked_package2-version-build_string
-# (update|remove) specs: ['spec1', 'spec2', 'spec3', 'spec4']
+# (update|remove|neutered) specs: ['spec1', 'spec2', 'spec3', 'spec4']
 ```
 
 #### `./conda-meta/{name}-{version}-{build-string}.json`
