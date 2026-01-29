@@ -3,10 +3,13 @@
 <table>
 <tr><td> Title </td><td> Version strings and their ordering </td>
 <tr><td> Status </td><td> Draft </td></tr>
-<tr><td> Author(s) </td><td> Jaime Rodríguez-Guerra &lt;jaime.rogue@gmail.com&gt;</td></tr>
+<tr><td> Author(s) </td><td> 
+  Jaime Rodríguez-Guerra &lt;jaime.rogue@gmail.com&gt;,
+  Bas Zalmstra &lt;bas@prefix.dev&gt;  
+</td></tr>
 <tr><td> Created </td><td> Sep 26, 2025 </td></tr>
-<tr><td> Updated </td><td> Sep 26, 2025 </td></tr>
-<tr><td> Discussion </td><td> N/A </td></tr>
+<tr><td> Updated </td><td> Jan 29, 2026 </td></tr>
+<tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/132 </td></tr>
 <tr><td> Implementation </td><td> https://github.com/conda/conda/blob/6614653b1d9bdbffcef55e338d3220daed70c7f8/conda/models/version.py#L52, https://github.com/conda/rattler/blob/rattler-v0.37.4/crates/rattler_conda_types/src/version/mod.rs#L141 </td></tr>
 </table>
 
@@ -178,6 +181,7 @@ typst-test           0.0.0.post106+2b4e689      h6e96688_0  conda-forge
 ## References
 
 - [`conda 25.7.x` docs on Version Ordering](https://docs.conda.io/projects/conda/en/25.7.x/user-guide/concepts/pkg-specs.html#version-ordering).
+- [Comparison between `conda`, `rattler` and `mamba` parsers](https://github.com/baszalmstra/cep-version-tests)
 
 ## Copyright
 
