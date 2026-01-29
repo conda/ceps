@@ -63,8 +63,8 @@ More precisely, the following rules apply:
     - `subdir: str`. Optional. It requires `channel` to be defined. Must be separated from `channel` by a single forward slash, `/`.
     - A colon `:` separator, required if `channel` or `namespace` are defined.
     - `namespace: str`. Optional. This expression field MUST be parsed and ignored.
-  - The second group contains three expressions. They MUST be separated by either spaces or a single `=` character. Separator types MUST NOT be mixed. See the [version expression parsing notes](#version-expression-parsing) for additional details on the interaction between the `=` symbol as a separator and as an operator.
-    - `name: str`. Required. It MUST NOT be empty.
+  - The second group contains three expressions. They MUST be separated by either spaces or a single `=` character. Separator types MUST NOT be mixed. See the [version expression parsing notes](#version-expression-parsing) for additional details on the interaction between the `=` symbol as a separator and as an operator. Leading and trailing spaces MUST be ignored.
+    - `name: str`. Required. Empty names MUST be represented as `*`.
     - `version: str | VersionSpec`. Optional.
     - `build: str`. Optional. It requires `version` to be present.
 - All keyword expressions are optional. If present, they MUST be enclosed in a single set of square brackets, after the positional expressions. The following rules apply:
