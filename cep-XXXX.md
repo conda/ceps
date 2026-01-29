@@ -52,7 +52,7 @@ tar xvf project-1.2.3-0.tar.bz2
 
 ### `.conda`
 
-A `.conda` artifact MUST be a ZIP file whose filename follow [CEP 26](./cep-0026.md) with a `.conda` extension (i.e. `{name}-{version}-{build}.conda`) and ships two inner compressed tarballs and a JSON document:
+A `.conda` artifact MUST be a ZIP file whose filename follow [CEP 26](./cep-0026.md) with a `.conda` extension (i.e. `{name}-{version}-{build}.conda`). The ZIP SHOULD NOT be compressed. The ZIP archive MUST contain two compressed tarballs and a JSON document:
 
 - `info-{name}-{version}-{build}.tar.{extension}`
 - `pkg-{name}-{version}-{build}.tar.{extension}`
@@ -106,7 +106,7 @@ The outer format should be:
 - indexable, so that subsections of the file can be accessed and extracted quickly
 - uncompressed, because the inner containers handle the compression of any real data
 
-Zip files were chosen because they are the most ubiquitous format that matches all of these criteria.
+Zip files were chosen because they are the most ubiquitous format that matches all of these criteria. They should not be compressed because the inner tarballs will handle that more efficiently.
 
 The inner format should be a compressed tarball using efficient and performant compression schemes. The most fitting format for that description is ZSTD with `.tar.zstd`.
 
