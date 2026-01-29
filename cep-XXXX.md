@@ -114,31 +114,35 @@ A version specifier MUST consist of one or more _version clauses_, separated by 
 - `,` denotes the logical AND.
 - `,` (AND) has higher precedence than `|` (OR).
 
-A _version clause_ consists of a single version literal (as defined in [CEP PR #132](https://github.com/conda/ceps/pull/132)) and optionally an operator. Each version clause MUST follow one of these types:
+A _version clause_ consists of a single version literal (as defined in [CEP PR #132](https://github.com/conda/ceps/pull/132)) and optionally an operator.
 
-- [String matching](#string-matching) rules, as defined in the section above. This applies to clauses expressed as exact version identifiers or version identifiers augmented with asterisks (`*`); e.g. `1.2.3`, `1.2.3.*`, and `1.*.3`.
-- Exact equality, expressed as a version identifier prefixed by the double-equals string `==`, MUST be interpreted as a strict string equality test after removing the `==` prefix.
-- Fuzzy equality, expressed as a version identifier prefixed by one `=` symbol. After removing the leading `=` character and appending a `.*` suffix, the string MUST be interpreted with [string matching](#string-matching) rules.
-- Exclusion, expressed as a version identifier, or a version identifier augmented with asterisks, prefixed by the string `!=`, MUST be interpreted as a negated [string matching](#string-matching) test.
+> For example, given a string `python>=3,<4`, the version specifier is the full expression `>=3,<4`, which consists of two clauses (`>=3`, `<4`) separated by `,` (AND). Each clause contain a version literal (`3` and `4`, respectively.)
+
+Each version clause MUST be described by one of these types:
+
+- [String matching](#string-matching) rules, as defined in the section above. This applies to clauses expressed as exact version literals or version literals augmented with asterisks (`*`); e.g. `1.2.3`, `1.2.3.*`, and `1.*.3`.
+- Exact equality, expressed as a version literal prefixed by the double-equals string `==`, MUST be interpreted as a strict string equality test after removing the `==` prefix.
+- Fuzzy equality, expressed as a version literal prefixed by one `=` symbol. After removing the leading `=` character and appending a `.*` suffix, the string MUST be interpreted with [string matching](#string-matching) rules.
+- Exclusion, expressed as a version literal, or a version literal augmented with asterisks, prefixed by the string `!=`, MUST be interpreted as a negated [string matching](#string-matching) test.
 - Ordered comparison, with the implied ordering described in [CEP PR #132](https://github.com/conda/ceps/pull/132):
-  - Exclusive ordered comparison, expressed as a version identifier prefixed by `<` or `>`, MUST be interpreted as "smaller than" and "greater than", respectively, as per their position in the version ordering scheme.
-  - Inclusive ordered comparison, expressed as a version identifier prefixed by one of these strings: `<=`, `>=`, MUST be interpreted as in "exclusive ordered comparison", respectively, but they will also match if their position is equivalent in the version ordering scheme.
-- Semver-like comparisons, expressed as a version identifier prefixed by the `~=` string, MUST be interpreted as greater or equals than the version identifier while also matching a fuzzy equality test for the version identifier sans its last segment (e.g. `~=0.5.3` expands to `>=0.5.3,0.5.*`). This operator is considered deprecated, and its expanded alternative SHOULD be used instead.
+  - Exclusive ordered comparison, expressed as a version literal prefixed by `<` or `>`, MUST be interpreted as "smaller than" and "greater than", respectively, as per their position in the version ordering scheme.
+  - Inclusive ordered comparison, expressed as a version literal prefixed by one of these strings: `<=`, `>=`, MUST be interpreted as in "exclusive ordered comparison", respectively, but they will also match if their position is equivalent in the version ordering scheme.
+- Semver-like comparisons, expressed as a version literal prefixed by the `~=` string, MUST be interpreted as greater or equals than the version literal while also matching a fuzzy equality test for the version literal sans its last segment (e.g. `~=0.5.3` expands to `>=0.5.3,0.5.*`). This operator is considered deprecated, and its expanded alternative SHOULD be used instead.
 
 Version expressions SHOULD NOT contain spaces between operators, and MUST be removed and ignored if present.
 
 ### Version expression parsing
 
-In the name of backwards compatibility, the (`name`, `version`, `build`) group in the `MatchSpec` syntax allows two types of separators: spaces and a single `=` character. This conditions how certain `version` expressions are parsed. Given a _version identifier_ denoted as `version-identifier` (i.e. no operators or asterisks), the following rules MUST apply:
+In the name of backwards compatibility, the (`name`, `version`, `build`) group in the `MatchSpec` syntax allows two types of separators: spaces and a single `=` character. This conditions how certain `version` expressions are parsed. Given a _version literal_ denoted as `version-literal` (i.e. no operators or asterisks), the following rules MUST apply:
 
 - If the string only contains two fields, which MUST be `name` and `version`:
-  - `{name}={version-identifier}` and `{name} ={version-identifier}` (note the space) both denote fuzzy equality. They are equivalent to `{name}[version={version-identifier}.*]` and `{name} {version-identifier}.*`
-  - `{name} {version-identifier}` denotes exact equality. It is equivalent to `{name}[version={version-identifier}]` and `{name}=={version-identifier}`.
+  - `{name}={version-literal}` and `{name} ={version-literal}` (note the space) both denote fuzzy equality. They are equivalent to `{name}[version={version-literal}.*]` and `{name} {version-literal}.*`
+  - `{name} {version-literal}` denotes exact equality. It is equivalent to `{name}[version={version-literal}]` and `{name}=={version-literal}`.
 - If the string contains three fields, `name`, `version` and `build`:
-  - `{name} {version-identifier} {build}`, `{name} =={version-identifier} {build}`, `{name}={version-identifier}={build}` and `{name}=={version-identifier}={build}` all denote exact equality. They are equivalent to `{name}[version={version-identifier},build={build}]`.
-  - `{name} ={version-identifier} {build}` denotes fuzzy equality.
+  - `{name} {version-literal} {build}`, `{name} =={version-literal} {build}`, `{name}={version-literal}={build}` and `{name}=={version-literal}={build}` all denote exact equality. They are equivalent to `{name}[version={version-literal},build={build}]`.
+  - `{name} ={version-literal} {build}` denotes fuzzy equality.
 
-Some examples for `name=pkg` and `version-identifier=1.8`, with equivalent version specifiers in the same paragraph:
+Some examples for `name=pkg` and `version-literal=1.8`, with equivalent version specifiers in the same paragraph:
 
 ```text
 pkg=1.8
