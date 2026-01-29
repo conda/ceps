@@ -29,9 +29,16 @@ The `MatchSpec` query syntax is a mini-language designed to query package record
 
 ## Specification
 
-`MatchSpec` strings provide a compact method to query collections of conda artifacts (e.g. in a conda channel, or in an installed environment) by matching `str` and `int` fields on package records (see [CEP PR #133's `./info/index.json`](https://github.com/conda/ceps/pull/133) and [CEP PR#135's "Package Record Metadata"](https://github.com/conda/ceps/pull/135)).
+`MatchSpec` strings provide a compact method to query collections of conda artifacts (e.g. in a conda channel, or in an installed environment) by matching `str` and `int` fields on package records (see [CEP PR #133's `./info/index.json`](https://github.com/conda/ceps/pull/133) and [CEP PR#135's "Package Record Metadata"](https://github.com/conda/ceps/pull/135)). Note that fields using other types, like `list[str]` (`depends`, `constrains`, etc.) cannot be matched by this syntax.
 
-The most commonly queried fields are `name`, `version`, `build` and `channel`.
+### Search vs solver `MatchSpec`
+
+`MatchSpec` strings can be used under two different contexts:
+
+- Search queries: To obtain all the artifacts matching the query against a colletion of packages. Results MAY include more than one entry per package name.
+- Solver requests: To obtain the subset of packages in an index that satisfy the request and their dependency metadata. Results MUST only include one entry per package name.
+
+In contrast with search queries, only some `MatchSpec` fields make sense for solver requests. Most common include: `name`, `version`, `build`, `channel`.
 
 ### Syntax
 
@@ -57,7 +64,7 @@ More precisely, the following rules apply:
     - A colon `:` separator, required if `channel` or `namespace` are defined.
     - `namespace: str`. Optional. This expression field MUST be parsed and ignored.
   - The second group contains three expressions. They MUST be separated by either spaces or a single `=` character. Separator types MUST NOT be mixed. See the [version expression parsing notes](#version-expression-parsing) for additional details on the interaction between the `=` symbol as a separator and as an operator.
-    - `name: str`. Required.
+    - `name: str`. Required. It MUST NOT be empty.
     - `version: str | VersionSpec`. Optional.
     - `build: str`. Optional. It requires `version` to be present.
 - All keyword expressions are optional. If present, they MUST be enclosed in a single set of square brackets, after the positional expressions. The following rules apply:
@@ -71,7 +78,7 @@ More precisely, the following rules apply:
 
 The canonical string representation of a `MatchSpec` expression follows these rules:
 
-1. `name` is required and MUST be written as a positional expression. Its value MAY be `*` if necessary.
+1. `name` is required and MUST be written as a positional expression. An empty name MUST be written as `*` if necessary.
 2. If `version` describes an exact equality expression, it MUST be written as a positional expression, prepended by `==`. If `version` denotes fuzzy equality (e.g. `1.11.*`), it MUST be written as a positional expression with the `.*` suffix left off and prepended by `=`. Otherwise `version` MUST be included inside the key-value brackets.
 3. If `version` is an exact equality expression, and `build` does not contain asterisks, `build` MUST be written as a positional expression, prepended by `=`. Otherwise, `build` MUST go inside the key-value brackets.
 4. If `channel` is defined and does not contain asterisks, a `::` separator is used between `channel`
@@ -94,6 +101,8 @@ Matching expressions that target string fields MUST be interpreted using these r
    2. Replace escaped asterisks (`\*`) by `.*`.
    3. Wrap the resulting string with `^` and `$`.
 - Otherwise, matches MUST be tested with exact, case-insensitive string equality.
+
+For the `name` field, regex and globs SHOULD NOT be allowed for solver requests.
 
 #### Version matching
 
