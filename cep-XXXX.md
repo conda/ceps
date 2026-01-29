@@ -181,7 +181,6 @@ https://conda.anaconda.org/conda-forge/linux-64/python-3.11.10-h123456_0.conda
 
 , becomes `conda-forge/linux-64::python==3.11.10[build=h123456_0]`.
 
-
 ## Examples
 
 ```python
