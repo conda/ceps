@@ -39,10 +39,9 @@ implementation.
 
 The present CEP _extends_ these rules with additional constraints:
 
-- Version strings MUST be composed of alphanumeric characters `[A-Za-z0-9]`, separated into segments by periods `.` and underscores `_`.
-- The first segment MUST start with a digit.
-- Empty segments (i.e. two consecutive dots, a leading/trailing underscore) MUST NOT be allowed.
+- Version strings MUST be composed of alphanumeric characters `[A-Za-z0-9]`, separated into segments by periods `.` and underscores `_`. Dashes `-` MAY also be interpreted as underscores.
 - All segments SHOULD start with a digit for clarity.
+- Empty segments (i.e. two consecutive dots, a leading/trailing underscore) SHOULD NOT be allowed. An exception is granted for comparison against `openssl 1.x`-like version schemes (e.g. `1.0.1_ < 1.0.1a`).
 - A single epoch number (a positive integer followed by `!`) MAY prefix the rest of the string.
 - A single local version string MAY be added at the end, separated by a plus symbol `+`.
 
@@ -53,11 +52,12 @@ Before being compared, version strings MUST be parsed into a list of segments (w
 - They are first split into _epoch_, _main version_, and _local version_ at `!` and `+` respectively.
   - If there is no `!`, the epoch is set to `0`.
   - If there is no `+`, the local version is empty.
-- The main version part is then split into components at `.` and `_`.
+- The main version part is then split into components at `.`, `_` and `-`.
   - Each component is split again into consecutive runs of numerals and non-numerals.
   - Subcomponents containing only numerals are converted to integers.
   - Strings are converted to lowercase, with special treatment for `dev` and `post`.
   - When a component starts with a letter, the fill value `0` is inserted before the letter.
+  - Non-significant zeros in a component are removed.
 - The epoch and main version segments are concatenated.
 - The same is repeated for the local version part, and stored as a separate list of segments.
 
@@ -67,7 +67,7 @@ For example:
 >>> parse("1.2g.beta15.rc")
 [[0], [1], [2, 'g'], [0, 'beta', 15], [0, 'rc']], []
 >>> parse("1!2.15.1_ALPHA")
-[[1], [2], [15], [1, 'alpha']], []
+[[1], [2], [15], [1], [0, 'alpha']], []
 >>> parse("1!2.15.1_alpha+1.2.3h123")
 [[1], [2], [15], [1], [0, 'alpha']], [[1], [2], [3, 'h', 123]]
 ```
