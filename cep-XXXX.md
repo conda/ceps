@@ -57,27 +57,7 @@ In alphabetical order, every conda client MUST support the following virtual pac
 
 This virtual package MUST be always present, with the version set to `1`.
 
-The build string MUST reflect one of:
-
-* If the target platform matches the native platform, the best fitting CPU microarchitecture in the [`archspec/archspec-json` database](https://github.com/archspec/archspec-json/blob/v0.2.5/cpu/microarchitectures.json). The reference CPU detection implementation is [`archspec.cpu.detect.host()`](https://github.com/archspec/archspec/blob/v0.2.5/archspec/cpu/detect.py#L338).
-
-* Otherwise, the target platform architecture (second component of the platform string), mapped as:
-
-  | Target platform | Reported `archspec` build string |
-  | --------------- | -------------------------------- |
-  | `*-32`          | `x86`                            |
-  | `*-64`          | `x86_64`                         |
-  | `*-aarch64`     | `aarch64`                        |
-  | `*-arm64`       | `arm64`                          |
-  | `*-armv6l`      | `armv6l`                         |
-  | `*-armv7l`      | `armv7l`                         |
-  | `*-ppc64`       | `ppc64`                          |
-  | `*-ppc64le`     | `ppc64le`                        |
-  | `*-riscv64`     | `riscv64`                        |
-  | `*-s390x`       | `s390x`                          |
-  | `*-wasm32`      | `wasm32`                         |
-  | `zos-z`         | `z`                              |
-  | Any other value | `0`                              |
+The build string MUST reflect either a fitting CPU microarchitecture in the [`archspec/archspec-json` database](https://github.com/archspec/archspec-json/blob/v0.2.5/cpu/microarchitectures.json), or the second component of the target platform string as is. See Appendix A for common examples.
 
 The build string MUST be overridable with the `CONDA_OVERRIDE_ARCHSPEC` environment variable, if set to a non-empty value that can be parsed as a build string.
 
@@ -176,6 +156,26 @@ The following items are not considered here. Though would be open for discussion
 * [Drop `CONDA_OVERRIDE_WIN` environment variable (mamba-org/mamba#2815)](https://github.com/mamba-org/mamba/pull/2815)
 * [`__arch` feature request](https://github.com/conda/conda/issues/13420)
 * [Explanation about `__cuda` version value](https://github.com/conda/ceps/pull/103#discussion_r1919554066)
+* Reference CPU detection implementation for `__archspec` at [`archspec.cpu.detect.host()`](https://github.com/archspec/archspec/blob/v0.2.5/archspec/cpu/detect.py#L338).
+
+## Appendix A: Naive target platform to `__archspec` mapping
+
+These values may be used when no CPU autodetection features are available:
+
+| Target platform | Reported `archspec` build string |
+| --------------- | -------------------------------- |
+| `*-32`          | `x86`                            |
+| `*-64`          | `x86_64`                         |
+| `*-aarch64`     | `aarch64`                        |
+| `*-arm64`       | `aarch64`                        |
+| `*-armv6l`      | `armv6l`                         |
+| `*-armv7l`      | `armv7l`                         |
+| `*-ppc64`       | `ppc64`                          |
+| `*-ppc64le`     | `ppc64le`                        |
+| `*-riscv64`     | `riscv64`                        |
+| `*-s390x`       | `s390x`                          |
+| `*-wasm32`      | `wasm32`                         |
+| `zos-z`         | `z`                              |
 
 ## Copyright
 
