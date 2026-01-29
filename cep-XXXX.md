@@ -172,6 +172,16 @@ To uniquely identify a single package record, a `MatchSpec` expression can be co
 - By passing exact values to the fields `channel` (preferably by URL), `subdir`, `name`, `version`, `build`.
 - By matching its checksum directly: `*[md5=12345678901234567890123456789012]` or `*[sha256=f453db4ffe2271ec492a2913af4e61d4a6c118201f07de757df0eff769b65d2e]`.
 
+Note that an artifact URL may be parsed into a fully specified `MatchSpec`. Given:
+
+```
+https://conda.anaconda.org/conda-forge/linux-64/python-3.11.10-h123456_0.conda
+[----------channel--------------------|-subdir-|-name-|version|-build---]
+````
+
+, becomes `conda-forge/linux-64::python==3.11.10[build=h123456_0]`.
+
+
 ## Examples
 
 ```python
