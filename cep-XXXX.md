@@ -106,7 +106,7 @@ For the `name` field, regex and globs SHOULD NOT be allowed for solver requests.
 
 #### Version matching
 
-Expressions targeting the `version` field MUST be handled with additional rules. These expressions are referred to as _version specifiers_. A _version identifier_ will refer to versions strings as described in [CEP PR #132](https://github.com/conda/ceps/pull/132). For ordering-aware comparisons, the implied ordering is also described in [CEP PR #132](https://github.com/conda/ceps/pull/132).
+Expressions targeting the `version` field MUST be handled with additional rules. These expressions are referred to as _version specifiers_.
 
 A version specifier MUST consist of one or more _version clauses_, separated by logical operators that MUST follow these rules:
 
@@ -114,14 +114,15 @@ A version specifier MUST consist of one or more _version clauses_, separated by 
 - `,` denotes the logical AND.
 - `,` (AND) has higher precedence than `|` (OR).
 
-A _version clause_ MUST follow one of these conventions:
+A _version clause_ consists of a single version literal (as defined in [CEP PR #132](https://github.com/conda/ceps/pull/132)) and optionally an operator. Each version clause MUST follow one of these types:
 
 - [String matching](#string-matching) rules, as defined in the section above. This applies to clauses expressed as exact version identifiers or version identifiers augmented with asterisks (`*`); e.g. `1.2.3`, `1.2.3.*`, and `1.*.3`.
 - Exact equality, expressed as a version identifier prefixed by the double-equals string `==`, MUST be interpreted as a strict string equality test after removing the `==` prefix.
 - Fuzzy equality, expressed as a version identifier prefixed by one `=` symbol. After removing the leading `=` character and appending a `.*` suffix, the string MUST be interpreted with [string matching](#string-matching) rules.
 - Exclusion, expressed as a version identifier, or a version identifier augmented with asterisks, prefixed by the string `!=`, MUST be interpreted as a negated [string matching](#string-matching) test.
-- Exclusive ordered comparison, expressed as a version identifier prefixed by `<` or `>`, MUST be interpreted as "smaller than" and "greater than", respectively, as per their position in the version ordering scheme.
-- Inclusive ordered comparison, expressed as a version identifier prefixed by one of these strings: `<=`, `>=`, MUST be interpreted as in "exclusive ordered comparison", respectively, but they will also match if their position is equivalent in the version ordering scheme.
+- Ordered comparison, with the implied ordering described in [CEP PR #132](https://github.com/conda/ceps/pull/132):
+  - Exclusive ordered comparison, expressed as a version identifier prefixed by `<` or `>`, MUST be interpreted as "smaller than" and "greater than", respectively, as per their position in the version ordering scheme.
+  - Inclusive ordered comparison, expressed as a version identifier prefixed by one of these strings: `<=`, `>=`, MUST be interpreted as in "exclusive ordered comparison", respectively, but they will also match if their position is equivalent in the version ordering scheme.
 - Semver-like comparisons, expressed as a version identifier prefixed by the `~=` string, MUST be interpreted as greater or equals than the version identifier while also matching a fuzzy equality test for the version identifier sans its last segment (e.g. `~=0.5.3` expands to `>=0.5.3,0.5.*`). This operator is considered deprecated, and its expanded alternative SHOULD be used instead.
 
 Version expressions SHOULD NOT contain spaces between operators, and MUST be removed and ignored if present.
