@@ -73,7 +73,7 @@ Common variants include `current_repodata.json`, which aggregates a subset of th
 
 Channels SHOULD serve compressed versions of every repodata file. The following compression schemes are recognized:
 
-- BZ2: MUST append the `.bz2` extension; e.g. `repodata.json.bz2`.
+- BZ2: MUST append the `.bz2` extension; e.g. `repodata.json.bz2`. Deprecated.
 - ZSTD: MUST append the `.zst` extension; e.g. `repodata.json.zst`. Recommended.
 
 ## Examples
