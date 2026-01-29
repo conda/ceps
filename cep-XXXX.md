@@ -3,9 +3,13 @@
 <table>
 <tr><td> Title </td><td> The <code>MatchSpec</code> query language </td>
 <tr><td> Status </td><td> Draft </td></tr>
-<tr><td> Author(s) </td><td> Jaime Rodríguez-Guerra &lt;jaime.rogue@gmail.com&gt;</td></tr>
+<tr><td> Author(s) </td><td>
+  Jaime Rodríguez-Guerra &lt;jaime.rogue@gmail.com&gt;,
+  Cheng H. Lee &lt;clee@anaconda.com&gt;,
+  Bas Zalmstra &lt;bas@prefix.dev&gt;
+</td></tr>
 <tr><td> Created </td><td> June 4, 2024 </td></tr>
-<tr><td> Updated </td><td> October 1, 2025 </td></tr>
+<tr><td> Updated </td><td> January 29, 2026 </td></tr>
 <tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/82 </td></tr>
 <tr><td> Implementation </td><td> https://github.com/conda/conda/blob/4.3.34/conda/resolve.py#L33, https://github.com/conda/conda/blob/25.7.0/conda/models/match_spec.py#L85, https://docs.rs/rattler_conda_types/latest/rattler_conda_types/struct.MatchSpec.html, https://github.com/mamba-org/mamba/blob/2.3.2/libmamba/src/specs/match_spec.cpp, https://github.com/openSUSE/libsolv/blob/0.7.35/src/conda.c#L567 </td></tr>
 <tr><td> Requires </td><td> https://github.com/conda/ceps/pull/132, https://github.com/conda/ceps/pull/133, https://github.com/conda/ceps/pull/135 </td></tr>
@@ -57,8 +61,9 @@ More precisely, the following rules apply:
     - `version: str | VersionSpec`. Optional.
     - `build: str`. Optional. It requires `version` to be present.
 - All keyword expressions are optional. If present, they MUST be enclosed in a single set of square brackets, after the positional expressions. The following rules apply:
-  - Keyword expressions are written as key-value pairs. They MUST be built by joining the name of the target field (key) and the expression string (value) with a single `=` character. The expression string MUST be quoted with single `'` or double `"` quotes if it contains spaces.
-  - Target-expression pairs MUST be separated by a single comma character `,`.
+  - Keyword expressions are written as key-value pairs. They MUST be built by joining the name of the target field (key) and the expression string (value) with a single `=` character.
+  - The value MUST be quoted with single `'` or double `"` quotes if it contains spaces, commas, equal signs, or square brackets. Quoting rules follow [Python's string literals](https://docs.python.org/3/reference/lexical_analysis.html#strings).
+  - Keyword expression pairs MUST be separated by a single comma character `,`.
   - Spaces between separators MAY be allowed and MUST be ignored.
 - When both positional and keyword expressions are used, the keyword expressions override the positional values, except for `name` (its positional value MUST always win).
 
@@ -183,6 +188,7 @@ Mixing `*` with other version-specific operators is disallowed as per the recomm
 - [`conda.models.match_spec.MatchSpec`](https://github.com/conda/conda/blob/24.5.0/conda/models/match_spec.py)
 - [`rattler_conda_types::match_spec`](https://github.com/conda/rattler/blob/rattler-v0.37.4/crates/rattler_conda_types/src/match_spec/mod.rs)
 - [Package match specifications at conda-build docs](https://docs.conda.io/projects/conda-build/en/latest/resources/package-spec.html#package-match-specifications)
+- [Comparison of `MatchSpec` implementations in `conda`, `rattler` and `mamba`](https://github.com/baszalmstra/cep-matchspec-tests)
 
 ## Copyright
 
