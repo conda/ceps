@@ -1,7 +1,7 @@
-# CEP XXXX - Version strings and their ordering
+# CEP XXXX - Version literals and their ordering
 
 <table>
-<tr><td> Title </td><td> Version strings and their ordering </td>
+<tr><td> Title </td><td> Version literals and their ordering </td>
 <tr><td> Status </td><td> Draft </td></tr>
 <tr><td> Author(s) </td><td>
   Jaime Rodríguez-Guerra &lt;jaime.rogue@gmail.com&gt;,
@@ -15,7 +15,7 @@
 
 ## Abstract
 
-This CEP describes version strings as used in the conda ecosystem, and their ordering.
+This CEP describes version literals as used in the conda ecosystem, and their ordering.
 
 ## Motivation
 
@@ -31,15 +31,15 @@ More specifically, violations of a MUST or MUST NOT rule MUST result in an error
 rules specified by any of the other all-capital terms MAY result in a warning, at discretion of the
 implementation.
 
-### Version strings
+### Version literals
 
-[CEP 26](./cep-0026.md) only discussed the type of characters that can be part of a version string, and its maximum length:
+[CEP 26](./cep-0026.md) only discussed the type of characters that can be part of a version string (or literal), and its maximum length:
 
 > [...] version strings MUST only consist of digits, periods, lowercase ASCII letters, underscores, plus symbols, and exclamation marks. The maximum length of a version string MUST NOT exceed 64 characters.
 
 The present CEP _extends_ these rules with additional constraints:
 
-- Version strings MUST be composed of alphanumeric characters `[A-Za-z0-9]`, separated into segments by periods `.` and underscores `_`. Dashes `-` MAY also be interpreted as underscores.
+- Version literals MUST be composed of alphanumeric characters `[A-Za-z0-9]`, separated into segments by periods `.` and underscores `_`. Dashes `-` MAY also be interpreted as underscores.
 - All segments SHOULD start with a digit for clarity.
 - Empty segments (i.e. two consecutive dots, a leading/trailing underscore) SHOULD NOT be allowed. An exception is granted for comparison against `openssl 1.x`-like version schemes (e.g. `1.0.1_ < 1.0.1a`).
 - A single epoch number (a positive integer followed by `!`) MAY prefix the rest of the string.
@@ -47,7 +47,7 @@ The present CEP _extends_ these rules with additional constraints:
 
 ### Ordering
 
-Before being compared, version strings MUST be parsed into a list of segments (with each segment being a list of components) as follows:
+Before being compared, version literals MUST be parsed into a list of segments (with each segment being a list of components) as follows:
 
 - They are first split into _epoch_, _main version_, and _local version_ at `!` and `+` respectively.
   - If there is no `!`, the epoch is set to `0`.
@@ -95,7 +95,7 @@ The resulting list of components MUST be compared as follows:
 
 ## Backwards compatibility
 
-This CEP _extends_ [CEP 26](./cep-0026.md) with more details about version strings.
+This CEP _extends_ [CEP 26](./cep-0026.md) with more details about version literals.
 
 `conda` has historically allowed versions to start with a non-numeric character. This is now forbidden to avoid issues like `v10.4.5` being interpreted as smaller than `3.3.2`.
 
