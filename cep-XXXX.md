@@ -66,7 +66,7 @@ The `metadata.json` MUST be a JSON document that ships a dictionary following th
 
 - `conda_pkg_format_version: int`. The version of the `.conda` format. Currently `2`.
 
-## Examples 
+## Examples
 
 Given a package directory `project-1.2.3-0/`, GNU `tar` and `zstd` can be used like this:
 
