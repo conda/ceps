@@ -35,7 +35,7 @@ The `MatchSpec` query syntax is a mini-language designed to query package record
 
 `MatchSpec` strings can be used under two different contexts:
 
-- Search queries: To obtain all the artifacts matching the query against a colletion of packages. Results MAY include more than one entry per package name.
+- Search queries: To obtain all the artifacts matching the query against a collection of packages. Results MAY include more than one entry per package name.
 - Solver requests: To obtain the subset of packages in an index that satisfy the request and their dependency metadata. Results MUST only include one entry per package name.
 
 In contrast with search queries, only some `MatchSpec` fields make sense for solver requests. Most common include: `name`, `version`, `build`, `channel`.
@@ -198,6 +198,7 @@ Mixing `*` with other version-specific operators is disallowed as per the recomm
 - [`conda.models.match_spec.MatchSpec`](https://github.com/conda/conda/blob/24.5.0/conda/models/match_spec.py)
 - [`rattler_conda_types::match_spec`](https://github.com/conda/rattler/blob/rattler-v0.37.4/crates/rattler_conda_types/src/match_spec/mod.rs)
 - [Package match specifications at conda-build docs](https://docs.conda.io/projects/conda-build/en/latest/resources/package-spec.html#package-match-specifications)
+- [Comparison of `MatchSpec` implementation in `conda` vs a LARK grammar](https://github.com/chenghlee/conda-matchspec-grammar)
 - [Comparison of `MatchSpec` implementations in `conda`, `rattler` and `mamba`](https://github.com/baszalmstra/cep-matchspec-tests)
 
 ## Copyright
