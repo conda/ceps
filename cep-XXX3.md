@@ -41,6 +41,8 @@ The `info/index.json` file of each conda artifact MUST support a new field, `fla
 
 In recipes, this value MUST be supported in the `build` section of each output (i.e. sibling to `number` and `track_features`).
 
+Additionally, another field has to be added to the `index.json` file and `repodata_record`: `variant_order`. This field lists flags in descending priority order. During the resolution, artifacts that match on flags are sorted by the order in `variant_order`.
+
 ### MatchSpec syntax changes
 
 Values in the `flags` field MUST be matchable by the corresponding keyword in `MatchSpec`, placed in the square brackets section. Its value MUST be a string or list of strings supporting the following syntax:
@@ -51,6 +53,50 @@ Values in the `flags` field MUST be matchable by the corresponding keyword in `M
 - Two special prefix characters MUST be recognized with the following meaning:
   - `~`: negates the match
   - `?`: makes the match optional
+
+### Variant order sorting
+
+The variants are sorted lexicographically by matching flags from the variant order. Flags not mentioned in the variant order will be sorted lower than any flags mentioned in the variant order, and in alphabetical order.
+
+Example:
+
+```
+variant order: [release, cuda, blas:mkl, blas:openblas]
+
+sorted variants:
+
+1. [release, cuda, blas:mkl]
+2. [release, cuda, blas:openblas]
+3. [release, blas:mkl]
+4. [release, blas:openblas]
+5. [release, blas:blis]
+6. [debug]
+```
+
+### `index.json` and `repodata_record` changes
+
+The records gain two new fields, `flags` and `variant_order`:
+
+```json
+...
+{
+  "name": "foobar",
+  "version": "1.2.3",
+  "flags": ["gpu:cuda", "build_type:release", "blas:mkl"],
+  "variant_order": ["build_type:release", "blas:mkl", "gpu:*"]  # rest of the flags,
+}
+```
+
+### Changes to the `recipe.yaml` file
+
+```yaml
+build:
+  string: ...
+  flags: ["gpu:cuda${{ cuda_version }}", "blas:${{ blas}}", "release"]
+  variant:
+    order: ["release", "blas:mkl", "blas:blis", "blas:openblas", "gpu:*"],
+
+```
 
 ## Examples
 
