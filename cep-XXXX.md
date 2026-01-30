@@ -39,9 +39,9 @@ implementation.
 
 The present CEP _extends_ these rules with additional constraints:
 
-- Version literals MUST be composed of alphanumeric characters `[A-Za-z0-9]`, separated into segments by periods `.` and underscores `_`. Dashes `-` MAY also be interpreted as underscores.
-- All segments SHOULD start with a digit for clarity.
-- Empty segments (i.e. two consecutive dots, a leading/trailing underscore) SHOULD NOT be allowed. An exception is granted for comparison against `openssl 1.x`-like version schemes (e.g. `1.0.1_ < 1.0.1a`).
+- Version literals MUST be composed of alphanumeric characters `[A-Za-z0-9]`, separated into segments by periods `.` and underscores `_`. Dashes `-` are historically allowed and interpreted as underscores, but SHOULD NOT be used because they break filename conventions.
+- Consecutive runs of digits MUST be limited to 19 digits each.
+- Empty segments (i.e. two consecutive periods, or a period plus an underscore) SHOULD NOT be allowed. A single trailing underscore MAY be used exceptionally for comparisons against `openssl 1.x`-like version schemes (e.g. `1.0.1_ < 1.0.1a`).
 - A single epoch number (a positive integer followed by `!`) MAY prefix the rest of the string.
 - A single local version string MAY be added at the end, separated by a plus symbol `+`.
 
@@ -87,17 +87,26 @@ The resulting list of components MUST be compared as follows:
 
 ## Rationale
 
-- The first segment of a version must start with a digit to avoid confusing situations like `v13.2.1` being smaller than `3.1.0`. See [conda/conda#14255](https://github.com/conda/conda/issues/14255).
 - The `dev` substring is handled differently to allow `dev` pre-releases to sort before alphas, betas and release candidates.
 - The `post` substring is handled differently to allow `post` releases to sort after any equivalent final release.
 - Missing components are treated like `0` to allow equivalences like `'1.1' == '1.1.0'`.
 - The `0` fill value is used in components starting with letters to keep numbers and strings in phase, resulting in `'1.1.a1' == '1.1.0a1'`.
+- Consecutive runs of digits are limited to 19 digits to prevent integer overflow issues upon parsing.
 
 ## Backwards compatibility
 
 This CEP _extends_ [CEP 26](./cep-0026.md) with more details about version literals.
 
-`conda` has historically allowed versions to start with a non-numeric character. This is now forbidden to avoid issues like `v10.4.5` being interpreted as smaller than `3.3.2`.
+It respects existing implementations and does not break backwards compatibility.
+
+## Further work
+
+This CEP only standardizes the current behavior exhibited across most implementations. There are many edge cases that the authors would like to improve in future efforts. Examples include:
+
+- `alpha` == `a` (and similar) suffix normalizations.
+- Require version literals to start with a digit to avoid situations like `v0.1 != 0.1`.
+- Revise PEP440 normalization rules and study which ones we should adopt.
+- Propose a stricter subset of these rules to reduce ambiguity.
 
 ## Examples
 
