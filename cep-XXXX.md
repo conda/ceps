@@ -36,6 +36,7 @@ The `MatchSpec` query syntax is a mini-language designed to query package record
 The `MatchSpec` syntax can be thought of as a structured collection of _matching expressions_, each targeting a package record field. A matching expression is defined as a string that MUST follow these rules:
 
 - For expressions targeting the `version` field, [version specifier rules](#version-matching) MUST be applied.
+- For expressions targeting the `channel` field, [channel specifier rules](#channel-matching) MUST be applied.
 - For expressions targeting any other `str` field, [string matching conventions](#string-matching) MUST be used.
 - For expressions targeting `int` fields, the target value MUST be converted to `str` and handled as such.
 
@@ -93,7 +94,11 @@ Matching expressions that target string fields MUST be interpreted using these r
    3. Wrap the resulting string with `^` and `$`.
 - Otherwise, matches MUST be tested with exact, case-insensitive string equality.
 
-For the `name` field, regex and globs SHOULD NOT be allowed for solver requests.
+### Channel matching
+
+Channel fields MUST be matched with the same rules as strings.
+
+The value of a channel expression MUST allow both names and full URLs. When a name is used (as per [CEP 26](./cep-0026.md)), it MUST be promoted to its corresponding fully qualified URL before comparison.
 
 #### Version matching
 
