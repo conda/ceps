@@ -70,7 +70,7 @@ More precisely, the following rules apply:
 
 #### String matching
 
-Matching expressions that target string fields MUST be interpreted using these rules:
+Matching expressions that target string fields MUST be interpreted using these case-insensitive rules:
 
 - If the expression begins with `^` and ends with `$`, it MUST be interpreted as a regular expression (regex). The expression matches if the regex search returns a hit; e.g. with Python: `re.search(expression, field) is not None`.
 - If the expression contains an asterisk (`*`), it is considered a glob expression and MUST be interpreted as if it was a regular expression. To convert a glob expression into a regex string:
