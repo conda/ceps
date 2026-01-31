@@ -157,22 +157,6 @@ pkg[version=1.8]
 pkg[version="1.8"]
 ```
 
-### Fully specified expressions
-
-To uniquely identify a single package record, a `MatchSpec` expression can be constructed in two ways:
-
-- By passing exact values to the fields `channel` (preferably by URL), `subdir`, `name`, `version`, `build`.
-- By matching its checksum directly: `*[md5=12345678901234567890123456789012]` or `*[sha256=f453db4ffe2271ec492a2913af4e61d4a6c118201f07de757df0eff769b65d2e]`.
-
-Note that an artifact URL may be parsed into a fully specified `MatchSpec`. Given:
-
-```
-https://conda.anaconda.org/conda-forge/linux-64/python-3.11.10-h123456_0.conda
-[----------channel--------------------|-subdir-|-name-|version|-build---]
-````
-
-, becomes `conda-forge/linux-64::python==3.11.10[build=h123456_0]`.
-
 ## Examples
 
 ```python
@@ -208,6 +192,22 @@ Mixing `*` with other version-specific operators is disallowed as per the recomm
 - Solver requests: To obtain the subset of packages in an index that satisfy the request and their dependency metadata. Results must only include one entry per package name.
 
 In contrast with search queries, only some `MatchSpec` fields make sense for solver requests. Most common include: `name`, `version`, `build`, `channel`.
+
+### Appendix C: Fully specified expressions
+
+To uniquely identify a single package record, a `MatchSpec` expression can be constructed in two ways:
+
+- By passing exact values to the fields `channel` (preferably by URL), `subdir`, `name`, `version`, `build`.
+- By matching its checksum directly: `*[md5=12345678901234567890123456789012]` or `*[sha256=f453db4ffe2271ec492a2913af4e61d4a6c118201f07de757df0eff769b65d2e]`.
+
+Note that an artifact URL may be parsed into a fully specified `MatchSpec`. Given:
+
+```
+https://conda.anaconda.org/conda-forge/linux-64/python-3.11.10-h123456_0.conda
+[----------channel--------------------|-subdir-|-name-|version|-build---]
+```
+
+, becomes `conda-forge/linux-64::python==3.11.10[build=h123456_0]`.
 
 ## References
 
