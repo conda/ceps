@@ -131,7 +131,7 @@ In the name of backwards compatibility, the (`name`, `version`, `build`) group i
   - `{name} {version-literal} {build}`, `{name} =={version-literal} {build}`, `{name}={version-literal}={build}` and `{name}=={version-literal}={build}` all denote exact equality. They are equivalent to `{name}[version={version-literal},build={build}]`.
   - `{name} ={version-literal} {build}` denotes fuzzy equality.
 
-Some examples for `name=pkg` and `version-literal=1.8`, with equivalent version specifiers in the same paragraph:
+Some examples for `name=pkg` and `version-literal=1.8`, with equivalent version specifiers in the same block:
 
 ```text
 pkg=1.8
@@ -141,9 +141,12 @@ pkg 1.8.* *
 pkg=1.8.*
 pkg=1.8.*=*
 pkg =1.8.* *
+pkg ==1.8.* *
 pkg[version=1.8.*]
 pkg[version="1.8.*"]
+```
 
+```text
 pkg 1.8
 pkg 1.8 *
 pkg==1.8
