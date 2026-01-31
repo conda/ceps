@@ -25,7 +25,7 @@ The motivation of this CEP is merely informative. It describes the details of an
 
 ## Nomenclature
 
-The `MatchSpec` query syntax is a mini-language designed to query package records from one or more conda channels. It is sometimes referred to as simply _spec_ or _conda spec_.
+The `MatchSpec` query syntax is a mini-language designed to query package records from a collection of records. It is sometimes referred to as simply _spec_ or _conda spec_.
 
 ## Specification
 
