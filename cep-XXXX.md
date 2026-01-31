@@ -183,6 +183,22 @@ The new syntax had to maintain backwards compatibility with the space- and `=`-s
 Advanced expressions like lookaround and backreferences are discouraged because they can incur peformance issues leading to DOS and other security problems.
 
 Mixing `*` with other version-specific operators is disallowed as per the recommendations discussed in <https://github.com/conda/ceps/pull/60>.
+## Appendices
+
+### Appendix A: Canonical representation
+
+The canonical string representation of a `MatchSpec` expression proposed by `conda` follows these rules:
+
+1. `name` is required and MUST be written as a positional expression. Empty names MUST be written as `*`.
+2. If `version` describes an exact equality expression, it MUST be written as a positional expression, prepended by `==`. If `version` denotes fuzzy equality (e.g. `1.11.*`), it MUST be written as a positional expression with the `.*` suffix left off and prepended by `=`. Otherwise `version` MUST be included inside the key-value brackets.
+3. If `version` is an exact equality expression, and `build` does not contain asterisks, `build` MUST be written as a positional expression, prepended by `=`. Otherwise, `build` MUST go inside the key-value brackets.
+4. If `channel` is defined and does not contain asterisks, a `::` separator is used between `channel`
+   and `name`. `channel` MAY be represented by its name or full, subdir-less URL.
+5. If both `channel` and `subdir` do not contain asterisks, `subdir` is appended to
+   `channel` with a `/` separator. Otherwise, `subdir` is included in the key-value brackets.
+6. Key-value pairs MUST be separated by commas, with no spaces between delimiters. Values MUST be quoted with single quotes.
+7. The `namespace` field MUST NOT be represented.
+8. Case-insensitive string fields MUST be lowercased.
 
 ### Appendix B: Search vs solver `MatchSpec`
 
