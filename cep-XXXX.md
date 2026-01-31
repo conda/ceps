@@ -93,6 +93,7 @@ The build string MUST always be `0`.
 > * Python's `os.confstr("CS_GNU_LIBC_VERSION")`
 > * `getconf GNU_LIBC_VERSION`
 > * `ldd --version`. Please verify that it references GNU `libc` or GLIBC. For non-standard installs, using a GLIBC compatibility layer, this may require locating the implementation and directly querying.
+> * Dynamically load the `gnu_get_libc_version` symbol from `libc.so.6`. 
 
 #### `__linux`
 
@@ -139,6 +140,8 @@ The build string MUST be `0`.
 > * CMD's `ver`
 > * Powershell's `[System.Environment]::OSVersion.Version`, `(Get-CimInstance Win32_OperatingSystem).version`
 > * The command `wmic os get version`
+> * The [`RtlGetVersion`](https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-rtlgetversion) Kernel Function
+> * The [`GetVersionExW`](https://learn.microsoft.com/en-us/windows/win32/api/sysinfoapi/nf-sysinfoapi-getversionexw) Win32 API
 >
 > Note that `{micro}` here refers to the what Microsoft calls the "build" version component, not to be mistaken with the `build` string of the virtual package.
 
