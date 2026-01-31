@@ -31,15 +31,6 @@ The `MatchSpec` query syntax is a mini-language designed to query package record
 
 `MatchSpec` strings provide a compact method to query collections of conda artifacts (e.g. in a conda channel, or in an installed environment) by matching `str` and `int` fields on package records (see [CEP PR #133's `./info/index.json`](https://github.com/conda/ceps/pull/133) and [CEP PR#135's "Package Record Metadata"](https://github.com/conda/ceps/pull/135)). Note that fields using other types, like `list[str]` (`depends`, `constrains`, etc.) cannot be matched by this syntax.
 
-### Search vs solver `MatchSpec`
-
-`MatchSpec` strings can be used under two different contexts:
-
-- Search queries: To obtain all the artifacts matching the query against a collection of packages. Results MAY include more than one entry per package name.
-- Solver requests: To obtain the subset of packages in an index that satisfy the request and their dependency metadata. Results MUST only include one entry per package name.
-
-In contrast with search queries, only some `MatchSpec` fields make sense for solver requests. Most common include: `name`, `version`, `build`, `channel`.
-
 ### Syntax
 
 The `MatchSpec` syntax can be thought of as a structured collection of _matching expressions_, each targeting a package record field. A matching expression is defined as a string that MUST follow these rules:
@@ -205,6 +196,15 @@ With `conda 4.4.0`, a new syntax was introduced to unify and consolidate all the
 The new syntax had to maintain backwards compatibility with the space- and `=`-separated forms too. This is the reason behind some surprising behaviors discussed in the specification above.
 
 Mixing `*` with other version-specific operators is disallowed as per the recommendations discussed in <https://github.com/conda/ceps/pull/60>.
+
+### Appendix B: Search vs solver `MatchSpec`
+
+`MatchSpec` strings can be used under two different contexts:
+
+- Search queries: To obtain all the artifacts matching the query against a collection of packages. Results may include more than one entry per package name.
+- Solver requests: To obtain the subset of packages in an index that satisfy the request and their dependency metadata. Results must only include one entry per package name.
+
+In contrast with search queries, only some `MatchSpec` fields make sense for solver requests. Most common include: `name`, `version`, `build`, `channel`.
 
 ## References
 
