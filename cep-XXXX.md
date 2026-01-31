@@ -43,7 +43,7 @@ The `MatchSpec` syntax can be thought of as a structured collection of _matching
 The full `MatchSpec` syntax takes this approximate form, with parentheses denoting optional fields:
 
 ```text
-(channel(/subdir):(namespace):)name(version(build))([key1='value 1',key2=value2])
+(channel(/subdir):(namespace):)name(version(build))([key1='value 1'(, )key2=value2])
 ```
 
 More precisely, the following rules apply:
@@ -62,24 +62,7 @@ More precisely, the following rules apply:
 - All keyword expressions are optional. If present, they MUST be enclosed in a single set of square brackets, after the positional expressions. The following rules apply:
   - Keyword expressions are written as key-value pairs. They MUST be built by joining the name of the target field (key) and the expression string (value) with a single `=` character.
   - The value MUST be quoted with single `'` or double `"` quotes if it contains spaces, commas, equal signs, or square brackets. Quoting rules follow [Python's string literals](https://docs.python.org/3/reference/lexical_analysis.html#strings).
-  - Keyword expression pairs MUST be separated by a single comma character `,`.
-  - Spaces between separators MAY be allowed and MUST be ignored.
-- When both positional and keyword expressions are used, the keyword expressions override the positional values, except for `name` (its positional value MUST always win).
-
-### Canonical representation
-
-The canonical string representation of a `MatchSpec` expression follows these rules:
-
-1. `name` is required and MUST be written as a positional expression. An empty name MUST be written as `*` if necessary.
-2. If `version` describes an exact equality expression, it MUST be written as a positional expression, prepended by `==`. If `version` denotes fuzzy equality (e.g. `1.11.*`), it MUST be written as a positional expression with the `.*` suffix left off and prepended by `=`. Otherwise `version` MUST be included inside the key-value brackets.
-3. If `version` is an exact equality expression, and `build` does not contain asterisks, `build` MUST be written as a positional expression, prepended by `=`. Otherwise, `build` MUST go inside the key-value brackets.
-4. If `channel` is defined and does not contain asterisks, a `::` separator is used between `channel`
-   and `name`. `channel` MAY be represented by its name or full, subdir-less URL.
-5. If both `channel` and `subdir` do not contain asterisks, `subdir` is appended to
-   `channel` with a `/` separator. Otherwise, `subdir` is included in the key-value brackets.
-6. Key-value pairs MUST NOT use spaces between separators. Values MUST be quoted with single quotes.
-7. The `namespace` MUST NOT be written.
-8. Case-insensitive string fields MUST be lowercased.
+  - Keyword expression pairs MUST be separated by a single comma character `,`. Spaces are also allowed as separators but SHOULD NOT be used.
 
 ### Matching conventions
 
