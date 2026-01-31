@@ -127,20 +127,20 @@ The `CONDA_OVERRIDE_UNIX` environment variable MUST NOT have any effect.
 
 #### `__win`
 
-This virtual package MUST be present when the target platform is `win-*`. The version MUST be set to the first three numeric components of the Windows build version, formatted as `{major}.{minor}.{build}`. If the version cannot be estimated (e.g. because the target platform does not match the native platform), the tool MUST set the version to a default value of its choice.
+This virtual package MUST be present when the target platform is `win-*`. The version MUST be set to the first three numeric components of the Windows build version, formatted as `{major}.{minor}.{micro}`. If the version cannot be estimated (e.g. because the target platform does not match the native platform), the tool MUST set the version to a default value of its choice.
 
 The version MUST be overridable with the `CONDA_OVERRIDE_WIN` environment variable if set to a non-empty value that can be parsed as a version string. The environment variable MUST be ignored when the target platform is not `win-*`.
 
 The build string MUST be `0`.
 
-> The version string `{major}.{minor}.{build}` can be obtained from:
+> The version string `{major}.{minor}.{micro}` can be obtained from:
 >
 > * Python's `platform.win32_ver()`
 > * CMD's `ver`
->
 > * Powershell's `[System.Environment]::OSVersion.Version`, `(Get-CimInstance Win32_OperatingSystem).version`
->
 > * The command `wmic os get version`
+>
+> Note that `{micro}` here refers to the what Microsoft calls the "build" version component, not to be mistaken with the `build` string of the virtual package.
 
 ## Potential future work
 
