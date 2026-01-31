@@ -28,7 +28,7 @@ Virtual packages are used to expose details of the system configuration to a con
 * The oldest macOS version compatible with the package via the `__osx` virtual package.
 * Whether a `noarch` package should be constrained to a single operating system via the `__linux`, `__osx` or `__win` virtual packages (often with no version constraint).
 * The minimum CPU microarchitecture level that the binaries require via the `__archspec` virtual package.
-* The latest CUDA version the GPU driver is compatible with via `__cuda`.
+* The latest CUDA version the GPU driver that is compatible with via `__cuda`.
 
 ## Specification
 
