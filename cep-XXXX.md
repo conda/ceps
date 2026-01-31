@@ -72,7 +72,7 @@ More precisely, the following rules apply:
 
 Matching expressions that target string fields MUST be interpreted using these case-insensitive rules:
 
-- If the expression begins with `^` and ends with `$`, it MUST be interpreted as a regular expression (regex). The expression matches if the regex search returns a hit; e.g. with Python: `re.search(expression, field) is not None`.
+- If the expression begins with `^` and ends with `$`, it MUST be interpreted as a regular expression (regex). The expression matches if the regex search returns a hit; e.g. with Python: `re.search(expression, field) is not None`. Advanced expressions like lookaround and backreferences SHOULD NOT be allowed. 
 - If the expression contains an asterisk (`*`), it is considered a glob expression and MUST be interpreted as if it was a regular expression. To convert a glob expression into a regex string:
    1. Escape characters considered special in regex expressions adequately (e.g. using Python's `re.escape`).
    2. Replace escaped asterisks (`\*`) by `.*`.
@@ -184,6 +184,8 @@ The initial `MatchSpec` form was a simpler `name [version [build]]` syntax (stil
 With `conda 4.4.0`, a new syntax was introduced to unify and consolidate all these different variations (see [release notes for 4.4.0](https://github.com/conda/conda/blob/main/CHANGELOG.md#new-feature-highlights-2), [`conda/conda#4158`](https://github.com/conda/conda/pull/4158), and [`conda/conda#5517`](https://github.com/conda/conda/pull/5517)), and also brought channel and subdir matching (fields before `::`) and arbitrary record field matching in between square brackets.
 
 The new syntax had to maintain backwards compatibility with the space- and `=`-separated forms too. This is the reason behind some surprising behaviors discussed in the specification above.
+
+Advanced expressions like lookaround and backreferences are discouraged because they can incur peformance issues leading to DOS and other security problems.
 
 Mixing `*` with other version-specific operators is disallowed as per the recommendations discussed in <https://github.com/conda/ceps/pull/60>.
 
