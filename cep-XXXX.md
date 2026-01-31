@@ -96,8 +96,12 @@ A version specifier MUST consist of one or more _version clauses_, separated by 
 - `,` (AND) has higher precedence than `|` (OR).
 - Parentheses `()` MAY be used to modify precedence.
 
+A _version clause_ consists of either:
 
-A _version clause_ consists of a single version literal (as defined in [CEP PR #132](https://github.com/conda/ceps/pull/132)) and optionally an operator.
+- A single version literal (as defined in [CEP PR #132](https://github.com/conda/ceps/pull/132)).
+- A single version literal plus an operator.
+- A single version literal plus one or more globs (`*`).
+- A single glob (`*`).
 
 > For example, given a string `python>=3,<4`, the version specifier is the full expression `>=3,<4`, which consists of two clauses (`>=3`, `<4`) separated by `,` (AND). Each clause contain a version literal (`3` and `4`, respectively.)
 
