@@ -107,10 +107,12 @@ A _version clause_ consists of either:
 
 Each version clause MUST be described by one of these types:
 
-- [String matching](#string-matching) rules, as defined in the section above. This applies to clauses expressed as exact version literals or version literals augmented with asterisks (`*`); e.g. `1.2.3`, `1.2.3.*`, and `1.*.3`.
-- Exact equality, expressed as a version literal prefixed by the double-equals string `==`, MUST be interpreted as a strict string equality test after removing the `==` prefix.
-- Fuzzy equality, expressed as a version literal prefixed by one `=` symbol. After removing the leading `=` character and appending a `.*` suffix, the string MUST be interpreted with [string matching](#string-matching) rules.
-- Exclusion, expressed as a version literal, or a version literal augmented with asterisks, prefixed by the string `!=`, MUST be interpreted as a negated [string matching](#string-matching) test.
+- [String matching](#string-matching) rules apply when:
+  - The value is a regex (surrounded by `^` and `$`).
+  - The value contains a non-trailing glob (`*`).
+- Exact equality, expressed as a version literal prefixed by the double-equals string `==`, MUST be interpreted as normalized version literal equality.
+- Fuzzy equality, expressed as either a version literal prefixed by one `=` symbol, or a version literal trailed by `.*` or `*`. After removing the leading `=` character and appending a `.*` suffix, comparison is only truthy when all the version segments before the glob match are equal.
+- Exclusion, expressed as a version literal or a version literal augmented with globs, prefixed by the string `!=`, MUST be interpreted as a negated fuzzy equality.
 - Ordered comparison, with the implied ordering described in [CEP PR #132](https://github.com/conda/ceps/pull/132):
   - Exclusive ordered comparison, expressed as a version literal prefixed by `<` or `>`, MUST be interpreted as "smaller than" and "greater than", respectively, as per their position in the version ordering scheme.
   - Inclusive ordered comparison, expressed as a version literal prefixed by one of these strings: `<=`, `>=`, MUST be interpreted as in "exclusive ordered comparison", respectively, but they will also match if their position is equivalent in the version ordering scheme.
