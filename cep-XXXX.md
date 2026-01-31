@@ -180,9 +180,19 @@ With `conda 4.4.0`, a new syntax was introduced to unify and consolidate all the
 
 The new syntax had to maintain backwards compatibility with the space- and `=`-separated forms too. This is the reason behind some surprising behaviors discussed in the specification above.
 
-Advanced expressions like lookaround and backreferences are discouraged because they can incur peformance issues leading to DOS and other security problems.
+Advanced expressions like lookaround and backreferences are discouraged because they can incur performance issues leading to DOS and other security problems.
 
 Mixing `*` with other version-specific operators is disallowed as per the recommendations discussed in <https://github.com/conda/ceps/pull/60>.
+
+Some legacy syntax that is still recognized by `conda` was intentionally left out of this CEP due to lack of usage in practice. Examples include:
+
+- `[optional]`: bare keyword (no value) that is used internally by the classic solver to track droppable requirements
+- `(optional=True)`: same as above, but with different syntax. `conda` allows parenthesized blocks after square brackets, with arbitrary contents.
+- `@feature`: a way to require the, now deprecated, features (e.g. `@mkl`)
+- `channel[subdir]::name`: a non ambiguous way to add subdir information to the positional channel field (instead of slash separation). Keyword argument is preferred for disambiguation. By dropping this syntax, we only assign one meaning to square brackets: key-value pairs.
+
+Future work may introduce a stricter syntax subset that further reduces the ambiguity in the specification (e.g. disallowing space-separated name-version-build triplets).
+
 ## Appendices
 
 ### Appendix A: Canonical representation
