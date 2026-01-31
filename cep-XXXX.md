@@ -63,6 +63,8 @@ More precisely, the following rules apply:
   - Keyword expressions are written as key-value pairs. They MUST be built by joining the name of the target record field (key) and the expression string (value) with a single `=` character.
   - The value MUST be quoted with single `'` or double `"` quotes if it contains spaces, commas, equal signs, or square brackets. Quoting rules follow [Python's string literals](https://docs.python.org/3/reference/lexical_analysis.html#strings).
   - Keyword expression pairs MUST be separated by a single comma character `,`. Spaces are also allowed as separators but SHOULD NOT be used.
+  - Spaces between comma separators MAY be allowed and MUST be ignored.
+- When both positional and keyword expressions are used, the keyword expressions override the positional values, except for `name`: its keyword expression MUST be ignored.
 
 ### Matching conventions
 
