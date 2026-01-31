@@ -73,7 +73,7 @@ More precisely, the following rules apply:
 Matching expressions that target string fields MUST be interpreted using these case-insensitive rules:
 
 - If the expression begins with `^` and ends with `$`, it MUST be interpreted as a regular expression (regex). The expression matches if the regex search returns a hit; e.g. with Python: `re.search(expression, field) is not None`. Advanced expressions like lookaround and backreferences SHOULD NOT be allowed. 
-- If the expression contains an asterisk (`*`), it is considered a glob expression and MUST be interpreted as if it was a regular expression. To convert a glob expression into a regex string:
+- If the expression contains one or more asterisks (`*`), it is considered a glob expression and MUST be interpreted as if it was a regular expression. To convert a glob expression into a regex string:
    1. Escape characters considered special in regex expressions adequately (e.g. using Python's `re.escape`).
    2. Replace escaped asterisks (`\*`) by `.*`.
    3. Wrap the resulting string with `^` and `$`.
