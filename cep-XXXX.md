@@ -51,8 +51,8 @@ More precisely, the following rules apply:
 - A `MatchSpec` string MAY exhibit two forms of expressions: positional and keyword based.
 - Six positional expressions are recognized. From left to right, they can be are arranged in two groups: (`channel`, `subdir` and `namespace`) and (`name`, `version`, `build`).
   - The first group is optional. If present, it MUST be separated from the second one by a single colon character `:`. Within this group, there are four items:
-    - `channel: str`. Optional
-    - `subdir: str`. Optional. It requires `channel` to be defined. Must be separated from `channel` by a single forward slash, `/`.
+    - `channel: str`. Optional.
+    - `subdir: str`. Optional. It requires `channel` to be defined. MUST be separated from `channel` by a single forward slash, `/`. It MUST use a known subdir identifier; otherwise it could be interpreted as the last component of a channel URL.
     - A colon `:` separator, required if `channel` or `namespace` are defined.
     - `namespace: str`. Optional. This expression field MUST be parsed and ignored.
   - The second group contains three expressions. They MUST be separated by either spaces or a single `=` character. Separator types MUST NOT be mixed. See the [version expression parsing notes](#version-expression-parsing) for additional details on the interaction between the `=` symbol as a separator and as an operator. Leading and trailing spaces MUST be ignored.
