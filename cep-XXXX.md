@@ -60,7 +60,7 @@ More precisely, the following rules apply:
     - `version: str | VersionSpec`. Optional.
     - `build: str`. Optional. It requires `version` to be present.
 - All keyword expressions are optional. If present, they MUST be enclosed in a single set of square brackets, after the positional expressions. The following rules apply:
-  - Keyword expressions are written as key-value pairs. They MUST be built by joining the name of the target field (key) and the expression string (value) with a single `=` character.
+  - Keyword expressions are written as key-value pairs. They MUST be built by joining the name of the target record field (key) and the expression string (value) with a single `=` character.
   - The value MUST be quoted with single `'` or double `"` quotes if it contains spaces, commas, equal signs, or square brackets. Quoting rules follow [Python's string literals](https://docs.python.org/3/reference/lexical_analysis.html#strings).
   - Keyword expression pairs MUST be separated by a single comma character `,`. Spaces are also allowed as separators but SHOULD NOT be used.
 
