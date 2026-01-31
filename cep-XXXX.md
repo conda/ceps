@@ -5,7 +5,7 @@
 <tr><td> Status </td><td> Draft </td></tr>
 <tr><td> Author(s) </td><td> Jaime Rodríguez-Guerra &lt;jaime.rogue@gmail.com&gt;</td></tr>
 <tr><td> Created </td><td> Dec 17, 2024</td></tr>
-<tr><td> Updated </td><td> Jan 28, 2026</td></tr>
+<tr><td> Updated </td><td> Jan 30, 2026</td></tr>
 <tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/103 </td></tr>
 <tr><td> Implementation </td><td> https://github.com/conda/conda/tree/24.11.1/conda/plugins/virtual_packages, https://github.com/mamba-org/mamba/blob/libmamba-2.0.5/libmamba/src/core/virtual_packages.cpp, https://github.com/conda/rattler/tree/rattler-v0.28.8/crates/rattler_virtual_packages/src </td></tr>
 <tr><td> Requires </td><td> https://github.com/conda/ceps/pull/132 </td></tr>
