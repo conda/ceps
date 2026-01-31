@@ -94,6 +94,8 @@ A version specifier MUST consist of one or more _version clauses_, separated by 
 - `|` denotes the logical OR.
 - `,` denotes the logical AND.
 - `,` (AND) has higher precedence than `|` (OR).
+- Parentheses `()` MAY be used to modify precedence.
+
 
 A _version clause_ consists of a single version literal (as defined in [CEP PR #132](https://github.com/conda/ceps/pull/132)) and optionally an operator.
 
