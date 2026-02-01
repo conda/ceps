@@ -10,7 +10,7 @@
 
 ## Abstract
 
-This CEP describes a change to the `PackageRecord` format and the corresponding `repodata.json` file to include `purls` (Package Urls) of repackaged packages to identify packages across multiple ecosystems.
+This CEP describes a change to the `PackageRecord` schema and the corresponding `repodata.json` files to include a new field, `purls`, to list the package URLs (PURLs) of the packaged projects in each conda artifact.
 
 ## Specification
 
