@@ -1,5 +1,5 @@
 <table>
-<tr><td> Title </td><td> Add package-urls to PackageRecord </td>
+<tr><td> Title </td><td> Add package URLs (PURLs) to PackageRecord </td>
 <tr><td> Status </td><td> Draft </td></tr>
 <tr><td> Author(s) </td><td> Bas Zalmstra &lt;bas@prefix.dev&gt;, Pavel Zwerschke &lt;pavelzw@gmail.com&gt; </td></tr>
 <tr><td> Created </td><td> Nov 23, 2023</td></tr>
