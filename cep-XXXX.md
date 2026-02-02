@@ -8,7 +8,7 @@
   Travis Hathaway &lt;travis.j.hathaway@gmail.com&gt;
 </td></tr>
 <tr><td> Created </td><td> Dec 23, 2025</td></tr>
-<tr><td> Updated </td><td> Dec 23, 2025</td></tr>
+<tr><td> Updated </td><td> Feb 2, 2026</td></tr>
 <tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/145 </td></tr>
 <tr><td> Implementation </td><td> TBD </td></tr>
 <tr><td> Requires </td><td>N/A</td></tr>
@@ -70,7 +70,6 @@ The `packages.whl` dictionary maps conda-like filenames to repodata records. The
   - All `Requires-Dist` entries from METADATA, converted from PEP 440 to conda format per [Dependency conversion](#dependency-conversion)
   - Package names normalized to conda-style names per [CEP 26][cep-26]
 - **`constrains`**: Contains `!=` version specifiers from PEP 440 (not included in `depends`).
-- **`fn`**: The wheel filename (e.g., `package-1.0.0-py3-none-any.whl`).
 - **`subdir`**: MUST be `"noarch"`.
 - **`noarch`**: MUST be `"python"`.
 - **`url`**: MAY be present. See [Wheel download URLs](#wheel-download-urls) for semantics.
@@ -129,7 +128,6 @@ When populating repodata records for pure Python wheels:
 
 - `build`: MUST be py`PY_MAJOR_VERSION`_`abi_tag`_`platform_tag`_`build_number` (e.g. `py3_none_any_0`), where `{abi_tag}` and `{platform_tag}` are extracted from the wheel filename, and the build number MUST be at the end of the build string per the repodata record schema pattern
 - `build_number`: MUST be 0 for the initial addition of a wheel version. MAY be incremented for subsequent rebuilds of the same wheel version (e.g., to correct dependencies or metadata)
-- `fn`: MUST be the wheel filename (e.g., package-1.0.0-py3-none-any.whl)
 - `subdir`: MUST be "noarch"
 - `noarch`: MUST be "python"
 - `url`: MAY be present and follow the semantics described above
@@ -290,7 +288,6 @@ Below represents the default behavior and shows when the `url` field is not set:
         "python >=3.9"
       ],
       "constrains": [],
-      "fn": "requests-2.32.5-py3-none-any.whl",
       "sha256": "78820a3e5d9d3b25ce8e1c99c1c89cd19caa904a92973a3e50f8426009e8a4b3",
       "size": 6899,
       "subdir": "noarch",
@@ -332,7 +329,6 @@ The `url` can also be relative as described above. Here's an example of what tha
         "python >=3.9"
       ],
       "constrains": [],
-      "fn": "requests-2.32.5-py3-none-any.whl",
       "sha256": "78820a3e5d9d3b25ce8e1c99c1c89cd19caa904a92973a3e50f8426009e8a4b3",
       "size": 6899,
       "subdir": "noarch",
@@ -369,7 +365,6 @@ The following shows an example of using an external location to download the whe
         "python >=3.9"
       ],
       "constrains": [],
-      "fn": "requests-2.32.5-py3-none-any.whl",
       "sha256": "78820a3e5d9d3b25ce8e1c99c1c89cd19caa904a92973a3e50f8426009e8a4b3",
       "size": 6899,
       "subdir": "noarch",
@@ -399,7 +394,6 @@ Here is an example of name mapping and normalization of the record name and depe
         "python >=3.8"
       ],
       "constrains": [],
-      "fn": "annotated_types-0.7.0-py3-none-any.whl",
       "sha256": "1f02e8b43a8fbbc3f3e0d4f0f4bfc8131bcb4eebe8849b8e5c773f3a1c582a53",
       "size": 13643,
       "subdir": "noarch",
