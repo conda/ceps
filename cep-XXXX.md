@@ -11,7 +11,7 @@
 <tr><td> Updated </td><td> Feb 2, 2026</td></tr>
 <tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/145 </td></tr>
 <tr><td> Implementation </td><td> TBD </td></tr>
-<tr><td> Requires </td><td>N/A</td></tr>
+<tr><td> Requires </td><td>https://github.com/conda/ceps/pull/151 https://github.com/conda/ceps/pull/146</td></tr>
 </table>
 
 > The keywords "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT",
@@ -104,23 +104,9 @@ Channel operators SHOULD document any naming conventions and mappings specific t
 
 ### Wheel download URLs
 
-This CEP introduces a new optional `url` field in package records to specify download locations for individual packages.
+This CEP depends on the `url` field for package records ([CEP XXXX](https://github.com/conda/ceps/pull/151)), which enables custom download locations. This is essential for wheel support since PyPI wheels are commonly hosted in per-package subdirectories or served from CDNs.
 
-> Note for this draft: The `url` field could also be added as a separate CEP to allow it for other record types.
-
-When present, the `url` field SHALL follow these semantics:
-
-- If `url` is an absolute URL, use it as is.
-- If `url` is a relative URL, append it to the `base_url`.
-
-When not present (`null`), the download location is constructed from `base_url` and `fn` (existing behavior).
-
-This approach allows packages to be served from:
-
-- A shared relative or absolute `base_url` with all wheels in the same directory, by populating the `base_url` field and leaving the `url` field empty.
-- A manual PyPI repository with wheels in directories by the package name by populating the absolute URL in the `url` field, or the `base_url` and a relative path in the `url` field.
-- External PyPI mirrors or CDNs using absolute URLs by populating the `url` field, for example to <https://files.pythonhosted.org/packages/.../package-1.0.0-py3-none-any.whl>
-- Mixed sources within the same repodata file
+Both the `packages.whl` field and the `url` field will be introduced following the backwards-compatible update strategy ([CEP XXXX](https://github.com/conda/ceps/pull/146)).
 
 ### Wheel-Specific Record Values
 
