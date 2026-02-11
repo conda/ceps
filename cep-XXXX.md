@@ -52,13 +52,13 @@ tar xvf project-1.2.3-0.tar.bz2
 
 ### `.conda`
 
-A `.conda` artifact MUST be a ZIP file whose filename follow [CEP 26](./cep-0026.md) with a `.conda` extension (i.e. `{name}-{version}-{build}.conda`). The ZIP SHOULD NOT be compressed. The ZIP archive MUST contain two compressed tarballs and a JSON document:
+A `.conda` artifact MUST be a ZIP file whose filename follow [CEP 26](./cep-0026.md) with a `.conda` extension (i.e. `{name}-{version}-{build}.conda`). It MUST NOT be compressed. The ZIP archive MUST contain two Zstandard-compressed tarballs and a JSON document, named as:
 
-- `info-{name}-{version}-{build}.tar.{extension}`
-- `pkg-{name}-{version}-{build}.tar.{extension}`
+- `info-{name}-{version}-{build}.tar.zstd`
+- `pkg-{name}-{version}-{build}.tar.zstd`
 - `metadata.json`
 
-The `info-*` and `pkg-*` tarballs MUST be compressed using any compression scheme, but SHOULD use ZSTD (with `extension = '.zst'`) for better results. Each tarball MUST be named with the above syntax, taking the `name`, `version` and `build` values from the `info/index.json` file as described in [CEP PR#133](https://github.com/conda/ceps/pull/133).
+Each tarball MUST be named with the above syntax, taking the `name`, `version` and `build` values from the `info/index.json` file as described in [CEP PR#133](https://github.com/conda/ceps/pull/133).
 
 The `info-*` tarball MUST contain the full `info/` folder as described in [CEP PR#133](https://github.com/conda/ceps/pull/133). The `pkg-*` tarball MUST carry everything else in the package directory. The root level of the tarballs MUST match the root level of the target location once installed (i.e. no intermediate subdirectories).
 
@@ -79,7 +79,7 @@ tar --use-compress-program=zstd cvf pkg-project-1.2.3-0.tar.zstd !info/
 mv pkg-project-1.2.3-0.tar.zstd ../workspace
 cd ../workspace
 touch '{"conda_pkg_format_version": 2}' > metadata.json
-zip project-1.2.3-0.conda .
+zip -0 project-1.2.3-0.conda .
 ```
 
 The resulting `project-1.2.3-0.conda` archive can be extracted with:
@@ -108,9 +108,9 @@ The outer format should be:
 - indexable, so that subsections of the file can be accessed and extracted quickly
 - uncompressed, because the inner containers handle the compression of any real data
 
-Zip files were chosen because they are the most ubiquitous format that matches all of these criteria. They should not be compressed because the inner tarballs will handle that more efficiently.
+Zip files were chosen because they are the most ubiquitous format that matches all of these criteria. They must not be compressed because the inner tarballs will handle that more efficiently, and to enable metadata-only retrieval more efficiently.
 
-The inner format should be a compressed tarball using efficient and performant compression schemes. The most fitting format for that description is ZSTD with `.tar.zstd`.
+The inner format should be a compressed tarball using efficient and performant compression schemes. The most fitting format for that description is Zstandard with `.tar.zstd`.
 
 ## References
 
