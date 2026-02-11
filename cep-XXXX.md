@@ -64,11 +64,11 @@ The `info-*` tarball MUST contain the full `info/` folder as described in [CEP P
 
 The `metadata.json` MUST be a JSON document that ships a dictionary following this schema:
 
-- `conda_pkg_format_version: int`. The version of the `.conda` format. Currently `2`.
+- `conda_pkg_format_version: int`. The version of the `.conda` file format. Currently `2`.
 
 ## Examples
 
-Given a package directory `project-1.2.3-0/`, GNU `tar` and `zstd` can be used like this:
+Given a package directory `project-1.2.3-0/`, GNU `tar` and `zstd` can be used to create a `project-1.2.3-0.conda` file like this:
 
 ```bash
 mkdir workspace/
@@ -95,18 +95,18 @@ tar --use-compress-program=zstd xvf pkg-project-1.2.3-0.tar.zstd
 `.conda` was introduced as a replacement for `.tar.bz2` for the following reasons:
 
 - Uncompressing `.tar.bz2` tarballs is very slow compared to other modern solutions, which tend to be between 4 and 10 times faster.
-- BZ2 is not at the cutting edge of compression in terms of ratio. By utilizing modern compression algorithms, artifacts can get as 60% smaller than the equivalent `.tar.bz2` file.
+- BZ2 is not at the cutting edge of compression in terms of ratio. By utilizing modern compression algorithms like Zstandard, artifacts can get as 60% smaller than the equivalent `.tar.bz2` file.
 - It relies on `unbzip2` being installed on the system. Sometimes it is not (e.g. Docker images).
 - Metadata reading from packages currently requires complete extraction of a `.tar.bz2` file. This prevents tools from indexing and performing other metadata tasks much more quickly if the `info/` folder was more accessible.
-- Package signing currently would require signing either all files in a package, or having a sidecar signature file shipped alongside `.tar.bz2` files.  It is desirable to ship a signature within a package, but to have that signature apply to an archive within the package.
+- Package signing currently would require signing either all files in a package, or having a sidecar signature file shipped alongside `.tar.bz2` files. It could be desirable to ship a signature within a package, but to have that signature apply to an archive within the package.
 
 The two layer strategy was inspired by the [Debian (`.deb`) package format](https://en.wikipedia.org/wiki/Deb_(file_format)).
 
-The outer format should be:
+The outer envelope format should be:
 
-- extractable, using standard tools that are present on every platform
-- indexable, so that subsections of the file can be accessed and extracted quickly
-- uncompressed, because the inner containers handle the compression of any real data
+- extractable, using standard tools that are present on every platform.
+- indexable, so that subsections of the file can be accessed and extracted quickly.
+- uncompressed, because the inner containers handle the compression of any real data.
 
 Zip files were chosen because they are the most ubiquitous format that matches all of these criteria. They must not be compressed because the inner tarballs will handle that more efficiently, and to enable metadata-only retrieval more efficiently.
 
