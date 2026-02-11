@@ -119,6 +119,10 @@ The inner format should be a compressed tarball using efficient and performant c
 - <https://www.anaconda.com/blog/understanding-and-improving-condas-performance>
 - [conda pkg format v2 design draft](https://docs.google.com/document/d/1HGKsbg_j69rKXPihhpCb1kNQSE8Iy3yOsUU2x68x8uw/edit?tab=t.0#heading=h.ucm6j9fiz6f9)
 
+## Acknowledgements
+
+The `.conda` file format was designed by Mike Sarahan, Ray Donnely, Jonathan J. Helmus, and Nehal J. Wani at Anaconda.
+
 ## Copyright
 
 All CEPs are explicitly [CC0 1.0 Universal](https://creativecommons.org/publicdomain/zero/1.0/).
