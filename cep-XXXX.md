@@ -5,7 +5,7 @@
 <tr><td> Status </td><td> Draft </td></tr>
 <tr><td> Author(s) </td><td> Jaime Rodríguez-Guerra &lt;jaime.rogue@gmail.com&gt;</td></tr>
 <tr><td> Created </td><td> Sep 27, 2025</td></tr>
-<tr><td> Updated </td><td> Sep 27, 2025</td></tr>
+<tr><td> Updated </td><td> Feb 11, 2026</td></tr>
 <tr><td> Discussion </td><td> https://github.com/conda/ceps/issues/42, https://github.com/conda/ceps/pull/134 </td></tr>
 <tr><td> Implementation </td><td> https://github.com/conda/conda-package-handling/blob/2.4.0/src/conda_package_handling/tarball.py, https://github.com/conda/conda-package-handling/blob/2.4.0/src/conda_package_handling/conda_fmt.py </td></tr>
 <tr><td> Requires </td><td> https://github.com/conda/ceps/pull/133 </td></tr>
