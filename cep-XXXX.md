@@ -42,11 +42,6 @@ passes `--extra-meta date=2025-03-11`, `about.json` will contain:
 }
 ```
 
-Additional provenance metadata can be collected for source origins, which can be useful for efforts
-like dependency mapping across ecosystems. See [PEP 725](https://peps.python.org/pep-0725/) for
-practical applications in the context of PyPI/conda interoperability. This type of provenance is
-out of scope for this CEP and may be discussed separately.
-
 ## Specification
 
 Build provenance metadata is optional. If necessary, the following metadata keys MAY be used to
@@ -77,7 +72,14 @@ provenance metadata:
 - Drone CI: `drone_${DRONE_BUILD_NUMBER}`.
 - Github Actions: `github_${GITHUB_RUN_ID}`.
 - Travis CI: `travis_${TRAVIS_JOB_ID}`.
-  
+
+## Rejected ideas
+
+Additional provenance metadata can be collected for source origins, which can be useful for efforts
+like dependency mapping across ecosystems. See [PEP 725](https://peps.python.org/pep-0725/) for
+practical applications in the context of PyPI/conda interoperability. This type of provenance is
+out of scope for this CEP and may be discussed separately.
+
 ## Acknowledgements
 
 These efforts were spearheaded by Connor Martin and Daniel Bast at Anaconda, and Isuru Fernando at
