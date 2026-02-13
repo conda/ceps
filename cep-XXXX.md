@@ -57,7 +57,7 @@ Before being compared, version literals MUST be parsed into a list of segments (
   - Subcomponents containing only numerals are converted to integers.
   - Strings are converted to lowercase, with special treatment for `dev` and `post`.
   - When a component starts with a letter, the fill value `0` is inserted before the letter.
-  - Non-significant zeros in a component are removed.
+  - Leading zeros in a component are removed.
 - The epoch and main version segments are concatenated.
 - The same is repeated for the local version part, and stored as a separate list of segments.
 
