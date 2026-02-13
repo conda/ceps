@@ -97,6 +97,10 @@ The resulting list of components MUST be compared as follows:
 - The `0` fill value is used in components starting with letters to keep numbers and strings in phase, resulting in `'1.1.a1' == '1.1.0a1'`.
 - Consecutive runs of digits are limited to prevent integer overflow issues upon parsing. The upper bound is the maximum value for 32 bit unsigned integers because [MSVC still defaults to that for `int`](https://learn.microsoft.com/en-us/cpp/cpp/fundamental-types-cpp?view=msvc-180#sizes-of-built-in-types).
 
+## Rejected ideas
+
+conda's version ordering is often compared to Python's PEP 440 and following adjustments, but they are not the same specification. We chose not to incorporate many good ideas in that specification so this CEP represents the current state of the ecosystem. In the future, we may revisit some of these rules to accommodate for special cases in prerelease ordering and their synonyms.
+
 ## Backwards compatibility
 
 This CEP _extends_ [CEP 26](./cep-0026.md) with more details about version literals.
@@ -195,6 +199,7 @@ typst-test           0.0.0.post106+2b4e689      h6e96688_0  conda-forge
 
 - [`conda 25.7.x` docs on Version Ordering](https://docs.conda.io/projects/conda/en/25.7.x/user-guide/concepts/pkg-specs.html#version-ordering).
 - [Comparison between `conda`, `rattler` and `mamba` parsers](https://github.com/baszalmstra/cep-version-tests)
+- [Draft CEP about disallowing `*` in version literals](https://github.com/conda/ceps/pull/60)
 
 ## Copyright
 
