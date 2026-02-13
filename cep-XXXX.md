@@ -131,6 +131,8 @@ The following files and directories MUST be handled by the conda client:
 - `./etc/conda/activate.d/`: Directory containing shell scripts. They SHOULD be executed on environment activation, in alphabetical order.
 - `./etc/conda/deactivate.d/`: Directory containing shell scripts. They SHOULD be executed on environment deactivation, in reverse alphabetical order.
 
+Alphabetical order, in this case, MUST be understood as the ascending lexicographical order provided by Unicode Code Point comparisons, just like Python would sort such a list.
+
 ### Pre- and post-link/unlink scripts
 
 conda clients SHOULD execute scripts located under `./bin/` (Unix) or `./Scripts/` (Windows) with the syntax `.{package-name}-{action}.{extension}`, where `{package-name}` corresponds to the package name, `{extension}` is either `sh` (Unix) or `bat` (Windows), and `{action}` being one of:
