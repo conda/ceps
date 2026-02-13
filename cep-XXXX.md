@@ -40,7 +40,6 @@ Some general considerations:
 * A virtual package name MUST start with double underscore (`__`).
 * The version or build string of a virtual package MAY be overridden by the value of `CONDA_OVERRIDE_{NAME}` environment variable, with `{NAME}` being the uppercased name of the virtual package (excluding the leading underscores). Many exceptions apply so please observe the details in the section below.
 * The build string MAY be zero (`0`). Some exceptions apply. See below.
-* When the tool used a fallback default value instead of a computed one, it SHOULD also inform the user of that choice and its possible override options (e.g. `CONDA_OVERRIDE_{NAME}` variables, CLI flags, configuration file, etc).
 
 ### List of virtual packages
 
@@ -109,7 +108,7 @@ The version MUST be overridable with the `CONDA_OVERRIDE_LINUX` environment vari
 
 #### `__osx`
 
-This virtual package MUST be present when the target platform is `osx-*`. Its version value MUST be set to the first two numeric components of macOS version formatted as `{major}.{minor}`. If applicable, the `SYSTEM_VERSION_COMPAT` environment variable workaround MUST NOT be enabled; e.g. the version reported for Big Sur should be 11.x and not 10.16.
+This virtual package MUST be present when the target platform is `osx-*`. Its version value MUST be set to the first two numeric components of macOS version formatted as `{major}.{minor}`. If applicable, the `SYSTEM_VERSION_COMPAT` environment variable workaround MUST NOT be enabled; e.g. the version reported for Big Sur must be 11.x and not 10.16.
 
 If the version cannot be estimated (e.g. because the native platform is not macOS), the fallback value MUST be set to `0`. The build string MUST be `0`.
 
@@ -154,6 +153,14 @@ The following items are not considered here. Though would be open for discussion
 * Additional OSes, like `__freebsd` or `__netbsd`.
 * Coarse grain architecture information, like `__x86_64` or `__arm64`, or, more generally, [`__arch`](https://github.com/conda/conda/issues/13420).
 * More `libc` implementations, like `__musl`.
+
+## Rejected ideas
+
+In cross-platform solves, virtual packages are often missed resulting in solver errors or unexpected solutions (see [conda#13508](https://github.com/conda/conda/issues/13508), [conda-libmamba-solver#368](https://github.com/conda/conda-libmamba-solver/issues/368), [conda-libmamba-solver#483](https://github.com/conda/conda-libmamba-solver/issues/483)).
+We chose not to add any UX requirements for tools, but we do suggest this aspect to be considered while designing a client. For example:
+
+- If the tool used a fallback default value instead of a computed one, it could also inform the user of that choice and its possible override options (e.g. `CONDA_OVERRIDE_{NAME}` variables, CLI flags, configuration file, etc).
+- If the user provided an override that was not used, a warning could be emitted for clarity.
 
 ## References
 
