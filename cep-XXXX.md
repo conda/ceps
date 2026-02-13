@@ -17,9 +17,11 @@ This CEP describes the lifecycle of conda environments and their structure.
 
 ## Specification
 
-A conda environment is defined as a directory that contains, at least, a `conda-meta/history` file.
+A conda environment is defined as a directory that contains, at least, a `./conda-meta/history` file.
 
-### Internal metadata: `conda-meta/`
+All relative paths in this specification MUST be understood as relative to the path of a given target environment, referred to as `$PREFIX`. So `./conda-meta/` is equivalent to `$PREFIX/conda-meta`. Directory paths end with a trailing slash `/`.
+
+### Internal metadata: `./conda-meta/`
 
 This directory stores metadata about the environment and installed packages. It MUST be considered protected and MUST NOT be populated directly by package contents.
 
@@ -121,7 +123,7 @@ Packages MAY include files in some special paths that conda clients SHOULD handl
 - `./(bin|Scripts)/.{package-name}-{action}.{extension}` scripts
 - `./condarc` configuration files
 
-#### `etc/conda/*.d` directories
+#### `etc/conda/*.d/` directories
 
 The following files and directories MUST be handled by the conda client:
 
