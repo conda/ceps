@@ -92,7 +92,7 @@ The build string MUST always be `0`.
 > * Python's `os.confstr("CS_GNU_LIBC_VERSION")`
 > * `getconf GNU_LIBC_VERSION`
 > * `ldd --version`. Please verify that it references GNU `libc` or GLIBC. For non-standard installs, using a GLIBC compatibility layer, this may require locating the implementation and directly querying.
-> * Dynamically load the `gnu_get_libc_version` symbol from `libc.so.6`. 
+> * Dynamically load the `gnu_get_libc_version` symbol from `libc.so.6`.
 
 #### `__linux`
 
