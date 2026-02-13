@@ -4,8 +4,8 @@
 <tr><td> Title </td><td> CEP XXXX - Build provenance metadata </td>
 <tr><td> Status </td><td> Draft </td></tr>
 <tr><td> Author(s) </td><td> Jaime Rodríguez-Guerra &lt;jaime.rogue@gmail.com&gt;</td></tr>
-<tr><td> Created </td><td> Mar 10, 2025</td></tr>
-<tr><td> Updated </td><td> Sep 27, 2025</td></tr>
+<tr><td> Created </td><td> Mar 10, 2025 </td></tr>
+<tr><td> Updated </td><td> Feb 13, 2026 </td></tr>
 <tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/113 </td></tr>
 <tr><td> Implementation </td><td> https://github.com/conda/conda-build/pull/4303, https://github.com/conda-forge/conda-smithy/pull/1577 </td></tr>
 </table>
@@ -52,11 +52,13 @@ out of scope for this CEP and may be discussed separately.
 Build provenance metadata is optional. If necessary, the following metadata keys MAY be used to
 record the corresponding information:
 
-- `sha`: String. Full commit hash of the recipe repository being built.
-- `remote_url`: String. CVS URL of the recipe repository being built. HTTP(S) preferred.
-- `flow_run_id`: String. CI-specific identifier for the workflow run.
+- `sha`: String. If the recipe is under version control, it SHOULD be the full commit hash. Otherwise, use an empty string as the value.
+- `remote_url`: String. If the recipe is under version control, it SHOULD be the CVS URL of the recipe repository being built. HTTP(S) preferred.
+- `flow_run_id`: String. It SHOULD be an unambiguous identifier for the pipeline run that produced the artifact. See examples for some recommendations.
 
-For example, `conda-forge/linux-64::python-3.13.2-hf636f53_101_cp313.conda` has the following
+## Examples
+
+`conda-forge/linux-64::python-3.13.2-hf636f53_101_cp313.conda` has the following
 provenance metadata:
 
 ```json
@@ -67,10 +69,15 @@ provenance metadata:
 }
 ```
 
-CI pipelines are strongly encouraged to add this metadata via `--extra-meta` (or equivalent). Local
-workflows may not have this information available, but they are still recommended to burn in the
-metadata with empty strings.
+`flow_run_id` tends to adopt the following syntax: `{ci-provider}_{run-id}`. Depending on the CI platform, this may be obtained through different means. For example:
 
+- AppVeyor on Windows: `appveyor_${APPVEYOR_BUILD_ID}`.
+- Azure DevOps Pipelines: `azure_$(Build.BuildNumber).$(System.JobAttempt)`. Note this is using Azure's pipelines macros instead of environment variables.
+- Circle CI: `circle_${CIRCLE_WORKFLOW_ID}`.
+- Drone CI: `drone_${DRONE_BUILD_NUMBER}`.
+- Github Actions: `github_${GITHUB_RUN_ID}`.
+- Travis CI: `travis_${TRAVIS_JOB_ID}`.
+  
 ## Acknowledgements
 
 These efforts were spearheaded by Connor Martin and Daniel Bast at Anaconda, and Isuru Fernando at
