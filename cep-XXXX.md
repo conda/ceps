@@ -8,7 +8,7 @@
   Bas Zalmstra &lt;bas@prefix.dev&gt;
 </td></tr>
 <tr><td> Created </td><td> Sep 26, 2025 </td></tr>
-<tr><td> Updated </td><td> Jan 29, 2026 </td></tr>
+<tr><td> Updated </td><td> Feb 13, 2026 </td></tr>
 <tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/132 </td></tr>
 <tr><td> Implementation </td><td> https://github.com/conda/conda/blob/6614653b1d9bdbffcef55e338d3220daed70c7f8/conda/models/version.py#L52, https://github.com/conda/rattler/blob/rattler-v0.37.4/crates/rattler_conda_types/src/version/mod.rs#L141 </td></tr>
 </table>
@@ -40,7 +40,7 @@ implementation.
 The present CEP _extends_ these rules with additional constraints:
 
 - Version literals MUST be composed of alphanumeric characters `[A-Za-z0-9]`, separated into segments by periods `.` and underscores `_`. Dashes `-` are historically allowed and interpreted as underscores, but SHOULD NOT be used because they break filename conventions.
-- Consecutive runs of digits MUST be limited to 19 digits each.
+- Consecutive runs of digits MUST NOT exceed a value of `2^31-1`.
 - Empty segments (i.e. two consecutive periods, or a period plus an underscore) SHOULD NOT be allowed. A single trailing underscore MAY be used exceptionally for comparisons against `openssl 1.x`-like version schemes (e.g. `1.0.1_ < 1.0.1a`).
 - A single epoch number (a positive integer followed by `!`) MAY prefix the rest of the string.
 - A single local version string MAY be added at the end, separated by a plus symbol `+`.
@@ -91,7 +91,7 @@ The resulting list of components MUST be compared as follows:
 - The `post` substring is handled differently to allow `post` releases to sort after any equivalent final release.
 - Missing components are treated like `0` to allow equivalences like `'1.1' == '1.1.0'`.
 - The `0` fill value is used in components starting with letters to keep numbers and strings in phase, resulting in `'1.1.a1' == '1.1.0a1'`.
-- Consecutive runs of digits are limited to 19 digits to prevent integer overflow issues upon parsing.
+- Consecutive runs of digits are limited to prevent integer overflow issues upon parsing. The upper bound is the maximum value for 32 bit unsigned integers because [MSVC still defaults to that for `int`](https://learn.microsoft.com/en-us/cpp/cpp/fundamental-types-cpp?view=msvc-180#sizes-of-built-in-types).
 
 ## Backwards compatibility
 
