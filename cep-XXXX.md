@@ -82,7 +82,7 @@ The resulting list of components MUST be compared as follows:
 - Strings are compared lexicographically, case-insensitive. The substring `dev` is always smaller.
 - Strings are considered smaller than integers, except for `post`, which is always greater.
 - When a component has no correspondent, the missing component is assumed to be `0`.
-- Local versions are only compared when the main versions are identical.
+- Local versions are only compared when the main versions are identical. A version without a local part is treated as having an implicit local version of 0.
 
 > Warning:
 > Pre-releases markers are sensitive to leading zeros and periods. While `"1.1.0" == "1.1.0.0" ==
@@ -121,34 +121,38 @@ This CEP only standardizes the current behavior exhibited across most implementa
 The ordering specification results in the following versions sorted in this way:
 
 ```sh
-   0.4
-== 0.4.0
-<  0.4.1.rc
-== 0.4.1.RC   # case-insensitive comparison
-<  0.4.1
-<  0.5a1
-<  0.5b3
-<  0.5C1      # case-insensitive comparison
-<  0.5
-<  0.9.6
-<  0.960923
-<  1.0
-<  1.1dev1    # special case ``dev``
-<  1.1a1
-<  1.1.0dev1  # special case ``dev``
-== 1.1.dev1   # 0 is inserted before string
-<  1.1.a1
-<  1.1.0rc1
-<  1.1.0
-== 1.1.0.0
-== 1.1
-<  1.1.0post1 # special case ``post``
-== 1.1.post1  # 0 is inserted before string
-<  1.1post1   # special case ``post``
-<  1996.07.12
-<  1!0.4.1    # epoch increased
-<  1!3.1.1.6
-<  2!0.4.1    # epoch increased again
+  0.4
+  == 0.4.0
+< 0.4.1.rc
+  == 0.4.1.RC    # case-insensitive comparison
+< 0.4.1+local    # 'local' < 0
+< 0.4.1+0.local  # '0.local' < 0
+< 0.4.1
+  == 0.4.1+0     # no local is the same as '+0'
+< 0.4.1+1.local  # '1.local' > 0
+< 0.5a1
+< 0.5b3
+< 0.5C1
+< 0.5
+< 0.9.6
+< 0.960923
+< 1.0
+< 1.1dev1  # special case 'dev'
+< 1.1a1
+< 1.1.0dev1
+  == 1.1.dev1  # 0 is inserted before string
+< 1.1.a1
+< 1.1.0rc1
+< 1.1.0.0
+  == 1.1.0
+  == 1.1
+< 1.1.post1  # special case 'post'
+  == 1.1.0post1
+< 1.1post1
+< 1996.07.12
+< 1!0.4.1  # epoch increased from implicit 0
+< 1!3.1.1.6
+< 2!0.4.1
 ```
 
 Local versions are not very common but there are some examples:
