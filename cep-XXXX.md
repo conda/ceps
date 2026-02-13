@@ -41,7 +41,8 @@ The present CEP _extends_ these rules with additional constraints:
 
 - Version literals MUST be composed of alphanumeric characters `[A-Za-z0-9]`, separated into segments by periods `.` and underscores `_`. Dashes `-` are historically allowed and interpreted as underscores, but SHOULD NOT be used because they break filename conventions.
 - Consecutive runs of digits MUST NOT exceed a value of `2^31-1`.
-- Empty segments (i.e. two consecutive periods, or a period plus an underscore) SHOULD NOT be allowed. A single trailing underscore MAY be used exceptionally for comparisons against `openssl 1.x`-like version schemes (e.g. `1.0.1_ < 1.0.1a`).
+- Empty segments (i.e. two consecutive periods, or a period plus an underscore) SHOULD NOT be allowed.
+- A single trailing underscore MAY be used exceptionally for comparisons against `openssl 1.x`-like version schemes (e.g. `1.0.1_ < 1.0.1a`).
 - A single epoch number (a positive integer followed by `!`) MAY prefix the rest of the string.
 - A single local version string MAY be added at the end, separated by a plus symbol `+`.
 
@@ -56,6 +57,7 @@ Before being compared, version literals MUST be parsed into a list of segments (
   - Each component is split again into consecutive runs of numerals and non-numerals.
   - Subcomponents containing only numerals are converted to integers.
   - Strings are converted to lowercase, with special treatment for `dev` and `post`.
+  - Trailing underscores are considered part of the preceding string, if any.
   - When a component starts with a letter, the fill value `0` is inserted before the letter.
   - Leading zeros in a component are removed.
 - The epoch and main version segments are concatenated.
@@ -68,6 +70,8 @@ For example:
 [[0], [1], [2, 'g'], [0, 'beta', 15], [0, 'rc']], []
 >>> parse("1!2.15.1_ALPHA")
 [[1], [2], [15], [1], [0, 'alpha']], []
+>>> parse("1!2.15.1alpha_")
+[[1], [2], [15], [1, 'alpha_']], []
 >>> parse("1!2.15.1_alpha+1.2.3h123")
 [[1], [2], [15], [1], [0, 'alpha']], [[1], [2], [3, 'h', 123]]
 ```
