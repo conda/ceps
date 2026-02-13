@@ -5,7 +5,7 @@
 <tr><td> Status </td><td> Draft </td></tr>
 <tr><td> Author(s) </td><td> Jaime Rodríguez-Guerra &lt;jaime.rogue@gmail.com&gt;</td></tr>
 <tr><td> Created </td><td> May 9, 2025</td></tr>
-<tr><td> Updated </td><td> Sep 27, 2025</td></tr>
+<tr><td> Updated </td><td> Feb 13, 2026</td></tr>
 <tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/124 </td></tr>
 <tr><td> Implementation </td><td> NA </td></tr>
 <tr><td> Requires </td><td>https://github.com/conda/ceps/pull/82, https://github.com/conda/ceps/pull/132, https://github.com/conda/ceps/pull/133 </td></tr>
@@ -63,7 +63,7 @@ It MUST be a JSON document that ships a dictionary conforming to this schema:
 - `constrains: list[str]`. Runtime constraints, as defined in [CEP PR#133](https://github.com/conda/ceps/pull/133).
 - `depends: list[str]`. Runtime requirements, as defined in [CEP PR#133](https://github.com/conda/ceps/pull/133).
 - `extracted_package_dir: str`: Absolute path to extracted contents of the artifact.
-- `files: list[str]`: list of installed paths that are owned by this artifact, relative to `$CONDA_PREFIX`, forward-slash normalized. It MUST include generated files (e.g. `*.pyc` bytecode files).
+- `files: list[str]`: list of installed paths that are owned by this artifact, relative to `$CONDA_PREFIX`, forward-slash normalized. It MUST include files that were not initially part of the package but were generated during the installation process (e.g. `*.pyc` bytecode files).
 - `fn: str`. Filename of compressed artifact, as defined in [CEP 26](./cep-0026.md).
 - `license: str`. SPDX license expression, as defined in [CEP PR#133](https://github.com/conda/ceps/pull/133).
 - `link: dict[str, Any]`: How the package was linked into the prefix. It MUST only allow two keys:
@@ -81,8 +81,8 @@ It MUST be a JSON document that ships a dictionary conforming to this schema:
     - `path_type": Literal['softlink', 'hardlink', 'directory', 'pyc_file', 'unix_python_entry_point', 'windows_python_entry_point_script', 'windows_python_entry_point_exe', 'linked_package_record']`: Optional, defaults to `hardlink`. How the file was written to `$CONDA_PREFIX`, which includes what type of generated file it is, if applicable.
     - `prefix_placeholder": str`: Optional. String that MUST be replaced with the target location at `$CONDA_PREFIX`.
     - `sha256": str`: Optional if the file is generated. 64-char hex string corresponding to the SHA256 checksum of the original file in cache.
-    - `sha256_in_prefix": str`: Optional if generated, 64-char hex string corresponding to the SHA256 checksum of the file as installed in the target prefix. This MAY be different than `sha256` due to prefix replacement.
-    - `size_in_bytes": int`: optional, if generated. Size of file, in bytes.
+    - `sha256_in_prefix": str`: Optional if generated. 64-char hex string corresponding to the SHA256 checksum of the file as installed in the target prefix. This MAY be different than `sha256` due to prefix replacement.
+    - `size_in_bytes": int`: Optional if generated. Size of file, in bytes.
   - `paths_version: int`: Version of this schema. Currently, `1`.
 - `platform: str | None`. Deprecated, as defined in [CEP PR#133](https://github.com/conda/ceps/pull/133).
 - `requested_spec: str`: Deprecated, use `requested_specs` instead. `MatchSpec` string (as defined in [CEP PR#82](https://github.com/conda/ceps/pull/82)) that led to choosing this package.
