@@ -15,8 +15,6 @@
 
 > The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in [RFC2119][RFC2119] when, and only when, they appear in all capitals, as shown here.
 
-[RFC2119]: [RFC2119]: https://datatracker.ietf.org/doc/html/rfc2119
-
 ## Abstract
 
 This CEP describes version literals as used in the conda ecosystem, and their ordering.
@@ -26,14 +24,6 @@ This CEP describes version literals as used in the conda ecosystem, and their or
 The motivation of this CEP is mostly informative, but will also try to clarify some ambiguous details that should be homogenized across existing implementations.
 
 ## Specification
-
-The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT",
-"RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as
-described in [RFC2119][RFC2119] when, and only when, they appear in all capitals, as shown here.
-
-More specifically, violations of a MUST or MUST NOT rule MUST result in an error. Violations of the
-rules specified by any of the other all-capital terms MAY result in a warning, at discretion of the
-implementation.
 
 ### Version literals
 
