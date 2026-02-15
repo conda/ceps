@@ -228,7 +228,7 @@ To uniquely identify a single package record, a `MatchSpec` expression can be co
 
 Note that an artifact URL may be parsed into a fully specified `MatchSpec`. Given:
 
-```
+```text
 https://conda.anaconda.org/conda-forge/linux-64/python-3.11.10-h123456_0.conda
 [----------channel--------------------|-subdir-|-name-|version|-build---]
 ```
