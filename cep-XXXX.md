@@ -5,11 +5,15 @@
 <tr><td> Status </td><td> Draft </td></tr>
 <tr><td> Author(s) </td><td> Jaime Rodríguez-Guerra &lt;jaime.rogue@gmail.com&gt;</td></tr>
 <tr><td> Created </td><td> Sep 30, 2025 </td></tr>
-<tr><td> Updated </td><td> Jan 29, 2026 </td></tr>
+<tr><td> Updated </td><td> Feb 15, 2026 </td></tr>
 <tr><td> Discussion </td><td> N/A </td></tr>
 <tr><td> Implementation </td><td> N/A </td></tr>
 <tr><td> Requires </td><td> https://github.com/conda/ceps/pull/133 </td></tr>
 </table>
+
+> The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in [RFC2119][RFC2119] when, and only when, they appear in all capitals, as shown here.
+
+[RFC2119]: https://datatracker.ietf.org/doc/html/rfc2119
 
 ## Abstract
 
@@ -31,7 +35,7 @@ As per [CEP 26](./cep-0026.md), a conda channel is defined as a location that MU
 
 Each `repodata.json` MUST represent a dictionary with the keys listed below. All of them are optional. Additional top-level keys MUST be allowed but they MUST be ignored if not recognized. An empty file MUST be considered equivalent to an empty dictionary.
 
-- `info: dict[str, dict]`. Metadata about the `repodata.json` itself. See [info metadata](#info-metadata).
+- `info: dict[str, dict]`. Metadata about the `repodata.json` file itself. See [info metadata](#info-metadata).
 - `packages: dict[str, dict]`. This entry maps `*.tar.bz2` filenames to their [package record metadata](#package-record-metadata).
 - `packages.conda: dict[str, dict]`. This entry maps `*.conda` filenames to [package record metadata](#package-record-metadata).
 - `removed: list[str]`. List of filenames that were once included in either `packages` or `packages.conda`, but are now removed. The corresponding artifacts SHOULD still be accessible via their direct URL.
@@ -52,7 +56,7 @@ Additional keys SHOULD NOT be present and SHOULD be ignored.
 
 #### Package record metadata
 
-Each entry in `packages` and `packages.conda`:
+Each entry in `packages` and `packages.conda`, MUST map the corresponding filename (see above) to a dictionary that:
 
 - MUST follow the `index.json` schema (see [CEP PR#133](https://github.com/conda/ceps/pull/133)).
 - SHOULD report the same values as the artifact's `info/index.json` metadata. Small modifications MAY be introduced to apply metadata fixes (e.g. correct the constraints of a requirement in the `depends` field) without needing to rebuild the artifact.
