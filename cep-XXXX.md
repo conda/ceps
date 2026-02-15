@@ -13,6 +13,10 @@
 <tr><td> Implementation </td><td> https://github.com/conda/conda/blob/6614653b1d9bdbffcef55e338d3220daed70c7f8/conda/models/version.py#L52, https://github.com/conda/rattler/blob/rattler-v0.37.4/crates/rattler_conda_types/src/version/mod.rs#L141 </td></tr>
 </table>
 
+> The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in [RFC2119][RFC2119] when, and only when, they appear in all capitals, as shown here.
+
+[RFC2119]: [RFC2119]: https://datatracker.ietf.org/doc/html/rfc2119
+
 ## Abstract
 
 This CEP describes version literals as used in the conda ecosystem, and their ordering.
