@@ -13,7 +13,7 @@
 
 > The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in [RFC2119][RFC2119] when, and only when, they appear in all capitals, as shown here.
 
-[RFC2119]: [RFC2119]: https://datatracker.ietf.org/doc/html/rfc2119
+[RFC2119]: https://datatracker.ietf.org/doc/html/rfc2119
 
 ## Abstract
 
