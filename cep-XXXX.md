@@ -5,11 +5,15 @@
 <tr><td> Status </td><td> Draft </td></tr>
 <tr><td> Author(s) </td><td> Jaime Rodríguez-Guerra &lt;jaime.rogue@gmail.com&gt;</td></tr>
 <tr><td> Created </td><td> Oct 26, 2025 </td></tr>
-<tr><td> Updated </td><td> Oct 26, 2025 </td></tr>
+<tr><td> Updated </td><td> Feb 15, 2026 </td></tr>
 <tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/138 </td></tr>
 <tr><td> Implementation </td><td> https://github.com/conda/conda-lock/blob/v3.0.4/conda_lock/lockfile/v1/models.py </td></tr>
 <tr><td> Requires </td><td> https://github.com/conda/ceps/pull/82 </td></tr>
 </table>
+
+> The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in [RFC2119][RFC2119] when, and only when, they appear in all capitals, as shown here.
+
+[RFC2119]: https://datatracker.ietf.org/doc/html/rfc2119
 
 ## Abstract
 
@@ -26,7 +30,7 @@ The `conda-lock.yml` file format describes a lockfile. As such, its main purpose
 
 ## Specification
 
-`conda-lock.yml` files are YAML documents with three top-level fields: `version`, `metadata` and `package`. The `metadata`  section contains provenance information, while `package` enumerates the lockfile information as a list of packages and their details.
+`conda-lock.yml` files are YAML documents with three top-level fields: `version`, `metadata` and `package`. The `metadata` section contains provenance information, while `package` enumerates the lockfile information as a list of packages and their details.
 
 A `conda-lock.yml` file name SHOULD contain the term `conda-lock` and MUST end in `.yml` or `.yaml`.
 
@@ -257,7 +261,7 @@ package:
 
 ## References
 
-- <https://github.com/conda/conda-lock/blob/v3.0.4/conda_lock/lockfile/v1/models.py>
+- <https://github.com/conda/conda-lock/blob/v4.0.0/conda_lock/lockfile/v1/models.py>
 - <https://github.com/mamba-org/mamba/blob/2.3.3/libmamba/src/core/env_lockfile.cpp>
 - <https://github.com/basnijholt/pixi-to-conda-lock/blob/v0.4.0/pixi_to_conda_lock.py>
 - <https://github.com/conda-incubator/conda-lockfiles/blob/0.1.1/conda_lockfiles/conda_lock/v1.py>
