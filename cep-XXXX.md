@@ -39,7 +39,7 @@ Some general considerations:
 
 * A virtual package name MUST start with double underscore (`__`).
 * The version or build string of a virtual package MAY be overridden by the value of `CONDA_OVERRIDE_{NAME}` environment variable, with `{NAME}` being the uppercased name of the virtual package (excluding the leading underscores). Many exceptions apply so please observe the details in the section below.
-* The build string MAY be zero (`0`). Some exceptions apply. See below.
+* The build string SHOULD be zero (`0`). Some exceptions apply. See below.
 
 ### List of virtual packages
 
