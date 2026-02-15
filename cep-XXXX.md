@@ -15,6 +15,10 @@
 <tr><td> Requires </td><td> https://github.com/conda/ceps/pull/132, https://github.com/conda/ceps/pull/133, https://github.com/conda/ceps/pull/135 </td></tr>
 </table>
 
+> The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT",
+  "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as
+  described in [RFC2119][RFC2119] when, and only when, they appear in all capitals, as shown here.
+
 ## Abstract
 
 This CEP standardizes the syntax for the `MatchSpec` query language.
@@ -246,3 +250,5 @@ https://conda.anaconda.org/conda-forge/linux-64/python-3.11.10-h123456_0.conda
 ## Copyright
 
 All CEPs are explicitly [CC0 1.0 Universal](https://creativecommons.org/publicdomain/zero/1.0/).
+
+[RFC2119]: https://datatracker.ietf.org/doc/html/rfc2119
