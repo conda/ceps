@@ -25,11 +25,11 @@ The motivation of this CEP is merely informative. It describes the schema of an 
 
 ## Specification
 
-> The terms conda channel, channel subdirectory, package name, and version are to be understood as specified by [CEP 26](./cep-0026.md). Package scripts like activation, deactivation, post-link, pre-link and pre-unlink are defined in [CEP PR#133](https://github.com/conda/ceps/pull/133). Other package metadata fields are also defined there.
+> The terms conda channel, channel subdirectory, package name, and version MUST be understood as specified by [CEP 26](./cep-0026.md). Package scripts like activation, deactivation, post-link, pre-link and pre-unlink are defined in [CEP PR#133](https://github.com/conda/ceps/pull/133). Other package metadata fields are also defined there.
 
 A conda channel MAY serve a `channeldata.json` path.
 
-If present, this JSON document MUST be served at the root of the conda channel. It aggregates some packaging metadata across all the channel subdirectories. It MUST follow this schema:
+If present, this JSON document MUST be served at the root of the conda channel (i.e., one directory above `noarch/repodata.json`). It aggregates some packaging metadata across all the channel subdirectories. It MUST follow this schema:
 
 - `channeldata_version: int`. Required. Version of the `channeldata` schema. Currently `1`.
 - `subdirs: list[str]`: Required. List of channel subdirectories available in the channel.
