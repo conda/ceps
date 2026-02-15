@@ -58,8 +58,9 @@ In alphabetical order, every conda client MUST support the following virtual pac
 This virtual package MUST be always present.
 
 The build string MUST reflect either:
-- A fitting CPU microarchitecture in the [`archspec/archspec-json` database](https://github.com/archspec/archspec-json/blob/v0.2.5/cpu/microarchitectures.json). In this case, the version number MUST be `1`.
-- The second component of the target platform string as is. In this case, the version number MUST be `0`
+
+* A fitting CPU microarchitecture in the [`archspec/archspec-json` database](https://github.com/archspec/archspec-json/blob/v0.2.5/cpu/microarchitectures.json). In this case, the version number MUST be `1`.
+* The second component of the target platform string as is. In this case, the version number MUST be `0`
 
 The build string MUST be overridable with the `CONDA_OVERRIDE_ARCHSPEC` environment variable, if set to a non-empty value that can be parsed as a build string. The version in this case MUST be `1`.
 
@@ -159,8 +160,8 @@ The following items are not considered here. Though would be open for discussion
 In cross-platform solves, virtual packages are often missed resulting in solver errors or unexpected solutions (see [conda#13508](https://github.com/conda/conda/issues/13508), [conda-libmamba-solver#368](https://github.com/conda/conda-libmamba-solver/issues/368), [conda-libmamba-solver#483](https://github.com/conda/conda-libmamba-solver/issues/483)).
 We chose not to add any UX requirements for tools, but we do suggest this aspect to be considered while designing a client. For example:
 
-- If the tool used a fallback default value instead of a computed one, it could also inform the user of that choice and its possible override options (e.g. `CONDA_OVERRIDE_{NAME}` variables, CLI flags, configuration file, etc).
-- If the user provided an override that was not used, a warning could be emitted for clarity.
+* If the tool used a fallback default value instead of a computed one, it could also inform the user of that choice and its possible override options (e.g. `CONDA_OVERRIDE_{NAME}` variables, CLI flags, configuration file, etc).
+* If the user provided an override that was not used, a warning could be emitted for clarity.
 
 ## References
 
