@@ -11,6 +11,10 @@
 <tr><td> Requires </td><td> https://github.com/conda/ceps/pull/133 </td></tr>
 </table>
 
+> The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in [RFC2119][RFC2119] when, and only when, they appear in all capitals, as shown here.
+
+[RFC2119]: https://datatracker.ietf.org/doc/html/rfc2119
+
 ## Abstract
 
 This CEP standardizes the archive file formats used for conda artifacts distribution: `.tar.bz2` and `.conda`.
@@ -52,7 +56,7 @@ tar xvf project-1.2.3-0.tar.bz2
 
 ### `.conda`
 
-A `.conda` artifact MUST be a ZIP file whose filename follow [CEP 26](./cep-0026.md) with a `.conda` extension (i.e. `{name}-{version}-{build}.conda`). It MUST NOT be compressed. The ZIP archive MUST contain two Zstandard-compressed tarballs and a JSON document, named as:
+A `.conda` artifact MUST be a ZIP file whose filename follows [CEP 26](./cep-0026.md) with a `.conda` extension (i.e. `{name}-{version}-{build}.conda`). It MUST NOT be compressed. The ZIP archive MUST contain two Zstandard-compressed tarballs and a JSON document, named as:
 
 - `info-{name}-{version}-{build}.tar.zstd`
 - `pkg-{name}-{version}-{build}.tar.zstd`
