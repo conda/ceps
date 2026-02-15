@@ -9,7 +9,7 @@
   Bas Zalmstra &lt;bas@prefix.dev&gt;
 </td></tr>
 <tr><td> Created </td><td> June 4, 2024 </td></tr>
-<tr><td> Updated </td><td> January 29, 2026 </td></tr>
+<tr><td> Updated </td><td> February 15, 2026 </td></tr>
 <tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/82 </td></tr>
 <tr><td> Implementation </td><td> https://github.com/conda/conda/blob/4.3.34/conda/resolve.py#L33, https://github.com/conda/conda/blob/25.7.0/conda/models/match_spec.py#L85, https://docs.rs/rattler_conda_types/latest/rattler_conda_types/struct.MatchSpec.html, https://github.com/mamba-org/mamba/blob/2.3.2/libmamba/src/specs/match_spec.cpp, https://github.com/openSUSE/libsolv/blob/0.7.35/src/conda.c#L567 </td></tr>
 <tr><td> Requires </td><td> https://github.com/conda/ceps/pull/132, https://github.com/conda/ceps/pull/133, https://github.com/conda/ceps/pull/135 </td></tr>
@@ -21,15 +21,15 @@ This CEP standardizes the syntax for the `MatchSpec` query language.
 
 ## Motivation
 
-The motivation of this CEP is merely informative. It describes the details of an existing DSL.
+The motivation of this CEP is merely informative. It describes the details of an existing query language.
 
 ## Nomenclature
 
-The `MatchSpec` query syntax is a mini-language designed to query package records from a collection of records. It is sometimes referred to as simply _spec_ or _conda spec_.
+The `MatchSpec` query syntax is a mini-language designed to select individual entries in a collection of package records. It is sometimes referred to as simply _spec_ or _conda spec_.
 
 ## Specification
 
-`MatchSpec` strings provide a compact method to query collections of conda artifacts (e.g. in a conda channel, or in an installed environment) by matching `str` and `int` fields on package records (see [CEP PR #133's `./info/index.json`](https://github.com/conda/ceps/pull/133) and [CEP PR#135's "Package Record Metadata"](https://github.com/conda/ceps/pull/135)). Note that fields using other types, like `list[str]` (`depends`, `constrains`, etc.) cannot be matched by this syntax.
+`MatchSpec` strings provide a compact method to query collections of conda artifacts (e.g. in a conda channel, or in an installed environment) by matching `str` and `int` fields on package records (see [CEP PR #133's `./info/index.json`](https://github.com/conda/ceps/pull/133) and [CEP PR#135's "Package Record Metadata"](https://github.com/conda/ceps/pull/135)). Note that fields using other types, like `list[str]` (`depends`, `constrains`, etc.), cannot be matched by this syntax.
 
 ### Syntax
 
@@ -49,7 +49,7 @@ The full `MatchSpec` syntax takes this approximate form, with parentheses denoti
 More precisely, the following rules apply:
 
 - A `MatchSpec` string MAY exhibit two forms of expressions: positional and keyword based.
-- Six positional expressions are recognized. From left to right, they can be are arranged in two groups: (`channel`, `subdir` and `namespace`) and (`name`, `version`, `build`).
+- Six positional expressions are recognized. From left to right, they can be are arranged in two groups: (`channel`, `subdir`, `namespace`) and (`name`, `version`, `build`).
   - The first group is optional. If present, it MUST be separated from the second one by a single colon character `:`. Within this group, there are four items:
     - `channel: str`. Optional.
     - `subdir: str`. Optional. It requires `channel` to be defined. MUST be separated from `channel` by a single forward slash, `/`. It MUST use a known subdir identifier; otherwise it could be interpreted as the last component of a channel URL.
