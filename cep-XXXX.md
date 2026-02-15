@@ -5,11 +5,15 @@
 <tr><td> Status </td><td> Draft </td></tr>
 <tr><td> Author(s) </td><td> Jaime Rodríguez-Guerra &lt;jaime.rogue@gmail.com&gt;</td></tr>
 <tr><td> Created </td><td> Sep 27, 2025</td></tr>
-<tr><td> Updated </td><td> Sep 27, 2025</td></tr>
+<tr><td> Updated </td><td> Feb 15, 2026</td></tr>
 <tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/133 </td></tr>
 <tr><td> Implementation </td><td> N/A </td></tr>
 <tr><td> Requires </td><td> https://github.com/conda/ceps/pull/82, https://github.com/conda/ceps/pull/113, https://github.com/conda/ceps/pull/124, https://github.com/conda/ceps/pull/132 </td></tr>
 </table>
+
+> The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in [RFC2119][RFC2119] when, and only when, they appear in all capitals, as shown here.
+
+[RFC2119]: <https://datatracker.ietf.org/doc/html/rfc2119>
 
 ## Abstract
 
@@ -21,6 +25,8 @@ The motivation of this CEP is mostly informative, but will also try to clarify s
 
 ## Specification
 
+> Relative paths in this CEP refer must be interpreted as relative to the root directory of the package.
+
 An extracted conda package is a directory that MUST at least include two files: `./info/index.json` and `./info/paths.json`. Other important metadata files SHOULD be included under `./info/`.
 
 Additionally, the package directory MAY contain any number of files in any subdirectories.
@@ -30,7 +36,7 @@ Some locations MAY receive special handling by conda clients.
 
 This special directory contains all the metadata necessary to provide a functional conda package.
 
-Build tools MUST NOT package arbitrary files in this directory.
+Build tools MUST NOT allow arbitrary files in this directory.
 
 #### `./info/index.json`
 
@@ -42,47 +48,47 @@ This file MUST conform to the following schema:
 
 - `schema_version: int`: A non-negative integer representing the version of the `index.json` format. This CEP specifies version 2. If absent, it MUST be understood as `1`; in other words, prior to this CEP and hence non-standardized.
 - `name: str`. Lowercased name of the package. It MUST comply with [CEP 26](./cep-0026.md).
-- `version: str`. Normalized package version. It MUST comply with [CEP XX (Version strings)](https://github.com/conda/ceps/pull/132).
-- `build: str`. A string that helps disambiguate different variant builds of the same package version. It MUST comply with [CEP 26](./cep-0026.md). It SHOULD contain the `build_number` field at the end of the string, preceded by an underscore `_`. It MAY contain the hexadecimal string of the SHA1-hash of the key-sorted dictionary provided in `./info/hash_input.json`, preceded by `h`, usually trimmed to the first seven characters.
+- `version: str`. Normalized package version. It MUST comply with [CEP PR#132](https://github.com/conda/ceps/pull/132).
+- `build: str`. A string that helps disambiguate different variant builds of the same package version. It MUST comply with [CEP 26](./cep-0026.md). It SHOULD contain the `build_number` field, usually at the end of the string, preceded by an underscore `_`. It MAY contain the hexadecimal string of the SHA1-hash of the key-sorted dictionary provided in `./info/hash_input.json`, preceded by `h`, usually trimmed to the first seven characters.
 - `build_number: int`. A non-negative integer representing the build number of the package.
-- `depends: list[str]`. Dependencies the package requires at runtime. Each string MUST be a valid `MatchSpec` positional string, as defined in [CEP XX (MatchSpec)](https://github.com/conda/ceps/pull/82).
-- `constrains: list[str]`. Dependencies the package is compatible with at runtime. These are not required, but if present, they must match the specifier. Each string MUST be a valid `MatchSpec` positional string, as defined in [CEP XX (MatchSpec)](https://github.com/conda/ceps/pull/82).
+- `depends: list[str]`. Dependencies the package requires at runtime. Each string MUST be a valid `MatchSpec` positional string, as defined in [CEP PR#82](https://github.com/conda/ceps/pull/82).
+- `constrains: list[str]`. Dependencies the package is compatible with at runtime. These dependencies are not required, but if present, they MUST match the specifier. Each string MUST be a valid `MatchSpec` positional string, as defined in [CEP PR#82](https://github.com/conda/ceps/pull/82).
 - `subdir: str`. The target platform for this package, or `noarch` if platform-agnostic. It MUST comply with [CEP 26](./cep-0026.md).
 - `noarch: Literal['generic', 'noarch']`. Optional. When `subdir` is `noarch`, this field indicates the type of `noarch` package. It MUST be one of: `generic`, `python`.
 - `timestamp: int`. Starting time of the package build. It MUST be expressed as [Unix time](https://en.wikipedia.org/wiki/Unix_time) in milliseconds.
-- `track_features: str`. Space-separated or comma-separated string of unique identifiers.
+- `track_features: str`. Space-separated or comma-separated string of unique identifiers. Each identifier SHOULD match the `[A-Za-z0-9\-_.]+` regex.
 - `python_site_packages_path: str`. Site-packages path, as introduced in [CEP 20](./cep-0020.md).
 
-Additional keys MAY be present. The following ones are well-known but deprecated:
+Additional keys MAY be present. The following ones are well-known but deprecated or non-standard:
 
 - `arch: str`. The architecture the package is built for, as returned by Python's `platform.machine()`, or empty in the case of `subdir == 'noarch'`.
 - `platform: str`. The OS the package is built for. This is the first component of `subdir`, or empty in the case of `noarch`.
 - `features: str`. Space-separated string of identifiers of properties unique to this build.
 - `app: dict[str, Any]`. Metadata for Anaconda Navigator.
-- `preferred_env: str`.
-- `provides_features: dict[str, str]`.
-- `requires_features: dict[str, str]`.
+- `preferred_env: str`. Unknown purpose.
+- `provides_features: dict[str, str]`. Unknown purpose.
+- `requires_features: dict[str, str]`. Unknown purpose.
 
 #### `./info/paths.json`
 
 Required.
 
-This file MUST list the contents of the package as a list of _path entries_, as described below. It MUST not list the contents of the `./info/` folder.
+This file MUST list the contents of the package as a list of _path entries_, as described below. It MUST NOT list the contents of the `./info/` folder.
 
 The `./info/paths.json` file MUST be JSON parsable into a dictionary that complies with the following schema:
 
-- `paths_version: int`. Required. The version schema of this file
-- `paths: list[dict[str, Any]]`. Required. A list of the _path entries_ representing the non-info files shipped by the package.
+- `paths_version: int`. Required. The schema version of this file.
+- `paths: list[dict[str, Any]]`. Required. A list of the _path entries_ representing the non-`info/` files shipped by the package.
 
 Each _path entry_ MUST be a dictionary that complies to the following schema:
 
-- `_path: str`. The path of the file, relative to the root of the package. It MUST use `/` as a path separator, even on Windows.
+- `_path: str`. Required. The path of the file, relative to the root of the package. It MUST use `/` as a path separator, even on Windows.
 - `path_type: Literal['hardlink', 'softlink', 'directory']`. Optional, defaults to `hardlink`. Type of path entry.
 - `file_mode: Literal['binary', 'text']`. Optional, defaults to `text`. How to handle the file for prefix replacement.
 - `prefix_placeholder: str`. Optional, defaults to an empty string. This is the placeholder string that MAY be replaced at install time with the target location. It MUST use `/` as a path separator, even on Windows.
 - `no_link: bool`. Optional, defaults to `false`. Whether to link the file from the cache or force a copy.
-- `sha256: str`. The hexadecimal string of SHA256 hash of the file contents. It MUST be a 64 character string containing only characters in the `[a-z0-9]` range. If the path is a softlink, the contents of the target file are hashed.
-- `size_in_bytes: int`. The size of the file, in bytes. If the path is a softlink, the size of the target file is reported.
+- `sha256: str`. Required. The hexadecimal string of SHA256 hash of the file contents. It MUST be a 64 character string containing only characters in the `[a-z0-9]` range. If the path is a softlink, the contents of the target file are hashed.
+- `size_in_bytes: int`. Required. The size of the file, in bytes. If the path is a softlink, the size of the target file is reported.
 
 `./info/paths.json` supersedes `./info/files`, `./info/has_prefix`, and `./info/no_link`. If both are present, `./info/paths.json` MUST take precedence.
 
@@ -124,9 +130,9 @@ These keys are commonly found, but are now considered deprecated:
 
 - `license_file: str | list[str]`: Paths to the license files, relative to the `recipe/` directory.
 - `license_family: str`. Use `license` instead.
-- `tags: list[str]`.
-- `identifiers: list[str]`.
-- `keywords: list[str]`.
+- `tags: list[str]`. Unknown purpose.
+- `identifiers: list[str]`. Unknown purpose.
+- `keywords: list[str]`. Unknown purpose.
 
 Additional keys MAY be allowed. Some examples include vendor information such as the conda-build and conda versions used at build time, along with the packages present in the conda `base` environment (`conda_build_version`, `conda_version`, `root_pkgs`, respectively).
 
@@ -180,7 +186,7 @@ If the package sources come from a `git` repository and the `git` executable is 
 
 Deprecated.
 
-Lists all files that are part of the package itself, 1 per line. All of these files need to get linked into the environment. Any files in the package that are not listed in this file are not linked when the package is installed. The directory delimiter for the files in info/files should always be "/", even on Windows. This matches the directory delimiter used in the tarball.
+Lists all files that are part of the package itself, one per line. All of these files need to get linked into the environment. Any files in the package that are not listed in this file are not linked when the package is installed. The directory delimiter for the files in `info/files` MUST always be `/`, even on Windows. This matches the directory delimiter used in the tarball.
 
 #### `./info/has_prefix`
 
@@ -198,7 +204,7 @@ Each line of this file should be either a path, in which case it is considered a
 
 Deprecated. Optional.
 
-Lists all files that cannot be linked into environments and are copied instead.
+Lists all files that cannot be linked into environments and MUST be copied instead.
 
 ### Recommendations for installed files
 
@@ -215,7 +221,7 @@ On Linux, some sysroot packages may also populate a top-level directory named as
 On Windows, the expected directory structure is a bit different due to how Python (and other interpreted languages) are organized in this operating system:
 
 - `./Library/`, uses the same directories as the Unix structure listed above. Most packages will populate this directory.
-- MSYS2 or MinGW-w64 packages usually present FHS-structured contents under `./Library/usr/` or `./Library/mingw-w64/`, respectively. Additional variants like `./Library/ucrt64/`, `./Library/clang64/`, `./Library/mingw64/`, `./Library/clangarm64/` may also be found.
+- MSYS2 or MinGW-w64 packages usually present FHS-structured contents under `./Library/usr/` or `./Library/mingw-w64/`, respectively. Additional variants like `./Library/ucrt64/`, `./Library/clang64/`, `./Library/mingw64/`, `./Library/clangarm64/` MAY also be found.
 - Python interpreters and Python-related packages stay in the root-level:
   - `./DLLs/`: Compiled Python extensions (`.pyd`)
   - `./include/`: Python development headers (`.h`).
@@ -229,7 +235,7 @@ On Windows, the expected directory structure is a bit different due to how Pytho
   - R installs to `./lib/R/` using a Unix-style directory structure, but also places some executables in `./Scripts/`.
   - Ruby installs directly to the root level, using a Unix-style directory structure.
 
-### `etc/conda/*.d` directories
+### `./etc/conda/*.d/` directories
 
 This special directory stores configuration files that can modify the behavior of the conda client at runtime. Packages are allowed to ship files under this directory.
 
@@ -241,7 +247,7 @@ The following files and directories MUST be handled by the conda client:
 
 ### Pre- and post-link/unlink scripts
 
-The `bin/` and `Scripts/` directories usually contain executables populated by the packages themselves. There are four special paths that MAY be handled by conda clients. For files named like `.{package-name}-{action}.{extension}`, where `{package-name}` corresponds to the package name and `{extension}` is either `sh` (Unix) or `bat` (Windows), there are four possible `{action}` values and associated behaviors:
+The `./bin/` and `./Scripts/` directories usually contain executables populated by the packages themselves. There are four special paths that MAY be handled by conda clients. For files named like `.{package-name}-{action}.{extension}`, where `{package-name}` corresponds to the package name and `{extension}` is either `sh` (Unix) or `bat` (Windows), there are four possible `{action}` values and associated behaviors:
 
 - `pre-link`: Executed before a package is installed / linked.
 - `post-link`: Executed after a package is installed / linked.
@@ -261,7 +267,7 @@ These are defined by the `menuinst` standards, introduced in [CEP 11](./cep-0011
 
 ### Additional restrictions
 
-The `conda-meta/` directory is reserved for conda environments and MUST NOT be populated by conda packages directly.
+The `./conda-meta/` directory is reserved for conda environments and MUST NOT be populated by conda packages directly.
 
 `./info/repodata_record.json` MAY be written at extraction time by conda client tools. It MUST NOT be present in the distributed artifacts.
 
