@@ -152,7 +152,7 @@ Channels that support attestations MUST always return `200 OK` with an empty arr
 
 The repodata index is changed to include a new `attestations` field that MUST contain the SHA256 hash of the signatures file.
 
-```
+```json
 {
   "name": "foobar",
   "version": "1.2.3",
