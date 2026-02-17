@@ -33,7 +33,7 @@ Without a standardized distribution mechanism, clients cannot reliably discover 
 
 3. **Works with existing infrastructure**: The sidecar file approach integrates naturally with static file hosting, CDNs, and mirrors.
 
-4. **Follows ecosystem conventions**: Similar approaches are used by PyPI ([Integrity API][PyPI Integrity]), npm ([provenance attestations][npm provenance]), and RubyGems.
+4. **Follows ecosystem conventions**: Similar approaches are used by PyPI ([Integrity API][PyPI Integrity]), npm ([provenance attestations][npm provenance]), and ([RubyGems][rubygems release-gem]).
 
 ## Specification
 
@@ -53,11 +53,11 @@ Attestations MUST be available at:
 
 #### Examples
 
-| Package URL | Attestation URL |
-|-------------|-----------------|
+| Package URL                                                                         | Attestation URL                                                                          |
+| ----------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
 | `https://conda.anaconda.org/conda-forge/linux-64/numpy-2.0.0-py312h1234567_0.conda` | `https://conda.anaconda.org/conda-forge/linux-64/numpy-2.0.0-py312h1234567_0.conda.sigs` |
-| `https://prefix.dev/my-channel/noarch/my-package-1.0.0-pyhd8ed1ab_0.conda` | `https://prefix.dev/my-channel/noarch/my-package-1.0.0-pyhd8ed1ab_0.conda.sigs` |
-| `https://example.com/channel/win-64/pkg-1.0-0.tar.bz2` | `https://example.com/channel/win-64/pkg-1.0-0.tar.bz2.sigs` |
+| `https://prefix.dev/my-channel/noarch/my-package-1.0.0-pyhd8ed1ab_0.conda`           | `https://prefix.dev/my-channel/noarch/my-package-1.0.0-pyhd8ed1ab_0.conda.sigs`           |
+| `https://example.com/channel/win-64/pkg-1.0-0.tar.bz2`                              | `https://example.com/channel/win-64/pkg-1.0-0.tar.bz2.sigs`                              |
 
 ### Response Format
 
@@ -77,7 +77,7 @@ The response MUST have `Content-Type: application/json`.
 ]
 ```
 
-Each element in the array MUST be a valid [Sigstore Bundle] as defined by the Sigstore specification. The bundle format supports multiple versions; implementations SHOULD support at least bundle versions v0.2 and v0.3.
+Each element in the array MUST be a valid [Sigstore Bundle] as defined by the Sigstore specification.
 
 #### Empty Response
 
@@ -142,17 +142,23 @@ The following is an abbreviated example of a `.sigs` response containing a singl
 
 ### HTTP Status Codes
 
-| Status Code | Meaning |
-|-------------|---------|
-| `200 OK` | Attestations returned successfully (may be empty array) |
-| `404 Not Found` | The package does not exist (distinct from "no attestations") |
+| Status Code     | Meaning                                                      |
+| --------------- | ------------------------------------------------------------ |
+| `200 OK`        | Attestations returned successfully (may be empty array)      |
 
-Channels MUST return `200 OK` with an empty array `[]` when a package exists but has no attestations. Channels MUST return `404 Not Found` only when the underlying package does not exist.
+Channels that support attestations MUST always return `200 OK` with an empty array `[]`, even when the package does not exist.
 
-This distinction allows clients to differentiate between:
+### Repodata changes
 
-- "This package has no attestations" (expected during transition period)
-- "This package does not exist" (client error or tampering)
+The repodata index is changed to include a new `attestations` field that MUST contain the SHA256 hash of the signatures file.
+
+```
+{
+  "name": "foobar",
+  "version": "1.2.3",
+  "attestations": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+}
+```
 
 ### Attestation Requirements
 
@@ -168,11 +174,11 @@ Each attestation in the response MUST comply with [CEP 27]. Specifically:
 
 A package MAY have multiple attestations from different sources. Common scenarios include:
 
-| Source | Purpose |
-|--------|---------|
+| Source                              | Purpose                                                |
+| ----------------------------------- | ------------------------------------------------------ |
 | Build system (e.g., GitHub Actions) | Proves the package was built from specific source code |
-| Channel operator | Proves the channel accepted and published the package |
-| Third-party auditor | Proves the package passed security review |
+| Channel operator                    | Proves the channel accepted and published the package  |
+| Third-party auditor                 | Proves the package passed security review              |
 
 When multiple attestations are present, they MUST all refer to the same artifact (same filename and SHA256 hash). Clients MAY choose which attestations to verify based on their trust policy.
 
@@ -192,13 +198,9 @@ TODO: specify further the desired behavior of mirrors.
 
 Clients implementing attestation verification SHOULD follow this workflow:
 
-1. **Download package** from the channel (or use the SHA256 sum from the repodata.json)
+1. **Download package** from the channel
 2. **Fetch attestations** from `<package_url>.sigs`
-3. **Verify each attestation** according to the client's trust policy:
-   - Verify the Sigstore bundle signature
-   - Verify the certificate chain to Fulcio root
-   - Verify the transparency log inclusion proof
-   - Verify the in-toto subject matches the downloaded package
+3. **Verify each attestation** against the configuration.
 4. **Accept or reject** the package based on verification results
 
 ### Configuration
@@ -220,48 +222,20 @@ attestations:
         - "https://github.com/foobar"
 ```
 
-| Setting | Values | Behavior |
-|---------|--------|----------|
-| `enabled` | `true`/`false` | Enable or disable attestation fetching and verification |
-| `require` | `error` | Fail if attestations are missing or invalid |
-| | `warn` | Log warning but continue if attestations are missing or invalid |
-| | `ignore` | Silently continue (still verify if attestations exist) |
-| `trusted_identities` | List of patterns | Only accept attestations from matching Sigstore identities |
+| Setting              | Values           | Behavior                                                        |
+| -------------------- | ---------------- | --------------------------------------------------------------- |
+| `enabled`            | `true`/`false`   | Enable or disable attestation fetching and verification         |
+| `require`            | `error`          | Fail if attestations are missing or invalid                     |
+|                      | `warn`           | Log warning but continue if attestations are missing or invalid |
+|                      | `ignore`         | Silently continue (still verify if attestations exist)          |
+| `trusted_identities` | List of patterns | Only accept attestations from matching Sigstore identities      |
 
 ### Offline and Air-gapped Environments
 
 For offline verification, clients MAY cache `.sigs` files alongside packages in local repositories
 The Sigstore bundle format is self-contained and supports offline verification once the Sigstore trust root is available locally.
 
-## Security Considerations
-
-### Trust Model
-
-The security of this scheme depends on:
-
-1. **Sigstore infrastructure**: Fulcio CA, Rekor transparency log, and their availability
-2. **Identity binding**: OIDC providers correctly authenticating signing identities
-3. **Client trust policy**: Correctly configured trusted identities
-4. **TLS security**: Secure transport when fetching attestations
-
-### Threat Mitigations
-
-| Threat | Mitigation |
-|--------|------------|
-| Forged attestations | Sigstore signatures are cryptographically verified against Fulcio certificates |
-| Tampered attestations | Rekor transparency log provides tamper evidence |
-| Replay attacks | In-toto subject binds attestation to specific artifact hash |
-| Removed attestations | Rekor log entries are permanent; monitors can detect removal |
-| Compromised signing identity | Transparency log enables detection; trust policy limits blast radius |
-
-### Limitations
-
-This scheme does NOT protect against:
-
-1. Legitimate signers publishing malicious packages
-2. Compromise of the Sigstore infrastructure itself
-3. Incorrect client trust policies
-4. Attacks before attestation was added to the package
+Note: clients MUST periodically update the sigstore trust root to guarantee security.
 
 ## Backwards Compatibility
 
@@ -293,3 +267,4 @@ All CEPs are explicitly [CC0 1.0 Universal](https://creativecommons.org/publicdo
 [PyPI Integrity]: https://docs.pypi.org/api/integrity/
 [npm provenance]: https://docs.npmjs.com/generating-provenance-statements
 [PEP 740]: https://peps.python.org/pep-0740/
+[rubygems]: https://github.com/rubygems/release-gem
