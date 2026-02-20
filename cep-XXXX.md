@@ -1,7 +1,7 @@
 # CEP XXXX - Distributable package artifacts file formats
 
 <table>
-<tr><td> Title </td><td> CEP XXXX - Distributable package artifacts file formats </td>
+<tr><td> Title </td><td> CEP XXXX - Distributable package artifacts file formats </td></tr>
 <tr><td> Status </td><td> Draft </td></tr>
 <tr><td> Author(s) </td><td> Jaime Rodríguez-Guerra &lt;jaime.rogue@gmail.com&gt;</td></tr>
 <tr><td> Created </td><td> Sep 27, 2025</td></tr>
@@ -21,14 +21,14 @@ This CEP standardizes the archive file formats used for conda artifacts distribu
 
 ## Motivation
 
-The motivation of this CEP is merely informative. It describes the details existing archive file formats.
+The motivation of this CEP is merely informative. It describes the details of existing archive file formats.
 
 ## Nomenclature
 
 - Archive: A compressed file which, once extracted, may result in one or more files and/or directories.
 - Artifact: The distributable file that is produced as a result of a build process. It happens to be an archive. When used as "conda artifact", it is meant to encompass both `.tar.bz2` and `.conda` archive file formats.
 - Tarball: A file that has been produced by running `tar` on a set of files. The resulting `.tar` file MAY be further compressed into another file format (e.g. `.gz` or `.bz2`), and may be still called compressed tarball or simply tarball.
-- Package: Roughly speaking, a distributable artifact that ships executable, libraries or resources needed to support the execution of programs. It may refer to the compressed archive, or its extracted form, without further distinction. The emphasis is on the distributed contents, not so much on the form.
+- Package: Roughly speaking, a distributable artifact that ships executables, libraries or resources needed to support the execution of programs. It may refer to the compressed archive, or its extracted form, without further distinction. The emphasis is on the distributed contents, not so much on the form.
 
 ## Specification
 
@@ -82,7 +82,7 @@ mv info-project-1.2.3-0.tar.zstd ../workspace
 tar --use-compress-program=zstd cvf pkg-project-1.2.3-0.tar.zstd !info/
 mv pkg-project-1.2.3-0.tar.zstd ../workspace
 cd ../workspace
-touch '{"conda_pkg_format_version": 2}' > metadata.json
+echo '{"conda_pkg_format_version": 2}' > metadata.json
 zip -0 project-1.2.3-0.conda .
 ```
 
@@ -125,7 +125,7 @@ The inner format should be a compressed tarball using efficient and performant c
 
 ## Acknowledgements
 
-The `.conda` file format was designed by Mike Sarahan, Ray Donnely, Jonathan J. Helmus, and Nehal J. Wani at Anaconda.
+The `.conda` file format was designed by Mike Sarahan, Ray Donnelly, Jonathan J. Helmus, and Nehal J. Wani at Anaconda.
 
 ## Copyright
 
