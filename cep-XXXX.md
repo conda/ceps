@@ -1,7 +1,7 @@
 # CEP XXXX - Version literals and their ordering
 
 <table>
-<tr><td> Title </td><td> Version literals and their ordering </td>
+<tr><td> Title </td><td> Version literals and their ordering </td></tr>
 <tr><td> Status </td><td> Draft </td></tr>
 <tr><td> Author(s) </td><td>
   Jaime Rodríguez-Guerra &lt;jaime.rogue@gmail.com&gt;,
@@ -47,7 +47,7 @@ Before being compared, version literals MUST be parsed into a list of segments (
 - They are first split into _epoch_, _main version_, and _local version_ at `!` and `+` respectively.
   - If there is no `!`, the epoch is set to `0`.
   - If there is no `+`, the local version is empty.
-- The main version part is then split into components at `.`, `_` and `-`.
+- The main version part is then split into components at `.`, `_`, and `-`.
   - Each component is split again into consecutive runs of numerals and non-numerals.
   - Subcomponents containing only numerals are converted to integers.
   - Strings are converted to lowercase, with special treatment for `dev` and `post`.
@@ -85,11 +85,11 @@ The resulting list of components MUST be compared as follows:
 
 ## Rationale
 
-- The `dev` substring is handled differently to allow `dev` pre-releases to sort before alphas, betas and release candidates.
+- The `dev` substring is handled differently to allow `dev` pre-releases to sort before alphas, betas, and release candidates.
 - The `post` substring is handled differently to allow `post` releases to sort after any equivalent final release.
 - Missing components are treated like `0` to allow equivalences like `'1.1' == '1.1.0'`.
 - The `0` fill value is used in components starting with letters to keep numbers and strings in phase, resulting in `'1.1.a1' == '1.1.0a1'`.
-- Consecutive runs of digits are limited to prevent integer overflow issues upon parsing. The upper bound is the maximum value for 32 bit unsigned integers because [MSVC still defaults to that for `int`](https://learn.microsoft.com/en-us/cpp/cpp/fundamental-types-cpp?view=msvc-180#sizes-of-built-in-types).
+- Consecutive runs of digits are limited to prevent integer overflow issues upon parsing. The upper bound is the maximum value for 32-bit unsigned integers because [MSVC still defaults to that for `int`](https://learn.microsoft.com/en-us/cpp/cpp/fundamental-types-cpp?view=msvc-180#sizes-of-built-in-types).
 
 ## Rejected ideas
 
@@ -196,8 +196,8 @@ typst-test           0.0.0.post106+2b4e689      h6e96688_0  conda-forge
 ## References
 
 - [`conda 25.7.x` docs on Version Ordering](https://docs.conda.io/projects/conda/en/25.7.x/user-guide/concepts/pkg-specs.html#version-ordering).
-- [Comparison between `conda`, `rattler` and `mamba` parsers](https://github.com/baszalmstra/cep-version-tests)
-- [Draft CEP about disallowing `*` in version literals](https://github.com/conda/ceps/pull/60)
+- [Comparison between `conda`, `rattler` and `mamba` parsers](https://github.com/baszalmstra/cep-version-tests).
+- [Draft CEP about disallowing `*` in version literals](https://github.com/conda/ceps/pull/60).
 
 ## Copyright
 
