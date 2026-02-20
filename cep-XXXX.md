@@ -50,11 +50,11 @@ The full `MatchSpec` syntax takes this approximate form, with parentheses denoti
 (channel(/subdir):(namespace):)name(version(build))([key1='value 1'(, )key2=value2])
 ```
 
-More precisely, the following rules apply:
+More precisely, the following rules MUST apply:
 
 - A `MatchSpec` string MAY exhibit two forms of expressions: positional and keyword based.
-- Six positional expressions are recognized. From left to right, they can be are arranged in two groups: (`channel`, `subdir`, `namespace`) and (`name`, `version`, `build`).
-  - The first group is optional. If present, it MUST be separated from the second one by a single colon character `:`. Within this group, there are four items:
+- Six positional expressions are recognized. From left to right, they can be arranged in two groups: (`channel`, `subdir`, `namespace`) and (`name`, `version`, `build`).
+  - The first group is optional. If present, it MUST be separated from the second group by a single colon character `:`. Within this group, there are four items:
     - `channel: str`. Optional.
     - `subdir: str`. Optional. It requires `channel` to be defined. MUST be separated from `channel` by a single forward slash, `/`. It MUST use a known subdir identifier; otherwise it could be interpreted as the last component of a channel URL.
     - A colon `:` separator, required if `channel` or `namespace` are defined.
@@ -107,7 +107,7 @@ A _version clause_ consists of either:
 - A single version literal plus one or more globs (`*`).
 - A single glob (`*`).
 
-> For example, given a string `python>=3,<4`, the version specifier is the full expression `>=3,<4`, which consists of two clauses (`>=3`, `<4`) separated by `,` (AND). Each clause contain a version literal (`3` and `4`, respectively.)
+> For example, given a string `python>=3,<4`, the version specifier is the full expression `>=3,<4`, which consists of two clauses (`>=3`, `<4`) separated by `,` (AND). Each clause contains a version literal (`3` and `4`, respectively).
 
 Each version clause MUST be described by one of these types:
 
@@ -119,8 +119,8 @@ Each version clause MUST be described by one of these types:
 - Exclusion, expressed as a version literal or a version literal augmented with globs, prefixed by the string `!=`, MUST be interpreted as a negated fuzzy equality.
 - Ordered comparison, with the implied ordering described in [CEP PR #132](https://github.com/conda/ceps/pull/132):
   - Exclusive ordered comparison, expressed as a version literal prefixed by `<` or `>`, MUST be interpreted as "smaller than" and "greater than", respectively, as per their position in the version ordering scheme.
-  - Inclusive ordered comparison, expressed as a version literal prefixed by one of these strings: `<=`, `>=`, MUST be interpreted as in "exclusive ordered comparison", respectively, but they will also match if their position is equivalent in the version ordering scheme.
-- Semver-like comparisons, expressed as a version literal prefixed by the `~=` string, MUST be interpreted as greater or equals than the version literal while also matching a fuzzy equality test for the version literal sans its last segment (e.g. `~=0.5.3` expands to `>=0.5.3,0.5.*`). This operator is considered deprecated, and its expanded alternative SHOULD be used instead.
+  - Inclusive ordered comparison, expressed as a version literal prefixed by one of these strings: `<=`, `>=`, MUST be interpreted as "exclusive ordered comparison", respectively, but they will also match if their position is equivalent in the version ordering scheme.
+- Semver-like comparisons, expressed as a version literal prefixed by the `~=` string, MUST be interpreted as greater than or equal to the version literal while also matching a fuzzy equality test for the version literal sans its last segment (e.g. `~=0.5.3` expands to `>=0.5.3,0.5.*`). This operator is considered deprecated, and its expanded alternative SHOULD be used instead.
 
 Version expressions SHOULD NOT contain spaces between operators, and MUST be removed and ignored if present.
 
