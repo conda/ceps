@@ -226,10 +226,10 @@ On Windows, the expected directory structure is a bit different due to how Pytho
 - Python interpreters and Python-related packages stay in the root-level:
   - `./DLLs/`: Compiled Python extensions (`.pyd`)
   - `./include/`: Python development headers (`.h`).
-  - `./Lib/`: Equivalent to `./lib/pythonX.Y/site-packages` on Unix.
+  - `./Lib/`: Equivalent to `./lib/pythonX.Y` on Unix.
   - `./libs/`: Python `.lib` files.
   - `./Scripts/`: Python entry points (`.exe` trampolines and the corresponding `-script.py` files).
-  - `./Tools/`: Miscellaneous Python scripts.
+  - `./Tools/`: Miscellaneous scripts shipped with the Python interpreter.
   - `./python*.(exe|dll|pdb)`: The Python interpreter executables and libraries.
 - Other interpreted languages might also populate the root-level directly, especially if they rely on `noarch: generic` packages. Some examples:
   - Node.js places its executables in the root level, and leaves everything else under `./node_modules/`.
