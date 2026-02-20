@@ -1,7 +1,7 @@
 # CEP XXXX - Channel-wide metadata files served by conda channels
 
 <table>
-<tr><td> Title </td><td> CEP XXXX - Channel-wide metadata files served by conda channels </td>
+<tr><td> Title </td><td> CEP XXXX - Channel-wide metadata files served by conda channels </td></tr>
 <tr><td> Status </td><td> Draft </td></tr>
 <tr><td> Author(s) </td><td> Jaime Rodríguez-Guerra &lt;jaime.rogue@gmail.com&gt;</td></tr>
 <tr><td> Created </td><td> Nov 5, 2025 </td></tr>
