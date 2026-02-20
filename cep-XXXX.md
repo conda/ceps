@@ -169,6 +169,23 @@ the ground up based on all the lessons learned in the last decade would be much 
 lowering the barrier to entry into the ecosystem, and helping existing contributors navigate packaging
 challenges more easily.
 
+### The many uses of exports
+
+What began as a simple idea (e.g. to inject a runtime dependency on a shared library from `host:`
+to `run:`) expressible with a single verb, _to export_ (and its nominalization into `run_exports:`)
+has turned into a key concept across many use-cases. As a consequence, exports have become ubiquitous.
+
+Not only that, but we need to describe fundamentally different processes about exports:
+
+- Attaching an export (e.g. to a package `foo`)
+- Applying an export (e.g. when building a package `bar` depending on `foo`)
+- Ignoring an export (e.g. if `bar` needs `foo` present, but doesn't want the export itself)
+- Inheriting an export (when talking about `package:`-global builds influencing their `outputs:`,
+  which may be `files:`-based and thus have no `build:`/`host:` environments of their own, yet
+  still need to reflect the runtime dependencies of their content)
+
+These actions are currently either implicit or dispersed incongruously across the recipe.
+
 ## Design
 
 We begin with the following observations based on the above:
@@ -186,6 +203,7 @@ We begin with the following observations based on the above:
   which have so far been under-served by the existing run-export infrastructure.
 - Run-exports are not applied when building `noarch` packages, except if the export is of type `noarch:`.
 - The v1 recipe format unified all requirement-related topics (including run-exports) under `requirements:`.
+- Exports and their associated actions should be consolidated as well.
 
 Based on this, we propose the following pattern:
 
@@ -199,28 +217,60 @@ requirements:
     - [...]
   # relying on the surrounding "requirements" key for context
   exports:
-    host_to_run:            # matches `weak:` run-export
-      - a_shared_library
-    build_to_host:          # "host-export"
-      - a_host_constraint =*=*foo
-    build_to_run:           # produces same effect as `strong:` run-export when used together with build_to_host
-      - a_compiler_runtime
-    host_to_constraints:    # matches `weak_constrains:` (v0) / `weak_constraints:` (v1)
-      - a_run_constraint
-    build_to_constraints:   # matches `strong_constrains:` (v0) / `strong_constraints:` (v1)
-      - a_run_constraint
-    # all the above _do not_ apply when building `noarch: generic` or `noarch: python` packages
-    noarch_to_run:          # matches `noarch:` run-export; _does_ apply when building noarch packages
-      - a_dependency_exported_when_consumer_is_noarch
-    # potential future additions, not proposed by this CEP, but included for completeness
-    build_to_build:
-      - a_compile_time_only_dependency
-    host_to_host:
-      - a_compile_time_only_dependency
+    # exports that the output itself will apply when *used* for building other packages
+    attach:
+      host_to_run:            # matches `weak:` run-export
+        - a_shared_library
+      build_to_host:          # "host-export"
+        - a_host_constraint =*=*foo
+      build_to_run:           # produces same effect as `strong:` run-export when used together with build_to_host
+        - a_compiler_runtime
+      host_to_constraints:    # matches `weak_constrains:` (v0) / `weak_constraints:` (v1)
+        - a_run_constraint
+      build_to_constraints:   # matches `strong_constrains:` (v0) / `strong_constraints:` (v1)
+        - a_run_constraint
+      # all the above _do not_ apply when building `noarch: generic` or `noarch: python` packages
+      noarch_to_run:          # matches `noarch:` run-export; _does_ apply when building noarch packages
+        - a_dependency_exported_when_consumer_is_noarch
+      # potential future additions (see CEP-XXXY), but included for completeness
+      build_to_build:
+        - a_compile_time_only_dependency
+      host_to_host:
+        - a_compile_time_only_dependency
+
+    # exports from dependencies in the current output that should be ignored when *building*
+    ignore:
+      to_any:           # default; `exports: ignore: foo` maps to `exports: ignore: to_any: foo`
+        from:
+          - zlib
+        by_name:
+          - libzlib
+      to_run:
+        [...]           # same inner schema
+      to_host:
+        [...]           # same inner schema
+      # potential future addition (see CEP-XXXY)
+      to_build:
+        [...]
+
+    # exports to be inherited from staging output while *building* the output;
+    # NOT PROPOSED here, but relevant for https://github.com/conda/ceps/pull/102
+    inherit:
+      to_any:           # default; `exports: inherit: foo` maps to `exports: inherit: to_any: foo`
+        from:
+          - name-of-staging-output
+      to_{run,host,build}:
+        [...]           # same inner schema
 ```
 
-As indicated by the comments, `host_to_run:` matches the existing weak run-export. If taken together with
-`build_to_run:` this produces the same effect of a strong run-export. Similarly for `host_to_constraints:`
+This unifies all export-related things under `requirements.exports`, as well as collecting the
+different actions `{attach,ignore}` (plus potentially `inherit` in the future) in one place. We'll look
+at the `ignore:` side further down; let us start with the heart of the matter: to `attach:` an export
+to the package being built.
+
+As indicated by the comments, `host_to_run:` matches the existing weak run-export attached to a package.
+If taken together with `build_to_run:`, this produces the same effect of a strong run-export.
+Similarly for `host_to_constraints:`
 and `build_to_constraints:`. The other keys introduce new functionality, which is explained below.
 
 This design has the advantage that it's
@@ -256,7 +306,7 @@ together with constraints (such as `_fortran_modules_abi`) attached to packages 
 
 While the `build:` to `host:` to `run:` order described above reduces procedural complexity, it still enlarges
 the space of possible scenarios. Specifically, there are now at least two distinct points where exports happen,
-once for `build_to_*:` and once for `host_to_run:`. This leads to new questions, of how chained exports interact.
+once for `build_to_*:` and once for `host_to_run:`. This leads to new questions how chained exports interact.
 
 For example, if we have
 
@@ -264,8 +314,9 @@ For example, if we have
 # output: a_complicated_package
 requirements:
   exports:
-    build_to_host:
-      - some_package_with_a_run_export
+    attach:
+      build_to_host:
+        - some_package_with_a_run_export
 ```
 
 and
@@ -274,8 +325,9 @@ and
 # output: some_package_with_a_run_export
 requirements:
   exports:
-    host_to_run:
-      - the_export_in_question
+    attach:
+      host_to_run:
+        - the_export_in_question
 ```
 
 and then consume it
@@ -295,7 +347,7 @@ requirements:
 
 the question arises how to handle export of a package _that's not explicitly named_ in the recipe.
 
-Obviously this is quite an impactful question, as it is certainly not desirable to trigger the exports of all
+Obviously this is quite an impactful question, as it is certainly not desirable to apply the exports of all
 packages that happen to transitively make it into a build or host environment.
 
 Taken in isolation, it would be understandable to conclude from the above that the rule "only packages named
@@ -326,8 +378,9 @@ To illustrate this better, let us look at some example recipes:
 requirements:
   # omitted: regular build/host/run environments
   exports:
-    host_to_run:
-      - ${{ pin_compatible("libA") }}
+    attach:
+      host_to_run:
+        - ${{ pin_compatible("libA") }}
 ```
 
 This matches the operations of `run_export:` so far. Before we consider the recipe of `libB`, let us consider
@@ -363,11 +416,12 @@ requirements:
     # regular host_to_run export from libA
     # - libA >={{ver_A}},<{{next_ver_A}}
   exports:
-    host_to_run:
-      - ${{ pin_compatible("libB") }}
-    # export that injects libA whenever libB is a named dependency in a host environment!
-    host_to_host:
-      - ${{ pin_compatible("libA") }}
+    attach:
+      host_to_run:
+        - ${{ pin_compatible("libB") }}
+      # export that injects libA whenever libB is a named dependency in a host environment!
+      host_to_host:
+        - ${{ pin_compatible("libA") }}
 ```
 
 The main additional complication this introduces (and why it is not being proposed in this CEP yet), is that
@@ -397,53 +451,74 @@ the consistent rule then becomes:
 ### Ignoring exports
 
 As a natural counterpart to increased variety of exports, we need to consider the facilities for overriding
-exports where necessary. For the most common use, it would be tempting to simply rename `ignore_run_exports`
+exports where necessary. For the most common use, we simply rename `ignore_run_exports`
 
 ```yaml
   requirements:
-    ignore_exports:  # changed from ignore_run_exports
-      from_package:  # NOT PROPOSED, see below
-        - zlib
-      by_name:
-        - libzlib
-```
-
-However, more complicated scenarios need to be expressible now (see below). Together with a desire to avoid
-dynamic schemas where not absolutely necessary (c.f. also the next section about convenience shorthands),
-this leads us to propose the following syntax for the general case:
-
-```yaml
-  requirements:
-    ignore_exports:     # changed from ignore_run_exports
-      to_any:           # additional key!
-        from_package:
+    exports:
+      ignore:           # changed from ignore_run_exports
+        from:           # changed from "from_package"
           - zlib
         by_name:
           - libzlib
 ```
 
+The reason to also change `from_package:` to `from:` is that this will make it structurally obvious how
+complementary ignored exports are with inherited ones (see https://github.com/conda/ceps/pull/102).
+More specifically, for a staging output `libxml2-split` that gets split into different components (e.g.
+`libxml2`, `libxml2-devel`, etc.), the following would be a no-op:
+
+
+```yaml
+requirements:
+  exports:
+    inherit:
+      from:
+        - libxml2-split
+    ignore:
+      from:
+        - libxml2-split
+```
+
+This illustrates the duality of the two operations, and should make it easy for recipe authors to
+dial in the desired behaviour by inheriting or ignoring exports more granularly.
+
+To enable the necessary flexibility, we propose the following syntax for the general case:
+
+```yaml
+  requirements:
+    exports:
+      ignore:
+        to_any:         # additional key!
+          from:
+            - zlib
+          by_name:
+            - libzlib
+```
+
 Unsurprisingly, the above instructs the build tool to ignore the application of any exports matching the
 conditions (whether by originating package or by name of the export), regardless of where it comes from.
 
-For more complicated cases, e.g. where the same package is exported into several environments, or where the
-same package is exporting _from_ different environments, it may be necessary to ignore exports more granularly.
-For this purpose, we allow qualifying the same ignore schema (i.e. `from_package:` / `by_name:`) by the target
+In more complicated cases, e.g. where the same dependency is exported into several environments, or where same
+dependency is being exported _from_ different environments, it may be necessary to ignore exports more granularly.
+For this purpose, we allow qualifying the same ignore schema (i.e. `from:` / `by_name:`) by the target
 environment (which is a more natural fit here than the originating environment of a given export).
 
 ```yaml
 requirements:
-  ignore_exports:
-    to_host:
-      from_package:
-        - zlib
-      by_name:
-        - libzlib
-    to_run:     # covers exports to both `run:` and `constraints:`
-      [...]     # same inner schema
-    to_build:   # potential future addition; only relevant once `build_to_build:` exports exist
-      [...]
-    to_any:     # trivially combineable with "general" ignore_exports
-      [...]
+  exports:
+    ignore:
+      to_host:
+        from:
+          - zlib
+        by_name:
+          - libzlib
+      to_run:       # covers exports to both `run:` and `constraints:`
+        [...]       # same inner schema as `to_host:`
+      to_build:     # potential future addition (CEP-XXXY)
+        [...]
+      to_any:       # trivially combineable with universally ignored exports
+        [...]
 ```
 
 ### No convenience shorthand
@@ -472,7 +547,17 @@ we do not believe it is worth allowing a similar shortcut for `exports.host_to_r
 ```yaml
 requirements:
   exports:
-    - libfoo  # NOT PROPOSED!
+    - libfoo    # NOT PROPOSED!
+```
+
+The above would be fundamentally at odds with unifying `attach:` & `ignore:` under `exports:`.
+Likewise, we don't propose:
+
+```yaml
+requirements:
+  exports:
+    attach:
+      - libfoo  # NOT PROPOSED!
 ```
 
 For one, it complicates the schema definition and handling unnecessarily, and saving a few characters is not worth
@@ -531,6 +616,9 @@ do not even appear in the regular metadata, only in `run_exports.json`.
 CEP 21 (building on top of [CEP 16](cep-0016.md)) added channel-level run-export information, though in contrast
 to CEP 12, added this to the physically sharded but logically unified repodata.
 
+Finally, only the exports under `exports.attach:` actually have any effect after building the package in question,
+so these are the only quantities worth reflecting in the channel metadata.
+
 ### Transition plan
 
 It's easy to map the new export structure to the respective metadata; the complexity lies in providing a smooth
@@ -543,7 +631,7 @@ simplified. We suggest to:
 - Output-level:
   - Add another `exports.json` next to `repodata_record.json`, to be preferred over `run_exports.json` by tools
     which know how to handle it.
-  - Populate `run_exports.json` with "compatible" metadata derived from `exports:` (see below).
+  - Populate `run_exports.json` with "compatible" metadata derived from `exports.attach:` (see below).
 - Channel-level:
   - Add a `exports.json` file to the monolithic channel metadata, to be preferred over `run_exports.json` by
     tools which know how to handle it.
@@ -588,10 +676,11 @@ TODO!
 
 ### Package and Channel Metadata
 
-On output-level, if there are any non-empty `exports:` specified, build tools MUST produce an `exports.json`
-in the root of the artefact (next to `index.json` etc.), and populate the values with the exports as specified
-in the rendered recipe for that output. If the output has no (or empty) `exports:`, creation of `exports.json`
-MAY be omitted. For the value of each key under `exports:`, before creating `exports.json` and in the following
+On output-level, if there are any non-empty `exports.attach:` sections specified, build tools MUST produce an
+`exports.json` in the root of the artefact (next to `index.json` etc.), and populate the values with the
+attached exports as specified
+in the rendered recipe for that output. If the output has no (or empty) `exports.attach:`, creation of `exports.json`
+MAY be omitted. For the value of each key under `exports.attach:`, before creating `exports.json` and in the following
 order, tools:
 
 - MUST error on illegal `PackageSelector`s (as defined in CEP 14),
@@ -614,7 +703,7 @@ If the file `exports.json` gets created, its content MUST be a valid JSON object
 
 We define the following translation between this schema and previous versions of the `run_exports:` schema:
 
-| `exports:` | `run_exports:` (v0) | `run_exports:` (v1) |
+| `exports.attach:` | `run_exports:` (v0) | `run_exports:` (v1) |
 |---|---|--|
 | `build_to_constraints:` | `strong_constrains:` | `strong_constraints:` |
 | `build_to_host:` | `strong:` | `strong:` |
@@ -623,7 +712,7 @@ We define the following translation between this schema and previous versions of
 | `host_to_run:` | `weak:` | `weak:` |
 | `noarch_to_run:` | `noarch:` | `noarch:` |
 
-Build tools MUST populate the output-level `run_exports.json` file with the payload of the `exports:` object
+Build tools MUST populate the output-level `run_exports.json` file with the payload of the `exports.attach:` object
 (for the respective output in the rendered recipe) as follows: they MUST translate keys to the v0 schema per
 the table above (while leaving the corresponding values unchanged).
 If both `build_to_host:` and `build_to_run:` have non-empty values for
@@ -673,7 +762,8 @@ have `exports.json` metadata, the values in `exports:` MUST be populated from th
 Indexers MUST (continue to) populate the channel-level `run_exports.json` from the output-level `run_exports.json`.
 
 For sharded repodata following CEP 16 & 21, indexers MUST add an `exports:` key and populate it with the respective
-output-level metadata. Where outputs do not yet provide `exports.json`, the values of `exports:` MUST be populated
+output-level `exports.attach` metadata. Where outputs do not yet provide `exports.json`, the values of
+`exports:` in the sharded repodata MUST be populated
 from the respective keys in `run_exports:` according to the above schema mapping. Furthermore, indexers MUST
 (continue to) populate the value of `run_exports:` with the aggregation of output-level `run_exports.json`.
 
