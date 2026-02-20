@@ -1,7 +1,7 @@
 # CEP XXXX - Package metadata files served by conda channels
 
 <table>
-<tr><td> Title </td><td> CEP XXXX - Package metadata files served by conda channels </td>
+<tr><td> Title </td><td> CEP XXXX - Package metadata files served by conda channels </td></tr>
 <tr><td> Status </td><td> Draft </td></tr>
 <tr><td> Author(s) </td><td> Jaime Rodríguez-Guerra &lt;jaime.rogue@gmail.com&gt;</td></tr>
 <tr><td> Created </td><td> Sep 30, 2025 </td></tr>
@@ -50,13 +50,13 @@ This dictionary stores information about the repodata file. It MUST follow this 
 - `base_url: str`. Optional. See [CEP 15](./cep-0015.md).
 - `platform: str`. Deprecated. Same meaning as in [CEP PR#133](https://github.com/conda/ceps/pull/133)'s `index.json` key.
 - `repodata_version: int`. Optional. Version of the `repodata.json` schema. In its absence, tools MUST assume its value is `1`. See [CEP 15](./cep-0015.md) for `repodata_version = 2`.
-- `subdir: str`. Recommended. The channel subdirectory this `repodata.json` belongs to. If its absence, its value MAY be inferred from the parent component of the `repodata.json` path.
+- `subdir: str`. Recommended. The channel subdirectory this `repodata.json` belongs to. In its absence, its value MAY be inferred from the parent component of the `repodata.json` path.
 
 Additional keys SHOULD NOT be present and SHOULD be ignored.
 
 #### Package record metadata
 
-Each entry in `packages` and `packages.conda`, MUST map the corresponding filename (see above) to a dictionary that:
+Each entry in `packages` and `packages.conda` MUST map the corresponding filename (see above) to a dictionary that:
 
 - MUST follow the `index.json` schema (see [CEP PR#133](https://github.com/conda/ceps/pull/133)).
 - SHOULD report the same values as the artifact's `info/index.json` metadata. Small modifications MAY be introduced to apply metadata fixes (e.g. correct the constraints of a requirement in the `depends` field) without needing to rebuild the artifact.
@@ -65,7 +65,7 @@ Each entry in `packages` and `packages.conda`, MUST map the corresponding filena
   - `sha256: str | None`. Hexadecimal string of the SHA256 checksum of the compressed artifact.
   - `size: int`. Size, in bytes, of the compressed artifact.
 - If the entry corresponds to a `.tar.bz2` package that was transmuted to `.conda`, it SHOULD include these keys:
-  - `legacy_bz2_md5: str`: Hexadecimal string of the SHA256 checksum of the original `.tar.bz2` artifact.
+  - `legacy_bz2_md5: str`: Hexadecimal string of the MD5 checksum of the original `.tar.bz2` artifact.
   - `legacy_bz2_size: int`: Size, in bytes, of the original `.tar.bz2` artifact.
 
 Additional keys SHOULD NOT be present and SHOULD be ignored.
