@@ -1,7 +1,7 @@
 # CEP XXXX - Build provenance metadata
 
 <table>
-<tr><td> Title </td><td> CEP XXXX - Build provenance metadata </td>
+<tr><td> Title </td><td> CEP XXXX - Build provenance metadata </td></tr>
 <tr><td> Status </td><td> Draft </td></tr>
 <tr><td> Author(s) </td><td> Jaime Rodríguez-Guerra &lt;jaime.rogue@gmail.com&gt;</td></tr>
 <tr><td> Created </td><td> Mar 10, 2025 </td></tr>
@@ -10,7 +10,9 @@
 <tr><td> Implementation </td><td> https://github.com/conda/conda-build/pull/4303, https://github.com/conda-forge/conda-smithy/pull/1577 </td></tr>
 </table>
 
-> The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in [RFC2119][RFC2119] when, and only when, they appear in all capitals, as shown here.
+> The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT",
+> "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as
+> described in [RFC2119][RFC2119] when, and only when, they appear in all capitals, as shown here.
 
 [RFC2119]: https://datatracker.ietf.org/doc/html/rfc2119
 
@@ -24,16 +26,16 @@ annotate build provenance of its published artifacts.
 Provenance metadata is useful to assess how and when a conda artifact was built.
 
 Since late 2023, thanks to conda-smithy 3.28.0 and later, conda-forge feedstocks have been adding
-CI provenance in the produced artifacts. `defaults` also applies the same conventions. This is used
-by apps like `conda-metadata-app` to show provenance information in the build details. See the
-table in this [Python 3.13
+CI provenance in the produced artifacts. The `defaults` channel also applies the same conventions.
+This is used by apps like `conda-metadata-app` to show provenance information in the build details.
+See the table in this [Python 3.13
 example](https://conda-metadata-app.streamlit.app/?q=conda-forge%2Flinux-64%2Fpython-3.13.2-hf636f53_101_cp313.conda).
 
 This was possible thanks to a new `--extra-meta` flag added in
 [conda-build#4303](https://github.com/conda/conda-build/pull/4303/files) and released in 3.21.8.
 Rattler-build also offers the same functionality using the same CLI flag. `--extra-meta` allows
 passing arbitrary key-value pairs that will be added to the `info/about.json`, under the `extra`
-key (as defined in [CEP PR#133](https://github.com/conda/ceps/pull/133)). For example, if a user
+key (as defined in [CEP PR #133](https://github.com/conda/ceps/pull/133)). For example, if a user
 passes `--extra-meta date=2025-03-11`, `about.json` will contain:
 
 ```js
@@ -51,14 +53,17 @@ passes `--extra-meta date=2025-03-11`, `about.json` will contain:
 Build provenance metadata is optional. If necessary, the following metadata keys MAY be used to
 record the corresponding information:
 
-- `sha`: String. If the recipe is under version control, it SHOULD be the full commit hash. Otherwise, use an empty string as the value.
-- `remote_url`: String. If the recipe is under version control, it SHOULD be the CVS URL of the recipe repository being built. HTTP(S) preferred.
-- `flow_run_id`: String. It SHOULD be an unambiguous identifier for the pipeline run that produced the artifact. See examples for some recommendations.
+* `sha`: String. If the recipe is under version control, it SHOULD be the full commit hash.
+  Otherwise, it SHOULD be an empty string.
+* `remote_url`: String. If the recipe is under version control, it SHOULD be the CVS URL of the
+  recipe repository being built. HTTP(S) is preferred.
+* `flow_run_id`: String. It SHOULD be an unambiguous identifier for the pipeline run that produced
+  the artifact. See examples for some recommendations.
 
 ## Examples
 
-`conda-forge/linux-64::python-3.13.2-hf636f53_101_cp313.conda` has the following
-provenance metadata:
+`conda-forge/linux-64::python-3.13.2-hf636f53_101_cp313.conda` has the following provenance
+metadata:
 
 ```json
 {
@@ -68,14 +73,16 @@ provenance metadata:
 }
 ```
 
-`flow_run_id` tends to adopt the following syntax: `{ci-provider}_{run-id}`. Depending on the CI platform, this may be obtained through different means. For example:
+`flow_run_id` tends to adopt the following syntax: `{ci-provider}_{run-id}`. Depending on the CI
+platform, this may be obtained through different means. For example:
 
-- AppVeyor on Windows: `appveyor_${APPVEYOR_BUILD_ID}`.
-- Azure DevOps Pipelines: `azure_$(Build.BuildNumber).$(System.JobAttempt)`. Note this is using Azure's pipelines macros instead of environment variables.
-- Circle CI: `circle_${CIRCLE_WORKFLOW_ID}`.
-- Drone CI: `drone_${DRONE_BUILD_NUMBER}`.
-- Github Actions: `github_${GITHUB_RUN_ID}`.
-- Travis CI: `travis_${TRAVIS_JOB_ID}`.
+* AppVeyor on Windows: `appveyor_${APPVEYOR_BUILD_ID}`.
+* Azure DevOps Pipelines: `azure_$(Build.BuildNumber).$(System.JobAttempt)`. Note this is using
+  Azure Pipelines' macros instead of environment variables.
+* Circle CI: `circle_${CIRCLE_WORKFLOW_ID}`.
+* Drone CI: `drone_${DRONE_BUILD_NUMBER}`.
+* GitHub Actions: `github_${GITHUB_RUN_ID}`.
+* Travis CI: `travis_${TRAVIS_JOB_ID}`.
 
 ## Rejected ideas
 
