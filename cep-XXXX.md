@@ -23,13 +23,13 @@ This CEP describes the lifecycle of conda environments and their structure.
 
 A conda environment is defined as a directory that contains, at least, a `./conda-meta/history` file.
 
-All relative paths in this specification MUST be understood as relative to the path of a given target environment, referred to as `$PREFIX`. So `./conda-meta/` is equivalent to `$PREFIX/conda-meta`. Directory paths end with a trailing slash `/`.
+All relative paths in this specification MUST be understood as relative to the path of a given target environment, referred to as `$CONDA_PREFIX`. So `./conda-meta/` is equivalent to `$CONDA_PREFIX/conda-meta`. Directory paths end with a trailing slash `/`.
 
 ### Internal metadata: `./conda-meta/`
 
 This directory stores metadata about the environment and installed packages. It MUST be considered protected and MUST NOT be populated directly by package contents.
 
-This following files MUST be recognized by conda clients:
+The following files MUST be recognized by conda clients:
 
 #### `./conda-meta/history`
 
@@ -78,14 +78,14 @@ It MUST be a JSON document that ships a dictionary conforming to this schema:
 - `noarch: Literal['generic', 'python']`: Optional. Noarch type, as defined in [CEP PR#133](https://github.com/conda/ceps/pull/133).
 - `package_tarball_full_path: str`: Absolute path to downloaded artifact (compressed).
 - `paths_data: dict[str, Any]`: Metadata about the artifact installed contents, which includes the artifact distributed files, and the generated files at install time. It MUST be a mapping with two keys:
-  - `paths: list[dict[str, Any]`: Information about installed files. Extends [CEP PR#133](https://github.com/conda/ceps/pull/133)'s `paths.json` with some extra details:
+  - `paths: list[dict[str, Any]]`: Information about installed files. Extends [CEP PR#133](https://github.com/conda/ceps/pull/133)'s `paths.json` with some extra details:
     - `_path: str`: Relative path of file within `$CONDA_PREFIX`, forward-slash normalized.
     - `file_mode: Literal['text', 'binary']`: Optional, defaults to `text`. How to perform prefix replacement.
     - `no_link: bool`: Optional, defaults to `false`. Whether to force copy or allow link.
     - `path_type: Literal['softlink', 'hardlink', 'directory', 'pyc_file', 'unix_python_entry_point', 'windows_python_entry_point_script', 'windows_python_entry_point_exe', 'linked_package_record']`: Optional, defaults to `hardlink`. How the file was written to `$CONDA_PREFIX`, which includes what type of generated file it is, if applicable.
     - `prefix_placeholder: str`: Optional. String that MUST be replaced with the target location at `$CONDA_PREFIX`.
     - `sha256: str`: Optional if the file is generated. 64-char hex string corresponding to the SHA256 checksum of the original file in cache.
-    - `sha256_in_prefix: str`: Optional if generated. 64-char hex string corresponding to the SHA256 checksum of the file as installed in the target prefix. This MAY be different than `sha256` due to prefix replacement.
+    - `sha256_in_prefix: str`: Optional if generated. 64-char hex string corresponding to the SHA256 checksum of the file as installed in the target prefix. This MAY be different from `sha256` due to prefix replacement.
     - `size_in_bytes: int`: Optional if generated. Size of file, in bytes.
   - `paths_version: int`: Version of this schema. Currently, `1`.
 - `platform: str | None`. Deprecated, as defined in [CEP PR#133](https://github.com/conda/ceps/pull/133).
@@ -139,7 +139,7 @@ Alphabetical order, in this case, MUST be understood as the ascending lexicograp
 
 ### Pre- and post-link/unlink scripts
 
-conda clients SHOULD execute scripts located under `./bin/` (Unix) or `./Scripts/` (Windows) with the syntax `.{package-name}-{action}.{extension}`, where `{package-name}` corresponds to the package name, `{extension}` is either `sh` (Unix) or `bat` (Windows), and `{action}` being one of:
+conda clients SHOULD execute scripts located under `./bin/` (Unix) or `./Scripts/` (Windows) with the syntax `.{package-name}-{action}.{extension}`, where `{package-name}` corresponds to the package name, `{extension}` is either `sh` (Unix) or `bat` (Windows), and `{action}` is one of:
 
 - `pre-link`: Executed before the corresponding package is installed / linked.
 - `post-link`: Executed after the corresponding package is installed / linked.
@@ -163,7 +163,7 @@ Execution SHOULD be performed in topological order. The conda client SHOULD expo
 
 ### Top-level `condarc` files
 
-Environments MAY includes files in these locations which affect the behavior of the conda client performing operations on this environment. The following locations are recognized as valid configuration sources.
+Environments MAY include files in these locations which affect the behavior of the conda client performing operations on this environment. The following locations are recognized as valid configuration sources.
 
 - `./.condarc`
 - `./condarc`
@@ -197,7 +197,7 @@ Once extracted, the packages MUST be installed in the target prefix `$CONDA_PREF
    - For non-`noarch: python` packages, place the contents of the artifact into `$CONDA_PREFIX`.
      - If the file contains a prefix placeholder, replace it with the value of `$CONDA_PREFIX` and copy the file.
      - Otherwise, place the file in `$CONDA_PREFIX`, as instructed by the `paths.json` metadata. Tools MAY offer settings to override this operation (e.g. prefer copies to hardlinks).
-   - `noarch: python` packages follow some extra rules. In particular, they no longer follow a 1:1 correspondence between the path in the artifact and the linked path in `$CONDA_PREFIX`. The target path depends on variables like the Python version, OS and Python ABI modes. Details are discussed in [CEP 17](./cep-0017.md) and [CEP 20](./cep-0020.md)
+   - `noarch: python` packages follow some extra rules. In particular, they no longer follow a 1:1 correspondence between the path in the artifact and the linked path in `$CONDA_PREFIX`. The target path depends on variables like the Python version, OS and Python ABI modes. Details are discussed in [CEP 17](./cep-0017.md) and [CEP 20](./cep-0020.md).
 3. Execute the relevant `post-link` scripts.
 4. Record the package metadata at `$CONDA_PREFIX/conda-meta/{name}-{version}-{build}.json`, as instructed above.
 
