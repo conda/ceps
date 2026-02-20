@@ -1,7 +1,7 @@
 # CEP XXXX - Contents of conda packages
 
 <table>
-<tr><td> Title </td><td> CEP XXXX - Contents of conda packages </td>
+<tr><td> Title </td><td> CEP XXXX - Contents of conda packages </td></tr>
 <tr><td> Status </td><td> Draft </td></tr>
 <tr><td> Author(s) </td><td> Jaime Rodríguez-Guerra &lt;jaime.rogue@gmail.com&gt;</td></tr>
 <tr><td> Created </td><td> Sep 27, 2025</td></tr>
@@ -25,7 +25,7 @@ The motivation of this CEP is mostly informative, but will also try to clarify s
 
 ## Specification
 
-> Relative paths in this CEP refer must be interpreted as relative to the root directory of the package.
+> Relative paths in this CEP MUST be interpreted as relative to the root directory of the package.
 
 An extracted conda package is a directory that MUST at least include two files: `./info/index.json` and `./info/paths.json`. Other important metadata files SHOULD be included under `./info/`.
 
@@ -46,7 +46,7 @@ This file contains essential metadata about the package, such as its name, versi
 
 This file MUST conform to the following schema:
 
-- `schema_version: int`: A non-negative integer representing the version of the `index.json` format. This CEP specifies version 2. If absent, it MUST be understood as `1`; in other words, prior to this CEP and hence non-standardized.
+- `schema_version: int`. A non-negative integer representing the version of the `index.json` format. This CEP specifies version 2. If absent, it MUST be understood as `1`; in other words, prior to this CEP and hence non-standardized.
 - `name: str`. Lowercased name of the package. It MUST comply with [CEP 26](./cep-0026.md).
 - `version: str`. Normalized package version. It MUST comply with [CEP PR#132](https://github.com/conda/ceps/pull/132).
 - `build: str`. A string that helps disambiguate different variant builds of the same package version. It MUST comply with [CEP 26](./cep-0026.md). It SHOULD contain the `build_number` field, usually at the end of the string, preceded by an underscore `_`. It MAY contain the hexadecimal string of the SHA1-hash of the key-sorted dictionary provided in `./info/hash_input.json`, preceded by `h`, usually trimmed to the first seven characters.
@@ -80,7 +80,7 @@ The `./info/paths.json` file MUST be JSON parsable into a dictionary that compli
 - `paths_version: int`. Required. The schema version of this file.
 - `paths: list[dict[str, Any]]`. Required. A list of the _path entries_ representing the non-`info/` files shipped by the package.
 
-Each _path entry_ MUST be a dictionary that complies to the following schema:
+Each _path entry_ MUST be a dictionary that complies with the following schema:
 
 - `_path: str`. Required. The path of the file, relative to the root of the package. It MUST use `/` as a path separator, even on Windows.
 - `path_type: Literal['hardlink', 'softlink', 'directory']`. Optional, defaults to `hardlink`. Type of path entry.
@@ -121,14 +121,14 @@ The contents of this file usually include the `about` section of the originating
 - `dev_url: str`. URL pointing to the development website (often a repository) of the package.
 - `doc_url: str`. URL pointing to the documentation website of the package.
 - `env_vars: dict[str, str]`. Allow-listed environment variables set during the package build.
-- `extra: dict[str, Any]`: A free-form dictionary of arbitrary metadata. This MAY be used to record provenance metadata as described in [CEP PR#113](https://github.com/conda/ceps/pull/113).
+- `extra: dict[str, Any]`. A free-form dictionary of arbitrary metadata. This MAY be used to record provenance metadata as described in [CEP PR#113](https://github.com/conda/ceps/pull/113).
 - `home: str`. URL pointing to the homepage of the package.
 - `license: str`. SPDX license identifier for the package.
-- `summary: str`: A short summary of the package (usually one sentence).
+- `summary: str`. A short summary of the package (usually one sentence).
 
 These keys are commonly found, but are now considered deprecated:
 
-- `license_file: str | list[str]`: Paths to the license files, relative to the `recipe/` directory.
+- `license_file: str | list[str]`. Paths to the license files, relative to the `recipe/` directory.
 - `license_family: str`. Use `license` instead.
 - `tags: list[str]`. Unknown purpose.
 - `identifiers: list[str]`. Unknown purpose.
@@ -146,6 +146,7 @@ A dictionary containing important metadata for installation (linking) operations
 - `noarch: dict[str, Any]`. A dictionary describing the `noarch` configuration of the package. Its keys MUST conform to:
   - `type: Literal["generic", "python"]`. Type of `noarch` package.
   - `entry_points: list[str]`. If `type == "python"`, this key MUST list the console entry points of the Python package, as a list of strings with syntax `{executable-name}={dotted-import-path}:{function-name}` (for example `bsdiff4 = bsdiff4.cli:main_bsdiff4`).
+
 These keys are commonly found, but are now considered deprecated:
 
 - `preferred_env: dict[str, str]`. It MUST have two keys: `name: str` (name of the preferred environment) and `executable_paths: list[str]` (list of preferred executable paths in that environment).
@@ -230,7 +231,7 @@ On Windows, the expected directory structure is a bit different due to how Pytho
   - `./Scripts/`: Python entry points (`.exe` trampolines and the corresponding `-script.py` files).
   - `./Tools/`: Miscellaneous Python scripts.
   - `./python*.(exe|dll|pdb)`: The Python interpreter executables and libraries.
-- Other interpreted languages might also populate the root-level directly, specially if they rely on `noarch: generic` packages. Some examples:
+- Other interpreted languages might also populate the root-level directly, especially if they rely on `noarch: generic` packages. Some examples:
   - Node.js places its executables in the root level, and leaves everything else under `./node_modules/`.
   - R installs to `./lib/R/` using a Unix-style directory structure, but also places some executables in `./Scripts/`.
   - Ruby installs directly to the root level, using a Unix-style directory structure.
