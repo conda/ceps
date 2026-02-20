@@ -209,32 +209,40 @@ Lists all files that cannot be linked into environments and MUST be copied inste
 
 ### Recommendations for installed files
 
-On Unix filesystems, packages generally follow subset of the `/usr` tree in the [Filesystem Hierarchy Standard (FHS)](https://en.wikipedia.org/wiki/Filesystem_Hierarchy_Standard):
+#### Unix
+
+On Unix filesystems, packages should generally follow a subset of the `/usr` tree in the [Filesystem Hierarchy Standard (FHS)](https://en.wikipedia.org/wiki/Filesystem_Hierarchy_Standard):
 
 - `./bin/`: executables and scripts.
 - `./etc/`: configuration files.
 - `./include/`: header files.
-- `./lib/`: dynamic and static libraries, build system configuration files (`pkg-config`, `CMake`), modules for interpreted languages (Python, Perl, etc), program-specific executables.
+- `./lib/`: dynamic and static libraries, build system configuration files (`pkg-config`, `CMake`), modules for interpreted languages (Python, Perl, etc), and program-specific executables.
 - `./share/`: miscellaneous data contents.
 
-On Linux, some sysroot packages may also populate a top-level directory named as a [target triplet](https://www.gnu.org/software/autoconf/manual/autoconf-2.65/html_node/Specifying-Target-Triplets.html) with a single subdirectory `sysroot/` populated with a FHS-like tree.
+Other subdirectories like `./doc/`, `./man/`, `./var/`, or `./opt/` are also common.
 
-On Windows, the expected directory structure is a bit different due to how Python (and other interpreted languages) are organized in this operating system:
+On Linux, some sysroot packages may also populate a top-level directory named as a [target triplet](https://www.gnu.org/software/autoconf/manual/autoconf-2.65/html_node/Specifying-Target-Triplets.html) with a single subdirectory `sysroot/` populated with an FHS-like tree.
 
-- `./Library/`, uses the same directories as the Unix structure listed above. Most packages will populate this directory.
-- MSYS2 or MinGW-w64 packages usually present FHS-structured contents under `./Library/usr/` or `./Library/mingw-w64/`, respectively. Additional variants like `./Library/ucrt64/`, `./Library/clang64/`, `./Library/mingw64/`, `./Library/clangarm64/` MAY also be found.
-- Python interpreters and Python-related packages stay in the root-level:
-  - `./DLLs/`: Compiled Python extensions (`.pyd`)
+#### Windows
+
+On Windows, the directory structure is a bit different due to how Python is organized in this operating system. Essentially, it can be explained with two additional convention sets that may coexist with the Unix FHS structure:
+
+- `./Library/`: uses the same directories as the Unix structure listed above. Most packages are installed to this directory.
+  - MSYS2 or MinGW-w64 can be understood as sysroot packages that may also present FHS-structured contents under `./Library/usr/` or `./Library/mingw-w64/`, respectively. Additional variants like `./Library/ucrt64/`, `./Library/clang64/`, `./Library/mingw64/`, and `./Library/clangarm64/` may also be found. `./Library/<target-triplet>` is also common.
+- Python interpreters and Python-related packages stay at the root level:
+  - `./DLLs/`: Compiled Python extensions (`.pyd`).
   - `./include/`: Python development headers (`.h`).
   - `./Lib/`: Equivalent to `./lib/pythonX.Y` on Unix.
   - `./libs/`: Python `.lib` files.
   - `./Scripts/`: Python entry points (`.exe` trampolines and the corresponding `-script.py` files).
-  - `./Tools/`: Miscellaneous scripts shipped with the Python interpreter.
+  - `./Tools/`: Historically used by miscellaneous scripts shipped with the Python interpreter. Not recommended.
   - `./python*.(exe|dll|pdb)`: The Python interpreter executables and libraries.
-- Other interpreted languages might also populate the root-level directly, especially if they rely on `noarch: generic` packages. Some examples:
-  - Node.js places its executables in the root level, and leaves everything else under `./node_modules/`.
-  - R installs to `./lib/R/` using a Unix-style directory structure, but also places some executables in `./Scripts/`.
-  - Ruby installs directly to the root level, using a Unix-style directory structure.
+
+Note that other interpreted languages have historically populated the root level directly, especially if they relied on `noarch: generic` packages:
+
+- Node.js has historically placed its executables at the root level, and left everything else under `./node_modules/`. This is not recommended and should use `.[/Library]/bin/` and `.[/Library]/lib/node_modules/` instead.
+- R installs to `./lib/R/` using a Unix-style directory structure, but historically has also placed some executables in `./Scripts/` (reserved for Python entry points).
+- Ruby places its files directly at the root level, using a Unix-style directory structure to benefit from `noarch` builds.
 
 ### `./etc/conda/*.d/` directories
 
