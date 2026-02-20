@@ -1,7 +1,7 @@
 # CEP XXXX - The `MatchSpec` query language
 
 <table>
-<tr><td> Title </td><td> The <code>MatchSpec</code> query language </td>
+<tr><td> Title </td><td> The <code>MatchSpec</code> query language </td></tr>
 <tr><td> Status </td><td> Draft </td></tr>
 <tr><td> Author(s) </td><td>
   Jaime Rodríguez-Guerra &lt;jaime.rogue@gmail.com&gt;,
