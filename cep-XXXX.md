@@ -209,7 +209,7 @@ Lists all files that cannot be linked into environments and MUST be copied inste
 
 ### Recommendations for installed files
 
-On Unix filesystems, packages generally follow a subset of the [Filesystem Hierarchy Standard (FHS)](https://en.wikipedia.org/wiki/Filesystem_Hierarchy_Standard):
+On Unix filesystems, packages generally follow subset of the `/usr` tree in the [Filesystem Hierarchy Standard (FHS)](https://en.wikipedia.org/wiki/Filesystem_Hierarchy_Standard):
 
 - `./bin/`: executables and scripts.
 - `./etc/`: configuration files.
