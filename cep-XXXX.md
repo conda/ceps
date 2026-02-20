@@ -214,7 +214,7 @@ On Unix filesystems, packages generally follow a subset of the [Filesystem Hiera
 - `./bin/`: executables and scripts.
 - `./etc/`: configuration files.
 - `./include/`: header files.
-- `./lib/`: dynamic and static libraries.
+- `./lib/`: dynamic and static libraries, build system configuration files (`pkg-config`, `CMake`), modules for interpreted languages (Python, Perl, etc), program-specific executables.
 - `./share/`: miscellaneous data contents.
 
 On Linux, some sysroot packages may also populate a top-level directory named as a [target triplet](https://www.gnu.org/software/autoconf/manual/autoconf-2.65/html_node/Specifying-Target-Triplets.html) with a single subdirectory `sysroot/` populated with a FHS-like tree.
