@@ -1,7 +1,7 @@
 # CEP XXXX - `conda-lock.yml` lockfiles
 
 <table>
-<tr><td> Title </td><td> <code>conda-lock.yml</code> lockfiles </td>
+<tr><td> Title </td><td> <code>conda-lock.yml</code> lockfiles </td></tr>
 <tr><td> Status </td><td> Draft </td></tr>
 <tr><td> Author(s) </td><td> Jaime Rodríguez-Guerra &lt;jaime.rogue@gmail.com&gt;</td></tr>
 <tr><td> Created </td><td> Oct 26, 2025 </td></tr>
@@ -65,7 +65,7 @@ This list collects all the conda channels used to generate the lockfile.
 Each `Channel` item MUST be a dictionary with the following keys:
 
 - `url` MUST map to a non-empty `str` that describes the source URL of the given channel.
-- `used_env_vars` MUST map to a `list[str]` that described which environment variables are necessary to access the channel URL, if any.
+- `used_env_vars` MUST map to a `list[str]` that describes which environment variables are necessary to access the channel URL, if any.
 
 ##### `platforms`
 
@@ -83,7 +83,7 @@ A list of paths to source files used to generate the lockfile. These paths MUST 
 
 `dict[str, str]`, optional.
 
-A dictionary with a single key, `created_at`, that MUST map to string encoding the ISO 8601 timestamp as `%Y-%m-%dT%H:%M:%SZ`.
+A dictionary with a single key, `created_at`, that MUST map to a string encoding the ISO 8601 timestamp as `%Y-%m-%dT%H:%M:%SZ`.
 
 ##### `git_metadata`
 
@@ -145,7 +145,7 @@ The platform this package targets. It MUST be one of the items in `metadata.plat
 
 A dictionary that MUST map a package name string (as in [CEP 26](./cep-0026.md)) to a constraint string.
 
-When these two strings are concatenated, it MUST result in a:
+When these two strings are concatenated, it MUST result in:
 
 - For `manager == "conda"` entries, a `MatchSpec` string, as described in [CEP PR#82](https://github.com/conda/ceps/pull/82).
 - For `manager == "pip"` entries, a [PEP 440](https://peps.python.org/pep-0440/) dependency specifier.
@@ -164,7 +164,7 @@ A dictionary which MUST only contain at most two keys, `md5` and `sha256`, which
 
 ##### `source`
 
-`dict[str, str]` optional.
+`dict[str, str]`, optional.
 
 Provenance details of the package. It MUST only contain two keys, `type` (whose only valid value is the string `url`) and `url` (which maps to a URL string).
 
@@ -269,5 +269,3 @@ package:
 ## Copyright
 
 All CEPs are explicitly [CC0 1.0 Universal](https://creativecommons.org/publicdomain/zero/1.0/).
-
-<!-- links -->
