@@ -54,7 +54,7 @@ This file MUST conform to the following schema:
 - `depends: list[str]`. Dependencies the package requires at runtime. Each string MUST be a valid `MatchSpec` positional string, as defined in [CEP PR#82](https://github.com/conda/ceps/pull/82).
 - `constrains: list[str]`. Dependencies the package is compatible with at runtime. These dependencies are not required, but if present, they MUST match the specifier. Each string MUST be a valid `MatchSpec` positional string, as defined in [CEP PR#82](https://github.com/conda/ceps/pull/82).
 - `subdir: str`. The target platform for this package, or `noarch` if platform-agnostic. It MUST comply with [CEP 26](./cep-0026.md).
-- `noarch: Literal['generic', 'noarch']`. Optional. When `subdir` is `noarch`, this field indicates the type of `noarch` package. It MUST be one of: `generic`, `python`.
+- `noarch: Literal['generic', 'python']`. Optional. When `subdir` is `noarch`, this field indicates the type of `noarch` package. It MUST be one of: `generic`, `python`.
 - `timestamp: int`. Starting time of the package build. It MUST be expressed as [Unix time](https://en.wikipedia.org/wiki/Unix_time) in milliseconds.
 - `track_features: str`. Space-separated or comma-separated string of unique identifiers. Each identifier SHOULD match the `[A-Za-z0-9\-_.]+` regex.
 - `python_site_packages_path: str`. Site-packages path, as introduced in [CEP 20](./cep-0020.md).
