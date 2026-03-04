@@ -1,14 +1,14 @@
-# CEP XXXX - Virtual packages
+# CEP 30 - Virtual packages
 
 <table>
-<tr><td> Title </td><td> CEP XXXX - Virtual packages </td></tr>
-<tr><td> Status </td><td> Draft </td></tr>
+<tr><td> Title </td><td> Virtual packages </td></tr>
+<tr><td> Status </td><td> Accepted </td></tr>
 <tr><td> Author(s) </td><td> Jaime Rodríguez-Guerra &lt;jaime.rogue@gmail.com&gt;</td></tr>
 <tr><td> Created </td><td> Dec 17, 2024</td></tr>
-<tr><td> Updated </td><td> Feb 15, 2026</td></tr>
+<tr><td> Updated </td><td> Mar 4, 2026</td></tr>
 <tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/103 </td></tr>
 <tr><td> Implementation </td><td> https://github.com/conda/conda/tree/24.11.1/conda/plugins/virtual_packages, https://github.com/mamba-org/mamba/blob/libmamba-2.0.5/libmamba/src/core/virtual_packages.cpp, https://github.com/conda/rattler/tree/rattler-v0.28.8/crates/rattler_virtual_packages/src </td></tr>
-<tr><td> Requires </td><td> https://github.com/conda/ceps/pull/132 </td></tr>
+<tr><td> Requires </td><td> CEP 33 </td></tr>
 
 </table>
 
@@ -33,7 +33,7 @@ Virtual packages are used to expose details of the system configuration to a con
 ## Specification
 
 A virtual package is defined as a package record with three fields: name, version and build string.
-These fields MUST comply with [CEP 26](./cep-0026.md). More specifically, the version field MUST follow the version string specifications as discussed in [CEP PR #132](https://github.com/conda/ceps/pull/132), regardless of its origin (computed from a system property, overridden by the user or configuration, or provided by default by the tool).
+These fields MUST comply with [CEP 26](./cep-0026.md). More specifically, the version field MUST follow the version string specifications as discussed in [CEP 33](./cep-0033.md), regardless of its origin (computed from a system property, overridden by the user or configuration, or provided by default by the tool).
 
 Some general considerations:
 
