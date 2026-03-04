@@ -39,6 +39,7 @@ for conda's implementation, all major changes should be submitted as
 | [0026](cep-0026.md) | Identifying Packages and Channels in the conda Ecosystem                    |
 | [0027](cep-0027.md) | Standardizing a publish attestation for the conda ecosystem                 |
 | [0028](cep-0028.md) | Customizable system DLL linkage checks for Windows                          |
+| [0029](cep-0029.md) | The `MatchSpec` query language                                              |
 
 ## References
 
