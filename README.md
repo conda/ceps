@@ -46,6 +46,7 @@ for conda's implementation, all major changes should be submitted as
 | [0033](cep-0033.md) | Version literals and their ordering                                         |
 | [0034](cep-0034.md) | Contents of conda packages                                                  |
 | [0035](cep-0035.md) | Distributable package artifacts file formats                                |
+| [0036](cep-0036.md) | Package metadata files served by conda channels                             |
 
 ## References
 
