@@ -42,6 +42,7 @@ for conda's implementation, all major changes should be submitted as
 | [0029](cep-0029.md) | The `MatchSpec` query language                                              |
 | [0030](cep-0030.md) | Virtual packages                                                            |
 | [0031](cep-0031.md) | Build provenance metadata                                                   |
+| [0032](cep-0032.md) | Management and structure of conda environments                              |
 
 ## References
 
