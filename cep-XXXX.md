@@ -1,14 +1,14 @@
-# CEP XXXX - Contents of conda packages
+# CEP 34 - Contents of conda packages
 
 <table>
-<tr><td> Title </td><td> CEP XXXX - Contents of conda packages </td></tr>
-<tr><td> Status </td><td> Draft </td></tr>
+<tr><td> Title </td><td> Contents of conda packages </td></tr>
+<tr><td> Status </td><td> Accepted </td></tr>
 <tr><td> Author(s) </td><td> Jaime Rodríguez-Guerra &lt;jaime.rogue@gmail.com&gt;</td></tr>
 <tr><td> Created </td><td> Sep 27, 2025</td></tr>
-<tr><td> Updated </td><td> Feb 15, 2026</td></tr>
+<tr><td> Updated </td><td> Mar 4, 2026</td></tr>
 <tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/133 </td></tr>
 <tr><td> Implementation </td><td> N/A </td></tr>
-<tr><td> Requires </td><td> https://github.com/conda/ceps/pull/82, https://github.com/conda/ceps/pull/113, https://github.com/conda/ceps/pull/124, https://github.com/conda/ceps/pull/132 </td></tr>
+<tr><td> Requires </td><td> CEP 29, CEP 31, CEP 32, CEP 33 </td></tr>
 </table>
 
 > The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in [RFC2119][RFC2119] when, and only when, they appear in all capitals, as shown here.
@@ -48,11 +48,11 @@ This file MUST conform to the following schema:
 
 - `schema_version: int`. A non-negative integer representing the version of the `index.json` format. This CEP specifies version 2. If absent, it MUST be understood as `1`; in other words, prior to this CEP and hence non-standardized.
 - `name: str`. Lowercased name of the package. It MUST comply with [CEP 26](./cep-0026.md).
-- `version: str`. Normalized package version. It MUST comply with [CEP PR#132](https://github.com/conda/ceps/pull/132).
+- `version: str`. Normalized package version. It MUST comply with [CEP 33](./cep-0033.md).
 - `build: str`. A string that helps disambiguate different variant builds of the same package version. It MUST comply with [CEP 26](./cep-0026.md). It SHOULD contain the `build_number` field, usually at the end of the string, preceded by an underscore `_`. It MAY contain the hexadecimal string of the SHA1-hash of the key-sorted dictionary provided in `./info/hash_input.json`, preceded by `h`, usually trimmed to the first seven characters.
 - `build_number: int`. A non-negative integer representing the build number of the package.
-- `depends: list[str]`. Dependencies the package requires at runtime. Each string MUST be a valid `MatchSpec` positional string, as defined in [CEP PR#82](https://github.com/conda/ceps/pull/82).
-- `constrains: list[str]`. Dependencies the package is compatible with at runtime. These dependencies are not required, but if present, they MUST match the specifier. Each string MUST be a valid `MatchSpec` positional string, as defined in [CEP PR#82](https://github.com/conda/ceps/pull/82).
+- `depends: list[str]`. Dependencies the package requires at runtime. Each string MUST be a valid `MatchSpec` positional string, as defined in [CEP 29](./cep-0029.md).
+- `constrains: list[str]`. Dependencies the package is compatible with at runtime. These dependencies are not required, but if present, they MUST match the specifier. Each string MUST be a valid `MatchSpec` positional string, as defined in [CEP 29](./cep-0029.md).
 - `subdir: str`. The target platform for this package, or `noarch` if platform-agnostic. It MUST comply with [CEP 26](./cep-0026.md).
 - `noarch: Literal['generic', 'python']`. Optional. When `subdir` is `noarch`, this field indicates the type of `noarch` package. It MUST be one of: `generic`, `python`.
 - `timestamp: int`. Starting time of the package build. It MUST be expressed as [Unix time](https://en.wikipedia.org/wiki/Unix_time) in milliseconds.
@@ -121,7 +121,7 @@ The contents of this file usually include the `about` section of the originating
 - `dev_url: str`. URL pointing to the development website (often a repository) of the package.
 - `doc_url: str`. URL pointing to the documentation website of the package.
 - `env_vars: dict[str, str]`. Allow-listed environment variables set during the package build.
-- `extra: dict[str, Any]`. A free-form dictionary of arbitrary metadata. This MAY be used to record provenance metadata as described in [CEP PR#113](https://github.com/conda/ceps/pull/113).
+- `extra: dict[str, Any]`. A free-form dictionary of arbitrary metadata. This MAY be used to record provenance metadata as described in [CEP 31](./cep-0031.md).
 - `home: str`. URL pointing to the homepage of the package.
 - `license: str`. SPDX license identifier for the package.
 - `summary: str`. A short summary of the package (usually one sentence).
