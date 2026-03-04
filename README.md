@@ -48,6 +48,7 @@ for conda's implementation, all major changes should be submitted as
 | [0035](cep-0035.md) | Distributable package artifacts file formats                                |
 | [0036](cep-0036.md) | Package metadata files served by conda channels                             |
 | [0037](cep-0037.md) | `conda-lock.yml` lockfiles                                                  |
+| [0038](cep-0038.md) | Channel-wide metadata files served by conda channels                        |
 
 ## References
 
