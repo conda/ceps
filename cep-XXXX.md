@@ -129,7 +129,7 @@ Channel relations only determine the placement of channels that the user did not
 If the same channel appears multiple times in the resolved graph (e.g. referenced by different subdirs, or by both a direct relation and a transitive relation), it MUST only be represented as a single node.
 All priority edges pointing to or from that channel MUST be merged.
 
-## Use cases
+## Examples
 
 ### Dependent channels: bioconda
 
