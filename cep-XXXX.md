@@ -11,7 +11,7 @@
   </td>
 </tr>
 <tr><td> Created </td><td> Jan 12, 2026 </td></tr>
-<tr><td> Updated </td><td> Jan 12, 2026  </td></tr>
+<tr><td> Updated </td><td> Mar 6, 2026  </td></tr>
 <tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/146 </td></tr>
 <tr><td> Implementation </td><td> N/A </td></tr>
 <tr><td> Requires </td><td> N/A </td></tr>
@@ -23,7 +23,7 @@ This document addresses the challenges of updating the specification of `repodat
 
 ## Motivation
 
-`repodata.json` files are central to the conda ecosystem. They are the main source of packaging metadata and inform solvers about the catalog of available packages and their dependency constraints. As such, innovation efforts often refrain from modifying it, and the format itself has seen very few changes over its lifetime. However, a few ongoing efforts will inevitably result in `repodata.json` modifications (conditional dependencies, optional dependency groups, non-conda dependencies, etc).
+`repodata.json` files are central to the conda ecosystem. They are the main source of packaging metadata and inform solvers about the catalog of available packages and their dependency constraints. As such, innovation work often refrains from modifying it, and the format itself has seen very few changes over its lifetime. However, a few ongoing efforts will inevitably result in `repodata.json` modifications (conditional dependencies, optional dependency groups, non-conda dependencies, etc).
 
 The main problem is the introduction of backwards incompatible changes. The obvious solution is to bump the `repodata_version` field (like it was done with [CEP 15](./cep-0015.md)). However, this is not desirable for existing channels, since it immediately prevents non-compatible clients from interacting with the channel. Since most clients would update via a new version available in the channel, it creates a chichen-and-egg problem that would significantly delay the introduction of new features and hinder adoption.
 
@@ -33,21 +33,11 @@ There must be a strategy to introduce backwards incompatible changes without bre
 
 ### Version metadata in `info`
 
-Adding a new field in the `info` dictionary is backwards compatible, and can be used by clients to parse the necessary keys directly without having to traverse the whole dictionary. The migration timestamp is useful for client messaging, like "the client is not recent enough to see all records in this channel, please update to ensure you can obtain access to all packages". They are not added as a top-level field to stop polluting the global namespace.
+Adding a new field in the `info` dictionary is backwards compatible, and can be used by clients to parse the necessary keys directly without having to traverse the whole document. The migration timestamp is useful for client messaging, like "the client is not recent enough to see all records in this channel, please update to ensure you can obtain access to all packages". They are not added as a top-level field to stop polluting the global namespace.
 
 ### Using top-level fields for new metadata schemas
 
 Adding new fields is backwards compatible and does not break older clients, which will simply ignore those and continue operating as usual.
-
-### Not retrofitting for older versions
-
-The solver would provide different solutions depending on the supported versions, which would make behavior surprising and difficult to debug. For example, let's say that optional dependency groups are implemented in `v3`, which requires adding a new `extras` key to the package metadata. `scipy` starts using this in its release `1.20`. As such, this is release is exposed under the `v3` top-level field.
-
-Shortly after a new package `using-scipy` is published, and it has `depends: ["scipy>=1.17"]`. `using-scipy` does not use any `v3` metadata features. If it was published under `packages.conda`, different clients would provide different solutions: older clients with no `v3` support would provide `scipy==1.19`, while newer clients would give `scipy==1.20`. This is confusing and difficult to debug.
-
-Instead, we propose that once a channel starts using the newer repodata revision, all packages are published under the new top-level key. This way, `using-scipy` would simply not exist for older clients, preventing version mismatches in the solution. Using the `info.repodata_revisions` metadata, clients would be able to even provide hints about the possibility of new records being available once client updates are performed.
-
-Another example is the introduction of new archive formats (e.g. `.conda-v3`) in a new repodata revision, for which conda clients would need to implement support. Once the format starts being used, all new packages should be published under the new key so solver asymmetries are minimized.
 
 ### Freezing `repodata_version` to `1`
 
@@ -66,12 +56,11 @@ A repodata revision introduces backwards incompatible features in a way that doe
 A new item will be added to the `info.repodata_revisions` array, that lists the revisions found in the repodata file as dictionaries with the following schema:
 
 - `revision: int`: The integer identifying the revision.
-- `key: str`: The top-level key that contains the records for this revision. It MUST match the regex `[a-z0-9\._]+`. It MUST NOT match any of the existing top-level fields (`repodata_version`, `info`, `packages`, `packages.conda`, `removed`).
-- `migrated_at: int`: The timestamp (in milliseconds) that signals when the channel started indexing packages in the new revision.
+- `migrated_at: int`: The timestamp (in milliseconds) that signals when the channel started indexing packages in the new revision; i.e. the timestamp of the first record published in the new metadata.
 
-A new top-level field, with the identifier as specified in `info.repodata_revisions[*].key`. MUST map to a dictionary whose schema is presented in the relevant CEP.
+A new top-level field identified by the syntax `v{revision}` (where `revision` comes from `info.repodata_revisions[*].revision`) MUST map to a dictionary whose schema is presented in the relevant CEP.
 
-Once a channel starts publishing for a new revision, all packages published after that moment SHOULD be included only in the new revision field, even if some of them may be technically backwards compatible because their record metadata does not use any new features.
+The CEP MUST also specify how to identify whether a given record belongs in the newer version, or can be added to the previous ones (e.g. a new field extending CEP 20's `info/index.json`)
 
 The `repodata_version` MUST be `1`.
 
@@ -87,7 +76,6 @@ A hypothetical new repodata revision `3` would need to present the following `in
     "repodata_revisions": [
       {
         "revision": 3,
-        "key": "v3",
         "migrated_at": 1768249989751,  // 2026-01-12 20:33 UTC
       }
     ]
@@ -129,7 +117,7 @@ A hypothetical new repodata revision `3` would need to present the following `in
         "build": "0",
         "build_number": 0,
         "depends": [
-          "package[version=3,build_number=0,if=__unix]"  // bracket syntax, w/ conditional
+          "package[version=3,build_number=0,when=__unix]"  // bracket syntax, w/ conditional
         ],
         "md5": "82ecc40f09b9c44483e6b70cad2545d7",
         "name": "example",
