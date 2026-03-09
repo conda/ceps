@@ -9,10 +9,10 @@
   Jaime Rodríguez-Guerra &lt;jaime.rogue@gmail.com&gt;
 </td></tr>
 <tr><td> Created </td><td> Feb 5, 2025</td></tr>
-<tr><td> Updated </td><td> Dec 20, 2025</td></tr>
+<tr><td> Updated </td><td> Mar 9, 2026</td></tr>
 <tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/111 </td></tr>
 <tr><td> Implementation </td><td> TBD </td></tr>
-<tr><td> Requires </td><td> https://github.com/conda/ceps/pull/82, https://github.com/conda/ceps/pull/133, https://github.com/conda/ceps/pull/135 </td></tr>
+<tr><td> Requires </td><td> https://github.com/conda/ceps/pull/146 </td></tr>
 </table>
 
 ## Abstract
