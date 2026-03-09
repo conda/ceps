@@ -41,8 +41,8 @@ A repodata revision introduces backwards incompatible features in a way that doe
 
 A new item MUST be added to the `info.repodata_revisions` array, that MUST list the revisions found in the repodata file as dictionaries with the following schema:
 
-- `revision: int`: The integer identifying the revision.
-- `migrated_at: int`: The timestamp (in milliseconds) that signals when the channel started indexing packages in the new revision; i.e. the timestamp of the first record published in the new metadata.
+* `revision: int`: The integer identifying the revision.
+* `migrated_at: int`: The timestamp (in milliseconds) that signals when the channel started indexing packages in the new revision; i.e. the timestamp of the first record published in the new metadata.
 
 A new top-level field identified by the syntax `v{revision}` (where `revision` comes from `info.repodata_revisions[*].revision`) MUST map to a dictionary whose schema is presented in the relevant CEP.
 
@@ -64,9 +64,9 @@ Adding new fields is backwards compatible and does not break older clients, whic
 
 Bumps in this number should only result in backwards incompatible changes that would anyway prevent a channel from operating completely. While `repodata_version: 2` exists (as per CEP 15), its implementations are not sufficiently old to guarantee that the majority of existing conda clients would support it:
 
-- `rattler` supports it since [v0.9.0](https://github.com/conda/rattler/blob/main/CHANGELOG.md#090---2023-09-22) (released on 2023-09-22), which means that `pixi` supports it since [v0.4.0](https://github.com/prefix-dev/pixi/blob/d8d2d8a3e8e1ce99707885aa1437e3768614456b/Cargo.toml#L38) (released on 2023-09-22 too).
-- `conda` only supports it as of [v24.5.0](https://github.com/conda/conda/blob/main/CHANGELOG.md#2450-2024-05-08) (released on 2024-05-08)
-- `mamba` started supporting it in [v2.0](https://github.com/mamba-org/mamba/blob/main/CHANGELOG.md#20240925) (released on 2024-09-25).
+* `rattler` supports it since [v0.9.0](https://github.com/conda/rattler/blob/main/CHANGELOG.md#090---2023-09-22) (released on 2023-09-22), which means that `pixi` supports it since [v0.4.0](https://github.com/prefix-dev/pixi/blob/d8d2d8a3e8e1ce99707885aa1437e3768614456b/Cargo.toml#L38) (released on 2023-09-22 too).
+* `conda` only supports it as of [v24.5.0](https://github.com/conda/conda/blob/main/CHANGELOG.md#2450-2024-05-08) (released on 2024-05-08)
+* `mamba` started supporting it in [v2.0](https://github.com/mamba-org/mamba/blob/main/CHANGELOG.md#20240925) (released on 2024-09-25).
 
 Hence, we suggest to stick to `repodata_version: 1` and _only_ use `repodata_version: 2` when a new channel needs a global `base_url` for all the entries in the `packages` and `packages.conda` fields.
 
@@ -146,9 +146,9 @@ A hypothetical new repodata revision `3` would need to present the following `in
 
 One alternative would be to create new `repodata.json` filenames (e.g. `repodata.v4.json`) for each new incompatible bump. However, this was rejected by the authors as it introduces complexity in other areas:
 
-- It would require more HTTP calls to retrieve the latest version served by the channel.
-- It would introduce duplication across `repodata.json` versions and their shards.
-- Indexing tools would need to maintain the different versions of `repodata.json` in sync.
+* It would require more HTTP calls to retrieve the latest version served by the channel.
+* It would introduce duplication across `repodata.json` versions and their shards.
+* Indexing tools would need to maintain the different versions of `repodata.json` in sync.
 
 ## Copyright
 
