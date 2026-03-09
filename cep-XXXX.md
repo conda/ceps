@@ -11,7 +11,7 @@
   </td>
 </tr>
 <tr><td> Created </td><td> Jan 12, 2026 </td></tr>
-<tr><td> Updated </td><td> Mar 6, 2026  </td></tr>
+<tr><td> Updated </td><td> Mar 9, 2026 </td></tr>
 <tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/146 </td></tr>
 <tr><td> Implementation </td><td> N/A </td></tr>
 <tr><td> Requires </td><td> N/A </td></tr>
@@ -19,7 +19,13 @@
 
 ## Abstract
 
-This document addresses the challenges of updating the specification of `repodata.json` files (and its sharded derivatives) by proposing a strategy based on new top-level fields instead of `repodata_version` bumps.
+This document addresses the challenges of updating the specification of `repodata.json` files (and its sharded derivatives) by proposing:
+
+* to provide a way to extend repodata with new variants, _without_ incrementing `repodata_version`
+* to encode new versions of the repodata in parallel with existing one, behind a `vN` key where `N` is the repodata revision
+* to indicate the latest available repodata revision as part of `info`
+* to provide a timestamp indicating the point in time when the index started providing the most recent repodata revision ("migration timestamp")
+* to use the migration timestamp for client messaging, e.g. when an installer is too old to see repodata of a given revision.
 
 ## Motivation
 
