@@ -54,6 +54,7 @@ outputs:
 
   - package:
       name: foo-headers
+      version: "1.0.0"
 
     # long form of newly added `inherit` key
     inherit:
@@ -66,6 +67,7 @@ outputs:
 
   - package:
       name: foo
+      version: "1.0.0"
 
     # short form, inherits run exports by default
     inherit: foo-cache
@@ -87,24 +89,25 @@ The variant keys that are injected at build time is the subset used by the `stag
 
 When the `staging` build is done, the newly created files are moved outside of the `host-prefix`. Post-processing is not performed on the files beyond memoizing what files contain the `$PREFIX` (which is later replaced in binaries and text files with the actual build-prefix).
 
-The cache restores files that were added to the host environment (`$PREFIX`) and the "dirty" source directory, including any changes that were made by the build script. They are cloned to a special cache location from which they are restored.
+The staging output restores files that were added to the host environment (`$PREFIX`) and the "dirty" source directory, including any changes that were made by the build script. They are cloned to a special staging location from which they are restored.
 
 If the `staging` build and the package build are not running in the same exact location, the path leading up to the work dir / host prefix needs to be replaced in the `staging` artifacts (for example when running time-stamped builds in folders such as `/folder/to/bld/libfoo_1745399500/{work_dir,h_env_...}`).
 
-When a package output adds a `source` and inherits from a cache, care must be taken by the user to not clobber files (e.g. by using `target_directory`). The build program should warn if files are overwritten in the work dir.
+When a package output adds a `source` and inherits from a staging output, care must be taken by the user to not clobber files (e.g. by using `target_directory`). The build program should warn if files are overwritten in the work dir.
 
-New files in the prefix (from the cache) can be used in the outputs with the `build.files` key:
+New files in the prefix (from the staging output) can be used in the outputs with the `build.files` key:
 
 ```yaml
 outputs:
-  - cache:
+  - staging:
       name: foo-cache
 
   - package:
       name: foo-headers
+      version: "1.0.0"
 
     inherit:
-      name: foo-cache
+      from: foo-cache
       run_exports: false
 
     build:
@@ -113,6 +116,7 @@ outputs:
 
   - package:
       name: libfoo
+      version: "1.0.0"
 
     inherit: foo-cache
 
@@ -122,6 +126,7 @@ outputs:
 
   - package:
       name: foo-devel
+      version: "1.0.0"
 
     inherit: foo-cache
 
@@ -153,4 +158,4 @@ Requirements are not inherited, however, `run_exports` are. The inheritance of `
 
 ### Top-level inheritance
 
-Inheriting from the top-level is a special case of regular "staging" inheritance. If the output does not specify any `inherit` key or explicitly sets `inherit: null` then we inherit from the top-level and apply `recipe.version`, `source`, `build` and `about` from the top-level to each output. In the case of top-level inheritance, requirements and build script are forbidden and thus ignored. This unifies the rules for both cache and top-level.
+Inheriting from the top-level is a special case of regular "staging" inheritance. If the output does not specify any `inherit` key or explicitly sets `inherit: null` then we inherit from the top-level and apply `recipe.version`, `source`, `build` and `about` from the top-level to each output. In the case of top-level inheritance, requirements and build script are forbidden and thus ignored. This unifies the rules for both staging and top-level.
