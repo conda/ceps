@@ -11,7 +11,7 @@
   </td>
 </tr>
 <tr><td> Created </td><td> Jan 12, 2026 </td></tr>
-<tr><td> Updated </td><td> Mar 9, 2026 </td></tr>
+<tr><td> Updated </td><td> Mar 18, 2026 </td></tr>
 <tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/146 </td></tr>
 <tr><td> Implementation </td><td> N/A </td></tr>
 <tr><td> Requires </td><td> N/A </td></tr>
@@ -23,9 +23,8 @@ This document addresses the challenges of updating the specification of `repodat
 
 * to provide a way to extend repodata with new variants, _without_ incrementing `repodata_version`
 * to encode new versions of the repodata in parallel with existing one, behind a `vN` key where `N` is the repodata revision
-* to indicate the latest available repodata revision as part of `info`
-* to provide a timestamp indicating the point in time when the index started providing the most recent repodata revision ("migration timestamp")
-* to use the migration timestamp for client messaging, e.g. when an installer is too old to see repodata of a given revision.
+* to indicate the latest available repodata revision as part of the `info` top-level dictionary
+* to provide useful metadata for end-user error reporting in case of lack of support in the client (oldest and newest timestamps, number of packages available)
 
 ## Motivation
 
@@ -41,8 +40,10 @@ A repodata revision introduces backwards incompatible features in a way that doe
 
 A new item MUST be added to the `info.repodata_revisions` array, that MUST list the revisions found in the repodata file as dictionaries with the following schema:
 
-* `revision: int`: The integer identifying the revision.
-* `migrated_at: int`: The timestamp (in milliseconds) that signals when the channel started indexing packages in the new revision; i.e. the timestamp of the first record published in the new metadata.
+* `revision: int`: Required. The integer identifying the revision.
+* `n_packages: int`: Required. The number of packages available in this revision.
+* `oldest: int | None`: Optional. The timestamp (in milliseconds) of the oldest record published in this revision. If set to `None` or missing, the timestamp information is not available.
+* `newest: int | None`: Optional. The timestamp (in milliseconds) of the newest record published in this revision. If set to `None` or missing, the timestamp information is not available.
 
 A new top-level field identified by the syntax `v{revision}` (where `revision` comes from `info.repodata_revisions[*].revision`) MUST map to a dictionary whose schema is presented in the relevant CEP.
 
@@ -54,7 +55,7 @@ The `repodata_version` MUST be `1` or, if [CEP 15](./cep-0015.md) applies, `2`.
 
 ### Version metadata in `info`
 
-Adding a new field in the `info` dictionary is backwards compatible, and can be used by clients to parse the necessary keys directly without having to traverse the whole document. The migration timestamp is useful for client messaging, like "the client is not recent enough to see all records in this channel, please update to ensure you can obtain access to all packages". They are not added as a top-level field to stop polluting the global namespace.
+Adding a new field in the `info` dictionary is backwards compatible, and can be used by clients to parse the necessary keys directly without having to traverse the whole document. The `oldest`, `newest`, and `n_packages` fields are useful for client messaging, like "the client is not recent enough to see all records in this channel, please update to ensure you can obtain access to {n_packages} additional packages published between {oldest} and {newest}". They are not added as a top-level field to stop polluting the global namespace.
 
 ### Using top-level fields for new metadata schemas
 
@@ -82,7 +83,9 @@ A hypothetical new repodata revision `3` would need to present the following `in
     "repodata_revisions": [
       {
         "revision": 3,
-        "migrated_at": 1768249989751,  // 2026-01-12 20:33 UTC
+        "n_packages": 2,
+        "oldest": 1768249989851,
+        "newest": 1773851561010,
       }
     ]
   },
@@ -102,28 +105,29 @@ A hypothetical new repodata revision `3` would need to present the following `in
     }
   },
   "packages.conda": {
-    "example-1.0.0-0.conda": {
+    "package-1.0.0-0.conda": {
       "build": "0",
       "build_number": 0,
       "depends": [],
-      "md5": "82ecc40f09b9c44483e6b70cad2545d7",
-      "name": "example",
+      "md5": "4483e6b70c82ecc40f09b9c4ad2545d7",
+      "name": "package",
       "noarch": "generic",
-      "sha256": "eb65e866067865793b981c2ba74485f75bef441842b5998badc4ec66717685c7",
+      "sha256": "4485f75bef441842b59eb65e866067865793b981c2ba798badc4ec66717685c7",
       "size": 1234,
       "subdir": "noarch",
-      "timestamp": 1689209309623,
+      "timestamp": 1689209359623,
       "version": "1.0.0"
     }
   },
   "v3": {
+    // This is a hypothetical v3, not a real proposal
     "tar.bz2": {},
     "conda": {
-      "example-1.0.0-0": {  // key does not have the extension anymore
+      "example-2.0.0-0": {  // key does not have the extension anymore
         "build": "0",
         "build_number": 0,
         "depends": [
-          "package[version=3,build_number=0,when=__unix]"  // bracket syntax, w/ conditional
+          "package[version=1,build_number=0,when=__unix]"  // bracket syntax, w/ conditional
         ],
         "md5": "82ecc40f09b9c44483e6b70cad2545d7",
         "name": "example",
@@ -132,7 +136,23 @@ A hypothetical new repodata revision `3` would need to present the following `in
         "size": 1234,
         "subdir": "noarch",
         "timestamp": 1768249989851,
-        "version": "1.0.0",
+        "version": "2.0.0",
+        "new_field": "CRITICAL"  // new field
+      },
+      "example-3.0.0-0": {  // key does not have the extension anymore
+        "build": "0",
+        "build_number": 0,
+        "depends": [
+          "package[version=3,build_number=0,when=__unix]"  // bracket syntax, w/ conditional
+        ],
+        "md5": "6b70cad2545d782ecc40f09b9c44483e",
+        "name": "example",
+        "noarch": "generic",
+        "sha256": "74485f75bef441842b5998badc4ec66717685c7eb65e866067865793b981c2ba",
+        "size": 2345,
+        "subdir": "noarch",
+        "timestamp": 1773851561010,
+        "version": "3.0.0",
         "new_field": "CRITICAL"  // new field
       }
     }
