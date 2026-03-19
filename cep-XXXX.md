@@ -61,17 +61,11 @@ If `channel_relations` is absent or empty, the channel declares no relations.
 
 ### Channel references
 
-A channel reference in `channel_relations` MUST be one of the following forms:
+A channel reference in `channel_relations` MUST be a relative path starting with `../` (e.g. `../conda-forge` or `../..`).
+It MUST be resolved relative to the current channel base URL (without the subdir component), as defined in [CEP 26](./cep-0026.md).
 
-1. **A channel name**: A bare name (e.g. `conda-forge`) that does not start with `.` or `/` and does not contain `://`.
-   It MUST be interpreted as `../<name>` relative to the current channel base URL.
-2. **A relative path**: A path starting with `../` (e.g. `../conda-forge` or `../..`).
-   It MUST be resolved relative to the current channel base URL.
-3. **An absolute URL**: A full URL including the scheme (e.g. `https://conda.anaconda.org/conda-forge`).
-   It MUST be used as-is.
-
-Channel names and relative paths MUST be resolved against the channel base URL (without the subdir component), as defined in [CEP 26](./cep-0026.md).
-For example, if the current channel base URL is `https://conda.anaconda.org/bioconda`, the channel name `conda-forge` resolves to `https://conda.anaconda.org/conda-forge`.
+For example, if the current channel base URL is `https://conda.anaconda.org/bioconda`, the reference `../conda-forge` resolves to `https://conda.anaconda.org/conda-forge`.
+Similarly, if the current channel base URL is `https://conda.anaconda.org/conda-forge/label/rc`, the reference `../..` resolves to `https://conda.anaconda.org/conda-forge`.
 
 ### Sharded repodata
 
@@ -142,7 +136,7 @@ With channel relations, bioconda's `linux-64/repodata.json` can declare:
   "info": {
     "subdir": "linux-64",
     "channel_relations": {
-      "base": "conda-forge"
+      "base": "../conda-forge"
     }
   },
   "packages": {},
@@ -194,8 +188,8 @@ For packages that the label does not provide, the main channel serves as a fallb
 
 Suppose:
 
-- `my-channel` declares `base: "bioconda"`
-- `bioconda` declares `base: "conda-forge"`
+- `my-channel` declares `base: "../bioconda"`
+- `bioconda` declares `base: "../conda-forge"`
 
 Running `conda install -c my-channel some-package` would result in:
 
@@ -216,8 +210,8 @@ A channel can declare both a base and an overrides:
   "info": {
     "subdir": "linux-64",
     "channel_relations": {
-      "base": "conda-forge",
-      "overrides": "my-hotfixes"
+      "base": "../conda-forge",
+      "overrides": "../my-hotfixes"
     }
   },
   "packages": {},
@@ -235,7 +229,7 @@ Effective channel order:
 
 Suppose:
 
-- `bioconda` declares `base: "conda-forge"`
+- `bioconda` declares `base: "../conda-forge"`
 - The user runs `conda install -c conda-forge -c bioconda some-package`
 
 The user has explicitly specified both channels with `conda-forge` first (highest priority).
@@ -313,6 +307,13 @@ Adding `channel_relations` could have required incrementing `repodata_version` t
 This was rejected because the field is purely additive and backward compatible.
 As specified in [CEP 36](./cep-0036.md), unrecognized keys in the `info` dictionary are ignored by existing clients.
 A version bump would force older clients to reject the entire `repodata.json`, which is undesirable.
+
+### Bare channel names and absolute URLs as references
+
+Earlier versions of this proposal allowed channel references to be specified as bare names (e.g. `conda-forge`) or absolute URLs (e.g. `https://conda.anaconda.org/conda-forge`).
+Bare names were rejected because they are ambiguous: resolving a bare name requires knowing a default channel server, which varies across client configurations.
+Absolute URLs were rejected because they pose a security risk (a channel could pull in packages from an arbitrary domain) and may not work correctly behind firewalls or with mirror setups.
+Restricting references to relative paths ensures that related channels always live on the same domain as the declaring channel, which is both safer and more compatible with mirroring.
 
 ### Symmetric relation types (e.g. "depends" / "supplements")
 
