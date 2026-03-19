@@ -284,8 +284,11 @@ The only difference is that older clients will not automatically load related ch
   Should clients provide a mechanism to opt out of automatic relation resolution?
   Should users be warned when new channels are pulled in via relations?
   These questions are deferred to future work or implementation-specific decisions.
-- **Indexing tools**: Channel indexing tools such as `conda-index` and `rattler-index` need a mechanism to allow channel maintainers to specify channel relations so they can be written into the generated `repodata.json`.
-  The exact configuration format (e.g. a configuration file at the channel root, command-line flags, or API parameters) is left to the respective implementations.
+## Future work
+
+- **Indexing tools**: Channel indexing tools such as `conda-index` and `rattler-index` will need a mechanism to allow channel maintainers to specify channel relations so they can be written into the generated `repodata.json`.
+  One idea discussed was to use a dedicated "meta" package (e.g. `conda-forge-channel-relations`) similar to how repodata patches work today, but this is explicitly left out of this CEP.
+  The exact configuration format is left up to individual indexing tools and servers.
 
 ## Rejected ideas
 
