@@ -119,6 +119,12 @@ Its position as determined by the user-specified edges MUST be preserved.
 This ensures that users retain full control over channel priority when they choose to specify channels explicitly.
 Channel relations only determine the placement of channels that the user did not explicitly list.
 
+#### Lockfiles
+
+When generating a lockfile, tools SHOULD only record the user-specified ("head") channels, not the full resolved channel graph.
+The channel each package originated from is already stored in the `channel` field of individual package records in the lockfile.
+Recording only the head channels keeps lockfiles concise and avoids redundancy.
+
 #### Deduplication
 
 If the same channel appears multiple times in the resolved graph (e.g. referenced by different subdirs, or by both a direct relation and a transitive relation), it MUST only be represented as a single node.
