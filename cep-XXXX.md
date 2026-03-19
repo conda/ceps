@@ -58,6 +58,7 @@ If present, `channel_relations` MUST be a dictionary with the following optional
 
 Both keys are OPTIONAL.
 If `channel_relations` is absent or empty, the channel declares no relations.
+Additional keys in `channel_relations` SHOULD be ignored to allow future extensions without breaking existing clients.
 
 ### Channel references
 
