@@ -232,19 +232,10 @@ attestations:
 
 ### Offline and Air-gapped Environments
 
-For offline verification, clients MAY cache `.sigs` files alongside packages in local repositories
+For offline verification, clients MAY cache `.sigs` files alongside packages in local repositories.
 The Sigstore bundle format is self-contained and supports offline verification once the Sigstore trust root is available locally.
 
-Note: clients MUST periodically update the sigstore trust root to guarantee security.
-
-## Backwards Compatibility
-
-This proposal is fully backwards compatible:
-
-1. **Existing channels**: No changes required; clients will receive `404` for `.sigs` endpoints
-2. **Existing clients**: Will not request `.sigs` endpoints; behavior unchanged
-
-The `.sigs` extension was chosen to avoid conflicts with existing URL patterns and file extensions in the conda ecosystem.
+Note: clients MUST periodically update the sigstore trust root to ensure no keys were revoked.
 
 ## References
 
