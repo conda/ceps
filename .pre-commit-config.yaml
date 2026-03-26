@@ -4,7 +4,7 @@ ci:
 repos:
   # generic verification and formatting
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c  # frozen: v6.0.0
     hooks:
       # standard end of line/end of file cleanup
       - id: mixed-line-ending
@@ -18,13 +18,13 @@ repos:
       - id: check-useless-excludes
   - repo: https://github.com/codespell-project/codespell
     # see setup.cfg
-    rev: v2.4.1
+    rev: 2ccb47ff45ad361a21071a7eedda4c37e6ae8c5a  # frozen: v2.4.2
     hooks:
       - id: codespell
         args: [--write-changes]
   # lint markdown
   - repo: https://github.com/DavidAnson/markdownlint-cli2
-    rev: v0.17.2
+    rev: 5387279b3b4c24822c0f86d4df4f28b37e3e8992  # frozen: v0.21.0
     hooks:
       - id: markdownlint-cli2
         args: ['--fix']
