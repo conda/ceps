@@ -1,4 +1,4 @@
-# CEP XX - The staging output in v1 recipes / rattler-build
+# CEP XXXX - The staging output in v1 recipes / rattler-build
 
 <table>
 <tr><td> Title </td><td> The staging output in v1 recipes / rattler-build </td>
