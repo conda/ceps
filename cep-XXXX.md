@@ -24,7 +24,9 @@ For the v1 spec we are attempting to formalize the workings of the "top-level" b
 
 ## Specification
 
-The staging output looks as follows:
+A recipe can have zero or more staging outputs.
+
+A staging output looks as follows:
 
 ```yaml
 outputs:
@@ -83,7 +85,7 @@ outputs:
 
 When computing variants and used variables, rattler-build looks at the union of a given `output` and the `staging` cache. That means, even if an output does not define any requirements, the `staging` cache would still add a variant for the `c_compiler`.
 
-When rattler-build executes the recipe, it will start by building the `staging` cache output that is appropriate for the current variant. This is computed by looking at all "used-variables" for the `staging` cache output and computing a "hash" for it. The build itself is executed in the same way as any other build.
+When rattler-build executes the recipe, it will start by building the `staging` cache outputs that are appropriate for the current variant. This is computed by looking at all "used-variables" for the `staging` cache output and computing a "hash" for it. The build itself is executed in the same way as any other build.
 
 The variant keys that are injected at build time is the subset used by the `staging` output.
 
