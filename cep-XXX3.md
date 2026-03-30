@@ -17,7 +17,7 @@
 
 ## Abstract
 
-This CEP proposes a simplified mechanism to select package variants without relying on partial build string globbing. Instead, a concrete keyword-matching strategy is devised to allow for more targeted granularity. This mechanism involves adding a new `flags` repodata record field along with the corresponding `MatchSpec` extensions.
+This CEP proposes a simplified mechanism to select package variants without relying on partial build string globbing. A package carries a list of plain string flags; a solver constraint that names a flag excludes any package that does not carry it. This mechanism involves adding a new `flags` repodata record field along with the corresponding `MatchSpec` extensions.
 
 ## Motivation
 
@@ -37,53 +37,25 @@ The answer to this problem is to provide a specific field that is designed to pr
 
 ### Repodata record syntax
 
-The `info/index.json` file of each conda artifact MUST support a new field, `flags`, the value of which MUST be a list of non-empty strings matching the regex `^[a-z0-9\-_:+\.]+$`. Subsequently, the `schema_version` value MUST be bumped to `5`.
+The `info/index.json` file of each conda artifact MUST support a new field, `flags`, the value of which MUST be a list of non-empty strings matching the regex `^[a-z0-9_]+$`. Note that `:` is explicitly reserved for future use (e.g. `key:value` semantics) and MUST NOT appear in flag strings at this time. Subsequently, the `schema_version` value MUST be bumped to `5`.
 
 In recipes, this value MUST be supported in the `build` section of each output (i.e. sibling to `number` and `track_features`).
 
-Additionally, another field has to be added to the `index.json` file and `repodata_record`: `variant_order`. This field lists flags in descending priority order. During the resolution, artifacts that match on flags are sorted by the order in `variant_order`.
-
 ### MatchSpec syntax changes
 
-Values in the `flags` field MUST be matchable by the corresponding keyword in `MatchSpec`, placed in the square brackets section. Its value MUST be a string or list of strings supporting the following syntax:
+Values in the `flags` field MUST be matchable by the corresponding keyword in `MatchSpec`, placed in the square brackets section. Its value MUST be a string or list of strings. Each entry MUST match the regex `^[a-z0-9_]+$`.
 
-- A string matching the regex `^[a-z0-9\-_:+\.]+$` is considered a literal match and will evaluate to true if the input string matches the target string fully.
-- The asterisk symbol `*` works as a glob operator, with the same rules used for build string matching.
-- A string query MAY be followed by one of the operators `=`, `!=`, `>`, `>=`, `<` and `<=`, which implement equality, inequality, greater than, greater than or equals, less than, less than or equals, respectively. They MUST be followed by a numeric value. When used, anything right side in the target strings will be interpreted as numbers and compared accordingly. The left side follows the same string matching rules as above.
-- Two special prefix characters MUST be recognized with the following meaning:
-  - `~`: negates the match
-  - `?`: makes the match optional
-
-### Variant order sorting
-
-The variants are sorted lexicographically by matching flags from the variant order. Flags not mentioned in the variant order will be sorted lower than any flags mentioned in the variant order, and in alphabetical order.
-
-Example:
-
-```
-variant order: [release, cuda, blas:mkl, blas:openblas]
-
-sorted variants:
-
-1. [release, cuda, blas:mkl]
-2. [release, cuda, blas:openblas]
-3. [release, blas:mkl]
-4. [release, blas:openblas]
-5. [release, blas:blis]
-6. [debug]
-```
+Flag matching is intentionally simple: a package is excluded from consideration if it does not contain every flag listed in the `flags` constraint. There is no glob, negation, optional, or comparison syntax — a flag either matches exactly or the package is filtered out.
 
 ### `index.json` and `repodata_record` changes
 
-The records gain two new fields, `flags` and `variant_order`:
+The records gain a new `flags` field:
 
 ```json
-...
 {
   "name": "foobar",
   "version": "1.2.3",
-  "flags": ["gpu:cuda", "build_type:release", "blas:mkl"],
-  "variant_order": ["build_type:release", "blas:mkl", "gpu:*"]  # rest of the flags,
+  "flags": ["cuda", "release", "mkl"]
 }
 ```
 
@@ -92,10 +64,7 @@ The records gain two new fields, `flags` and `variant_order`:
 ```yaml
 build:
   string: ...
-  flags: ["gpu:cuda${{ cuda_version }}", "blas:${{ blas}}", "release"]
-  variant:
-    order: ["release", "blas:mkl", "blas:blis", "blas:openblas", "gpu:*"],
-
+  flags: ["cuda", "mkl", "release"]
 ```
 
 ## Examples
@@ -103,8 +72,10 @@ build:
 In practice, this would look like the following from a user perspective:
 
 ```shell
-conda install 'pytorch[version=">=3.1", flags=["gpu:*", "?release"]]'
+conda install 'pytorch[version=">=3.1", flags=["cuda", "mkl"]]'
 ```
+
+Any package that does not carry both the `cuda` and `mkl` flags is excluded from the candidate set. Among the remaining candidates the solver applies its normal version and build-number preference.
 
 ## Rejected ideas
 
