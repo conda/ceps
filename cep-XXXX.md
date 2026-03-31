@@ -101,14 +101,6 @@ The discovered relations form a directed graph with priority edges:
 
 Clients MUST detect cycles in this graph and abort resolution with an error when a cycle is detected.
 
-#### Topological sorting
-
-The final channel priority order MUST be determined by performing a [topological sort](https://en.wikipedia.org/wiki/Topological_sorting) on the relation graph.
-The topological sort produces a linear ordering of channels such that for every priority edge (A → B), channel A appears before channel B (i.e. A has higher priority).
-
-When the topological sort admits multiple valid orderings, the client SHOULD prefer an ordering where channels connected by a relation edge are placed adjacent to each other when possible.
-A [depth-first-search-based topological sort](https://en.wikipedia.org/wiki/Topological_sorting#Depth-first_search) naturally achieves this property.
-
 #### Interaction with user-specified channels
 
 When a user explicitly specifies a channel list (e.g. via `-c` flags or configuration), the user-specified ordering MUST be treated as additional priority edges in the graph.
@@ -123,6 +115,14 @@ Its position as determined by the user-specified edges MUST be preserved.
 
 This ensures that users retain full control over channel priority when they choose to specify channels explicitly.
 Channel relations only determine the placement of channels that the user did not explicitly list.
+
+#### Topological sorting
+
+The final channel priority order MUST be determined by performing a [topological sort](https://en.wikipedia.org/wiki/Topological_sorting) on the relation graph.
+The topological sort produces a linear ordering of channels such that for every priority edge (A → B), channel A appears before channel B (i.e. A has higher priority).
+
+When the topological sort admits multiple valid orderings, the client SHOULD prefer an ordering where channels connected by a relation edge are placed adjacent to each other when possible.
+A [depth-first-search-based topological sort](https://en.wikipedia.org/wiki/Topological_sorting#Depth-first_search) naturally achieves this property.
 
 #### Lockfiles
 
