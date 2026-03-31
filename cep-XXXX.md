@@ -44,9 +44,9 @@ A new `inherit` field is added to both staging and package outputs. When present
 When present, the `inherit` field MUST have one of the three following values:
 
 - `null` indicating "top-level" inheritance (the default, when no `inherit` field is present)
-- a string specifying the output to inherit from
+- a string specifying the name of the output to inherit from (as defined in the `staging.name` or `package.name` field)
 - a map, with the following keys:
-  - a REQUIRED `from` key, specifying the output to inherit from, as a string
+  - a REQUIRED `from` key, specifying the name of the output to inherit from, as a string
   - an OPTIONAL `run_exports` key, whose value is a boolean, specifying whether to inherit `run_exports` (defaults to true)
 
 Both staging and package outputs MAY inherit, however, a staging output MUST NOT inherit from a package output.
