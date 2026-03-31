@@ -107,8 +107,9 @@ When a user explicitly specifies a channel list (e.g. via `-c` flags or configur
 For each consecutive pair of user-specified channels (A, B), an edge from A to B MUST be added, meaning A has higher priority than B.
 
 These user-specified edges MUST NOT be overridden by channel-declared relations.
-If a channel-declared relation contradicts a user-specified edge (e.g. a relation declares that X should have higher priority than Y, but the user specified Y before X), the user-specified edge MUST take precedence.
-The conflicting channel-declared edge MUST be ignored.
+A channel-declared relation edge (X → Y) **contradicts** user-specified ordering if both X and Y appear in the user-specified channel list and Y can reach X through user-specified edges (i.e. Y has higher user-specified priority than X).
+Contradicting relation edges MUST be ignored.
+When a relation edge introduces a cycle involving non-user-specified channels, this is a genuine cycle error, not a user conflict.
 
 If a channel that would be introduced by a relation is already present in the user-specified list, it MUST NOT be added a second time.
 Its position as determined by the user-specified edges MUST be preserved.
