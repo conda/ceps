@@ -47,7 +47,7 @@ When present, the `inherit` field MUST have one of the three following values:
 - a string specifying the output to inherit from
 - a map, with the following keys:
   - a REQUIRED `from` key, specifying the output to inherit from, as a string
-  - an OPTIONAL `run_exports` key, specifying whether to inherit `run_exports` (defaults to true)
+  - an OPTIONAL `run_exports` key, whose value is a boolean, specifying whether to inherit `run_exports` (defaults to true)
 
 Both staging and package outputs MAY inherit, however, a staging output MUST NOT inherit from a package output.
 
