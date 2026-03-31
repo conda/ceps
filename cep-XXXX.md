@@ -49,7 +49,7 @@ When present, the `inherit` field MUST have one of the three following values:
   - a REQUIRED `from` key, specifying the name of the output to inherit from, as a string
   - an OPTIONAL `run_exports` key, whose value is a boolean, specifying whether to inherit `run_exports` (defaults to true)
 
-Both staging and package outputs MAY inherit, however, a staging output MUST NOT inherit from a package output.
+A package output MAY inherit from a staging or another package output. However, a staging output MAY only inherit from another staging output.
 
 When inheriting, values from `build` and `about` sections MUST be deeply merged with the values from the inherited output, except for the value of `build.script`.
 
