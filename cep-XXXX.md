@@ -53,7 +53,7 @@ A package output MAY inherit from a staging or another package output. However, 
 
 When inheriting, values from `build` and `about` sections MUST be deeply merged with the values from the inherited output, except for the value of `build.script`.
 
-Requirements MUST NOT be inherited. However, `run_exports` MUST be, unless the `run_exports` key is set to `false` in the `inherit` map. The implementation MUST support ignoring Specific run-exports either in the staging output or in the package output (both follow the same rules).
+Requirements MUST NOT be inherited. However, `run_exports` MUST be, unless the `run_exports` key is set to `false` in the `inherit` map. The implementation MUST support ignoring specific `run_exports` either in the staging output or in the package output (both follow the same rules).
 
 ### Top-level inheritance
 
@@ -134,7 +134,7 @@ outputs:
 
 When computing variants and used variables, the implementation MUST look at the union of a given output and the outputs it inherits from. That means, even if a package output does not define any requirements, the inherited staging output could introduce variants. In the example, the `foo-cache` output would add a variant for the `c_compiler`.
 
-When executing the recipe, the implementation MUST build the inherited outputs that are appropriate for the current variant first. This is computed by looking at all "used-variables" for the inherited output and computing a "hash" for it. The build itself MUST be executed in the same way as any other build.
+When executing the recipe, the implementation MUST build the inherited outputs that are appropriate for the current variant first. This is computed by looking at all "used variables" for the inherited output and computing a "hash" for it. The build itself MUST be executed in the same way as any other build.
 
 The variant keys that are injected at build time are the subset used by the inherited output.
 
