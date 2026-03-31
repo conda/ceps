@@ -50,13 +50,12 @@ If present, `channel_relations` MUST be a dictionary with the following optional
 - `base: str`.
   A single channel reference (see [Channel references](#channel-references)) identifying a channel that SHOULD be loaded with _higher_ priority than the declaring channel.
   The base channel provides foundational packages that the declaring channel builds upon.
-  In the resolved channel list, the base channel MUST appear _before_ the declaring channel.
 - `overrides: str`.
   A single channel reference identifying a channel that the declaring channel overrides.
   This channel SHOULD be loaded with _lower_ priority than the declaring channel.
-  In the resolved channel list, the overrides channel MUST appear _after_ the declaring channel.
 
 Both keys are OPTIONAL.
+If present, their interpretation with regards to the resolved channel list is described in [Building the relation graph](#building-the-relation-graph) below.
 If `channel_relations` is absent or empty, the channel declares no relations.
 Additional keys in `channel_relations` MUST be ignored to allow future extensions without breaking existing clients.
 
