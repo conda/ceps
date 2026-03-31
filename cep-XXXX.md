@@ -88,6 +88,8 @@ For each channel in the resolved order, the client SHOULD fetch both the matchin
 Starting from the set of user-specified channels, the client MUST recursively discover all related channels by fetching their `repodata.json` and inspecting `info.channel_relations`.
 This process continues until no new channels are discovered.
 To guard against excessively deep or misconfigured chains, clients SHOULD support a configurable maximum resolution depth.
+The RECOMMENDED name for this configuration option is `channel_relations_max_depth`, with a default value of 10.
+A value of 0 SHOULD disable relation resolution entirely.
 If the depth limit is exceeded, the client SHOULD abort resolution with an error.
 
 The discovered relations form a directed graph with priority edges:
