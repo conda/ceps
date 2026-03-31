@@ -31,7 +31,7 @@ The answer to this problem is to provide a specific field that is designed to pr
 
 ## Rationale
 
-...
+The chosen keyword is `flags` which makes sense as a "compile time flag". This feature is mainly relevant for compiled packages with different compile time feature selection, making `flags` a matching name.
 
 ## Specification
 
@@ -40,12 +40,13 @@ The answer to this problem is to provide a specific field that is designed to pr
 The `info/index.json` file of each conda artifact MUST support a new field, `flags`, the value of which MUST be a list of non-empty strings matching the regex `^[a-z0-9_]+$`. Note that `:` is explicitly reserved for future use (e.g. `key:value` semantics) and MUST NOT appear in flag strings at this time. Subsequently, the `schema_version` value MUST be bumped to `5`.
 
 In recipes, this value MUST be supported in the `build` section of each output (i.e. sibling to `number` and `track_features`).
+In recipes, it MUST be represented as a list of strings under the `build.flags = [str]` key for each package output.
 
 ### MatchSpec syntax changes
 
 Values in the `flags` field MUST be matchable by the corresponding keyword in `MatchSpec`, placed in the square brackets section. Its value MUST be a string or list of strings. Each entry MUST match the regex `^[a-z0-9_]+$`.
 
-Flag matching is intentionally simple: a package is excluded from consideration if it does not contain every flag listed in the `flags` constraint. There is no glob, negation, optional, or comparison syntax — a flag either matches exactly or the package is filtered out.
+Flag matching is intentionally simple: a package is excluded from consideration if it does not contain every flag listed in the `flags` constraint. A flag either matches the string exactly or the package is filtered out.
 
 ### `index.json` and `repodata_record` changes
 
@@ -81,10 +82,9 @@ Any package that does not carry both the `cuda` and `mkl` flags is excluded from
 
 This proposal may remind the readers of the old `features` properties in the first iterations of conda packaging.
 
-## References
+## Future plans
 
-...
-
+In the future we might extend the matching ergonomics of flags to include numeric values and key-value items.
 
 ## Copyright
 
