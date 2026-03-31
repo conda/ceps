@@ -32,7 +32,7 @@ For the v1 spec we are attempting to formalize the workings of the "top-level" b
 
 A recipe can have zero or more staging outputs. A staging output is defined in the outputs section, and differs from a regular output in the following ways:
 
-- The `package` subsection MUST NOT be present
+- The `package` subsection MUST NOT be present.
 - A `staging` subsection MUST be present, with a single key `name`. The value MUST be a string, following same rules as `package.name`. Every name MUST be unique among all package and staging outputs.
 - In the `requirements` subsection, the `run` and `run_constraints` fields MUST NOT be present.
 - In the `build` subsection, no other fields than `script` MUST be present.
