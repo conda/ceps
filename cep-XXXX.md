@@ -335,7 +335,8 @@ Restricting references to relative paths ensures that related channels always li
 ### Symmetric relation types (e.g. "depends" / "supplements")
 
 Alternative naming schemes were considered, including `parent`/`child`, `depends`/`supplements`, and `primary`/`fallbacks`.
-The chosen names `base` and `overrides` were selected because they clearly communicate the priority direction: a base channel is foundational (higher priority), and the declaring channel overrides the referenced channel (the declaring channel has higher priority over it).
+The chosen names `base` and `overrides` were selected because they most clearly communicate the priority direction.
+See [Naming: base and overrides](#naming-base-and-overrides) for the rationale.
 
 ## Rationale
 
