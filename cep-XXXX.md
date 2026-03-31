@@ -54,6 +54,7 @@ If present, `channel_relations` MUST be a dictionary with the following optional
   This channel SHOULD be loaded with _lower_ priority than the declaring channel.
 
 Both keys are OPTIONAL.
+A channel MUST NOT declare both `base` and `overrides` referencing the same channel; clients MUST treat this as an error.
 If present, their interpretation with regards to the resolved channel list is described in [Building the relation graph](#building-the-relation-graph) below.
 If `channel_relations` is absent or empty, the channel declares no relations.
 Additional keys in `channel_relations` MUST be ignored to allow future extensions without breaking existing clients.
