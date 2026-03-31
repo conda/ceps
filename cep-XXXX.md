@@ -129,6 +129,7 @@ A [depth-first-search-based topological sort](https://en.wikipedia.org/wiki/Topo
 When generating a lockfile, tools SHOULD only record the user-specified ("head") channels, not the full resolved channel graph.
 The channel each package originated from is already stored in the `channel` field of individual package records in the lockfile.
 Recording only the head channels keeps lockfiles concise and avoids redundancy.
+When installing from a lockfile, the `channel` field of each package record MUST take priority over any channel relations declared by the head channels.
 
 #### Deduplication
 
