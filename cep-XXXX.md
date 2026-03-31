@@ -68,6 +68,9 @@ It MUST be resolved relative to the current channel base URL (without the subdir
 For example, if the current channel base URL is `https://conda.anaconda.org/bioconda`, the reference `../conda-forge` resolves to `https://conda.anaconda.org/conda-forge`.
 Similarly, if the current channel base URL is `https://conda.anaconda.org/conda-forge/label/rc`, the reference `../..` resolves to `https://conda.anaconda.org/conda-forge`.
 
+For local (`file://`) channels, relative path references could resolve to unintended filesystem locations.
+The risk is limited because the resolved path must point to a valid channel with a `repodata.json` structure, but clients MAY apply additional validation for local channel references.
+
 ### Sharded repodata
 
 When a channel serves sharded repodata as defined in [CEP 16](./cep-0016.md), the `channel_relations` field MAY also be included in the `info` dictionary of the shard index (`repodata_shards.msgpack.zst`).
