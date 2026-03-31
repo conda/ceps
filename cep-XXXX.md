@@ -134,7 +134,7 @@ When installing from a lockfile, the `channel` field of each package record MUST
 #### Deduplication
 
 If the same channel appears multiple times in the resolved graph (e.g. referenced by different subdirs, or by both a direct relation and a transitive relation), it MUST only be represented as a single node.
-All priority edges pointing to or from that channel MUST be merged.
+All priority edges pointing to or from that channel MUST be preserved and applied to the single merged node.
 
 ## Examples
 
