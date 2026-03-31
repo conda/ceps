@@ -16,7 +16,7 @@
 
 This CEP defines staging outputs for v1 multi-output recipes.
 
-## Background
+## Motivation
 
 Sometimes it is very useful to build some code once, and then split it into multiple build artifacts (such as shared library, header files, etc.). For this reason, `conda-build` has a special, implicit top-level build.
 
