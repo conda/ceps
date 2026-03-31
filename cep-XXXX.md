@@ -63,14 +63,16 @@ Inheriting from the top-level is a special case of regular "staging" inheritance
 
 A new `build.files` field is added to package outputs. It can be used to restrict which files from `$PREFIX` are included in the package output.
 
-When the field is not present, all new files are included. When it is present, it MUST either be:
+When the field is not present, the output follows the usual rules for determining the files to include.
+
+When it is present, it MUST either be:
 
 - a list of include patterns
 - a map with at least one of the following keys:
-  - `include` specifying a list of include patterns
-  - `exclude` specifying a list of exclude patterns
+  - `include` specifying a list of include patterns (defaults to `[**]`)
+  - `exclude` specifying a list of exclude patterns (defaults to empty)
 
-TODO: include / exclude logic
+In other to determine the files to include in a package output, the implementation MUST first determine the list of new files in the `$PREFIX`. This list MUST then be filtered to include only files matching at least one of the include patterns. Afterwards, all files matching at least one of the exclude patterns MUST be removed from it.
 
 ### Example
 
