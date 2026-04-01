@@ -5,8 +5,8 @@
 <tr><td> Status </td><td> In Discussion </td></tr>
 <tr><td> Author(s) </td><td> Wolf Vollprecht &ltw.vollprecht@gmail.com&gt; </td></tr>
 <tr><td> Created </td><td> Nov 27, 2024</td></tr>
-<tr><td> Updated </td><td> </td></tr>
-<tr><td> Discussion </td><td>  </td></tr>
+<tr><td> Updated </td><td> Apr 1, 2026 </td></tr>
+<tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/102 </td></tr>
 <tr><td> Implementation </td><td> rattler-build </td></tr>
 </table>
 
@@ -20,7 +20,7 @@ This CEP defines staging outputs for v1 multi-output recipes.
 
 Sometimes it is very useful to build some code once, and then split it into multiple build artifacts (such as shared library, header files, etc.). For this reason, `conda-build` has a special, implicit top-level build.
 
-There are many downsides to the behavior of `conda-build`: it's very implicit, hard to understand and hard to debug (for example, if an output is defined with the same name as the top-level recipe, this output will get the same requirements attached as the top-level).
+There are many downsides to the behavior of `conda-build`: it's too implicit, hard to understand, and hard to debug. For example, if an output is defined with the same name as the top-level recipe, this output will get the same requirements attached as the top-level. Furthermore, tests under such an output will be silently skipped.
 
 For the v1 spec we are attempting to formalize the workings of the "top-level" build. For this, we introduce a new `staging` output, that has the same values as a regular output, but does not produce a package artifact. Instead, we keep changes from the `staging` output in a temporary location on the filesystem and restore from this checkpoint when building other outputs that _inherit_ from this `staging` cache.
 
@@ -67,7 +67,7 @@ When the field is not present, the output follows the usual rules for determinin
 
 When it is present, it MUST either be:
 
-- a list of include patterns
+- a list of include patterns (as per CEP 14)
 - a map with at least one of the following keys:
   - `include` specifying a list of include patterns (defaults to `[**]`)
   - `exclude` specifying a list of exclude patterns (defaults to empty)
@@ -145,3 +145,19 @@ When the inheriting output is being built, these changes MUST be restored. If th
 When a package output adds a `source` and inherits from an output, the user is responsible not to clobber files (e.g. by using `target_directory`). The build program SHOULD warn if files are overwritten in the work directory.
 
 New files in the prefix (from the staging output) can be used in the outputs with the `build.files` key.
+
+## Rejected ideas
+
+The v1 recipe format could have been amended to feature the same implicit top-level build rules as v0 recipes have. This was rejected because of the downsides listed in the motivation section.
+
+Originally, the proposal used a top-level `cache:` section that provided a single shared build cache for all outputs. The proposal evolved to generalize that idea, permitting any number of caches (staging outputs) and the ability to explicitly specify inheritance for every output.
+
+## References
+
+- <https://rattler-build.prefix.dev/v0.58.4/multiple_output_cache/>
+- <https://rattler-build.prefix.dev/v0.58.4/reference/recipe_file/#staging-outputs>
+- <https://rattler-build.prefix.dev/v0.58.4/build_options/#include-only-certain-files-in-the-package>
+
+## Copyright
+
+All CEPs are explicitly [CC0 1.0 Universal](https://creativecommons.org/publicdomain/zero/1.0/).
