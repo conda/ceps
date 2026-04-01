@@ -5,8 +5,8 @@
 <tr><td> Status </td><td> In Discussion </td></tr>
 <tr><td> Author(s) </td><td> Wolf Vollprecht &ltw.vollprecht@gmail.com&gt; </td></tr>
 <tr><td> Created </td><td> Nov 27, 2024</td></tr>
-<tr><td> Updated </td><td> </td></tr>
-<tr><td> Discussion </td><td>  </td></tr>
+<tr><td> Updated </td><td> Apr 1, 2026 </td></tr>
+<tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/102 </td></tr>
 <tr><td> Implementation </td><td> rattler-build </td></tr>
 </table>
 
@@ -20,7 +20,7 @@ This CEP defines staging outputs for v1 multi-output recipes.
 
 Sometimes it is very useful to build some code once, and then split it into multiple build artifacts (such as shared library, header files, etc.). For this reason, `conda-build` has a special, implicit top-level build.
 
-There are many downsides to the behavior of `conda-build`: it's very implicit, hard to understand and hard to debug (for example, if an output is defined with the same name as the top-level recipe, this output will get the same requirements attached as the top-level).
+There are many downsides to the behavior of `conda-build`: it's too implicit, hard to understand, and hard to debug. For example, if an output is defined with the same name as the top-level recipe, this output will get the same requirements attached as the top-level.
 
 For the v1 spec we are attempting to formalize the workings of the "top-level" build. For this, we introduce a new `staging` output, that has the same values as a regular output, but does not produce a package artifact. Instead, we keep changes from the `staging` output in a temporary location on the filesystem and restore from this checkpoint when building other outputs that _inherit_ from this `staging` cache.
 
@@ -67,7 +67,7 @@ When the field is not present, the output follows the usual rules for determinin
 
 When it is present, it MUST either be:
 
-- a list of include patterns
+- a list of include patterns (as per CEP 14)
 - a map with at least one of the following keys:
   - `include` specifying a list of include patterns (defaults to `[**]`)
   - `exclude` specifying a list of exclude patterns (defaults to empty)
