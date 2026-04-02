@@ -6,7 +6,7 @@
 <tr><td> Author(s) </td><td> Bas Zalmstra &lt;bas@prefix.dev&gt;</td></tr>
 <tr><td> Created </td><td> Mar 6, 2026 </td></tr>
 <tr><td> Updated </td><td> Mar 6, 2026 </td></tr>
-<tr><td> Discussion </td><td> NA </td></tr>
+<tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/155 </td></tr>
 <tr><td> Implementation </td><td> NA </td></tr>
 </table>
 
