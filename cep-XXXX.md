@@ -114,8 +114,27 @@ any concrete [package] artifact and only exist on the client side.
 
 #### `version` component
 
-The `version` component MUST be the [package version string](./cep-0026.md#version-strings), as
-defined in CEP 26.
+The `version` component, when percent decoded, MUST be the package version string, as defined in
+[CEP 26](./cep-0026.md#version-strings) and [CEP 33](./cep-0033.md).
+
+The `version` component MUST comply with all character encoding rules specified in ECMA-427 Section
+5.4 ("Character Encoding").  In particular, if they are used, the epoch segment delimiter `!`
+(exclamation point) and the local version segment delimiter `+` (plus) must be percent encoded as
+`%21` and `%2B`, respectively.
+
+For conda PURLs to support the desired level of specificity, the `version` component SHOULD be
+treated as an exact equality, with any necessary `.0` padding, when used for package version
+comparisons.  In other words, the `version` component should be be treated as equivalent to a
+`==version` MatchSpec expression, as described in [CEP 29][matchspec-ver-match].  As an example, a
+`version` component with the value `1.2` should match versions `1.2` and `1.2.0` of the named
+package but not versions `1.2.0.1` and `1.2.3`.
+
+If [fuzzy equality][matchspec-ver-match] or other, more complex version matching is needed, the
+`version` component SHOULD be omitted and [the `vers` qualifier](#qualifiers-component) used
+instead.  The `version` component and `vers` qualifier are mutually exclusive and SHOULD NOT be
+used together in a conda PURL; in cases where both the `version` component and `vers` qualifier are
+provided, the `version` component SHALL take precedence.
+
 
 #### `qualifiers` component
 
@@ -136,6 +155,12 @@ The following `qualifiers` are defined for conda PURLs:
   [currently-recognized artifact extensions](./cep-0026.md#artifact-extensions) or its versioned
   synonym, as defined in CEP 26.  At the time of this CEP's adoption, the accepted values are
   `tar.bz2` (versioned synonym: `v1`), or `conda` (versioned synonym: `v2`).
+- `vers`: Optional qualifier, with no default value.  If provided, its value MUST be a valid
+  [Version Range Specifier (VERS)][vers-spec], whose `version-scheme` is `conda`; the specification
+  of the `conda` VERS and its relationship to concepts like the [MatchSpec query language][CEP29]
+  are considered out of scope for this CEP and will be discussed elsewhere.  This qualifier and the
+  `version` component are mutually exclusive and SHOULD NOT be used together; additional details
+  about this constraint are provided in the "`version` component" section of this CEP.
 - `checksum`:  Optional qualifier, with no default value.  If provided, its value MUST consist of
   one or more checksum specifications, with consecutive checksum specifications separated by a
   single, unencoded ASCII "," (comma) character.  Each checksum specification is defined as the
@@ -305,6 +330,9 @@ with this standard.
 
 ## Future Work
 
+- As noted in the `vers` qualifier definition, one or more CEPs will be needed to define VERS for
+  conda packages and as a likely prerequisite, provide more normative specifications for the
+  MatchSpec query language.
 - ECMA-427 allows for the specification of case-sensitivity and normalization rules as properties
   of various PURL components (e.g., namespaces, names, versions).  This CEP intentionally leaves
   such properties ambiguous or undefined, as no accepted standards within the conda ecosystem
@@ -340,16 +368,18 @@ with this standard.
 - [RFC8174][RFC8174]: Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words
 - [ECMA-427][ECMA427]: Package-URL (PURL) specification, 1st edition, December 2025
 - [CEP 26][CEP26]: Identifying Packages and Channels in the conda Ecosystem
+- [CEP 33][CEP33]: Version literals and their ordering
 - [CEP 34][CEP34]: Contents of conda packages
 - [CEP 35][CEP35]: Distributable package artifacts file formats
+- [VERS specification][vers-spec]: "VErsion Range Specifier" specification
 
 
 ### Informative References
 
 - [PURL Qualifiers Guidance][purl-quals-guide]
 - [CEP 16][CEP16]: Sharded Repodata
+- [CEP 29][CEP29]: The `MatchSpec` query language
 - [CEP 32][CEP32]: Management and structure of conda environments
-- [CEP 33][CEP33]: Version literals and their ordering
 - [CEP 36][CEP36]: Package metadata files served by conda channels
 
 <!-- Links -->
@@ -358,6 +388,7 @@ with this standard.
 [ECMA427]: https://ecma-international.org/publications-and-standards/standards/ecma-427/
 [CEP16]: ./cep-0016.md
 [CEP26]: ./cep-0026.md
+[CEP29]: ./cep-0029.md
 [CEP32]: ./cep-0032.md
 [CEP33]: ./cep-0033.md
 [CEP34]: ./cep-0034.md
@@ -365,8 +396,10 @@ with this standard.
 [CEP35.v1]: ./cep-0035.md#tarbz2
 [CEP35.v2]: ./cep-0035.md#conda
 [CEP36]: ./cep-0036.md
+[matchspec-ver-match]: ./cep-0029.md#version-matching
 [purl-conda-def]: https://github.com/package-url/purl-spec/blob/a6c97bcfe5c83985a1da348f73a65c9842c7e354/types/conda-definition.json
 [purl-quals-guide]: https://github.com/package-url/purl-spec/blob/a6c97bcfe5c83985a1da348f73a65c9842c7e354/docs/common-qualifiers.md
+[vers-spec]: https://github.com/package-url/vers-spec/blob/main/docs/standard/specification.md
 
 
 ## Copyright
