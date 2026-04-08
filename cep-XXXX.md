@@ -5,8 +5,8 @@
 <tr><td> Status </td><td> Draft </td></tr>
 <tr><td> Author(s) </td><td> Cheng H. Lee &lt;clee@anaconda.com&gt; </td></tr>
 <tr><td> Created </td><td> 2026-04-02 </td></tr>
-<tr><td> Updated </td><td> 2026-04-02 </td></tr>
-<tr><td> Discussion </td><td> ... </td></tr>
+<tr><td> Updated </td><td> 2026-04-08 </td></tr>
+<tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/159 </td></tr>
 <tr><td> Implementation </td><td> NA </td></tr>
 </table>
 
@@ -46,7 +46,7 @@ Edition (December 2025) of that standard.
 
 ### ECMA-427 PURL components
 
-ECMA-427 Section 5 ("Package-URL specification") states:
+ECMA-427 Clause 5 ("Package-URL specification") states:
 
 > A PURL is a URL composed of seven components:  
 >   scheme:type/namespace/name@version?qualifiers#subpath
@@ -55,16 +55,16 @@ For conda PURLs, these seven components are defined as follows:
 
 #### `scheme` component
 
-In accordance with ECMA-427 Section 5.6.1 ("Scheme"), the `scheme` component for a conda PURL is
+In accordance with ECMA-427 Clause 5.6.1 ("Scheme"), the `scheme` component for a conda PURL is
 the ASCII string literal "pkg".  Systems handling conda PURLs SHOULD also follow the other rules
-for the `scheme` component specified in ECMA-427 Section 5.6.1.
+for the `scheme` component specified in ECMA-427 Clause 5.6.1.
 
 #### `type` component
 
-In accordance with ECMA-427 Section 5.6.2 ("Type"), the canonical form for a conda PURL's `type`
+In accordance with ECMA-427 Clause 5.6.2 ("Type"), the canonical form for a conda PURL's `type`
 component is the ASCII string literal "conda".  The `type` component MUST be treated as
 case-insensitive, and system handling conda PURLs are encouraged to normalize the `type` component
-to its canonical lowercase form, following the behaviors specified in ECMA-427 Section 5.5.
+to its canonical lowercase form, following the behaviors specified in ECMA-427 Clause 5.5.
 
 #### `namespace` component
 
@@ -73,16 +73,16 @@ components of the [channel base URL defined in CEP 26](./cep-0026.md#channel-bas
 concept most users have when using the `channel` configuration option supported by [most]
 conda-compatible tools.
 
-For conda PURLs, the ECMA-427 Section 6.5.1 requirement property for the `namespace` component is
+For conda PURLs, the ECMA-427 Clause 6.5.1 requirement property for the `namespace` component is
 optional.  However, the use or non-use of the `namespace` component within a conda PURL MUST
 conform to the following rules:
 
 - If the `namespace` component is omitted from a conda PURL, then the `repository_url` qualifier
   MUST be explicitly provided in the PURL, and its value MUST be a valid channel base URL, as
   defined in CEP 26.
-- If the `namespace` component is provided, each ECMA-427 Section 5.6.3 `namespace` segment MUST be
+- If the `namespace` component is provided, each ECMA-427 Clause 5.6.3 `namespace` segment MUST be
   a valid channel base URL path component, as defined in CEP 26.  All other rules for the
-  `namespace` component specified in ECMA-417 Section 5.6.3 apply to conda PURLs, including the
+  `namespace` component specified in ECMA-417 Clause 5.6.3 apply to conda PURLs, including the
   requirement that segments within a PURL `namespace` MUST be separated by a single unencoded
   ASCII "/" (slash) character.
 - If the `namespace` component is provided, then the concatenation of the `repository_url`
@@ -175,7 +175,7 @@ The following `qualifiers` are defined for conda PURLs:
 
   The lowercase hex-encoded checksum value MUST only contain the ASCII lowercase characters `a-f`
   and digits `0-9`.  The checksum value is explicitly understood to be a hexadecimal value, so
-  commonly-used prefixes and postfixes (e.g., "0x" and "_16", respectively) MUST NOT be included as
+  commonly-used prefixes and postfixes (e.g., "0x" and "\_16", respectively) MUST NOT be included as
   part of the checksum value.
 
   Historically, the conda ecosystem has used the MD5 and SHA-256 algorithms for checksumming
@@ -183,11 +183,11 @@ The following `qualifiers` are defined for conda PURLs:
   sub-optimal security properties of MD5, the RECOMMENDED algorithm for the `checksum` qualifier is
   SHA-256.
 
-Qualifiers in conda PURLs SHALL conform with all the rules specified ECMA-427 Section 5.6.6
-("Qualifiers"), with the key words "shall", "shall not", and "may" in ECMA-427 Section 5.6.6 being
+Qualifiers in conda PURLs SHALL conform with all the rules specified ECMA-427 Clause 5.6.6
+("Qualifiers"), with the key words "shall", "shall not", and "may" in ECMA-427 Clause 5.6.6 being
 interpreted as their BCP 14 equivalents "SHALL", "SHALL NOT", and "MAY", respectively.
 Importantly, this means that the entirety of any `repository_url` value, including colons (`:`) and
-slashes (`/`), must be percent-encoded in accordance with ECMA-427 Section 5.4.
+slashes (`/`), must be percent-encoded in accordance with ECMA-427 Clause 5.4.
 
 Since existing CEPs do not define a strict relationship between a package artifact's build string
 and build number, this CEP does not require that the `build` and `build_number` qualifiers in a
@@ -216,19 +216,19 @@ rules defined in CEP 26.
 The optional `subpath` component of a conda PURL is used to specify a path within the identified
 package(s), subject to the following:
 
-- The `subpath` component SHALL confirm to all rules specified in ECMA-427 Section 5.6.7
-  ("Subpath"), with the key words "shall", "shall not", and "may" in ECMA-427 Section 5.6.7 being
+- The `subpath` component SHALL confirm to all rules specified in ECMA-427 Clause 5.6.7
+  ("Subpath"), with the key words "shall", "shall not", and "may" in ECMA-427 Clause 5.6.7 being
   interpreted as their BCP 14 equivalents "SHALL", "SHALL NOT", and "MAY", respectively.
 - The `subpath` component MUST be treated as case-sensitive.
 - If the `subpath` component identifies a symbolic link with the package(s), the `subpath`
   component MUST be interpreted as a reference to the symbolic link file itself and _not_ as a
   reference to the target path after the symbolic link has been partially or fully dereferenced.
 - When applied to [`tar.bz2`-/`v1`-format packages][CEP35.v1], "relative to the root of the
-  package" in ECMA-427 Section 5.6.7 MUST be interpreted as the path to an archive member within
+  package" in ECMA-427 Clause 5.6.7 MUST be interpreted as the path to an archive member within
   the package tarball, or equivalently, as a relative path from a root directory into which the
   package tarball was extracted.
 - When applied to [`conda`-/`v2`-format packages][CEP35.v2], "relative to the root of the package"
-  in ECMA-427 Section 5.6.7 MUST be interpreted as a relative path from a common root directory
+  in ECMA-427 Clause 5.6.7 MUST be interpreted as a relative path from a common root directory
   into which both inner archives (i.e., `info-{name}-{version}-{build}.tar.zst` and
   `pkg-{name}-{version}-{build}.tar.zst`) have been extracted.
 - The `subpath` component MUST be interpreted as a reference to a path as it exist in the package
@@ -243,21 +243,21 @@ archives within `conda`-/`v2`-format packages.
 
 ### Other ECMA-427 root object properties
 
-ECMA-427 Section 6 ("Package-URL Type Definition Schema") specifies other required and optional
+ECMA-427 Clause 6 ("Package-URL Type Definition Schema") specifies other required and optional
 properties for a PURL type definition.  For conda PURLs, these properties are defined as follows:
 
 #### `type name` property
 
-The ECMA-427 Section 6.2 `type name` property of the conda PURL type definition SHALL be "Conda".
+The ECMA-427 Clause 6.2 `type name` property of the conda PURL type definition SHALL be "Conda".
 
 #### `description` property
 
-The ECMA-427 Section 6.3 `description` property of the conda PURL type definition SHALL be
+The ECMA-427 Clause 6.3 `description` property of the conda PURL type definition SHALL be
 "Conda packages".
 
 #### `repository` property
 
-The ECMA-427 Section 6.4 `repository` property is REQUIRED for conda PURLs.  Its use and
+The ECMA-427 Clause 6.4 `repository` property is REQUIRED for conda PURLs.  Its use and
 interpretation is defined in the "`namespace` component" and "`qualifier` component" sections.
 
 To maintain compatibility with the default behavior of existing conda-compatible clients, the
@@ -266,17 +266,17 @@ default public repository (i.e., `default_repository_url`) for conda packages is
 
 #### `examples` property
 
-The ECMA-427 Section 6.10 `PURL examples` property of the conda PURL type definition SHALL consist
+The ECMA-427 Clause 6.10 `PURL examples` property of the conda PURL type definition SHALL consist
 of the PURLs listed in the "Examples" section of this CEP.
 
 #### `reference_urls` property
 
-The ECMA-427 Section 6.12 `reference_urls` property for the conda PURL type definition SHALL be a
+The ECMA-427 Clause 6.12 `reference_urls` property for the conda PURL type definition SHALL be a
 list consisting of:
 
 - The canonical URL of this CEP
 
-Note that ECMA-427 Section 6.12 specifies that the URLs listed in the `reference_urls` PURL type
+Note that ECMA-427 Clause 6.12 specifies that the URLs listed in the `reference_urls` PURL type
 definition are informative.  However, to ensure standardized implementations, this CEP SHOULD be
 treated as normative and not just informative.
 
