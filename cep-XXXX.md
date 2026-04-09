@@ -18,7 +18,7 @@
 ## Abstract
 
 This CEP standardizes the `__cuda_arch` virtual package, which exposes the minimum CUDA compute
-capability of detected GPU devices. This extends the virtual package framework defined in
+capability of detected NVIDIA devices. This extends the virtual package framework defined in
 [CEP 30](cep-0030.md).
 
 ## Motivation
