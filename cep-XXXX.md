@@ -6,7 +6,7 @@
 <tr><td> Author(s) </td><td> Jannis Leidel </td></tr>
 <tr><td> Created </td><td> Mar 4, 2026 </td></tr>
 <tr><td> Updated </td><td> Mar 4, 2026 </td></tr>
-<tr><td> Discussion </td><td> NA </td></tr>
+<tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/154 </td></tr>
 <tr><td> Implementation </td><td> NA </td></tr>
 <tr><td> Requires </td><td> CEP 36 </td></tr>
 </table>
@@ -42,7 +42,7 @@ The conda ecosystem would benefit from an equivalent signal.
 
 ### Use cases
 
-1. **Dependency cooldowns**: A configurable time window that excludes packages published too recently from being installed, giving security vendors time to flag malicious packages. See conda/conda#15759 and [William Woodruff's analysis](https://blog.yossarian.net/2025/11/21/We-should-all-be-using-dependency-cooldowns) of supply chain attack windows.
+1. **Dependency cooldowns**: A configurable time window that excludes packages published too recently from being installed, giving security vendors time to flag malicious packages. See [conda/conda#15759](https://github.com/conda/conda/issues/15759) and [William Woodruff's analysis](https://blog.yossarian.net/2025/11/21/We-should-all-be-using-dependency-cooldowns) of supply chain attack windows.
 
 2. **Reproducible environments**: Resolving an environment as it would have looked at a specific point in time (similar to `uv --exclude-newer`), using the publication date rather than the build date.
 
