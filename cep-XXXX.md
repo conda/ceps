@@ -7,7 +7,7 @@
 <tr><td> Created </td><td> Mar 4, 2026 </td></tr>
 <tr><td> Updated </td><td> Apr 10, 2026 </td></tr>
 <tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/154 </td></tr>
-<tr><td> Implementation </td><td> NA </td></tr>
+<tr><td> Implementation </td><td> <a href="https://github.com/conda/conda/issues/15759">conda/conda#15759</a> </td></tr>
 </table>
 
 > The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in [RFC2119][RFC2119] when, and only when, they appear in all capitals, as shown here.
@@ -119,7 +119,9 @@ For consistency with the existing `timestamp` field (CEP 34) and `channeldata.js
 - [schemas.conda.org - repodata-record-1.schema.json](https://schemas.conda.org/repodata-record-1.schema.json)
 - [schemas.conda.org - common-1.schema.json](https://schemas.conda.org/common-1.schema.json)
 - [PyPI JSON API - upload_time field](https://warehouse.pypa.io/api-reference/json.html)
-- [conda/conda#15759 - Dependency cooldowns](https://github.com/conda/conda/issues/15759)
+- [conda/conda#15759 - Exclude-newer tracking issue](https://github.com/conda/conda/issues/15759)
+- [conda/conda#15761 - Exclude-newer implementation in conda](https://github.com/conda/conda/pull/15761)
+- [mamba-org/mamba#4228 - exclude_newer_timestamp support in libmamba](https://github.com/mamba-org/mamba/pull/4228)
 - [William Woodruff - We should all be using dependency cooldowns](https://blog.yossarian.net/2025/11/21/We-should-all-be-using-dependency-cooldowns)
 - [Andrew Nesbitt - Package managers need to cool down](https://nesbitt.io/2026/03/04/package-managers-need-to-cool-down.html)
 - [Andrew Nesbitt - Package security defenses for AI agents](https://nesbitt.io/2026/04/09/package-security-defenses-for-ai-agents.html)
