@@ -64,7 +64,9 @@ The value of a server-controlled index timestamp varies by channel model. Curate
 
 Channel servers and indexing tools (such as `conda-index`, `quetz`, or Anaconda's infrastructure) SHOULD set `indexed_timestamp` on each package record when the artifact is first indexed into the channel. The value MUST reflect the actual time the artifact became available in the channel, not the build time or any value from the artifact itself. The `repodata-record-1` schema at schemas.conda.org SHOULD be updated accordingly.
 
-For artifacts that predate this CEP and lack an `indexed_timestamp`, channel servers MAY seed the value from the artifact's `timestamp` field or from another server-side signal such as file modification time. This is acceptable because the security benefits of `indexed_timestamp` (dependency cooldowns, exclude-newer) protect against the initial publication window, which has long closed for existing artifacts. For artifacts first indexed after this CEP is approved, the value MUST be set by the server at indexing time.
+For artifacts that predate this CEP and lack an `indexed_timestamp`, channel servers MAY seed the value from the artifact's `timestamp` field or from another server-side signal such as file modification time. This is acceptable because the security benefits of `indexed_timestamp` (dependency cooldowns, exclude-newer) protect against the initial publication window, which has long closed for existing artifacts.
+
+For artifacts first indexed after this CEP is approved, the value MUST be set by the server at indexing time.
 
 ### Timestamp validation
 
@@ -86,7 +88,9 @@ The `timestamp` field is builder-controlled and has known issues: it can be set 
 
 ### Why `indexed_timestamp`, not `upload_timestamp`
 
-The field measures when the artifact appeared in the channel index, not when it was uploaded. In many conda workflows, these are distinct events. For example, conda-forge uploads built artifacts to a staging channel (`cf-staging`), validates them, and only then copies them to the production `conda-forge` channel where they are indexed into `repodata.json`. The `conda-index` maintainer also describes this as tracking when a package was "first indexed" rather than when it was uploaded. The name `indexed_timestamp` accurately reflects this, and fits naturally alongside the existing `timestamp` field in the package record schema.
+The field measures when the artifact appeared in the channel index, not when it was uploaded. In many conda workflows, these are distinct events. For example, conda-forge uploads built artifacts to a staging channel (`cf-staging`), validates them, and only then copies them to the production `conda-forge` channel where they are indexed into `repodata.json`. The `conda-index` maintainer also describes this as tracking when a package was "first indexed" rather than when it was uploaded.
+
+The name `indexed_timestamp` accurately reflects this, and fits naturally alongside the existing `timestamp` field in the package record schema.
 
 ### Not subject to repodata patching
 
