@@ -60,16 +60,16 @@ Flag matching is intentionally simple: a package is excluded from consideration 
 
 ### Package solver sort order changes
 
-The packages sorting MUST take into account the `variant_order` field. If not present, it is assumed `0`. A package with a higher `variant_order` is preferred over those with lower values.
+Package sorting MUST take into account the `variant_order` field. If absent, it defaults to `0`. Higher values are preferred over lower values.
 
-If the `variant_order` field is present, sorting MUST respect (in the following order):
+Sorting MUST use the following criteria, in order of decreasing precedence:
 
-- tracked features comparison (fewer track features preferred)
-- version (higher version preferred)
-- build number (higher preferred)
-- variant order (higher preferred)
-- first order dependency versions (higher dependency versions preferred)
-- timestamp (newer package preferred)
+1. Tracked features (fewer is preferred)
+2. Version (higher is preferred)
+3. Build number (higher is preferred)
+4. Variant order (higher is preferred)
+5. First-order dependency versions (higher is preferred)
+6. Timestamp (newer is preferred)
 
 ### `index.json` and `repodata_record` changes
 
