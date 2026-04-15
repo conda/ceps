@@ -43,7 +43,7 @@ The `info/index.json` file of each conda artifact MUST support two new fields, `
 
 The value of the `flags` field MUST be a list of non-empty strings matching the regex `^[a-z0-9_]+(:[a-z0-9_]+)?$`. We allow a _single_ `:` for `key:value` semantics.
 
-The value of the `variant_order` field must be a integer.
+The value of the `variant_order` field must be a positive or negative integer.
 
 Subsequently, the `schema_version` value MUST be bumped to `3`.
 
@@ -60,16 +60,16 @@ Flag matching is intentionally simple: a package is excluded from consideration 
 
 ### Package solver sort order changes
 
-The packages sorting MUST take into account the `variant_order` field. If not present, it is assumed `0`.
+The packages sorting MUST take into account the `variant_order` field. If not present, it is assumed `0`. A package with a higher `variant_order` is preferred over those with lower values.
 
 If the `variant_order` field is present, sorting MUST respect (in the following order):
 
-- tracked features
-- version
-- build number
-- variant order
-- first order dependency versions
-- timestamp
+- tracked features comparison (fewer track features preferred)
+- version (higher version preferred)
+- build number (higher preferred)
+- variant order (higher preferred)
+- first order dependency versions (higher dependency versions preferred)
+- timestamp (newer package preferred)
 
 ### `index.json` and `repodata_record` changes
 
