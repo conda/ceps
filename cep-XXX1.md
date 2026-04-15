@@ -116,7 +116,7 @@ $ conda create -d "python[when=__unix]"
 InvalidMatchSpec: Invalid spec 'python[when=python]': Invalid spec 'python[when=python]': Cannot match on field(s): {'when'}
 ```
 
-When used as part of the runtime requirements of a newly built package, the conditional dependency must be included in the `depends` field of the resulting repodata record. Since this new syntax is backwards incompatible with older clients, the resulting `repodata.json` documents (or a derivative, like the sharded forms) MUST NOT include records of packages whose `info/index.json` features a value of `schema_version` equals to o greater than 3.
+When used as part of the runtime requirements of a newly built package, the conditional dependency must be included in the `depends` field of the resulting repodata record. Since this new syntax is backwards incompatible with older clients, the resulting `repodata.json` documents (or a derivative, like the sharded forms) MUST NOT include records of packages whose `info/index.json` features a value of `schema_version` equals to or greater than 3.
 
 ## Rejected ideas
 
