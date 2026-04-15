@@ -33,11 +33,11 @@ Instead of overloading the repodata documents with more package names (which cau
 
 ## Rationale
 
-The chosen keyword is `extras` given its popularity in Python packaging.
+The chosen keyword in the and `MatchSpecs` is  `extras` given its popularity in Python packaging.
 
 ## Specification
 
-The `info/index.json` dictionary of each conda artifact MUST allow a new field, `extras`, the value of which MUST be a dictionary that maps the group names (expressed as a string that MUST match the regex `[a-z0-9_.-+]{1,64}`) to a list of `MatchSpec` strings encoding the optional dependencies. Since this is backwards incompatible behavior-wise, the `schema_version` value MUST be bumped to `4`.
+The `info/index.json` dictionary of each conda artifact MUST allow a new field, `extra-depends`, the value of which MUST be a dictionary that maps the group names (expressed as a string that MUST match the regex `[a-z0-9_.-+]{1,64}`) to a list of `MatchSpec` strings encoding the optional dependencies. Since this is backwards incompatible behavior-wise, the `schema_version` value MUST be bumped to `3`.
 
 The `extras` field MUST also be exposed in recipe formats v1 and above, under the `requirements.extras` section (sibling to `build`, `host`, `run`, etc), that renders to the same schema (`dict[str, list[MatchSpec]]`).
 
@@ -45,7 +45,7 @@ This new field must be selectable by `MatchSpec` syntax using the `extras` keywo
 
 ## Examples
 
-A repodata record with `extras`:
+A repodata record with `extra-depends`:
 
 ```js
 {
@@ -57,7 +57,7 @@ A repodata record with `extras`:
       "depends": [
         "main-dependency"
       ]
-      "extras": {
+      "extra-depends": {
         "group-name": [
           "extra-dependency>=2",
           "another-dependency>=1"
