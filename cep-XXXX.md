@@ -69,6 +69,7 @@ The `whl` dictionary maps conda-like filenames to repodata records. The key MUST
   - All `Requires-Dist` entries from METADATA, converted from PEP 440 to conda format per [Dependency conversion](#dependency-conversion)
   - Package names normalized to conda-style names per [CEP 26][cep-26]
 - **`constrains`**: Contains `!=` version specifiers from PEP 440 (not included in `depends`).
+- **`extra_depends`**: MAY be present. When present, MUST be an object mapping extra names to lists of dependency strings for optional groups, per [PR 111][pr-111]. When absent or empty, the record declares no optional groups beyond `depends`.
 - **`subdir`**: MUST be `"noarch"`.
 - **`noarch`**: MUST be `"python"`.
 - **`url`**: MAY be present. See [Wheel download URLs](#wheel-download-urls) for semantics.
@@ -143,7 +144,7 @@ Wheel dependencies (from METADATA file's Requires-Dist entries) MUST be converte
 - **Python version requirements:** Convert Requires-Python to explicit python dependency
 - **Environment markers:** Map Python-version markers on `Requires-Dist` to conditional `MatchSpec` `when=` as specified in [PR 111][pr-111]. Other markers are out of scope for the default conversion rules in this CEP (see [Limitations](#limitations)).
 
-For a non-normative, per-variable description of how **conda-pypi** maps PEP 508 markers to `when=` fragments (and related repodata fields), see [PEP 508 marker conversion][conda-pypi-marker-conversion] in the conda-pypi documentation.
+For a non-normative, per-variable description of how **conda-pypi** maps PEP 508 markers to `when=` fragments and **`extra_depends`** for optional groups, see [PEP 508 marker conversion][conda-pypi-marker-conversion] in the conda-pypi documentation.
 
 Example conversion:
 
@@ -174,7 +175,7 @@ Resulting conda record:
 
 Wheel `depends` entries that encode PEP 508 environment markers MUST use conditional `MatchSpec` syntax with `when=` as specified in [PR 111][pr-111].
 
-PyPI **extras** (optional dependency groups) MUST follow the `extras` repodata record model in [PR 111][pr-111]. A default install does not activate extras unless the user requests them (for example with `extras=` in `MatchSpec` as described there).
+PyPI **extras** (optional dependency groups) MUST be represented on the wheel repodata record using an **`extra_depends`** object (a mapping from extra name to lists of dependency strings) as specified in [PR 111][pr-111]. A default install uses only `depends` and MUST NOT union in `extra_depends` entries unless the user selects optional groups (for example with `extras=` in `MatchSpec` as described in [PR 111][pr-111]).
 
 ### Solver behavior and package preference
 
@@ -200,7 +201,7 @@ This CEP has the following known limitations:
 
 1. **Pure Python only:** This CEP explicitly does not address wheels with binary extensions, which require platform-specific compatibility guarantees beyond the current scope. Conda’s strength is binary compatibility, so using conda packages may be the optimal solution.
 2. **Environment markers:** This CEP’s default conversion rules focus on Python-version markers mapped to `when=` per [PR 111][pr-111]. Other markers (for example `sys_platform`) are out of scope for those default rules and are not converted here, though some MAY be expressible with `when=` once clients implement [PR 111][pr-111].
-3. **Conditionals and extras:** Normative syntax and record fields for `when=` and optional dependency groups are specified in [PR 111][pr-111], which this wheel CEP depends on for PyPI-aligned conditionals and extras.
+3. **Conditionals and extras:** Normative syntax and record fields for `when=` on `depends` and for optional groups in **`extra_depends`** are specified in [PR 111][pr-111], which this wheel CEP depends on for PyPI-aligned conditionals and extras.
 4. **Repodata size:** Supporting a significant portion of pure Python packages from PyPI (potentially hundreds of thousands of packages with multiple versions each) will substantially increase repodata size. Channels adopting wheel support at scale will need to implement sharded repodata ([CEP 16][cep-16]) to maintain acceptable performance. Alternatively, channels may choose to curate a subset of popular or requested packages rather than mirroring all of PyPI.
 5. **PyPI package deletion:** PyPI allows package maintainers to delete packages (as opposed to just yanking them), which can break locked environments that reference those packages. Channels using external PyPI URLs directly are subject to this risk. For production use and reproducible environments, channels MAY mirror and store wheel artifacts locally rather than relying solely on external PyPI URLs.
 
@@ -233,8 +234,8 @@ Clients implementing this CEP SHOULD:
 - Apply the same filtering and preference logic used for conda packages
 - Extract wheel metadata during solving to populate dependency information
 - Evaluate `when=` on wheel `depends` entries per [PR 111][pr-111]
-- Honor optional dependency groups when the user selects `extras` per [PR 111][pr-111]
-- Treat wheel records that use `when=` or `extras` metadata as part of the same `v{revision}` repodata payload as other new-syntax records, per the [backwards-compatible repodata update strategy](https://github.com/conda/ceps/pull/146)
+- Honor **`extra_depends`** when the user selects optional groups (for example with `extras=` in `MatchSpec`) per [PR 111][pr-111]
+- Treat wheel records that use `when=` on `depends` or **`extra_depends`** metadata as part of the same `v{revision}` repodata payload as other new-syntax records, per the [backwards-compatible repodata update strategy](https://github.com/conda/ceps/pull/146)
 - Provide the ability to natively install wheels or on-the-fly convert wheels to conda packages for installation
 
 ### For channel operators
