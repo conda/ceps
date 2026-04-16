@@ -8,7 +8,7 @@
   Travis Hathaway &lt;travis.j.hathaway@gmail.com&gt;
 </td></tr>
 <tr><td> Created </td><td> Dec 23, 2025</td></tr>
-<tr><td> Updated </td><td> Feb 2, 2026</td></tr>
+<tr><td> Updated </td><td> Apr 16, 2026</td></tr>
 <tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/145 </td></tr>
 <tr><td> Implementation </td><td> TBD </td></tr>
 <tr><td> Requires </td><td>https://github.com/conda/ceps/pull/151 https://github.com/conda/ceps/pull/146</td></tr>
@@ -44,10 +44,9 @@ Note that this CEP does not eliminate the need for conda recipes entirely. Many 
 
 ## Specification
 
-### Add a new top-level key `packages.whl` to list wheels in a channel
+### Expose wheels via `whl` inside a repodata revision (`v{revision}`)
 
-According to the current draft schema for [repodata.json][repodata-schema], repodata consists of five top
-level keys:
+According to the current draft schema for [repodata.json][repodata-schema], the repodata object is traditionally organized around these top-level keys (the surface unchanged clients rely on):
 
 - repodata_version
 - info
@@ -55,11 +54,11 @@ level keys:
 - packages.conda
 - removed
 
-This CEP proposes the addition of a new `packages.whl` section to account for the wheel format. This key points to a mapping that MUST contain [repodata record][repodata-record-schema] objects.
+Wheel support MUST follow [A backwards-compatible repodata update strategy](https://github.com/conda/ceps/pull/146): publishers SHALL register the revision in `info.repodata_revisions` and SHALL place the wheel index under the matching top-level `v{revision}` dictionary (where `revision` is the integer listed for that entry). This CEP specifies a `whl` member inside that `v{revision}` object. The value MUST be a mapping whose entries are [repodata record][repodata-record-schema] objects.
 
-### `packages.whl` dictionary structure
+### `whl` dictionary structure
 
-The `packages.whl` dictionary maps conda-like filenames to repodata records. The key MUST follow the format specified in [Key naming requirements](#key-naming-requirements). The value MUST be a repodata record object that conforms to the [repodata record schema][repodata-record-schema] with the following field specifications:
+The `whl` dictionary maps conda-like filenames to repodata records. The key MUST follow the format specified in [Key naming requirements](#key-naming-requirements). The value MUST be a repodata record object that conforms to the [repodata record schema][repodata-record-schema] with the following field specifications:
 
 - **`name`**: Taken from the wheel's METADATA `Name` field, normalized per [CEP 26][cep-26] and any parent channel name mappings.
 - **`version`**: Taken from the wheel's METADATA `Version` field, normalized per PEP 440.
@@ -74,11 +73,10 @@ The `packages.whl` dictionary maps conda-like filenames to repodata records. The
 - **`noarch`**: MUST be `"python"`.
 - **`url`**: MAY be present. See [Wheel download URLs](#wheel-download-urls) for semantics.
 - **`sha256`**, **`size`**, **`timestamp`**: Standard repodata fields for the wheel file.
-- **`record_version`**: MUST be present (currently 3).
 
 ### Key naming requirements
 
-The key for each entry in `packages.whl` MUST follow the standard conda distribution string format per [CEP 26][cep-26]: `{name}-{version}-{build string}`, where:
+The key for each entry in `whl` MUST follow the standard conda distribution string format per [CEP 26][cep-26]: `{name}-{version}-{build string}`, where:
 
 - `{name}` is derived from the wheel's METADATA file (the `Name` field), normalized according to conda naming conventions per [CEP 26][cep-26] and any name mappings inherited from a parent channel (see [Naming standard and channel mapping](#naming-standard-and-channel-mapping))
 - `{version}` is the package version from METADATA
@@ -106,7 +104,8 @@ Channel operators SHOULD document any naming conventions and mappings specific t
 
 This CEP depends on the `url` field for package records ([CEP XXXX](https://github.com/conda/ceps/pull/151)), which enables custom download locations. This is essential for wheel support since PyPI wheels are commonly hosted in per-package subdirectories or served from CDNs.
 
-Both the `packages.whl` field and the `url` field will be introduced following the backwards-compatible update strategy ([CEP XXXX](https://github.com/conda/ceps/pull/146)).
+The `whl` mapping (inside the `v{revision}` payload) and the per-record `url` field SHALL follow
+the backwards-compatible update strategy ([CEP XXXX](https://github.com/conda/ceps/pull/146)).
 
 ### Wheel-Specific Record Values
 
@@ -120,14 +119,14 @@ When populating repodata records for pure Python wheels:
 
 ### Pure Python wheel validation
 
-Before adding a wheel to `packages.whl`, channel operators MUST verify:
+Before adding a wheel to `whl`, channel operators MUST verify:
 
 - The wheel's platform tag is `any` (e.g., `py3-none-any`, `py2.py3-none-any`)
 - The wheel's ABI tag is `none`
 - The wheel contains no compiled extensions (`.so`, `.pyd`, `.dylib` files)
 - The wheel's `METADATA` file is present and valid
 
-Wheels that fail any of these checks MUST NOT be added to `packages.whl`.
+Wheels that fail any of these checks MUST NOT be added to `whl`.
 
 ### Dependency conversion
 
@@ -179,7 +178,7 @@ Solvers MUST treat pure Python wheels as valid package candidates during depende
 
 - **Exclusivity:** Solvers MUST NOT install both a conda package and wheel for the same package name.
 - **Dependency satisfaction:** When a wheel is selected, its `depends` list MUST be satisfied like any conda package. Dependencies in the `depends` list MAY be satisfied by either wheels or conda packages.
-- **Platform matching:** Since all wheels in `packages.whl` are pure Python (noarch), no platform filtering is needed.
+- **Platform matching:** Since all wheels in `whl` are pure Python (noarch), no platform filtering is needed.
 
 #### User control of precedence
 
@@ -223,7 +222,8 @@ Several factors can cause wheel names to differ from conda-style names:
 
 Clients implementing this CEP SHOULD:
 
-- Parse the new `packages.whl` section alongside existing package sections
+- Parse the `whl` mapping inside each supported `v{revision}` object alongside existing `packages` /
+  `packages.conda` sections
 - Apply the same filtering and preference logic used for conda packages
 - Extract wheel metadata during solving to populate dependency information
 - Provide the ability to natively install wheels or on-the-fly convert wheels to conda packages for installation
@@ -253,35 +253,41 @@ A phased approach starting with manual curation and moving toward increased auto
 
 ## Examples
 
+The JSON fragments below use revision `3` as an example (`v3`); the integer MUST match an entry in
+`info.repodata_revisions` per [the backwards-compatible repodata update strategy](https://github.com/conda/ceps/pull/146).
+A complete channel index also includes the traditional top-level keys (`repodata_version`, `packages`,
+`packages.conda`, `removed`, and so on). A full generated example is checked in with [conda-pypi][conda-pypi-example-repodata].
+
 ### Download wheels from the default location
 
 Below represents the default behavior and shows when the `url` field is not set:
 
 ```json
 {
-  "packages.whl": {
-    "requests-2.32.5-py3_none_any_0": {
-      "record_version": 3,
-      "name": "requests",
-      "version": "2.32.5",
-      "build": "py3_none_any_0",
-      "build_number": 0,
-      "depends": [
-        "charset-normalizer <4,>=2",
-        "idna <4,>=2.5",
-        "urllib3 <3,>=1.21.1",
-        "certifi >=2017.4.17",
-        "python >=3.9"
-      ],
-      "constrains": [],
-      "sha256": "78820a3e5d9d3b25ce8e1c99c1c89cd19caa904a92973a3e50f8426009e8a4b3",
-      "size": 6899,
-      "subdir": "noarch",
-      "timestamp": 1764005009,
-      "noarch": "python",
-      "url": null
+  "v3": {
+    "whl": {
+      "requests-2.32.5-py3_none_any_0": {
+        "name": "requests",
+        "version": "2.32.5",
+        "build": "py3_none_any_0",
+        "build_number": 0,
+        "depends": [
+          "charset-normalizer <4,>=2",
+          "idna <4,>=2.5",
+          "urllib3 <3,>=1.21.1",
+          "certifi >=2017.4.17",
+          "python >=3.9"
+        ],
+        "constrains": [],
+        "sha256": "78820a3e5d9d3b25ce8e1c99c1c89cd19caa904a92973a3e50f8426009e8a4b3",
+        "size": 6899,
+        "subdir": "noarch",
+        "timestamp": 1764005009,
+        "noarch": "python",
+        "url": null
+      }
     }
- }
+  }
 }
 ```
 
@@ -300,27 +306,28 @@ The `url` can also be relative as described above. Here's an example of what tha
     "base_url": "https://repo.example.com/channel/",
     "parent_channel": "https://conda.anaconda.org/conda-forge"
   },
-  "packages.whl": {
-    "requests-2.32.5-py3_none_any_0": {
-      "record_version": 3,
-      "name": "requests",
-      "version": "2.32.5",
-      "build": "py3_none_any_0",
-      "build_number": 0,
-      "depends": [
-        "charset-normalizer <4,>=2",
-        "idna <4,>=2.5",
-        "urllib3 <3,>=1.21.1",
-        "certifi >=2017.4.17",
-        "python >=3.9"
-      ],
-      "constrains": [],
-      "sha256": "78820a3e5d9d3b25ce8e1c99c1c89cd19caa904a92973a3e50f8426009e8a4b3",
-      "size": 6899,
-      "subdir": "noarch",
-      "timestamp": 1764005009,
-      "noarch": "python",
-      "url": "requests/requests-2.32.5-py3-none-any.whl"
+  "v3": {
+    "whl": {
+      "requests-2.32.5-py3_none_any_0": {
+        "name": "requests",
+        "version": "2.32.5",
+        "build": "py3_none_any_0",
+        "build_number": 0,
+        "depends": [
+          "charset-normalizer <4,>=2",
+          "idna <4,>=2.5",
+          "urllib3 <3,>=1.21.1",
+          "certifi >=2017.4.17",
+          "python >=3.9"
+        ],
+        "constrains": [],
+        "sha256": "78820a3e5d9d3b25ce8e1c99c1c89cd19caa904a92973a3e50f8426009e8a4b3",
+        "size": 6899,
+        "subdir": "noarch",
+        "timestamp": 1764005009,
+        "noarch": "python",
+        "url": "requests/requests-2.32.5-py3-none-any.whl"
+      }
     }
   }
 }
@@ -336,27 +343,28 @@ The following shows an example of using an external location to download the whe
 
 ```json
 {
-  "packages.whl": {
-    "requests-2.32.5-py3_none_any_0": {
-      "record_version": 3,
-      "name": "requests",
-      "version": "2.32.5",
-      "build": "py3_none_any_0",
-      "build_number": 0,
-      "depends": [
-        "charset-normalizer <4,>=2",
-        "idna <4,>=2.5",
-        "urllib3 <3,>=1.21.1",
-        "certifi >=2017.4.17",
-        "python >=3.9"
-      ],
-      "constrains": [],
-      "sha256": "78820a3e5d9d3b25ce8e1c99c1c89cd19caa904a92973a3e50f8426009e8a4b3",
-      "size": 6899,
-      "subdir": "noarch",
-      "timestamp": 1764005009,
-      "noarch": "python",
-      "url": "https://files.pythonhosted.org/packages/1e/db/4254e3eabe8020b458f1a747140d32277ec7a271daf1d235b70dc0b4e6e3/requests-2.32.5-py3-none-any.whl"
+  "v3": {
+    "whl": {
+      "requests-2.32.5-py3_none_any_0": {
+        "name": "requests",
+        "version": "2.32.5",
+        "build": "py3_none_any_0",
+        "build_number": 0,
+        "depends": [
+          "charset-normalizer <4,>=2",
+          "idna <4,>=2.5",
+          "urllib3 <3,>=1.21.1",
+          "certifi >=2017.4.17",
+          "python >=3.9"
+        ],
+        "constrains": [],
+        "sha256": "78820a3e5d9d3b25ce8e1c99c1c89cd19caa904a92973a3e50f8426009e8a4b3",
+        "size": 6899,
+        "subdir": "noarch",
+        "timestamp": 1764005009,
+        "noarch": "python",
+        "url": "https://files.pythonhosted.org/packages/1e/db/4254e3eabe8020b458f1a747140d32277ec7a271daf1d235b70dc0b4e6e3/requests-2.32.5-py3-none-any.whl"
+      }
     }
   }
 }
@@ -368,24 +376,25 @@ Here is an example of name mapping and normalization of the record name and depe
 
 ```json
 {
-  "packages.whl": {
-    "annotated_types-0.7.0-py3_none_any_0": {
-      "record_version": 3,
-      "name": "annotated-types",
-      "version": "0.7.0",
-      "build": "py3_none_any_0",
-      "build_number": 0,
-      "depends": [
-        "typing_extensions >=4.0.0; if python < 3.9",
-        "python >=3.8"
-      ],
-      "constrains": [],
-      "sha256": "1f02e8b43a8fbbc3f3e0d4f0f4bfc8131bcb4eebe8849b8e5c773f3a1c582a53",
-      "size": 13643,
-      "subdir": "noarch",
-      "timestamp": 1756405206,
-      "noarch": "python",
-      "url": "https://files.pythonhosted.org/packages/78/b6/6307fbef88d9b5ee7421e68d78a9f162e0da4900bc5f5793f6d3d0e34fb8/annotated_types-0.7.0-py3-none-any.whl"
+  "v3": {
+    "whl": {
+      "annotated_types-0.7.0-py3_none_any_0": {
+        "name": "annotated-types",
+        "version": "0.7.0",
+        "build": "py3_none_any_0",
+        "build_number": 0,
+        "depends": [
+          "typing_extensions >=4.0.0; if python < 3.9",
+          "python >=3.8"
+        ],
+        "constrains": [],
+        "sha256": "1f02e8b43a8fbbc3f3e0d4f0f4bfc8131bcb4eebe8849b8e5c773f3a1c582a53",
+        "size": 13643,
+        "subdir": "noarch",
+        "timestamp": 1756405206,
+        "noarch": "python",
+        "url": "https://files.pythonhosted.org/packages/78/b6/6307fbef88d9b5ee7421e68d78a9f162e0da4900bc5f5793f6d3d0e34fb8/annotated_types-0.7.0-py3-none-any.whl"
+      }
     }
   }
 }
@@ -576,13 +585,14 @@ conda-pupa is merged into conda-pypi which adds a `conda pypi install <package>`
 
 ### conda-pypi integrates parts of conda-whl-support (Nov 2025)
 
-Conda-pypi incorporates the wheel detection logic from conda-whl-support, providing the core functionality needed beyond the solver and index changes required to support the `packages.whl` section proposed in this CEP.
+Conda-pypi incorporates the wheel detection logic from conda-whl-support, providing the core functionality needed beyond the solver and index changes required to support the `whl` section proposed in this CEP.
 
 ## References
 
 - [Adopting uv in pixi][uv-in-pixi]
 - [rip][rip]
 - [conda-pypi project][conda-pypi]
+- [Example `repodata.json` (conda-pypi test channel)][conda-pypi-example-repodata]
 - [conda-pupa][conda-pupa]
 
 ## Copyright
@@ -597,6 +607,7 @@ All CEPs are explicitly [CC0 1.0 Universal](https://creativecommons.org/publicdo
 [cep-26]: https://conda.org/learn/ceps/cep-0026
 [version-specifiers]: https://packaging.python.org/en/latest/specifications/version-specifiers/#id5
 [conda-pypi]: https://github.com/conda-incubator/conda-pypi
+[conda-pypi-example-repodata]: https://github.com/conda-incubator/conda-pypi/blob/main/tests/conda_local_channel/noarch/repodata.json
 [conda-pupa]: https://github.com/dholth/conda-pupa
 [uv-in-pixi]: https://prefix.dev/blog/uv_in_pixi
 [rip]: https://github.com/prefix-dev/rip
