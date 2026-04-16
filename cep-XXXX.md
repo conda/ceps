@@ -71,7 +71,7 @@ The `whl` dictionary maps conda-like filenames to repodata records. The key MUST
 - **`extra_depends`**: MAY be present. When present, MUST be an object mapping extra names to lists of dependency strings for optional groups, per [PR 111][pr-111]. When absent or empty, the record declares no optional groups beyond `depends`.
 - **`subdir`**: MUST be `"noarch"`.
 - **`noarch`**: MUST be `"python"`.
-- **`url`**: MAY be present. See [Wheel download URLs](#wheel-download-urls) for semantics.
+- **`url`**: MAY be present. Semantics are defined in [PR 151][pr-151] (see [Wheel download URLs](#wheel-download-urls)).
 - **`fn`**: MUST be the wheel filename (`.whl`), as in standard conda repodata records (for example `requests-2.32.5-py3-none-any.whl`).
 - **`sha256`**, **`size`**: Standard repodata fields for the wheel file.
 
@@ -104,10 +104,10 @@ Channel operators SHOULD document any naming conventions and mappings specific t
 
 ### Wheel download URLs
 
-This CEP depends on the `url` field for package records ([CEP XXXX](https://github.com/conda/ceps/pull/151)), which enables custom download locations. This is essential for wheel support since PyPI wheels are commonly hosted in per-package subdirectories or served from CDNs.
+This CEP depends on the optional per-record **`url`** field as specified in [PR 151][pr-151], which enables custom download locations. This is essential for wheel support since PyPI wheels are commonly hosted in per-package subdirectories or served from CDNs.
 
 The `whl` mapping (inside the `v{revision}` payload) and the per-record `url` field SHALL follow
-the backwards-compatible update strategy ([CEP XXXX](https://github.com/conda/ceps/pull/146)).
+the backwards-compatible update strategy ([PR 146](https://github.com/conda/ceps/pull/146)).
 
 ### Wheel-Specific Record Values
 
@@ -118,7 +118,7 @@ When populating repodata records for pure Python wheels:
 - `subdir`: MUST be "noarch"
 - `noarch`: MUST be "python"
 - `fn`: MUST be the wheel filename (`.whl`)
-- `url`: MAY be present and follow the semantics described above
+- `url`: MAY be present and follow the semantics in [PR 151][pr-151] and [Wheel download URLs](#wheel-download-urls)
 
 ### Pure Python wheel validation
 
@@ -604,6 +604,7 @@ Conda-pypi incorporates the wheel detection logic from conda-whl-support, provid
 - [PEP 508 marker conversion (conda-pypi developer docs)][conda-pypi-marker-conversion]
 - [Example `repodata.json` (conda-pypi test channel)][conda-pypi-example-repodata]
 - [Channel relations in repodata (PR 155)][cep-channel-relations]
+- [PR 151 – URL field for package records][pr-151]
 - [PR 111 – Conditional dependencies and optional groups][pr-111]
 - [conda-pupa][conda-pupa]
 
@@ -622,6 +623,7 @@ All CEPs are explicitly [CC0 1.0 Universal](https://creativecommons.org/publicdo
 [conda-pypi-marker-conversion]: https://conda.github.io/conda-pypi/developer/marker-conversion/#pep-508-variables
 [conda-pypi-example-repodata]: https://github.com/conda-incubator/conda-pypi/blob/main/tests/conda_local_channel/noarch/repodata.json
 [cep-channel-relations]: https://github.com/conda/ceps/pull/155
+[pr-151]: https://github.com/conda/ceps/pull/151
 [pr-111]: https://github.com/conda/ceps/pull/111
 [conda-pupa]: https://github.com/dholth/conda-pupa
 [uv-in-pixi]: https://prefix.dev/blog/uv_in_pixi
