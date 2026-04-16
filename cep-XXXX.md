@@ -521,15 +521,16 @@ Native wheel support provides the same user experience (transparent PyPI access)
 
 ## History
 
-The desire for better interoperability is not new and there has been a discussion over the last 12 years about balancing conda's core strengths (reproducibility, binary packages, cross-language support) with the Python community's expectations for seamless PyPI access.
+PyPI integration has been debated for years in tension with conda's emphasis on reproducible, binary-first environments.
 
 ### Early Vision (2012-2014)
 
-The conda project's earliest discussions reveal a consistent vision for broad package manager interoperability that extends beyond just PyPI integration:
+Early conda assumed environments could mix conda-installed packages with software brought in by other tools, and tried to fold those installs into environments managed by conda. The first concrete step was PyPI: within weeks of conda's first release, it shipped a `pip` subcommand.
+This feature took a snapshot of untracked files, ran that environment's `pip install`, created a diff, packed the new files into one `.tar.bz2`, and then reinstalled them with conda. However, folding arbitrary pip installs into a single conda record was a poor fit for dependency identity, upgrades, and reuse. The subcommand was removed in 1.8 for that model and to reduce confusion between `conda pip` and ordinary `pip` in an activated environment.
 
-- Issue [#307](https://github.com/conda/conda/issue/307) (2013) proposed conda should work with pip, npm, gem, rpm, and brew, envisioning conda as a universal package manager interface
-- Issue [#292](https://github.com/conda/conda/issue/292) (2013) explicitly titled "Making conda the ultimate package manager" outlined ambitious cross-ecosystem integration
-- Issue [#224](https://github.com/conda/conda/issue/224) (2012) discussed deprecating pip commands in favor of native conda functionality
+Issue [#327](https://github.com/conda/conda/issues/327) added `--use-pypi`. conda 4.6.0 introduced experimental `prefix_data_interoperability` to reconcile pip-installed metadata with conda's when enabled; it remained off by default because of the performance cost.
+
+Representative issues from the same period: [#307](https://github.com/conda/conda/issues/307) (2013, pip, npm, gems, rpm, brew), [#292](https://github.com/conda/conda/issues/292) (2013, "ultimate package manager"), [#224](https://github.com/conda/conda/issues/224) (2012, native conda vs pip commands).
 
 ### The PyPI Integration Debate (2013-2016)
 
@@ -537,7 +538,7 @@ Two competing philosophies emerged on how or if we should provide better integra
 
 #### Pro-integration
 
-Issue [#262](https://github.com/conda/conda/issue/262) (2013): conda should install directly from PyPI to reduce duplication and improve package availability.
+Issue [#262](https://github.com/conda/conda/issues/262) (2013): conda should install directly from PyPI to reduce duplication and improve package availability.
 
 Arguments for this approach:
 
@@ -546,7 +547,7 @@ Arguments for this approach:
 
 #### Status quo
 
-Arguments to for maintaining an independent packaging ecosystem prevailed at the time for the following reasons:
+Arguments for maintaining an independent packaging ecosystem prevailed at the time for the following reasons:
 
 - Conda's value proposition is reproducible, binary-focused environments with precise dependency resolution
 - PyPI's source distributions and pip's resolver could compromise conda's guarantees
