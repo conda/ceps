@@ -3,6 +3,10 @@
 - [ ] I am submitting a new CEP: [Put your title here](#link-to-markdown-preview-in-branch).
   - [ ] I am using the CEP template by creating a copy `cep-0000.md` named `cep-XXXX.md` in the root level.
 - [ ] I am submitting modifications to CEP XX. <!-- reflect CEP number here -->
+  - [ ] The PR title reflects the CEP I'm modifying: `CEP XX: Amend XYZ`.
+  - [ ] I updated the "Updated" date.
+  - [ ] I added the link of this PR to the Discussions row.
+  - [ ] I added or extended the `## Changelog` section right above the final "Copyright" section with an item that uses syntax `YYYY-MM-DD: Brief explanation of changes`.
 - [ ] Something else: (add your description here).
 
 <!-- delete section below if this is not a new CEP -->
