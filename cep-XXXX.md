@@ -68,12 +68,12 @@ The `whl` dictionary maps conda-like filenames to repodata records. The key MUST
   - `python` dependency from `Requires-Python` (if present), converted to conda format
   - All `Requires-Dist` entries from METADATA, converted from PEP 440 to conda format per [Dependency conversion](#dependency-conversion)
   - Package names normalized to conda-style names per [CEP 26][cep-26]
-- **`constrains`**: Contains `!=` version specifiers from PEP 440 (not included in `depends`).
 - **`extra_depends`**: MAY be present. When present, MUST be an object mapping extra names to lists of dependency strings for optional groups, per [PR 111][pr-111]. When absent or empty, the record declares no optional groups beyond `depends`.
 - **`subdir`**: MUST be `"noarch"`.
 - **`noarch`**: MUST be `"python"`.
 - **`url`**: MAY be present. See [Wheel download URLs](#wheel-download-urls) for semantics.
-- **`sha256`**, **`size`**, **`timestamp`**: Standard repodata fields for the wheel file.
+- **`fn`**: MUST be the wheel filename (`.whl`), as in standard conda repodata records (for example `requests-2.32.5-py3-none-any.whl`).
+- **`sha256`**, **`size`**: Standard repodata fields for the wheel file.
 
 ### Key naming requirements
 
@@ -117,6 +117,7 @@ When populating repodata records for pure Python wheels:
 - `build_number`: MUST be 0 for the initial addition of a wheel version. MAY be incremented for subsequent rebuilds of the same wheel version (e.g., to correct dependencies or metadata)
 - `subdir`: MUST be "noarch"
 - `noarch`: MUST be "python"
+- `fn`: MUST be the wheel filename (`.whl`)
 - `url`: MAY be present and follow the semantics described above
 
 ### Pure Python wheel validation
@@ -288,11 +289,10 @@ Below represents the default behavior and shows when the `url` field is not set:
           "certifi >=2017.4.17",
           "python >=3.9"
         ],
-        "constrains": [],
+        "fn": "requests-2.32.5-py3-none-any.whl",
         "sha256": "78820a3e5d9d3b25ce8e1c99c1c89cd19caa904a92973a3e50f8426009e8a4b3",
         "size": 6899,
         "subdir": "noarch",
-        "timestamp": 1764005009,
         "noarch": "python",
         "url": null
       }
@@ -332,11 +332,10 @@ The `url` can also be relative as described above. Here's an example of what tha
           "certifi >=2017.4.17",
           "python >=3.9"
         ],
-        "constrains": [],
+        "fn": "requests-2.32.5-py3-none-any.whl",
         "sha256": "78820a3e5d9d3b25ce8e1c99c1c89cd19caa904a92973a3e50f8426009e8a4b3",
         "size": 6899,
         "subdir": "noarch",
-        "timestamp": 1764005009,
         "noarch": "python",
         "url": "requests/requests-2.32.5-py3-none-any.whl"
       }
@@ -369,11 +368,10 @@ The following shows an example of using an external location to download the whe
           "certifi >=2017.4.17",
           "python >=3.9"
         ],
-        "constrains": [],
+        "fn": "requests-2.32.5-py3-none-any.whl",
         "sha256": "78820a3e5d9d3b25ce8e1c99c1c89cd19caa904a92973a3e50f8426009e8a4b3",
         "size": 6899,
         "subdir": "noarch",
-        "timestamp": 1764005009,
         "noarch": "python",
         "url": "https://files.pythonhosted.org/packages/1e/db/4254e3eabe8020b458f1a747140d32277ec7a271daf1d235b70dc0b4e6e3/requests-2.32.5-py3-none-any.whl"
       }
@@ -399,11 +397,10 @@ Here is an example of name mapping and normalization of the record name and depe
           "typing_extensions>=4.0.0[when=\"python<3.9\"]",
           "python >=3.8"
         ],
-        "constrains": [],
+        "fn": "annotated_types-0.7.0-py3-none-any.whl",
         "sha256": "1f02e8b43a8fbbc3f3e0d4f0f4bfc8131bcb4eebe8849b8e5c773f3a1c582a53",
         "size": 13643,
         "subdir": "noarch",
-        "timestamp": 1756405206,
         "noarch": "python",
         "url": "https://files.pythonhosted.org/packages/78/b6/6307fbef88d9b5ee7421e68d78a9f162e0da4900bc5f5793f6d3d0e34fb8/annotated_types-0.7.0-py3-none-any.whl"
       }
