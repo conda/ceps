@@ -10,7 +10,7 @@
 <tr><td> Updated </td><td> Feb 2, 2026</td></tr>
 <tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/111 </td></tr>
 <tr><td> Implementation </td><td> TBD </td></tr>
-<tr><td> Requires </td><td>https://github.com/conda/ceps/pull/135 https://github.com/conda/ceps/pull/146</td></tr>
+<tr><td> Requires </td><td><a href="https://github.com/conda/ceps/pull/135">conda/ceps#135</a> (CEP 36 — package metadata files served by conda channels)<br><a href="https://github.com/conda/ceps/pull/146">conda/ceps#146</a> (backwards-compatible repodata update strategy)</td></tr>
 </table>
 
 > The keywords "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT",
@@ -137,6 +137,8 @@ This CEP introduces a new optional `url` field to package records. Since the fie
 
 This approach allows for gradual adoption, where channels can add `url` fields only for packages that need non-standard locations (such as wheels in subdirectories), while keeping traditional flat-structure packages unchanged.
 
+Adoption of `url` in channels SHOULD follow the backwards-compatible repodata update strategy specified in [conda/ceps#146](https://github.com/conda/ceps/pull/146): that strategy defines how to publish repodata changes so clients that ignore unknown record fields continue to resolve artifacts correctly, which matches how the optional `url` is used here.
+
 ## Rejected ideas
 
 ### Using the dictionary key for paths
@@ -149,6 +151,7 @@ A separate `fn` field could specify a different filename for saving locally. How
 
 ## References
 
+- [conda/ceps#146 - A backwards-compatible repodata update strategy](https://github.com/conda/ceps/pull/146): Repodata rollout pattern this CEP relies on when introducing optional package-record fields such as `url`
 - [CEP 15 - Hosting repodata.json and packages separately by adding a `base_url` property](https://conda.org/learn/ceps/cep-0015): Introduced the `base_url` field for repodata
 - [PyPI Simple Repository API](https://peps.python.org/pep-0503/): Specification for simple package repositories
 - [Hosting your own simple repository](https://packaging.python.org/en/latest/guides/hosting-your-own-index/#manual-repository): Example of package repositories with per-package subdirectories
