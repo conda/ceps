@@ -103,12 +103,13 @@ devices installed on the system.
 
 ## Notes on usage
 
-When building packages that target specific GPU compute capabilities, package authors SHOULD always
-include PTX (Parallel Thread Execution) code for the highest targeted compute capability. PTX is
-forward-compatible, meaning it can be JIT-compiled for newer GPU generations that were not
-available/targeted at build time. Family-specific instruction sets such as those for compute
-capability `9.0a` or `12.0f` are not forward-compatible and MUST NOT be used as the sole binary
-target.
+When building packages that target specific GPU compute capabilities, package authors SHOULD
+always include PTX (Parallel Thread Execution) code for the highest targeted compute
+capability. PTX is forward-compatible, meaning it can be JIT-compiled for newer GPU
+generations that were not available/targeted at build time. Package authors SHOULD NOT leave
+compatibility gaps between the lowest and highest targeted compute capabilities.
+Family-specific instruction sets such as those for compute capability `9.0a` or `12.0f` are
+not forward-compatible and MUST NOT be used as the sole binary target.
 
 ## References
 
