@@ -40,28 +40,37 @@ The `__cuda_arch` virtual package addresses use cases that `__cuda` cannot:
 
 ## Specification
 
-The `__cuda_arch` virtual package MUST only be present when the `__cuda` virtual package is present.
+Implementing the `__cuda_arch` virtual package is RECOMMENDED. If a conda-compatible client
+chooses to implement the `__cuda_arch` virtual package, it must follow these specifications:
 
-The `__cuda_arch` virtual package MUST be present when a CUDA device is detected. For systems
-without CUDA devices (e.g. a driver is installed but no devices are present), the virtual package
-MUST NOT be present.
+The `__cuda_arch` virtual package MUST be absent when the `__cuda` virtual package is
+absent.
 
-When available, the version value MUST be set to the lowest compute capability of all CUDA devices
-detected on the system, formatted as `{major}.{minor}`; subarchitecture letters (e.g. `a`, `f`) are
-excluded.
+When present, the version value MUST be set to the lowest compute capability of all CUDA
+devices detected on the system, formatted as `{major}.{minor}`; subarchitecture letters
+(e.g. `a`, `f`) are excluded.
 
-When available, the build string MUST be the device model of the lowest compute capability device
-as reported by `cuDeviceGetName()` with the following modifications: characters except for
-`[a-zA-Z0-9]` are removed, the literal string `NVIDIA` is removed, and the model is truncated to
-the first 64 characters.
+When present, the build string MUST be the device model of the lowest compute capability
+device as reported by `cuDeviceGetName()` with the following modifications: characters
+except for `[a-zA-Z0-9]` are removed, the literal string `NVIDIA` is removed, and the model
+is truncated to the first 64 characters.
 
-If the `CONDA_OVERRIDE_CUDA_ARCH` environment variable is set to a non-empty value that can be
-parsed as a compute capability string, the `__cuda_arch` virtual package MUST be exposed with that
-version with the build string set to `0`.
+The `__cuda_arch` virtual package MUST be present when a CUDA device is detected EXCEPT when
+`CONDA_OVERRIDE_CUDA_ARCH` is set as described below.
 
-If the `CONDA_OVERRIDE_CUDA_ARCH` environment variable is set to a non-empty value that can be
-parsed as a compute capability string and build string separated by `=`, the `__cuda_arch` virtual
-package MUST be exposed with that version and build string.
+For systems without CUDA devices (e.g. a driver is installed but no devices are present),
+the virtual package MUST be absent EXCEPT when `CONDA_OVERRIDE_CUDA_ARCH` is set as
+described below.
+
+If the `CONDA_OVERRIDE_CUDA_ARCH` environment variable is set to a non-empty value that can
+be parsed as a compute capability string and build string separated by `=`, the
+`__cuda_arch` virtual package MUST be exposed with that version and build string EXCEPT as
+noted above.
+
+If the `CONDA_OVERRIDE_CUDA_ARCH` environment variable is set to a non-empty value that can
+be parsed as a compute capability string and no build string, the `__cuda_arch` virtual
+package MUST be exposed with that version with the build string set to `0` EXCEPT as noted
+above.
 
 ## Rationale
 
@@ -72,7 +81,7 @@ is set to the **minimum** compute capability among all detected devices rather t
 maximum. A package that declares a minimum `__cuda_arch` requirement must run correctly on
 every GPU in the system. Using the minimum ensures the solver only selects packages that are
 compatible with the least-capable device present. Adding PTX (Parallel Thread Execution)
-code to a CUDA binary enables foward compatability with new architectures; there is no
+code to a CUDA binary enables forward compatibility with new architectures; there is no
 mechanism to provide arbitrary backward compatibility for a CUDA binary. If the maximum
 compute capability were used instead, a package could be installed that runs on the newest
 GPU but fails on another older GPU in the same system.
@@ -83,7 +92,7 @@ Providing multiple virtual packages (one for each major compute capability) or o
 minimum and maximum compute capability on the system would provide more information to the
 solver, but would be more difficult to work when defining constraints in conda recipes.
 
-## Backwards Compatability
+## Backwards Compatibility
 
 Adding the `__cuda_arch` virtual package is backwards compatible. It does not effect
 preexisting packages in the ecosystem. Like `__archspec`, using this virtual package in a
