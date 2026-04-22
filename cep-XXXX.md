@@ -37,7 +37,7 @@ PyPI provides server-controlled `upload_time` and `upload_time_iso_8601` fields 
 - `uv --exclude-newer` and `pip --exclude-newer` for reproducible resolution
 - Dependency cooldown features that delay installation of recently published packages as a supply chain security measure
 
-Within the conda ecosystem, pixi already provides an [`exclude-newer`](https://pixi.prefix.dev/latest/reference/pixi_manifest/#exclude-newer-optional) option, but it currently relies on the builder-controlled `timestamp` field. The conda ecosystem would benefit from a trustworthy server-controlled equivalent.
+Within the conda ecosystem, pixi already provides an [`exclude-newer`](https://pixi.prefix.dev/latest/reference/pixi_manifest/#exclude-newer-optional) option, but it currently relies on the builder-controlled `timestamp` field. The conda ecosystem would benefit from a server-controlled equivalent that cannot be set by the package author.
 
 ### Channel models have different risk profiles
 
@@ -45,11 +45,11 @@ The value of a server-controlled index timestamp varies by channel model. Curate
 
 ### Use cases
 
-1. **Dependency cooldowns**: A configurable time window that excludes packages published too recently from being installed, giving security vendors time to flag malicious packages. See [conda/conda#15759](https://github.com/conda/conda/issues/15759) and [William Woodruff's analysis](https://blog.yossarian.net/2025/11/21/We-should-all-be-using-dependency-cooldowns) of supply chain attack windows.
+1. Dependency cooldowns, where a configurable time window excludes packages published too recently from being installed, giving security vendors time to flag malicious packages. See [conda/conda#15759](https://github.com/conda/conda/issues/15759) and [William Woodruff's analysis](https://blog.yossarian.net/2025/11/21/We-should-all-be-using-dependency-cooldowns) of supply chain attack windows.
 
-2. **Reproducible environments**: Resolving an environment as it would have looked at a specific point in time (similar to `uv --exclude-newer`), using the publication date rather than the build date.
+2. Reproducible environments, where resolving an environment as it would have looked at a specific point in time (similar to `uv --exclude-newer`) uses the publication date rather than the build date.
 
-3. **Auditing and forensics**: Determining exactly when a given artifact appeared on a channel, independent of when it was built.
+3. Auditing and forensics, where it is useful to know exactly when a given artifact appeared on a channel, independent of when it was built.
 
 ## Specification
 
@@ -111,14 +111,15 @@ For consistency with the existing `timestamp` field (CEP 34) and `channeldata.js
 
 ## Future work
 
-`indexed_timestamp` as specified is a server-controlled integer. It is more trustworthy than the builder-controlled `timestamp` field for the use cases this CEP targets, but it is still a single party's claim. A compromised channel server, a backup restore, or a re-indexing operation could silently change the value, and clients have no way to independently verify that the timestamp is authentic. Closing this gap is out of scope for this CEP, but a few directions are worth noting for future work:
+`indexed_timestamp` as specified is a server-controlled integer, which is a meaningful improvement over the builder-controlled `timestamp` field for the use cases this CEP targets, but it is still a single party's claim. A compromised channel server, a backup restore, or a re-indexing operation could silently change the value, and clients have no way to independently verify that the timestamp is authentic. Closing this gap is out of scope here, but two directions are worth noting for follow-up work:
 
-- **RFC 3161 trusted timestamps** ([RFC 3161]). A channel server could request a signed Timestamp Response (TSR) from a Trusted Third Party Timestamp Authority (TSA) when indexing a package, and store the TSR alongside `indexed_timestamp` in repodata. Public TSAs include Sigstore's `timestamp.sigstore.dev` (RFC 3628 / RFC 5816), FreeTSA, and DigiCert.
+1. A channel server could request a signed Timestamp Response (TSR) from a Trusted Third Party Timestamp Authority (TSA) at indexing time, as defined in [RFC 3161], and store the TSR alongside `indexed_timestamp` in repodata. Public TSAs include Sigstore's `timestamp.sigstore.dev`, FreeTSA, and DigiCert.
 
-    The Sigstore bundle format already carries RFC 3161 timestamps via its `TimestampVerificationData` field, which means an attestation-aware indexer (see [CEP 27](./cep-0027.md)) could combine the two signals.
-- **Build-time TSA timestamps**. Build tools such as `rattler-build` and `conda-build` could embed a TSA-signed timestamp over the package contents inside the artifact itself, providing a verifiable lower bound on when the package was built. This is orthogonal to `indexed_timestamp` and would more naturally amend [CEP 34](./cep-0034.md).
+    The Sigstore bundle format already carries RFC 3161 timestamps in its `TimestampVerificationData` field, so an attestation-aware indexer (see [CEP 27](./cep-0027.md)) could combine the two signals without inventing a new envelope.
 
-These directions would require their own CEPs to specify field names, encoding, verification semantics, and migration story.
+2. Build tools such as `rattler-build` and `conda-build` could embed a TSA-signed timestamp over the package contents inside the artifact itself, providing a verifiable lower bound on when the package was built. This is orthogonal to `indexed_timestamp` and would more naturally amend [CEP 34](./cep-0034.md).
+
+Both directions would need their own CEPs to specify field names, encoding, verification semantics, and a migration story.
 
 [RFC 3161]: https://datatracker.ietf.org/doc/html/rfc3161
 
