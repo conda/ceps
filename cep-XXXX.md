@@ -109,8 +109,22 @@ This follows the same pattern as the `url` field proposed in [conda/ceps#151](ht
 
 For consistency with the existing `timestamp` field (CEP 34) and `channeldata.json` timestamp (CEP 38), both of which use Unix time in milliseconds.
 
+## Future work
+
+`indexed_timestamp` as specified is a server-controlled integer. It is more trustworthy than the builder-controlled `timestamp` field for the use cases this CEP targets, but it is still a single party's claim. A compromised channel server, a backup restore, or a re-indexing operation could silently change the value, and clients have no way to independently verify that the timestamp is authentic. Closing this gap is out of scope for this CEP, but a few directions are worth noting for future work:
+
+- **RFC 3161 trusted timestamps** ([RFC 3161]). A channel server could request a signed Timestamp Response (TSR) from a Trusted Third Party Timestamp Authority (TSA) when indexing a package, and store the TSR alongside `indexed_timestamp` in repodata. Public TSAs include Sigstore's `timestamp.sigstore.dev` (RFC 3628 / RFC 5816), FreeTSA, and DigiCert.
+
+    The Sigstore bundle format already carries RFC 3161 timestamps via its `TimestampVerificationData` field, which means an attestation-aware indexer (see [CEP 27](./cep-0027.md)) could combine the two signals.
+- **Build-time TSA timestamps**. Build tools such as `rattler-build` and `conda-build` could embed a TSA-signed timestamp over the package contents inside the artifact itself, providing a verifiable lower bound on when the package was built. This is orthogonal to `indexed_timestamp` and would more naturally amend [CEP 34](./cep-0034.md).
+
+These directions would require their own CEPs to specify field names, encoding, verification semantics, and migration story.
+
+[RFC 3161]: https://datatracker.ietf.org/doc/html/rfc3161
+
 ## References
 
+- [CEP 27 - Standardizing a publish attestation for the conda ecosystem](./cep-0027.md)
 - [CEP 34 - Contents of conda packages](./cep-0034.md)
 - [CEP 36 - Package metadata files served by conda channels](./cep-0036.md)
 - [CEP 38 - Channel-wide metadata files served by conda channels](./cep-0038.md)
@@ -119,6 +133,8 @@ For consistency with the existing `timestamp` field (CEP 34) and `channeldata.js
 - [schemas.conda.org - repodata-record-1.schema.json](https://schemas.conda.org/repodata-record-1.schema.json)
 - [schemas.conda.org - common-1.schema.json](https://schemas.conda.org/common-1.schema.json)
 - [PyPI JSON API - upload_time field](https://warehouse.pypa.io/api-reference/json.html)
+- [RFC 3161 - Internet X.509 Public Key Infrastructure Time-Stamp Protocol (TSP)](https://datatracker.ietf.org/doc/html/rfc3161)
+- [Sigstore Bundle Format - TimestampVerificationData](https://docs.sigstore.dev/about/bundle)
 - [conda/conda#15759 - Exclude-newer tracking issue](https://github.com/conda/conda/issues/15759)
 - [conda/conda#15761 - Exclude-newer implementation in conda](https://github.com/conda/conda/pull/15761)
 - [mamba-org/mamba#4228 - exclude_newer_timestamp support in libmamba](https://github.com/mamba-org/mamba/pull/4228)
