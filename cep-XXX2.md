@@ -17,7 +17,7 @@
 
 ## Abstract
 
-This CEP proposes the introduction of optional dependency groups in conda packaging. Optional dependency groups (or "extras") allow packagers to specify additional requirements behind a named set. This is implemented by adding a new repodata record field, `extras`, as a dictionary that maps group names to a list of dependencies. Extras can be selected via its corresponding `MatchSpec` keyword matching one or more group names.
+This CEP proposes the introduction of optional dependency groups in conda packaging. Optional dependency groups (or "extras") allow packagers to specify additional requirements behind a named set. This is implemented by adding a new repodata record field, `extras`, as a dictionary that maps group names to a list of dependencies. Extras can be selected via the corresponding `MatchSpec` keyword matching one or more group names.
 
 ## Motivation
 
