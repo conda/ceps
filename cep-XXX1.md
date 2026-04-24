@@ -113,7 +113,7 @@ When populating repodata records for pure Python wheels:
 
 Before adding a wheel to `whl`, channel operators MUST verify:
 
-- The wheel's platform tag is `any` (e.g., `py3-none-any`, `py2.py3-none-any`)
+- The wheel's platform tag is `any` (i.e., wheel filenames ending in `-none-any.whl`, such as `requests-2.32.5-py3-none-any.whl`)
 - The wheel's ABI tag is `none`
 - The wheel contains no compiled extensions (`.so`, `.pyd`, `.dylib` files)
 - The wheel's `METADATA` file is present and valid
@@ -132,7 +132,6 @@ Those declarations MAY be read from the wheel's embedded **`METADATA`** and/or f
   - All other PEP 440 operators (`>=`, `<=`, `<`, `>`, `~=`, `!=`) are used as-is
   - Multiple version specifiers are combined with commas (e.g., `>=1.0,<2.0`)
 
-- **Multiple specifiers:** Combine with commas (e.g., >=1.0,<2.0)
 - **Python version requirements:** Convert Requires-Python to explicit python dependency
 - **Environment markers:** Map Python-version markers on `Requires-Dist` to conditional `MatchSpec` `when=` as specified in [PR 111][pr-111]. Other markers are out of scope for the default conversion rules in this CEP (see [Limitations](#limitations)).
 
@@ -144,7 +143,7 @@ Requires-Python: >=3.8
 Requires-Dist: requests (>=2.20.0,<3.0.0)
 Requires-Dist: click (>=7.0)
 Requires-Dist: numpy (>=1.20.0,!=1.24.0)
-Requires-Dist: importlib-metadata (>=1.0) ; python_version < '3.8'
+Requires-Dist: importlib-metadata (>=1.0) ; python_version < '3.10'
 ```
 
 Resulting conda record:
@@ -156,7 +155,7 @@ Resulting conda record:
     "requests >=2.20.0,<3.0",
     "click >=7.0",
     "numpy >=1.20.0,!=1.24.0",
-    "importlib-metadata>=1.0[when=\"python<3.8\"]"
+    "importlib-metadata>=1.0[when=\"python<3.10\"]"
   ]
 }
 ```
@@ -264,7 +263,7 @@ A complete channel index also includes the traditional top-level keys (`repodata
 
 ### Download wheels from the default location
 
-Below represents the default behavior and shows when the `url` field is not set:
+Below represents the default behavior when the `url` field is omitted:
 
 ```json
 {

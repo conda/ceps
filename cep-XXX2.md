@@ -89,7 +89,7 @@ Native wheel support in the client avoids separate PyPI or pip phases for the pa
 
 ### Native unpack
 
-Conda clients install from the `.whl` artifact referenced in repodata and lays out the environment as a normal conda-managed `noarch: python` install (see [Installation layout and prefix placement](#installation-layout-and-prefix-placement)).
+Conda clients install from the `.whl` artifact referenced in repodata and lay out the environment as a normal conda-managed `noarch: python` install (see [Installation layout and prefix placement](#installation-layout-and-prefix-placement)).
 
 ## Implementation Notes
 

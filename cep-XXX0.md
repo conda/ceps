@@ -30,7 +30,7 @@ Together, the three documents describe **native** wheel support: wheels are firs
 
 ## Motivation
 
-While conda remains a language-agnostic packaging distribution, installing packages for use with Python represents the majority of the current conda usage. Users frequently encounter packages only available as wheels on PyPI, forcing them to use hybrid workflows that mix conda and PyPI installations. This approach creates several problems:
+While conda remains a language-agnostic package manager, installing packages for use with Python represents the majority of the current conda usage. Users frequently encounter packages only available as wheels on PyPI, forcing them to use hybrid workflows that mix conda and PyPI installations. This approach creates several problems:
 
 - Mixing of conda and pip or uv can result in overwritten files and broken environments
 - Users must understand two package managers, their interaction points, and which of their dependencies are available from which ecosystem
@@ -115,7 +115,7 @@ Pixi changes course to use uv directly instead of rip, which unlocks features li
 
 ### conda-pupa creates on-the-fly conversion plugin (July 2024)
 
-Daniel Holth creates a conda plugin that supports on-the-fly conversion of conda packages to wheels in a local channel.
+Daniel Holth creates a conda plugin that supports on-the-fly conversion of PyPI wheels to conda packages in a local channel.
 
 ### conda-whl-channel creates proof-of-concept wheel channel from repodata (Nov 2024)
 
@@ -127,7 +127,7 @@ conda-pupa is merged into conda-pypi which adds a `conda pypi install <package>`
 
 ### conda-pypi integrates parts of conda-whl-support (Nov 2025)
 
-Conda-pypi incorporates the wheel detection logic from conda-whl-support, providing core functionality beyond the solver and index changes required to support the `whl` section proposed in [CEP XXX1][cep-xxx1], together with channel relation metadata when channels adopt [Channel relations in repodata][cep-channel-relations].
+conda-pypi incorporates the wheel detection logic from conda-whl-support, providing core functionality beyond the solver and index changes required to support the `whl` section proposed in [CEP XXX1][cep-xxx1], together with channel relation metadata when channels adopt [Channel relations in repodata][cep-channel-relations].
 
 ### Native wheel unpack in conda-pypi; Rattler reads wheels in repodata (Dec 2025)
 
