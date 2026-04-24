@@ -29,8 +29,6 @@ The problem with this approach is that it doesn't scale well for more than one "
 
 The answer to this problem is to provide a specific field that is designed to provide such selection capabilities without the expressivity and complexity problems observed above: `flags`.
 
-Similarly, the `build.number` field is currently overloaded with "variant order". To remediate this, we introduce a new integer field specifically to order variants of the same package version - the variant order field. Like the build number, it is a single integer.
-
 ## Rationale
 
 The chosen keyword is `flags` which makes sense as a "compile time flag". This feature is mainly relevant for compiled packages with different compile time feature selection, making `flags` a matching name.
@@ -39,41 +37,25 @@ The chosen keyword is `flags` which makes sense as a "compile time flag". This f
 
 ### Repodata record syntax
 
-The `info/index.json` file of each conda artifact MUST support two new fields, `flags` and `variant_priority`.
+The `info/index.json` file of each conda artifact MUST support two new fields, `flags`.
 
 The value of the `flags` field MUST be a list of non-empty strings matching the regex `^[a-z0-9_]+(:[a-z0-9_]+)?$`. We allow a _single_ `:` for `key:value` semantics.
-
-The value of the `variant_priority` field must be a positive or negative integer.
 
 Subsequently, the `schema_version` value MUST be bumped to `3`.
 
 In recipes, these values MUST be supported in the `build` section of each output (i.e. sibling to `number` and `track_features`).
 
 In recipes, it MUST be represented as a list of strings under the `build.flags = [str]` key for each package output.
-For the variant order `build.variant_priority: int`.
 
 ### MatchSpec syntax changes
 
-Values in the `flags` field MUST be matchable by the corresponding keyword in `MatchSpec`, placed in the square brackets section. Its value MUST be a string or list of strings. Each entry MUST match the regex `^[a-z0-9_]+(:[a-z0-9_]+)?$`.
+Values in the `flags` field MUST be matchable by the corresponding keyword in ``, placed in the square brackets section. Its value MUST be a string or list of strings. Each entry MUST match the regex `^[a-z0-9_]+(:[a-z0-9_]+)?$`.
 
 Flag matching is intentionally simple: a package is excluded from consideration if it does not contain every flag listed in the `flags` constraint. A flag either matches the string exactly or the package is filtered out.
 
-### Package solver sort order changes
-
-Package sorting MUST take into account the `variant_priority` field. If absent, it defaults to `0`. Higher values are preferred over lower values.
-
-Sorting MUST use the following criteria, in order of decreasing precedence:
-
-1. Tracked features (fewer is preferred)
-2. Version (higher is preferred)
-3. Build number (higher is preferred)
-4. Variant priority (higher is preferred)
-5. First-order dependency versions (higher is preferred)
-6. Timestamp (newer is preferred)
-
 ### `index.json` and `repodata_record` changes
 
-The records gain a new `flags` and `variant_priority` field:
+The records gain a new `flags`:
 
 ```json
 {
@@ -81,20 +63,15 @@ The records gain a new `flags` and `variant_priority` field:
   "version": "1.2.3",
   ...,
   "flags": ["cuda", "release", "blas:mkl"],
-  "variant_priority": 123
 }
 ```
 
 ### Changes to the `recipe.yaml` file
 
-Note: the `priority` field is used to set the `variant_priority` value in the `info/index.json`.
-
 ```yaml
 build:
   string: ...
   flags: ["cuda", "blas:mkl", "release"]
-  variant:
-    priority: 123
 ```
 
 ## Examples
@@ -114,8 +91,6 @@ This proposal may remind the readers of the old `features` properties in the fir
 ## Future plans
 
 In the future we might extend the matching ergonomics of flags to include numeric values and key-value items.
-
-For the `variant.priority` field in recipes, we plan to integrate a smart algorithm in the recipe executor itself, that determines a variant order value based on the flags / variants used as a follow up CEP.
 
 ## Copyright
 
