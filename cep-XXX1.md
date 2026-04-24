@@ -8,10 +8,11 @@
   Travis Hathaway &lt;travis.j.hathaway@gmail.com&gt;
 </td></tr>
 <tr><td> Created </td><td> Dec 23, 2025</td></tr>
-<tr><td> Updated </td><td> Apr 16, 2026</td></tr>
+<tr><td> Updated </td><td> Apr 24, 2026</td></tr>
 <tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/145 </td></tr>
 <tr><td> Implementation </td><td> TBD </td></tr>
-<tr><td> Requires </td><td>https://github.com/conda/ceps/pull/151 https://github.com/conda/ceps/pull/146 https://github.com/conda/ceps/pull/155 https://github.com/conda/ceps/pull/111</td></tr>
+<tr><td> Requires </td><td> https://github.com/conda/ceps/pull/151 https://github.com/conda/ceps/pull/146 https://github.com/conda/ceps/pull/155 https://github.com/conda/ceps/pull/111 [CEP XXX2 (Wheel conda client support)](cep-XXX2.md) </td></tr>
+<tr><td> See also </td><td> [CEP XXX0 – Wheel support in conda (overview)](cep-XXX0.md) </td></tr>
 </table>
 
 > The keywords "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT",
@@ -20,27 +21,15 @@ described in [RFC2119][RFC2119] when, and only when, they appear in all capitals
 
 ## Abstract
 
-This CEP outlines how native support for pure Python wheel packages will be achieved by adding support for them to conda's package index (repodata). When implemented, conda clients will be able to seamlessly install conda packages and pure Python wheels from enabled channels.
-We explicitly limit the scope of this CEP to pure Python wheels to avoid platform-specific binary compatibility issues, but even with this limitation, we dramatically expand the number of available packages for users in the conda ecosystem.
+This CEP specifies how channel operators publish pure Python wheel packages in conda's package index (repodata): the `whl` member under `v{revision}`, record fields, publisher-side dependency conversion from wheel `METADATA`, and validation rules.
+It does not define conda client solver, download, or install-time behavior; those are specified in [CEP XXX2 – Wheel conda client support][cep-xxx2].
+Motivation, ecosystem history, and rejected alternatives are in [CEP XXX0 – Wheel support in conda (overview)][cep-xxx0].
+We limit the scope to pure Python wheels to avoid platform-specific binary compatibility issues; even so, publishing wheels in repodata greatly increases the packages channels can expose without building conda recipes for every case.
 
-## Motivation
+## Relationship to companion CEPs
 
-While conda remains a language-agnostic packaging distribution, installing packages for use with Python represents the majority of conda usage. Users frequently encounter packages only available as wheels on PyPI, forcing them to use hybrid workflows that mix conda and PyPI installations. This approach creates several problems:
-
-- Mixing of conda and pip or uv can result in overwritten files and broken environments
-- Users must understand two package managers, their interaction points, and which of their dependencies are available from which  ecosystem
-- Where there is support for mixing environments, it requires multiple solves which reduces overall package installation performance
-
-By adding native support for pure Python wheels to repodata, conda clients can:
-
-- Eliminate the cognitive burden of managing two package managers
-- Provide users with transparent access to the broader Python ecosystem
-- Maintain environment consistency and reproducibility
-- Resolve dependencies across conda and PyPI packages in a single solve
-- Fill gaps in conda package availability for simpler pure-Python packages
-- Reduce the maintenance burden for straightforward pure-Python packages that don't require metadata modifications
-
-Note that this CEP does not eliminate the need for conda recipes entirely. Many packages will still require proper conda feedstocks due to metadata differences, dependency corrections, or other ecosystem-specific needs. This CEP provides an additional tool for handling simpler pure-Python cases more efficiently.
+- **[CEP XXX0 – Wheel support in conda (overview)][cep-xxx0]** — Why native wheel support, historical context, and discussion of rejected ideas (informative).
+- **[CEP XXX2 – Wheel conda client support][cep-xxx2]** — Normative client behavior: loading `whl` into the solve, exclusivity and preference, download, and installation into the prefix.
 
 ## Specification
 
@@ -145,8 +134,6 @@ Wheel dependencies (from METADATA file's Requires-Dist entries) MUST be converte
 - **Python version requirements:** Convert Requires-Python to explicit python dependency
 - **Environment markers:** Map Python-version markers on `Requires-Dist` to conditional `MatchSpec` `when=` as specified in [PR 111][pr-111]. Other markers are out of scope for the default conversion rules in this CEP (see [Limitations](#limitations)).
 
-For a non-normative, per-variable description of how **conda-pypi** maps PEP 508 markers to `when=` fragments and **`extra_depends`** for optional groups, see [PEP 508 marker conversion][conda-pypi-marker-conversion] in the conda-pypi documentation.
-
 Example conversion:
 
 ```text
@@ -172,6 +159,29 @@ Resulting conda record:
 }
 ```
 
+### PEP 508 marker translation guidance
+
+This subsection layers **interoperable expectations** for the wire format, **non-normative** reference material for richer mappings, and **lossy translation** policy. It does not duplicate a full PEP 508 variable matrix in this CEP; maintaining that table is left to living documentation and tooling (see below).
+
+#### Interoperable minimum
+
+For published `whl` records, the following conversions are the **normative floor** aligned with [Dependency conversion](#dependency-conversion) and [PR 111][pr-111]:
+
+- **`Requires-Python`:** MUST appear as an explicit `python` dependency in `depends`.
+- **Python-version conditions on `Requires-Dist`:** MUST be represented with conditional `MatchSpec` `when=` on the relevant dependency strings per [PR 111][pr-111].
+- **`extra` (optional groups):** MUST be represented with **`extra_depends`** and optional-group selection per [PR 111][pr-111], not only as opaque marker text on `depends`.
+
+Channels and tools MAY apply additional, stricter mappings where they can express them in repodata.
+
+#### Non-normative extended mappings
+
+Per-variable translation of other PEP 508 markers (for example `sys_platform`, `platform_system`) to `when=` fragments, virtual packages, or omissions is **not** fully specified in this CEP. For a non-normative, per-variable description—including how **conda-pypi** maps markers to `when=` and **`extra_depends`**—see [PEP 508 marker conversion][conda-pypi-marker-conversion] in the conda-pypi documentation.
+
+#### Lossy translation
+
+When a channel cannot encode a PEP 508 dimension in repodata (for example no virtual package for an architecture string, or unsupported boolean branches), the operator MAY **omit** the condition, **simplify** the requirement, or **widen** the dependency (for example listing a package in `depends` without `when=` so it applies in more environments than PEP 508 would).
+Channel operators SHOULD document their policy for such cases (including any conservative “include unconditionally” behavior). They MUST NOT claim that published repodata reproduces **full** PEP 508 semantics when a lossy transform was applied.
+
 ### Handling conditional dependencies and extras
 
 Wheel `depends` entries that encode PEP 508 environment markers MUST use conditional `MatchSpec` syntax with `when=` as specified in [PR 111][pr-111].
@@ -180,29 +190,17 @@ PyPI **extras** (optional dependency groups) MUST be represented on the wheel re
 
 ### Solver behavior and package preference
 
-#### Dependency resolution
-
-Solvers MUST treat pure Python wheels as valid package candidates during dependency resolution with these constraints:
-
-- **Exclusivity:** Solvers MUST NOT install both a conda package and wheel for the same package name.
-- **Dependency satisfaction:** When a wheel is selected, its `depends` list MUST be satisfied like any conda package. Dependencies in the `depends` list MAY be satisfied by either wheels or conda packages.
-- **Platform matching:** Since all wheels in `whl` are pure Python (noarch), no platform filtering is needed.
-
-#### User control of precedence
-
-By default, channels with conda packages MUST prefer conda packages when they are available. Users MAY override default precedence through:
-
-- Channel priority configuration (prefer channels with wheels).
-- Explicit wheel requests through `<channel name>::<package name>` syntax.
-- Explicit configuration in the client itself (e.g. `prefer_conda` or `prefer_wheel`)
+Normative rules for how conda clients treat `whl` records during dependency resolution (candidate pool, exclusivity, default preference for conda vs wheel, and user overrides) are defined in [CEP XXX2 – Wheel conda client support][cep-xxx2].
+This CEP only requires that published `whl` records are valid [repodata records][repodata-record-schema] so that clients can consume them alongside `packages` and `packages.conda`.
 
 ### Limitations
 
 This CEP has the following known limitations:
 
 1. **Pure Python only:** This CEP explicitly does not address wheels with binary extensions, which require platform-specific compatibility guarantees beyond the current scope. Conda’s strength is binary compatibility, so using conda packages may be the optimal solution.
-2. **Environment markers:** This CEP’s default conversion rules focus on Python-version markers mapped to `when=` per [PR 111][pr-111]. Other markers (for example `sys_platform`) are out of scope for those default rules and are not converted here, though some MAY be expressible with `when=` once clients implement [PR 111][pr-111].
-3. **Conditionals and extras:** Normative syntax and record fields for `when=` on `depends` and for optional groups in **`extra_depends`** are specified in [PR 111][pr-111], which this wheel CEP depends on for PyPI-aligned conditionals and extras.
+2. **Environment markers (publisher defaults):** Default conversion rules in this CEP focus on Python-version markers on `Requires-Dist`, mapped to `when=` per [PR 111][pr-111]. Other markers (for example `sys_platform`) are out of scope for those default publisher rules and are not required to be converted into repodata here; see [PEP 508 marker translation guidance](#pep-508-marker-translation-guidance).
+How conda clients evaluate `when=` and optional groups at solve time (including environment context) is specified in [CEP XXX2][cep-xxx2] together with [PR 111][pr-111].
+3. **Conditionals and extras:** Normative syntax and record fields for `when=` on `depends` and for optional groups in **`extra_depends`** are specified in [PR 111][pr-111], on which this repodata CEP and [CEP XXX2][cep-xxx2] rely for PyPI-aligned conditionals and extras in published records and at client solve time, respectively.
 4. **Repodata size:** Supporting a significant portion of pure Python packages from PyPI (potentially hundreds of thousands of packages with multiple versions each) will substantially increase repodata size. Channels adopting wheel support at scale will need to implement sharded repodata ([CEP 16][cep-16]) to maintain acceptable performance. Alternatively, channels may choose to curate a subset of popular or requested packages rather than mirroring all of PyPI.
 5. **PyPI package deletion:** PyPI allows package maintainers to delete packages (as opposed to just yanking them), which can break locked environments that reference those packages. Channels using external PyPI URLs directly are subject to this risk. For production use and reproducible environments, channels MAY mirror and store wheel artifacts locally rather than relying solely on external PyPI URLs.
 
@@ -228,16 +226,7 @@ Several factors can cause wheel names to differ from conda-style names:
 
 ### For conda clients
 
-Clients implementing this CEP SHOULD:
-
-- Parse the `whl` mapping inside each supported `v{revision}` object alongside existing `packages` /
-  `packages.conda` sections
-- Apply the same filtering and preference logic used for conda packages
-- Extract wheel metadata during solving to populate dependency information
-- Evaluate `when=` on wheel `depends` entries per [PR 111][pr-111]
-- Honor **`extra_depends`** when the user selects optional groups (for example with `extras=` in `MatchSpec`) per [PR 111][pr-111]
-- Treat wheel records that use `when=` on `depends` or **`extra_depends`** metadata as part of the same `v{revision}` repodata payload as other new-syntax records, per the [backwards-compatible repodata update strategy](https://github.com/conda/ceps/pull/146)
-- Provide the ability to natively install wheels or on-the-fly convert wheels to conda packages for installation
+Client behavior (loading `whl` into the solve, preference and exclusivity, download, and installation into the environment prefix) is specified in [CEP XXX2 – Wheel conda client support][cep-xxx2]. Channel operators need not implement that CEP; they only publish repodata that conforms to this document.
 
 ### For channel operators
 
@@ -424,183 +413,10 @@ Requires-Dist: typing-extensions>=4.0.0; python_version < '3.9'
 
 The package record expresses the conditional with `when=` so `typing_extensions` applies only when the Python version is less than 3.9, matching the original wheel METADATA and [PR 111][pr-111]. The Python version constraint of >=3.8 is directly mapped.
 
-## Rejected ideas
-
-### Only install Python and pip inside conda environments
-
-In this scenario, users only install Python and pip inside a clean conda environment. Here, we simply use conda as an environment manager and let pip manage the project dependencies.
-
-This is what that typically looks like:
-
-```bash
-conda create -n pip-environment python pip
-conda activate pip-environment
-pip install <package>
-```
-
-Despite its safety for environment management, relying solely on conda for this purpose prevents leveraging the package distribution capabilities of the conda ecosystem.
-
-### Editable installs with conda for dependencies only
-
-Conda provides all the dependencies of a given package. Then that package is installed on top in editable mode, without addressing dependencies to make sure conda files aren't accidentally overwritten:
-
-```bash
-git clone https://github.com/owner/package.git
-conda create -n editable-install package --deps-only
-conda activate editable-install
-pip install -e . --no-deps
-```
-
-### Add more conda packages
-
-Create and maintain new conda packages for each PyPI dependency needed. Tools like [Grayskull] exist to make this easier to convert. However, this is a significant workload for the community, with over half of all conda-forge packages being pure Python. Even with more dedicated resources, creating recipes for over 400 thousand pure Python packages is not achievable.
-
-### Add interoperability to tools through pip dependency scanning
-
-The original version of the conda-pypi plugin called `pip` with the `--dry-run` option to analyze the solution to install a package. With a list of all the dependencies needed, the plugin installed everything available in conda channels first and what was left over would be installed with `pip install --no-deps`. Disadvantages of this approach include:
-
-- Users still have to know which packages they want from PyPI and then have to run `conda pip install` to install them.
-- There is no guarantee that the conda and pip packages installed have ABI compatibility.
-- Calling pip and conda multiple times is slow.
-
-### Add interoperability to tools through on-the-fly conversion
-
-This is the approach that the [conda-pupa][conda-pupa] plugin used and was then implemented in [conda-pypi][conda-pypi]. When `conda pypi install <package>` is called, it fetches its set of required dependencies iteratively from PyPI just like `pip`. Similar to the dependency scanning option above, it then attempts to install as many dependencies as it can from conda.
-However, this is where these two approaches start to differ. While conda-pypi simply used `pip` to install the remaining Python dependencies, conda-pupa converts wheel packages to conda and stores them in a local channel, essentially caching these converted wheels on disk. This means that a repodata.json is also generated allowing us to perform a solve entirely in conda.
-
-Unfortunately, there are also disadvantages with this approach. Like the solution above, users still have to know which packages they want from PyPI and then have to run `conda pypi install` to install them. Additionally, the following problems also arise:
-
-- Package conversion can take some time, especially for larger packages.
-- Users must rely on a local cache for installing wheels, and this cache cannot easily be shared across computers.
-- The current version must solve multiple times which is slow, although this could be optimized.
-
-### Add interoperability to tools through uv integration
-
-Pixi has integrated uv for installing packages from PyPI. The user adds the dependency through `pixi add --pypi <package>`. Then, when Pixi is solving the environment, it solves the conda packages using Rattler, and then calls uv to solve the PyPI dependencies. Disadvantages of this approach include:
-
-- Like the solutions above, users still have to know which packages they want from PyPI and then have to `pixi add --pypi` them.
-- Although Pixi and uv are both very fast, it is still slower than performing a single solve of the environment.
-
-### Direct PyPI communication without repodata
-
-Another alternative would be for conda clients to query PyPI's API directly during solving, fetching wheel metadata on-demand rather than including it in repodata. This idea was rejected due to:
-
-- While resolvo (used by Rattler) supports dynamic metadata fetching during solving (as showcased in [rip](https://github.com/prefix-dev/rip)), libsolv requires complete package metadata upfront. This inconsistency across solvers would complicate implementation and limit compatibility.
-
-- While on-demand fetching works well for pip and uv, using repodata provides consistency with conda's existing infrastructure, enables better caching strategies, and allows channels to curate and validate packages before they're available to users.
-
-### Magic local channel approach
-
-The "magic local channel" approach (<https://github.com/jaimergp/conda-pypi-channel>) was considered but rejected. This approach involves:
-
-- A local FastAPI app intercepts the CLI and detects PyPI specs
-- Fetches metadata on the fly and converts it to repodata (following some of the ideas discussed above)
-- Downloads the wheels and converts them to .conda via whl2conda
-- Caches and installs the .conda artifacts
-
-While this approach provides on-demand conversion and caching, it requires a separate service to be running and adds complexity to the user workflow. The chosen approach of native repodata wheel support provides a more seamless experience where wheels are pre-indexed in channels and work with standard conda workflows without requiring additional services.
-
-### Automatic wheel to conda package conversion and hosting
-
-Another alternative would be establishing a build farm to automatically convert wheels to conda packages and host them on a channel, with conversion triggered by popularity, community requests, or on-demand.
-
-#### Advantages of automatic conversion
-
-- All packages are conda packages, simplifying client implementation
-- Leverages mature conda infrastructure and tooling without client changes
-- Enables metadata enrichment, quality control, and validation before publishing
-
-#### Disadvantages and why native wheel support was chosen
-
-Despite these advantages, this approach was rejected because:
-
-- **Infrastructure burden:** Requires significant storage and bandwidth to host and serve converted packages that duplicate PyPI's CDN infrastructure
-- **Resource inefficiency:** Wheels are already an excellent format for pure Python packages. Conversion adds no technical value and wastes resources
-
-Native wheel support provides the same user experience (transparent PyPI access) while avoiding the infrastructure burden and resource inefficiency of conversion. Channel operators who prefer converted packages can continue building conda packages from PyPI sources.
-
-## History
-
-PyPI integration has been debated for years in tension with conda's emphasis on reproducible, binary-first environments.
-
-### Early Vision (2012-2014)
-
-Early conda assumed environments could mix conda-installed packages with software brought in by other tools, and tried to fold those installs into environments managed by conda. The first concrete step was PyPI: within weeks of conda's first release, it shipped a `pip` subcommand.
-This feature took a snapshot of untracked files, ran that environment's `pip install`, created a diff, packed the new files into one `.tar.bz2`, and then reinstalled them with conda. However, folding arbitrary pip installs into a single conda record was a poor fit for dependency identity, upgrades, and reuse. The subcommand was removed in 1.8 for that model and to reduce confusion between `conda pip` and ordinary `pip` in an activated environment.
-
-Issue [#327](https://github.com/conda/conda/issues/327) added `--use-pypi`. conda 4.6.0 introduced experimental `prefix_data_interoperability` to reconcile pip-installed metadata with conda's when enabled; it remained off by default because of the performance cost.
-
-Representative issues from the same period: [#307](https://github.com/conda/conda/issues/307) (2013, pip, npm, gems, rpm, brew), [#292](https://github.com/conda/conda/issues/292) (2013, "ultimate package manager"), [#224](https://github.com/conda/conda/issues/224) (2012, native conda vs pip commands).
-
-### The PyPI Integration Debate (2013-2016)
-
-Two competing philosophies emerged on how or if we should provide better integration with PyPI.
-
-#### Pro-integration
-
-Issue [#262](https://github.com/conda/conda/issues/262) (2013): conda should install directly from PyPI to reduce duplication and improve package availability.
-
-Arguments for this approach:
-
-- Users frequently need packages not available on conda channels
-- Building conda packages for every PyPI package is unsustainable
-
-#### Status quo
-
-Arguments for maintaining an independent packaging ecosystem prevailed at the time for the following reasons:
-
-- Conda's value proposition is reproducible, binary-focused environments with precise dependency resolution
-- PyPI's source distributions and pip's resolver could compromise conda's guarantees
-- The conda-forge community successfully scaled recipe creation
-
-### Wheel Support Proposal (2017)
-
-Issue [#5202](https://github.com/conda/conda/issues/5202) proposed direct wheel installation support, recognizing:
-
-- Wheels provide binary distributions similar to conda packages
-- Growing wheel availability on PyPI reduced build complexity
-- Could bridge the gap between conda's reliability and PyPI's breadth
-
-### Broader Context (2018)
-
-The Python Discourse thread on [packaging scope boundaries](https://discuss.python.org/t/drawing-a-line-to-the-scope-of-python-packaging/883) reflects the larger ecosystem's struggle with:
-
-- Multiple competing package management tools (pip, conda, poetry, pipenv)
-- Unclear responsibilities and interoperability expectations
-- Need for clearer standards and communication between tools
-
-### conda-pypi development starts (2022)
-
-Jaime Rodríguez-Guerra starts development on the conda-pypi plugin aimed to improve conda and PyPI interoperability.
-
-### Rip development starts (2023)
-
-Prefix.dev starts a barebones pip implemented in Rust to resolve and install PyPI dependencies with Pixi.
-
-### Pixi Integrates with uv (Jan 2024)
-
-Pixi changes course to use uv directly instead of rip, which unlocks features like editable installations, and git and path dependencies.
-
-### conda-pupa creates on-the-fly conversion plugin (July 2024)
-
-Daniel Holth creates a conda plugin that supports on-the-fly conversion of conda packages to wheels in a local channel.
-
-### conda-whl-channel creates proof-of-concept wheel channel from repodata (Nov 2024)
-
-Jonathan Helmus and Anil Kulkarni begin development on [conda-whl-channel](<https://github.com/Anaconda/conda-whl-channel>, a proof-of-concept that adds wheels to the `packages` section of repodata and patches conda to recognize them. The implementation supports conditional dependencies through additional meta packages. In February 2025, the conda-specific functionality is extracted into a separate plugin called [conda-whl-support](<https://github.com/Anaconda/conda-whl-support>.
-
-### conda-pypi merges in conda-pupa functionality (Oct 2025)
-
-conda-pupa is merged into conda-pypi which adds a `conda pypi install <package>` command and support for editable installations.
-
-### conda-pypi integrates parts of conda-whl-support (Nov 2025)
-
-Conda-pypi incorporates the wheel detection logic from conda-whl-support, providing the core functionality needed beyond the solver and index changes required to support the `whl` section proposed in this CEP, together with channel relation metadata when channels adopt [Channel relations in repodata][cep-channel-relations].
-
 ## References
 
-- [Adopting uv in pixi][uv-in-pixi]
-- [rip][rip]
+- [CEP XXX0 – Wheel support in conda (overview)][cep-xxx0]
+- [CEP XXX2 – Wheel conda client support][cep-xxx2]
 - [conda-pypi project][conda-pypi]
 - [PEP 508 marker conversion (conda-pypi developer docs)][conda-pypi-marker-conversion]
 - [Example `repodata.json` (conda-pypi test channel)][conda-pypi-example-repodata]
@@ -627,6 +443,5 @@ All CEPs are explicitly [CC0 1.0 Universal](https://creativecommons.org/publicdo
 [pr-151]: https://github.com/conda/ceps/pull/151
 [pr-111]: https://github.com/conda/ceps/pull/111
 [conda-pupa]: https://github.com/dholth/conda-pupa
-[uv-in-pixi]: https://prefix.dev/blog/uv_in_pixi
-[rip]: https://github.com/prefix-dev/rip
-[grayskull]: https://conda.github.io/grayskull/
+[cep-xxx0]: cep-XXX0.md
+[cep-xxx2]: cep-XXX2.md
