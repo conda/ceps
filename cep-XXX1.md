@@ -35,7 +35,8 @@ requirements = [
 ]
 ```
 
-They can only be converted into conda packages by making a potentially `noarch: python` package (because it's pure Python) a non-noarch package distributed as as many as 25 platforms (five supported Python versions, times five platforms). This way, the conditional dependency is resolved (in a way) at build time by rendering the dependencies into the granular artifacts. For example, the `typing-extensions` dependency would only be present in the variants built for Python 3.8, and we would only find `pywin32` in the packages published to the `win-*` subdirs.
+They can only be converted into conda packages by making a potentially `noarch: python` package (because it's pure Python) a non-noarch package distributed as as many as 25 platforms (five supported Python versions, times five platforms). This way, the conditional dependency is resolved (in a way) at build time by rendering the dependencies into the granular artifacts.
+For example, the `typing-extensions` dependency would only be present in the variants built for Python 3.8, and we would only find `pywin32` in the packages published to the `win-*` subdirs.
 
 The adoption of conditional dependencies in conda would allow packagers to express the same complexity in a single `noarch: python` package, because these conditions would be evaluated at "solve time". Providing these capabilities requires new `MatchSpec` syntax and a bump in the repodata version to allow the new syntax in the `depends` field.
 
@@ -43,7 +44,8 @@ The adoption of conditional dependencies in conda would allow packagers to expre
 
 The syntax chosen utilizes the same key-value syntax already present in the brackets form of the `MatchSpec` language. This makes it easier to implement and less surprising to novel users. The `when` keyword is chosen to avoid confusion with the `if`/`then`/`else` syntax in [CEP 13](./cep-0013.md) `recipe.yaml` files.
 
-Classic `MatchSpec` queries have traditionally matched fields present in candidate package records. For example, `python>=3.10` would match records with package name `python` and version greater or equal than `3.10`. The `when` field is a bit different in that sense, since it doesn't target a `when` field in the target records. Instead, its value is a condition that will match a context comprised of (potentially) other records. This is a deviation for the `MatchSpec` design but we still feel that the ergonomics offered by this syntax are worth the extra complexity.
+Classic `MatchSpec` queries have traditionally matched fields present in candidate package records. For example, `python>=3.10` would match records with package name `python` and version greater or equal than `3.10`. The `when` field is a bit different in that sense, since it doesn't target a `when` field in the target records.
+Instead, its value is a condition that will match a context comprised of (potentially) other records. This is a deviation for the `MatchSpec` design but we still feel that the ergonomics offered by this syntax are worth the extra complexity.
 
 ## Specification
 
@@ -78,7 +80,7 @@ Conditional dependencies can be used in the same places a regular `MatchSpec` ex
 As CLI input:
 
 ```shell
-$ conda create -n env-with-conditions python 'numpy>=2[when="python>=3.10"]'
+conda create -n env-with-conditions python 'numpy>=2[when="python>=3.10"]'
 ```
 
 In an input file:
@@ -124,10 +126,10 @@ When used as part of the runtime requirements of a newly built package, the cond
 
 ## References
 
-- https://github.com/conda/conda/issues/2984
-- https://github.com/conda/conda/issues/7438
-- https://github.com/conda/conda/issues/7439
-- https://github.com/conda/conda/issues/5699
+- <https://github.com/conda/conda/issues/2984>
+- <https://github.com/conda/conda/issues/7438>
+- <https://github.com/conda/conda/issues/7439>
+- <https://github.com/conda/conda/issues/5699>
 
 ## Copyright
 
