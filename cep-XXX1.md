@@ -120,7 +120,7 @@ When used as part of the runtime requirements of a newly built package, the cond
 
 ## Rejected ideas
 
-- `...; if syntax` and other backwards compatible proposal that would be inadequate because then the condition would be ignored, hence creating invalid solutions.
+- `...; if ...` syntax, and other backwards compatible proposals, are rejected because the condition would be ignored by solvers which do not implement this CEP, resulting in invalid solutions.
 
 ## References
 
