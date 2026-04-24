@@ -24,7 +24,7 @@ Pure Python wheels can be indexed in conda channel repodata so users solve envir
 | CEP                                               | Role                                                                                                                                                                                                  |
 |---------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | [CEP XXX1 – Repodata wheel support][cep-xxx1]     | Normative specification of the `whl` mapping under `v{revision}`, record fields, `METADATA` conversion, validation, and channel-operator guidance.                                                    |
-| [CEP XXX2 – Wheel conda client support][cep-xxx2] | Normative specification of merging `whl` into the solver index, exclusivity and preference, conditional dependencies and extras, download, and prefix integration as `noarch: python` conda packages. |
+| [CEP XXX2 – Wheel conda client support][cep-xxx2] | Normative specification of loading `whl` into the solver index with other repodata records, conditional dependencies and extras, download, and prefix integration as `noarch: python` conda packages. |
 
 Together, the three documents describe **native** wheel support: wheels are first-class index entries, not a parallel pip-only install path. Scope is limited to **pure Python** wheels (`py*-none-any` class) in [CEP XXX1][cep-xxx1] to avoid platform-specific binary compatibility questions in this round of work.
 
@@ -36,7 +36,7 @@ While conda remains a language-agnostic packaging distribution, installing packa
 - Users must understand two package managers, their interaction points, and which of their dependencies are available from which ecosystem
 - Where there is support for mixing environments, it requires multiple solves which reduces overall package installation performance
 
-By adding native support for pure Python wheels—**indexed in repodata** and **consumed by conda clients** per [CEP XXX1][cep-xxx1] and [CEP XXX2][cep-xxx2]—conda can:
+Adding native support for pure Python wheels—**indexed in repodata** and **consumed by conda clients** per [CEP XXX1][cep-xxx1] and [CEP XXX2][cep-xxx2], has the following advantages:
 
 - Reduce the cognitive burden of managing two package managers
 - Provide users with transparent access to a broader slice of the Python ecosystem through channels that choose to publish wheels
@@ -53,10 +53,10 @@ PyPI integration has been debated for years in tension with conda's emphasis on 
 
 ### Early Vision (2012-2014)
 
-Early conda assumed environments could mix conda-installed packages with software brought in by other tools, and tried to fold those installs into environments managed by conda. The first concrete step was PyPI: within weeks of conda's first release, it shipped a `pip` subcommand.
+Early `conda` assumed environments could mix conda-installed packages with software brought in by other tools, and tried to fold those installs into environments managed by conda. The first concrete step was PyPI: within weeks of conda's first release, it shipped a `pip` subcommand.
 This feature took a snapshot of untracked files, ran that environment's `pip install`, created a diff, packed the new files into one `.tar.bz2`, and then reinstalled them with conda. However, folding arbitrary pip installs into a single conda record was a poor fit for dependency identity, upgrades, and reuse. The subcommand was removed in 1.8 for that model and to reduce confusion between `conda pip` and ordinary `pip` in an activated environment.
 
-Issue [#327](https://github.com/conda/conda/issues/327) added `--use-pypi`. conda 4.6.0 introduced experimental `prefix_data_interoperability` to reconcile pip-installed metadata with conda's when enabled; it remained off by default because of the performance cost.
+Issue [#327](https://github.com/conda/conda/issues/327) added `--use-pypi`. conda 4.6.0 introduced experimental `prefix_data_interoperability` to reconcile pip-installed metadata with conda's when enabled. However, it remained off by default because of the performance cost.
 
 Representative issues from the same period: [#307](https://github.com/conda/conda/issues/307) (2013, pip, npm, gems, rpm, brew), [#292](https://github.com/conda/conda/issues/292) (2013, "ultimate package manager"), [#224](https://github.com/conda/conda/issues/224) (2012, native conda vs pip commands).
 
@@ -105,6 +105,10 @@ Jaime Rodríguez-Guerra starts development on the conda-pypi plugin aimed to imp
 
 Prefix.dev starts a barebones pip implemented in Rust to resolve and install PyPI dependencies with Pixi.
 
+### Whl2conda development starts (Aug 2023)
+
+Christopher Barber develops [whl2conda](https://github.com/zuzukin/whl2conda), a command-line tool that generates conda packages from pure Python wheels (and related packaging workflows) without going through a full `conda-build` recipe for every package.
+
 ### Pixi Integrates with uv (Jan 2024)
 
 Pixi changes course to use uv directly instead of rip, which unlocks features like editable installations, and git and path dependencies.
@@ -125,6 +129,10 @@ conda-pupa is merged into conda-pypi which adds a `conda pypi install <package>`
 
 Conda-pypi incorporates the wheel detection logic from conda-whl-support, providing core functionality beyond the solver and index changes required to support the `whl` section proposed in [CEP XXX1][cep-xxx1], together with channel relation metadata when channels adopt [Channel relations in repodata][cep-channel-relations].
 
+### Native wheel unpack in conda-pypi; Rattler reads wheels in repodata (Dec 2025)
+
+conda-pypi adds native support for unpacking `.whl` artifacts into the target environment (rather than delegating that step to pip). Rattler adds support for reading wheel records from repodata, for example, the `whl` mapping under a registered `v{revision}`, so clients built on Rattler can load the same index surface described in [CEP XXX1][cep-xxx1].
+
 ## Rejected ideas
 
 ### Only install Python and pip inside conda environments
@@ -139,9 +147,9 @@ conda activate pip-environment
 pip install <package>
 ```
 
-Despite its safety for environment management, relying solely on conda for this purpose prevents leveraging the package distribution capabilities of the conda ecosystem.
+Despite its safety for environment management, relying solely on `conda` for this purpose prevents leveraging the package distribution capabilities of the conda ecosystem.
 
-### Editable installs with conda for dependencies only
+### Editable installs with `conda` for dependencies only
 
 Conda provides all the dependencies of a given package. Then that package is installed on top in editable mode, without addressing dependencies to make sure conda files aren't accidentally overwritten:
 
@@ -152,9 +160,12 @@ conda activate editable-install
 pip install -e . --no-deps
 ```
 
+This pattern was rejected because it still splits responsibility between `conda` and `pip`: the editable project is not a first-class conda package, so `conda list`, upgrades, removals, and reproducible environment exports do not fully describe what is on disk.
+Relying on `--no-deps` avoids one class of conflicts but leaves no single solver pass for the project under development and its dependencies, and it does not remove the risk of accidental `pip install` (with dependencies) overwriting files conda manages.
+
 ### Add more conda packages
 
-Create and maintain new conda packages for each PyPI dependency needed. Tools like [Grayskull][grayskull] exist to make this easier to convert. However, this is a significant workload for the community, with over half of all conda-forge packages being pure Python. Even with more dedicated resources, creating recipes for over 400 thousand pure Python packages is not achievable.
+Create and maintain new conda packages for each PyPI dependency needed. Tools like [Grayskull][grayskull] exist to make this easier to convert. However, this is a significant workload for the community, with over half of all conda-forge packages being pure Python. Even with more dedicated resources, creating recipes for over 500 thousand pure Python packages is not achievable.
 
 ### Add interoperability to tools through pip dependency scanning
 
@@ -166,7 +177,7 @@ The original version of the conda-pypi plugin called `pip` with the `--dry-run` 
 
 ### Add interoperability to tools through on-the-fly conversion
 
-This is the approach that the [conda-pupa][conda-pupa] plugin used and was then implemented in [conda-pypi][conda-pypi]. When `conda pypi install <package>` is called, it fetches its set of required dependencies iteratively from PyPI just like `pip`. Similar to the dependency scanning option above, it then attempts to install as many dependencies as it can from conda.
+This is the approach that the [conda-pupa][conda-pupa] plugin used and was then implemented in [conda-pypi][conda-pypi]. When `conda pypi install <package>` is called, it fetches its set of required dependencies iteratively from PyPI just like `pip`. Similar to the dependency scanning option above, it then attempts to install as many dependencies as it can from `conda`.
 However, this is where these two approaches start to differ. While conda-pypi simply used `pip` to install the remaining Python dependencies, conda-pupa converts wheel packages to conda and stores them in a local channel, essentially caching these converted wheels on disk. This means that a repodata.json is also generated allowing us to perform a solve entirely in conda.
 
 Unfortunately, there are also disadvantages with this approach. Like the solution above, users still have to know which packages they want from PyPI and then have to run `conda pypi install` to install them. Additionally, the following problems also arise:
@@ -179,7 +190,7 @@ Unfortunately, there are also disadvantages with this approach. Like the solutio
 
 Pixi has integrated uv for installing packages from PyPI. The user adds the dependency through `pixi add --pypi <package>`. Then, when Pixi is solving the environment, it solves the conda packages using Rattler, and then calls uv to solve the PyPI dependencies. Disadvantages of this approach include:
 
-- Like the solutions above, users still have to know which packages they want from PyPI and then have to `pixi add --pypi` them.
+- Like the solutions above, users still have to know which packages they want from PyPI and then have to run `pixi add --pypi` on them.
 - Although Pixi and uv are both very fast, it is still slower than performing a single solve of the environment.
 
 ### Direct PyPI communication without repodata

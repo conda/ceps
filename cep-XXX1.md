@@ -24,12 +24,12 @@ described in [RFC2119][RFC2119] when, and only when, they appear in all capitals
 This CEP specifies how channel operators publish pure Python wheel packages in conda's package index (repodata): the `whl` member under `v{revision}`, record fields, publisher-side dependency conversion from wheel `METADATA`, and validation rules.
 It does not define conda client solver, download, or install-time behavior; those are specified in [CEP XXX2 – Wheel conda client support][cep-xxx2].
 Motivation, ecosystem history, and rejected alternatives are in [CEP XXX0 – Wheel support in conda (overview)][cep-xxx0].
-We limit the scope to pure Python wheels to avoid platform-specific binary compatibility issues; even so, publishing wheels in repodata greatly increases the packages channels can expose without building conda recipes for every case.
+We limit the scope to pure Python wheels to avoid platform-specific binary compatibility issues. Even so, publishing wheels in repodata greatly increases the packages channels can expose without building conda recipes for every case.
 
 ## Relationship to companion CEPs
 
 - **[CEP XXX0 – Wheel support in conda (overview)][cep-xxx0]** — Why native wheel support, historical context, and discussion of rejected ideas (informative).
-- **[CEP XXX2 – Wheel conda client support][cep-xxx2]** — Normative client behavior: loading `whl` into the solve, exclusivity and preference, download, and installation into the prefix.
+- **[CEP XXX2 – Wheel conda client support][cep-xxx2]** — Normative client behavior: loading `whl` into the solve with other repodata records, download, and installation.
 
 ## Specification
 
@@ -122,7 +122,9 @@ Wheels that fail any of these checks MUST NOT be added to `whl`.
 
 ### Dependency conversion
 
-Wheel dependencies (from METADATA file's Requires-Dist entries) MUST be converted to conda format following these rules:
+Channel operators MUST convert Python dependency declarations—`Requires-Dist`, `Requires-Python`, and extras—into conda `depends`, **`extra_depends`** when applicable, and related fields, following the rules below.
+
+Those declarations MAY be read from the wheel's embedded **`METADATA`** and/or from the [**PyPI JSON API**][pypi-json-api] release payload for the same **project** and **version** as the wheel being indexed. Using the API can simplify batch indexing and mirrors. Regardless of source, the same conversion rules and interoperable minimum in [PEP 508 marker translation guidance](#pep-508-marker-translation-guidance) apply.
 
 - **Package names:** Names per [CEP 26][cep-26] and match existing conda-forge package names where they exist
 - **Version specifiers:** Map PEP 440 [version specifiers][version-specifiers] to conda format:
@@ -161,7 +163,7 @@ Resulting conda record:
 
 ### PEP 508 marker translation guidance
 
-This subsection layers **interoperable expectations** for the wire format, **non-normative** reference material for richer mappings, and **lossy translation** policy. It does not duplicate a full PEP 508 variable matrix in this CEP; maintaining that table is left to living documentation and tooling (see below).
+This subsection layers interoperable expectations for the repodata format, non-normative reference material for richer mappings, and a general translation policy.
 
 #### Interoperable minimum
 
@@ -180,7 +182,7 @@ Per-variable translation of other PEP 508 markers (for example `sys_platform`, `
 #### Lossy translation
 
 When a channel cannot encode a PEP 508 dimension in repodata (for example no virtual package for an architecture string, or unsupported boolean branches), the operator MAY **omit** the condition, **simplify** the requirement, or **widen** the dependency (for example listing a package in `depends` without `when=` so it applies in more environments than PEP 508 would).
-Channel operators SHOULD document their policy for such cases (including any conservative “include unconditionally” behavior). They MUST NOT claim that published repodata reproduces **full** PEP 508 semantics when a lossy transform was applied.
+Channel operators SHOULD document their policy for such cases (including any conservative “include unconditionally” behavior).
 
 ### Handling conditional dependencies and extras
 
@@ -188,9 +190,9 @@ Wheel `depends` entries that encode PEP 508 environment markers MUST use conditi
 
 PyPI **extras** (optional dependency groups) MUST be represented on the wheel repodata record using an **`extra_depends`** object (a mapping from extra name to lists of dependency strings) as specified in [PR 111][pr-111]. A default install uses only `depends` and MUST NOT union in `extra_depends` entries unless the user selects optional groups (for example with `extras=` in `MatchSpec` as described in [PR 111][pr-111]).
 
-### Solver behavior and package preference
+### Solver behavior
 
-Normative rules for how conda clients treat `whl` records during dependency resolution (candidate pool, exclusivity, default preference for conda vs wheel, and user overrides) are defined in [CEP XXX2 – Wheel conda client support][cep-xxx2].
+Normative rules for how conda clients treat `whl` records during dependency resolution (same candidate pool as other repodata records; no CEP-mandated default between conda builds and wheels) are defined in [CEP XXX2 – Wheel conda client support][cep-xxx2].
 This CEP only requires that published `whl` records are valid [repodata records][repodata-record-schema] so that clients can consume them alongside `packages` and `packages.conda`.
 
 ### Limitations
@@ -201,8 +203,9 @@ This CEP has the following known limitations:
 2. **Environment markers (publisher defaults):** Default conversion rules in this CEP focus on Python-version markers on `Requires-Dist`, mapped to `when=` per [PR 111][pr-111]. Other markers (for example `sys_platform`) are out of scope for those default publisher rules and are not required to be converted into repodata here; see [PEP 508 marker translation guidance](#pep-508-marker-translation-guidance).
 How conda clients evaluate `when=` and optional groups at solve time (including environment context) is specified in [CEP XXX2][cep-xxx2] together with [PR 111][pr-111].
 3. **Conditionals and extras:** Normative syntax and record fields for `when=` on `depends` and for optional groups in **`extra_depends`** are specified in [PR 111][pr-111], on which this repodata CEP and [CEP XXX2][cep-xxx2] rely for PyPI-aligned conditionals and extras in published records and at client solve time, respectively.
-4. **Repodata size:** Supporting a significant portion of pure Python packages from PyPI (potentially hundreds of thousands of packages with multiple versions each) will substantially increase repodata size. Channels adopting wheel support at scale will need to implement sharded repodata ([CEP 16][cep-16]) to maintain acceptable performance. Alternatively, channels may choose to curate a subset of popular or requested packages rather than mirroring all of PyPI.
-5. **PyPI package deletion:** PyPI allows package maintainers to delete packages (as opposed to just yanking them), which can break locked environments that reference those packages. Channels using external PyPI URLs directly are subject to this risk. For production use and reproducible environments, channels MAY mirror and store wheel artifacts locally rather than relying solely on external PyPI URLs.
+4. **Repodata size:** Supporting a significant portion of pure Python packages from PyPI (potentially hundreds of thousands of packages with multiple versions each) will substantially increase repodata size. Channels adopting wheel support at scale SHOULD implement sharded repodata ([CEP 16][cep-16]) to maintain acceptable performance.
+5. **PyPI package deletion:** PyPI allows package maintainers to delete releases (as opposed to only yanking them). Releases may also be removed when classified as **malicious** or otherwise pulled by PyPI administrators. Any removal may break locked environments that reference those artifacts.
+Channels using external PyPI URLs directly are subject to this risk. For production use and reproducible environments, channels MAY mirror and store wheel artifacts locally rather than relying solely on external PyPI URLs.
 
 ## Rationale
 
@@ -226,13 +229,14 @@ Several factors can cause wheel names to differ from conda-style names:
 
 ### For conda clients
 
-Client behavior (loading `whl` into the solve, preference and exclusivity, download, and installation into the environment prefix) is specified in [CEP XXX2 – Wheel conda client support][cep-xxx2]. Channel operators need not implement that CEP; they only publish repodata that conforms to this document.
+Client behavior (loading `whl` into the solve with other repodata records, download, and installation into the environment prefix) is specified in [CEP XXX2 – Wheel conda client support][cep-xxx2]. Channel operators need not implement that CEP; they only publish repodata that conforms to this document.
 
 ### For channel operators
 
 Channel operators adding wheel support SHOULD:
 
 - Implement validation to ensure only pure Python wheels are included
+- When using the [PyPI JSON API][pypi-json-api] for dependency metadata, consider comparing against the wheel's `METADATA` and fall back (or merge) when the API response is incomplete relative to the artifact
 - Ensure that dependencies are solvable, including that compiled dependencies exist on the conda channel declared as `info.channel_relations.base` when wheels depend on conda packages from that stack
 - Maintain a mapping of PyPI to conda-style names for their channel, or declare `channel_relations.base` so clients load a base channel that defines those mappings (see [Naming standard and channel mapping](#naming-standard-and-channel-mapping) and [Channel relations in repodata][cep-channel-relations])
 - Consider automation to keep the repodata up to date with newer releases on PyPI
@@ -424,6 +428,7 @@ The package record expresses the conditional with `when=` so `typing_extensions`
 - [PR 151 – URL field for package records][pr-151]
 - [PR 111 – Conditional dependencies and optional groups][pr-111]
 - [conda-pupa][conda-pupa]
+- [PyPI JSON API documentation][pypi-json-api]
 
 ## Copyright
 
@@ -443,5 +448,6 @@ All CEPs are explicitly [CC0 1.0 Universal](https://creativecommons.org/publicdo
 [pr-151]: https://github.com/conda/ceps/pull/151
 [pr-111]: https://github.com/conda/ceps/pull/111
 [conda-pupa]: https://github.com/dholth/conda-pupa
+[pypi-json-api]: https://docs.pypi.org/api/json/
 [cep-xxx0]: cep-XXX0.md
 [cep-xxx2]: cep-XXX2.md
