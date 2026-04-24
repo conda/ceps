@@ -21,7 +21,7 @@ This CEP proposes the introduction of conditional dependencies in the conda ecos
 
 ## Motivation
 
-Conditional dependencies are often requested in the conda ecosystem. After all, an equivalent feature exist in Python packaging in the form of "environment markers" (introduced in [PEP 508](https://peps.python.org/pep-0508/)), so it's a reasonable expectation. There are even traces of planned support of it in `conda.models.match_spec` (see commit [`ab33436`](https://github.com/conda/conda/pull/7606/changes/ab33436591cd2f8ce9c792a50a412d1d02c75504)) in the context of ["pip interoperability"](https://github.com/conda/conda/issues/7053).
+Conditional dependencies are often requested in the conda ecosystem. After all, an equivalent feature exists in Python packaging in the form of "environment markers" (introduced in [PEP 508](https://peps.python.org/pep-0508/)), so it's a reasonable expectation. There are even traces of planned support of it in `conda.models.match_spec` (see commit [`ab33436`](https://github.com/conda/conda/pull/7606/changes/ab33436591cd2f8ce9c792a50a412d1d02c75504)) in the context of ["pip interoperability"](https://github.com/conda/conda/issues/7053).
 
 The feature never landed though, and its absence in the conda ecosystem has forced packagers to (inefficiently) translate this expressivity into a set of different package variants which only differ in their dependency metadata. For example, consider the following runtime requirements of a pure Python package:
 
