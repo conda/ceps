@@ -95,7 +95,7 @@ PEP 735 "optional dependency groups" are not covered in this CEP. Those are not 
 
 ## References
 
-- https://packaging.python.org/en/latest/specifications/dependency-specifiers/#extras
+- <https://packaging.python.org/en/latest/specifications/dependency-specifiers/#extras>
 - [conda/conda#1696: Optional dependencies for conda packages](https://github.com/conda/conda/issues/1696), [conda/conda#7502: Optional groups of dependencies](https://github.com/conda/conda/issues/7502)
 
 ## Copyright

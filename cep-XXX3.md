@@ -25,7 +25,8 @@ Within a channel and subdir, a conda package for a given project release may hav
 
 In principle, the solver is responsible for choosing the right variant for a given package version. However, the user may also want to force a particular variant to satisfy their needs. The solution so far has been to plant a special substring in the build string so it can be selected by the corresponding glob string. For example, given a package with a CPU and a GPU variant (`package-1.0-h123abc_cpu_0.conda` and `package-1.0-h453cbd_gpu_0.conda`), the GPU variant can be chosen by asking for `package=*=*gpu*`.
 
-The problem with this approach is that it doesn't scale well for more than one "flag" per build string. What if a package needs to distinguish among more than one feature? That is, not just GPU vs CPU, but also BLAS backend, MPI or licensing? The glob strings are not expressive enough for a single spec, so several ones need to be supplied (e.g. `package=*=*gpu*`, `package=*=*mkl*`, `package=*=*mpich*` and `package=*=*nogpl*`), resulting in complicated lookahead regexes that balloon in computational complexity.
+The problem with this approach is that it doesn't scale well for more than one "flag" per build string. What if a package needs to distinguish among more than one feature? That is, not just GPU vs CPU, but also BLAS backend, MPI or licensing?
+The glob strings are not expressive enough for a single spec, so several ones need to be supplied (e.g. `package=*=*gpu*`, `package=*=*mkl*`, `package=*=*mpich*` and `package=*=*nogpl*`), resulting in complicated lookahead regexes that balloon in computational complexity.
 
 The answer to this problem is to provide a specific field that is designed to provide such selection capabilities without the expressivity and complexity problems observed above: `flags`.
 
