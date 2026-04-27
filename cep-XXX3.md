@@ -48,9 +48,9 @@ In recipes, these values MUST be supported by a `flags` key in the `build` secti
 
 ### MatchSpec syntax changes
 
-Values in the `flags` field MUST be matchable by the corresponding keyword in ``, placed in the square brackets section. Its value MUST be a string or list of strings. Each entry MUST match the regex `^[a-z0-9_]+(:[a-z0-9_]+)?$`.
+Values in the `flags` field MUST be matchable by the corresponding keyword in `MatchSpec`, placed in the square brackets section. Its value MUST be a string or list of strings. Each entry MUST match the regex `^[a-z0-9_\*]+(:[a-z0-9_\*]+)?$`. The `*` character is a glob operator, with the same meaning as in CEP 29 "String Matching".
 
-Flag matching is intentionally simple: a package is excluded from consideration if it does not contain every flag listed in the `flags` constraint. A flag either matches the string exactly or the package is filtered out.
+Flag matching is intentionally simple: a package is excluded from consideration if it does not contain every flag listed in the `flags` constraint. A flag either matches the string (exactly or globbed) or the package is filtered out.
 
 ### `index.json` and `repodata_record` changes
 
