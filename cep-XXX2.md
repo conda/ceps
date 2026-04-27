@@ -33,7 +33,7 @@ Instead of overloading the repodata documents with more package names (which cau
 
 ## Rationale
 
-The chosen keyword in the and `MatchSpecs` is  `extras` given its popularity in Python packaging.
+The chosen keyword in CEP 29 `MatchSpec`, keywords is `extras` given its popularity in Python packaging. For CEP 34 `info/index.json` records is `extra-depends` to avoid ambiguity with a hypothetical `extra-constraints`.
 
 ## Specification
 
@@ -97,6 +97,7 @@ PEP 735 "optional dependency groups" are not covered in this CEP. Those are not 
 
 - <https://packaging.python.org/en/latest/specifications/dependency-specifiers/#extras>
 - [conda/conda#1696: Optional dependencies for conda packages](https://github.com/conda/conda/issues/1696), [conda/conda#7502: Optional groups of dependencies](https://github.com/conda/conda/issues/7502)
+- <https://github.com/conda/rattler/pull/1542>
 
 ## Copyright
 
