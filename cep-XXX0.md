@@ -68,6 +68,8 @@ Two competing philosophies emerged on how or if we should provide better integra
 
 Issue [#262](https://github.com/conda/conda/issues/262) (2013): conda should install directly from PyPI to reduce duplication and improve package availability.
 
+conda-forge issue [#28](https://github.com/conda-forge/conda-forge.github.io/issues/28) (Feb 2016): Chris Barker raises the pure-Python package gap from the conda-forge community's perspective, proposing either a real-time PyPI bridge (on-the-fly conda package generation from PyPI) or an automated conda skeleton farm to mirror popular PyPI packages with version tracking.
+
 Arguments for this approach:
 
 - Users frequently need packages not available on conda channels
