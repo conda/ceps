@@ -42,11 +42,9 @@ The `info/index.json` file of each conda artifact MUST support two new fields, `
 
 The value of the `flags` field MUST be a list of non-empty strings matching the regex `^[a-z0-9_]+(:[a-z0-9_]+)?$`. We allow a _single_ `:` for `key:value` semantics.
 
-Subsequently, the `schema_version` value MUST be bumped to `3`.
+Subsequently, the CEP 34 `info/index.json`'s `schema_version` value MUST be bumped to `3`.
 
-In recipes, these values MUST be supported in the `build` section of each output (i.e. sibling to `number` and `track_features`).
-
-In recipes, it MUST be represented as a list of strings under the `build.flags = [str]` key for each package output.
+In recipes, these values MUST be supported by a `flags` key in the `build` section of each output (i.e. sibling to `number` and `track_features`) with a list of strings as the value; i.e. `build.flags = [str]`.
 
 ### MatchSpec syntax changes
 
