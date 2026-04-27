@@ -10,7 +10,7 @@
 </td></tr>
 <tr><td> Created </td><td> Feb 5, 2025</td></tr>
 <tr><td> Updated </td><td> Apr 27, 2026</td></tr>
-<tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/111 </td></tr>
+<tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/111, https://github.com/conda/ceps/pull/165 </td></tr>
 <tr><td> Implementation </td><td> NA </td></tr>
 <tr><td> Requires </td><td> https://github.com/conda/ceps/pull/146 </td></tr>
 </table>
