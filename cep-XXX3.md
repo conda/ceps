@@ -87,7 +87,9 @@ Any package that does not carry both the `cuda` and a flag starting with `blas:`
 
 ## Rejected ideas
 
-This proposal may remind the readers of the old `features` properties in the first iterations of conda packaging.
+This proposal may remind the readers of the old `features` properties in the first iterations of conda packaging. This is not a reimplementation.
+
+A previous iteration of this CEP included a `variant_priority` field to clearly identify which the priority of each variant build, instead of relying on `build_number` or `track_features` hackery. This was removed because its complexity deserves its own separate CEP, to be tackled in the future.
 
 ## Future plans
 
