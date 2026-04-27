@@ -11,7 +11,7 @@
 <tr><td> Updated </td><td> Apr 24, 2026</td></tr>
 <tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/145 </td></tr>
 <tr><td> Implementation </td><td> TBD </td></tr>
-<tr><td> Requires </td><td> https://github.com/conda/ceps/pull/151 https://github.com/conda/ceps/pull/146 https://github.com/conda/ceps/pull/155 https://github.com/conda/ceps/pull/111 [CEP XXX2 (Wheel conda client support)](cep-XXX2.md) </td></tr>
+<tr><td> Requires </td><td> https://github.com/conda/ceps/pull/151 https://github.com/conda/ceps/pull/146 https://github.com/conda/ceps/pull/155 https://github.com/conda/ceps/pull/164 https://github.com/conda/ceps/pull/165 [CEP XXX2 (Wheel conda client support)](cep-XXX2.md) </td></tr>
 <tr><td> See also </td><td> [CEP XXX0 – Wheel support in conda (overview)](cep-XXX0.md) </td></tr>
 </table>
 
@@ -57,7 +57,7 @@ The `whl` dictionary maps conda-like filenames to repodata records. The key MUST
   - `python` dependency from `Requires-Python` (if present), converted to conda format
   - All `Requires-Dist` entries from METADATA, converted from PEP 440 to conda format per [Dependency conversion](#dependency-conversion)
   - Package names normalized to conda-style names per [CEP 26][cep-26]
-- **`extra_depends`**: MAY be present. When present, MUST be an object mapping extra names to lists of dependency strings for optional groups, per [PR 111][pr-111]. When absent or empty, the record declares no optional groups beyond `depends`.
+- **`extra_depends`**: MAY be present. When present, MUST be an object mapping extra names to lists of dependency strings for optional groups, per [PR 165][pr-165]. When absent or empty, the record declares no optional groups beyond `depends`.
 - **`subdir`**: MUST be `"noarch"`.
 - **`noarch`**: MUST be `"python"`.
 - **`url`**: MAY be present. Semantics are defined in [PR 151][pr-151] (see [Wheel download URLs](#wheel-download-urls)).
@@ -133,7 +133,7 @@ Those declarations MAY be read from the wheel's embedded **`METADATA`** and/or f
   - Multiple version specifiers are combined with commas (e.g., `>=1.0,<2.0`)
 
 - **Python version requirements:** Convert Requires-Python to explicit python dependency
-- **Environment markers:** Map Python-version markers on `Requires-Dist` to conditional `MatchSpec` `when=` as specified in [PR 111][pr-111]. Other markers are out of scope for the default conversion rules in this CEP (see [Limitations](#limitations)).
+- **Environment markers:** Map Python-version markers on `Requires-Dist` to conditional `MatchSpec` `when=` as specified in [PR 164][pr-164]. Other markers are out of scope for the default conversion rules in this CEP (see [Limitations](#limitations)).
 
 Example conversion:
 
@@ -166,11 +166,11 @@ This subsection layers interoperable expectations for the repodata format, non-n
 
 #### Interoperable minimum
 
-For published `whl` records, the following conversions are the **normative floor** aligned with [Dependency conversion](#dependency-conversion) and [PR 111][pr-111]:
+For published `whl` records, the following conversions are the **normative floor** aligned with [Dependency conversion](#dependency-conversion) and [PR 164][pr-164] and [PR 165][pr-165]:
 
 - **`Requires-Python`:** MUST appear as an explicit `python` dependency in `depends`.
-- **Python-version conditions on `Requires-Dist`:** MUST be represented with conditional `MatchSpec` `when=` on the relevant dependency strings per [PR 111][pr-111].
-- **`extra` (optional groups):** MUST be represented with **`extra_depends`** and optional-group selection per [PR 111][pr-111], not only as opaque marker text on `depends`.
+- **Python-version conditions on `Requires-Dist`:** MUST be represented with conditional `MatchSpec` `when=` on the relevant dependency strings per [PR 164][pr-164].
+- **`extra` (optional groups):** MUST be represented with **`extra_depends`** and optional-group selection per [PR 165][pr-165], not only as opaque marker text on `depends`.
 
 Channels and tools MAY apply additional, stricter mappings where they can express them in repodata.
 
@@ -185,9 +185,9 @@ Channel operators SHOULD document their policy for such cases (including any con
 
 ### Handling conditional dependencies and extras
 
-Wheel `depends` entries that encode PEP 508 environment markers MUST use conditional `MatchSpec` syntax with `when=` as specified in [PR 111][pr-111].
+Wheel `depends` entries that encode PEP 508 environment markers MUST use conditional `MatchSpec` syntax with `when=` as specified in [PR 164][pr-164].
 
-PyPI **extras** (optional dependency groups) MUST be represented on the wheel repodata record using an **`extra_depends`** object (a mapping from extra name to lists of dependency strings) as specified in [PR 111][pr-111]. A default install uses only `depends` and MUST NOT union in `extra_depends` entries unless the user selects optional groups (for example with `extras=` in `MatchSpec` as described in [PR 111][pr-111]).
+PyPI **extras** (optional dependency groups) MUST be represented on the wheel repodata record using an **`extra_depends`** object (a mapping from extra name to lists of dependency strings) as specified in [PR 165][pr-165]. A default install uses only `depends` and MUST NOT union in `extra_depends` entries unless the user selects optional groups (for example with `extras=` in `MatchSpec` as described in [PR 165][pr-165]).
 
 ### Solver behavior
 
@@ -199,9 +199,9 @@ This CEP only requires that published `whl` records are valid [repodata records]
 This CEP has the following known limitations:
 
 1. **Pure Python only:** This CEP explicitly does not address wheels with binary extensions, which require platform-specific compatibility guarantees beyond the current scope. Conda’s strength is binary compatibility, so using conda packages may be the optimal solution.
-2. **Environment markers (publisher defaults):** Default conversion rules in this CEP focus on Python-version markers on `Requires-Dist`, mapped to `when=` per [PR 111][pr-111]. Other markers (for example `sys_platform`) are out of scope for those default publisher rules and are not required to be converted into repodata here; see [PEP 508 marker translation guidance](#pep-508-marker-translation-guidance).
-How conda clients evaluate `when=` and optional groups at solve time (including environment context) is specified in [CEP XXX2][cep-xxx2] together with [PR 111][pr-111].
-3. **Conditionals and extras:** Normative syntax and record fields for `when=` on `depends` and for optional groups in **`extra_depends`** are specified in [PR 111][pr-111], on which this repodata CEP and [CEP XXX2][cep-xxx2] rely for PyPI-aligned conditionals and extras in published records and at client solve time, respectively.
+2. **Environment markers (publisher defaults):** Default conversion rules in this CEP focus on Python-version markers on `Requires-Dist`, mapped to `when=` per [PR 164][pr-164]. Other markers (for example `sys_platform`) are out of scope for those default publisher rules and are not required to be converted into repodata here; see [PEP 508 marker translation guidance](#pep-508-marker-translation-guidance).
+How conda clients evaluate `when=` and optional groups at solve time (including environment context) is specified in [CEP XXX2][cep-xxx2] together with [PR 164][pr-164] and [PR 165][pr-165].
+3. **Conditionals and extras:** Normative syntax and record fields for `when=` on `depends` and for optional groups in **`extra_depends`** are specified in [PR 164][pr-164] and [PR 165][pr-165], on which this repodata CEP and [CEP XXX2][cep-xxx2] rely for PyPI-aligned conditionals and extras in published records and at client solve time, respectively.
 4. **Repodata size:** Supporting a significant portion of pure Python packages from PyPI (potentially hundreds of thousands of packages with multiple versions each) will substantially increase repodata size. Channels adopting wheel support at scale SHOULD implement sharded repodata ([CEP 16][cep-16]) to maintain acceptable performance.
 5. **PyPI package deletion:** PyPI allows package maintainers to delete releases (as opposed to only yanking them). Releases may also be removed when classified as **malicious** or otherwise pulled by PyPI administrators. Any removal may break locked environments that reference those artifacts.
 Channels using external PyPI URLs directly are subject to this risk. For production use and reproducible environments, channels MAY mirror and store wheel artifacts locally rather than relying solely on external PyPI URLs.
@@ -414,7 +414,7 @@ Requires-Python: >=3.8
 Requires-Dist: typing-extensions>=4.0.0; python_version < '3.9'
 ```
 
-The package record expresses the conditional with `when=` so `typing_extensions` applies only when the Python version is less than 3.9, matching the original wheel METADATA and [PR 111][pr-111]. The Python version constraint of >=3.8 is directly mapped.
+The package record expresses the conditional with `when=` so `typing_extensions` applies only when the Python version is less than 3.9, matching the original wheel METADATA and [PR 164][pr-164]. The Python version constraint of >=3.8 is directly mapped.
 
 ## References
 
@@ -425,7 +425,8 @@ The package record expresses the conditional with `when=` so `typing_extensions`
 - [Example `repodata.json` (conda-pypi test channel)][conda-pypi-example-repodata]
 - [Channel relations in repodata (PR 155)][cep-channel-relations]
 - [PR 151 – URL field for package records][pr-151]
-- [PR 111 – Conditional dependencies and optional groups][pr-111]
+- [PR 164 – Conditional dependencies][pr-164]
+- [PR 165 – Optional dependency groups][pr-165]
 - [conda-pupa][conda-pupa]
 - [PyPI JSON API documentation][pypi-json-api]
 
@@ -445,7 +446,8 @@ All CEPs are explicitly [CC0 1.0 Universal](https://creativecommons.org/publicdo
 [conda-pypi-example-repodata]: https://github.com/conda-incubator/conda-pypi/blob/main/tests/conda_local_channel/noarch/repodata.json
 [cep-channel-relations]: https://github.com/conda/ceps/pull/155
 [pr-151]: https://github.com/conda/ceps/pull/151
-[pr-111]: https://github.com/conda/ceps/pull/111
+[pr-164]: https://github.com/conda/ceps/pull/164
+[pr-165]: https://github.com/conda/ceps/pull/165
 [conda-pupa]: https://github.com/dholth/conda-pupa
 [pypi-json-api]: https://docs.pypi.org/api/json/
 [cep-xxx0]: cep-XXX0.md
