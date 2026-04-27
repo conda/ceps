@@ -11,7 +11,7 @@
 <tr><td> Created </td><td> Feb 5, 2025</td></tr>
 <tr><td> Updated </td><td> Apr 27, 2026</td></tr>
 <tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/111 </td></tr>
-<tr><td> Implementation </td><td> TBD </td></tr>
+<tr><td> Implementation </td><td> NA </td></tr>
 <tr><td> Requires </td><td> https://github.com/conda/ceps/pull/146 </td></tr>
 </table>
 
@@ -87,15 +87,13 @@ Any package that does not carry both the `cuda` and a flag starting with `blas:`
 
 This proposal may remind the readers of the old `features` properties in the first iterations of conda packaging. This is not a reimplementation.
 
-A previous iteration of this CEP included a `variant_priority` field to clearly identify which the priority of each variant build, instead of relying on `build_number` or `track_features` hackery. This was removed because its complexity deserves its own separate CEP, to be tackled in the future.
-
 ## Future plans
 
 Several extensions are deferred to future revisions:
 
-- Richer flag matching: numeric values, key-value items, and comparison operators (>, <) for numeric matches.
-- Additional operators: ? for "match if present" and ! to exclude a flag.
-- Variant prioritization: a variant_priority field to disambiguate among many matching variants. We could not agree on the sort order, so this is deferred for further discussion.
+- Richer flag matching: numeric values, key-value items, and comparison operators (`>`, `<`) for numeric matches.
+- Additional operators: `?` for "match if present" and `!` to exclude a flag.
+- Variant prioritization: a `variant_priority` field to disambiguate among many matching variants. We could not agree on the sort order, so this is deferred for further discussion.
 
 ## Copyright
 
