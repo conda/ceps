@@ -91,7 +91,11 @@ This proposal may remind the readers of the old `features` properties in the fir
 
 ## Future plans
 
-In the future we might extend the matching ergonomics of flags to include numeric values and key-value items.
+Several extensions are deferred to future revisions:
+
+- Richer flag matching: numeric values, key-value items, and comparison operators (>, <) for numeric matches.
+- Additional operators: ? for "match if present" and ! to exclude a flag.
+- Variant prioritization: a variant_priority field to disambiguate among many matching variants. We could not agree on the sort order, so this is deferred for further discussion.
 
 ## Copyright
 
