@@ -1,0 +1,154 @@
+# CEP XXXX - Wheel conda client support
+
+<table>
+<tr><td> Title </td><td> Wheel conda client support</td></tr>
+<tr><td> Status </td><td> Draft </td></tr>
+<tr><td> Author(s) </td><td>
+  Dan Yeaw &lt;dyeaw@anaconda.com&gt;
+</td></tr>
+<tr><td> Created </td><td> Apr 24, 2026</td></tr>
+<tr><td> Updated </td><td> Apr 24, 2026</td></tr>
+<tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/145 </td></tr>
+<tr><td> Implementation </td><td> TBD </td></tr>
+<tr><td> Requires </td><td> [CEP XXX1 – Repodata wheel support](cep-XXX1.md) https://github.com/conda/ceps/pull/151 https://github.com/conda/ceps/pull/146 https://github.com/conda/ceps/pull/155 https://github.com/conda/ceps/pull/111 </td></tr>
+<tr><td> See also </td><td> [CEP XXX0 – Wheel support in conda (overview)](cep-XXX0.md) </td></tr>
+</table>
+
+> The keywords "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT",
+"RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as
+described in [RFC2119][RFC2119] when, and only when, they appear in all capitals, as shown here.
+
+## Abstract
+
+This CEP specifies how conda clients consume wheel entries published in repodata: loading `v{revision}.whl` into the same index as other repodata records, evaluating conditional dependencies and extras per [PR 111][pr-111], downloading wheel artifacts, and integrating them into the environment **as equivalent `noarch: python` conda packages** (layout, package database, and lifecycle).
+The shape of the `whl` index and publisher-side `METADATA` conversion are defined in [CEP XXX1 – Repodata wheel support][cep-xxx1].
+Background on **why** channels and clients pursue native wheel support, plus historical context and rejected ecosystem alternatives, is in [CEP XXX0 – Wheel support in conda (overview)][cep-xxx0].
+
+## Motivation
+
+[CEP XXX1][cep-xxx1] makes wheel metadata available in channel repodata so environments can be solved in one pass together with conda packages.
+That is not sufficient by itself: users need a single, well-defined **client** story for (1) which packages the solver may choose, (2) how optional groups and `when=` interact with the live environment, (3) where artifacts are downloaded from, and (4) how wheel contents map onto the prefix (site-packages, scripts, and conda metadata) without corrupting the environment or duplicating work already covered by conda package conventions.
+
+## Specification
+
+### Relationship to [CEP XXX1][cep-xxx1]
+
+This CEP assumes repodata that conforms to [CEP XXX1 – Repodata wheel support][cep-xxx1], including the `whl` mapping under a registered `v{revision}` and valid [repodata record][repodata-record-schema] fields for each entry.
+
+### Repodata consumption
+
+Conda clients that implement wheel support MUST load records from the `whl` mapping in each supported [repodata revision](https://github.com/conda/ceps/pull/146) into the same index used for `packages` and `packages.conda` for that revision. Clients SHOULD apply the same subdir and channel filtering hooks used for other repodata records unless a separate policy is explicitly documented.
+
+Wheel records for pure Python packages use `subdir: "noarch"` per [CEP XXX1][cep-xxx1] and no additional platform filter is required for those wheels beyond the normal noarch and virtual-package logic for the target prefix.
+
+### Solver: dependency resolution
+
+Wheel records are normal [repodata records][repodata-record-schema] and solvers treat them like other index entries for dependency resolution, `depends`, and (where applicable) subdir / virtual-package filtering—the same model as for `packages` and `packages.conda`.
+
+### Conditional dependencies and extras
+
+For wheel records, [PR 111][pr-111] normatively defines `when=` on `depends` and the **`extra_depends`** object for PyPI optional groups. Clients that implement this CEP MUST:
+
+- Evaluate `when=` for wheel `depends` entries according to the same rules as for other new-syntax records, using an environment model that provides at least Python version and, where applicable, virtual packages (see [Marker handling](#marker-handling)).
+- Honor **`extra_depends`** when the user selects optional groups (for example with `extras=` in `MatchSpec`) per [PR 111][pr-111], and MUST NOT pull in `extra_depends` groups on a default install.
+- Load wheel records that use `when=` or `extra_depends` in the same `v{revision}` payload and revision-handling as other records introduced under the [backwards-compatible repodata update strategy](https://github.com/conda/ceps/pull/146).
+
+The strings on a wheel’s `depends` and `extra_depends` are produced by channel operators from wheel `METADATA` per [CEP XXX1][cep-xxx1]; the client’s job is to interpret them, not to re-parse the wheel for dependency resolution (though reading `METADATA` for validation or error messages is allowed).
+
+### Marker handling
+
+**Publisher output (in repodata):** [CEP XXX1][cep-xxx1] requires converting certain PEP 508 markers on `Requires-Dist` into `when=` and optional-group fields. Other markers are out of scope for the default *publisher* conversion rules; repodata may omit or simplify them.
+
+**Client (solve time):** The solver MUST use the MatchSpec and PR 111 features carried on the repodata record: `when=` subexpressions, `python` constraints, and virtual packages, so that the effective dependency graph matches the published strings for the current environment. Clients MAY map additional environment dimensions to virtual packages where documented (non-normative per-variable notes appear in the [conda-pypi marker conversion][conda-pypi-marker-conversion] documentation).
+
+**Out-of-scope dimensions:** Some PEP 508 variables (for example, `implementation_name`, or markers tied to a specific wheel build matrix beyond the pure-Python subset) do not have a defined mapping in the normative [CEP XXX1][cep-xxx1] record; behavior for such wheels remains undefined unless a future CEP or channel policy encodes them in repodata. Clients MUST NOT claim full PEP 508 equivalence beyond what the record expresses.
+
+### Download
+
+After the solver selects a wheel record, the client MUST download the `.whl` file using the same rules as for other `noarch` artifacts with a `fn` and optional `url`:
+
+- Resolve the URL per [PR 151][pr-151] and the download examples in [CEP XXX1][cep-xxx1] (channel `base_url`, default `noarch` layout, or absolute per-record `url`).
+- Verify integrity using `sha256` and `size` from the repodata record when those fields are present, consistent with other conda downloads.
+
+### Installation layout and prefix placement
+
+Wheels selected from repodata MUST be integrated into the target environment **as the equivalent of a `noarch: python` conda package** ([CEP 20][cep-20], [CEP 34][cep-34]): the same style of layout under the prefix, registration in conda's package database, and `conda list` / `conda remove` / upgrade behavior that matches other packages from the index—not a standalone "pip install this wheel" interaction.
+
+Importable code MUST end up under the environment's [site-packages][cep-20] (or the site-packages / path layout for `noarch: python` described in that package’s `info/index.json` and related files per [CEP 34][cep-34]). Headers, data, and other install-tree paths from the wheel MUST be placed under prefix locations that are tracked and removed the same way as in a built conda package.
+The repodata record points at a wheel file as the artifact to obtain; the **normative** requirement is conda-equivalent integration as in the preceding paragraph, not a wheel-only layout profile considered in isolation from conda's package model.
+
+- **Metadata:** The install MUST create a valid `.dist-info` so `importlib.metadata` can load the distribution, consistent with other Python packages in the environment.
+- **RECORD:** The client SHOULD verify the wheel's `RECORD` where present to detect tampering or corruption and it MUST reject path entries that escape the intended prefix or package staging area.
+- **Console and GUI entry points:** Application entry points SHOULD be materialized like other conda `noarch: python` packages: through `info/link.json` and conda's link machinery per [CEP 20][cep-20] and [CEP 34][cep-34], so shebangs and `bin` scripts remain under the conda client's control. A client implementation MAY avoid emitting duplicate script files from the wheel when `link.json` (or an equivalent) defines the public commands.
+
+## Rationale
+
+### One solve, predictable layout
+
+Native wheel support in the client avoids separate PyPI or pip phases for the packages indexed in [CEP XXX1][cep-xxx1], matches user expectations for where importable code lives, and reuses conda's environment model. Keeping download rules aligned with [PR 151][pr-151] matches existing channel URL behavior.
+
+### Native unpack
+
+Conda clients install from the `.whl` artifact referenced in repodata and lay out the environment as a normal conda-managed `noarch: python` install (see [Installation layout and prefix placement](#installation-layout-and-prefix-placement)).
+
+## Implementation Notes
+
+### For conda client implementers
+
+- **Index:** Parse `whl` inside each supported `v{revision}` object alongside `packages` / `packages.conda` into the same solver-facing index.
+- **Conditional dependencies and extras ([PR 111][pr-111]):** Evaluate `when=` on `depends` and honor **`extra_depends`** when the user requests optional groups, consistent with the published record strings (wheel rows use the same syntax as other PR 111 records).
+- **Revision gating:** Treat new-syntax wheel records with the same `v{revision}` handling as the rest of the PR 146 strategy (do not expect older repodata only clients to read `whl`).
+- **Download:** Reuse the channel and fetch stack used for other artifacts, including `url` and checksum verification.
+- **Install:** Integrate wheels using the same prefix layout and metadata model as `noarch: python` conda packages ([CEP 20][cep-20], [CEP 34][cep-34]), including `info/link.json` for entry points when using conda's link pipeline. The [conda-pypi][conda-pypi] project demonstrates populating a conda package shape from a wheel (for example, suppressing duplicate `bin` script generation when `link.json` is used) as a non-normative example.
+
+## Examples
+
+### Install outcome (illustrative)
+
+After installing `requests-2.32.5-py3-none-any.whl` from a wheel repodata record, the environment’s site-packages should contain the `requests` import package and a `requests-2.32.5.dist-info` (or equivalent) directory such that `import requests` and `importlib.metadata.version("requests")` succeed for that prefix’s Python.
+
+## Backwards compatibility
+
+- **Repodata shape:** The `whl` key appears only under a registered `v{revision}` (see [PR 146](https://github.com/conda/ceps/pull/146)). Conda clients that do not support that revision or the `whl` index MUST ignore unknown `v{revision}` members or fall back to earlier revisions per channel policy.
+- **Record syntax:** Records that use `when=` and `extra_depends` are part of the new-syntax repodata world [PR 111][pr-111] already depends on; wheel rows are not a separate syntax fork.
+
+## Rejected ideas
+
+Ecosystem-level alternatives (relying on pip only, on-the-fly PyPI without repodata, build farms that convert every wheel) are discussed under **Rejected ideas** in [CEP XXX0 – Wheel support in conda (overview)][cep-xxx0]. This CEP is the client-side complement to the chosen approach: indexed wheels plus native client install.
+
+## References
+
+- [CEP XXX0 – Wheel support in conda (overview)][cep-xxx0]
+- [CEP XXX1 – Repodata wheel support][cep-xxx1]
+- [CEP 20 – `noarch` (python) packages and site-packages][cep-20]
+- [CEP 34 – Package metadata and `info/`](./cep-0034.md) (`index.json`, `link.json`, etc.)
+- [CEP 26 – Identifying packages and channels][cep-26]
+- [PR 111 – Conditional dependencies and optional groups][pr-111]
+- [PR 151 – URL field for package records][pr-151]
+- [PEP 508 marker conversion (conda-pypi developer docs)][conda-pypi-marker-conversion]
+- [Example `repodata.json` (conda-pypi test channel)][conda-pypi-example-repodata]
+- [conda-pypi project][conda-pypi]
+- [Adopting uv in pixi][uv-in-pixi]
+- [rip][rip]
+- [conda-pupa][conda-pupa]
+
+## Copyright
+
+All CEPs are explicitly [CC0 1.0 Universal](https://creativecommons.org/publicdomain/zero/1.0/).
+
+<!-- links -->
+[RFC2119]: https://datatracker.ietf.org/doc/html/rfc2119
+[repodata-record-schema]: https://schemas.conda.org/repodata-record-1.schema.json
+[cep-26]: https://conda.org/learn/ceps/cep-0026
+[cep-20]: ./cep-0020.md
+[cep-34]: ./cep-0034.md
+[cep-xxx0]: cep-XXX0.md
+[cep-xxx1]: cep-XXX1.md
+[conda-pypi]: https://github.com/conda-incubator/conda-pypi
+[conda-pypi-marker-conversion]: https://conda.github.io/conda-pypi/developer/marker-conversion/#pep-508-variables
+[conda-pypi-example-repodata]: https://github.com/conda-incubator/conda-pypi/blob/main/tests/conda_local_channel/noarch/repodata.json
+[pr-151]: https://github.com/conda/ceps/pull/151
+[pr-111]: https://github.com/conda/ceps/pull/111
+[conda-pupa]: https://github.com/dholth/conda-pupa
+[uv-in-pixi]: https://prefix.dev/blog/uv_in_pixi
+[rip]: https://github.com/prefix-dev/rip
