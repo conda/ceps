@@ -57,7 +57,7 @@ A conditional dependency is defined as a `MatchSpec` string that features a `whe
 
 The inner `MatchSpec` queries inside `when` MUST be expressed in their square brackets syntax, with the exception of simple `name` and `version` queries that MAY be expressed as `{name}{operator}{version}` (no space separators). These inner `MatchSpec` queries MUST NOT feature their own `when` field.
 
-If necessary, the `when` value MUST be quoted to avoid parsing ambiguities.
+The `when` value MUST be quoted to avoid parsing ambiguities.
 
 ### Evaluation
 
