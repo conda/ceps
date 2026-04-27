@@ -130,6 +130,7 @@ When used as part of the runtime requirements of a newly built package, the cond
 - <https://github.com/conda/conda/issues/7438>
 - <https://github.com/conda/conda/issues/7439>
 - <https://github.com/conda/conda/issues/5699>
+- <https://github.com/conda/ceps/pull/55>
 
 ## Copyright
 
