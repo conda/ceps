@@ -19,4 +19,4 @@ MD013:
   # Number of characters
   # we have set this to be very high right now due to the linter not
   # ignoring the limit for inline html and tables
-  line_length: 500
+  line_length: 600
