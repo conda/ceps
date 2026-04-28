@@ -41,7 +41,7 @@ The `__cuda_arch` virtual package addresses use cases that `__cuda` cannot:
 ## Specification
 
 Implementing the `__cuda_arch` virtual package is RECOMMENDED. If a conda-compatible client
-chooses to implement the `__cuda_arch` virtual package, it must follow these specifications:
+chooses to implement the `__cuda_arch` virtual package, it MUST follow these specifications:
 
 The `__cuda_arch` virtual package MUST be absent when the `__cuda` virtual package is
 absent.
