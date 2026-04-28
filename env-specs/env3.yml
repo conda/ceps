@@ -1,0 +1,8 @@
+name: env-name
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.7
+  - codecov
+prefix: /Users/username/anaconda3/envs/env-name
