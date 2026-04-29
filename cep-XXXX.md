@@ -50,10 +50,7 @@ When present, the version value MUST be set to the lowest compute capability of 
 devices detected on the system, formatted as `{major}.{minor}`; subarchitecture letters
 (e.g. `a`, `f`) are excluded.
 
-When present, the build string MUST be the device model of the lowest compute capability
-device as reported by `cuDeviceGetName()` with the following modifications: characters
-except for `[a-zA-Z0-9]` are removed, the literal string `NVIDIA` is removed, and the model
-is truncated to the first 64 characters.
+When present, the build string MUST be `0`.
 
 The `__cuda_arch` virtual package MUST be present when a CUDA device is detected EXCEPT when
 `CONDA_OVERRIDE_CUDA_ARCH` is set as described below.
@@ -115,7 +112,7 @@ not forward-compatible and MUST NOT be used as the sole binary target.
 
 * [nvidia-virtual-packages implementation](https://github.com/conda-incubator/nvidia-virtual-packages)
 * [CUDA compute capability documentation](https://docs.nvidia.com/cuda/cuda-programming-guide/05-appendices/compute-capabilities.html)
-* [CUDA Driver API: `cuDeviceGetName()`](https://docs.nvidia.com/cuda/cuda-driver-api/group__CUDA__DEVICE.html#group__CUDA__DEVICE_1gef75aa30df95446a845f2a7b9fffbb7f)
+* [CUDA Driver API: `cuDeviceGetAttribute()`](https://docs.nvidia.com/cuda/cuda-driver-api/group__CUDA__DEVICE.html#group__CUDA__DEVICE_1g9c3e1414f0ad901d3278a4d6645fc266)
 * [CUDA Driver API: `cuDriverGetVersion()`](https://docs.nvidia.com/cuda/cuda-driver-api/group__CUDA__VERSION.html)
 * [Virtual packages framework (CEP 30)](cep-0030.md)
 
