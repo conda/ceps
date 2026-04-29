@@ -10,7 +10,7 @@
 <tr><td> Updated </td><td> Feb 2, 2026</td></tr>
 <tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/111 </td></tr>
 <tr><td> Implementation </td><td> TBD </td></tr>
-<tr><td> Requires </td><td><a href="https://github.com/conda/ceps/pull/135">conda/ceps#135</a> (CEP 36 — package metadata files served by conda channels)<br><a href="https://github.com/conda/ceps/pull/146">conda/ceps#146</a> (backwards-compatible repodata update strategy)</td></tr>
+<tr><td> Requires </td><td> <a href="https://github.com/conda/ceps/pull/146">conda/ceps#146</a> (backwards-compatible repodata update strategy)</td></tr>
 </table>
 
 > The keywords "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT",
@@ -25,7 +25,7 @@ This CEP introduces a new optional `url` field in package records to specify dow
 
 Currently, the download location for a package is constructed by combining the `base_url` field (defined in [CEP 16](https://conda.org/learn/ceps/cep-0016)) with the package filename (which serves as the dictionary key in repodata). This has a couple of limitations:
 
-1. Packages must be stored in the same directory
+1. Packages must be stored in the same directory as `repodata.json`
 2. It is not possible to serve the files from different servers or Content Delivery Networks (CDNs)
 
 ## Rationale
@@ -41,7 +41,7 @@ Although wheels were the primary motivation, this change provides general flexib
 
 ## Specification
 
-Package repodata records MAY contain a `url` field. When present, the value SHALL be set to either an absolute or relative URL.
+Package repodata records MAY contain a `url` field. When present, the value MUST be set to either a full URL or a relative POSIX path.
 
 Conda clients SHALL construct the download URL as follows:
 
@@ -57,15 +57,15 @@ Conda clients SHALL construct the download URL as follows:
 
 This resolution means:
 
-- **Absolute URLs**: If the package path is an absolute URL (e.g., `https://cdn.example.com/package.conda`), it is used as-is, ignoring the base URL
-- **Relative URLs with base_url**: If the package path is relative (e.g., `subdir/package.conda`) and `base_url` is set (e.g., `https://repo.example.com/`), the result is `https://repo.example.com/subdir/package.conda`
-- **Relative URLs without base_url**: If the package path is relative and no `base_url` is specified, the package path remains relative and will be resolved by the HTTP client relative to the repodata's location
+- **Full URLs**: If the package path is a full URL (e.g., `https://cdn.example.com/package.conda`), it is used as-is, ignoring the base URL
+- **Relative path with `base_url`**: If the package path is relative (e.g., `subdir/package.conda`) and `base_url` is set (e.g., `https://repo.example.com/`), the result is `https://repo.example.com/subdir/package.conda`
+- **Relative path without `base_url`**: If the package path is relative and no `base_url` is specified, the package path remains relative and will be resolved by the HTTP client relative to the repodata's location
 
 ## Examples
 
 ### Absolute URL
 
-In this example, the package is served from a CDN with an absolute URL:
+In this example, the package is served from a CDN with a full URL:
 
 ```json
 {
