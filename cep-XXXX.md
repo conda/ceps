@@ -41,7 +41,7 @@ Although wheels were the primary motivation, this change provides general flexib
 
 ## Specification
 
-Package repodata records MAY contain a `url` field. When present, the value MUST be set to either a full URL or a relative POSIX path.
+Package repodata records MAY contain a `url` field. The `url` field is NOT part of the package's `info/index.json`. It is added by the index generation tool when building repodata. When present, the value MUST be set to either a full URL or a relative POSIX path. Relative paths MUST NOT contain `..` path components.
 
 Conda clients SHALL construct the download URL as follows:
 
@@ -54,6 +54,9 @@ Conda clients SHALL construct the download URL as follows:
    - Otherwise, use the package filename (the dictionary key)
 
 3. Resolve the download URL by combining the base URL with the package path following [RFC 3986 URL resolution semantics](https://datatracker.ietf.org/doc/html/rfc3986#section-5) (equivalent to Python's `urllib.parse.urljoin(base_url, package_path)`).
+
+4. Determine the local cache filename:
+   - The basename of the resolved download URL SHALL be used as the local cache filename.
 
 This resolution means:
 
@@ -131,13 +134,12 @@ The client would resolve the relative `url` against the `base_url` to get: `http
 
 This CEP introduces a new optional `url` field to package records. Since the field is optional, this change is backwards-compatible:
 
-- Older clients that don't recognize the `url` field will continue to construct download URLs using the existing method (combining `base_url` with the package filename)
 - Newer clients will use the `url` field when present, falling back to the traditional method when absent
 - Existing repodata without `url` fields will continue to work without modification
 
-This approach allows for gradual adoption, where channels can add `url` fields only for packages that need non-standard locations (such as wheels in subdirectories), while keeping traditional flat-structure packages unchanged.
+However, older clients that don't recognize the `url` field will continue to construct download URLs using the existing method (combining `base_url` with the package filename). If a package is stored at a non-flat path (e.g., `packaging/packaging-25.0-pyh29332c3_1.conda`) and the file does not also exist at the traditional flat path, older clients will receive a 404 error.
 
-Adoption of `url` in channels SHOULD follow the backwards-compatible repodata update strategy specified in [conda/ceps#146](https://github.com/conda/ceps/pull/146): that strategy defines how to publish repodata changes so clients that ignore unknown record fields continue to resolve artifacts correctly, which matches how the optional `url` is used here.
+Therefore, channels MUST follow the backwards-compatible repodata update strategy specified in [conda/ceps#146](https://github.com/conda/ceps/pull/146) when introducing `url` fields for packages stored at non-flat paths. That strategy ensures older clients can still resolve and download artifacts correctly during the transition period.
 
 ## Rejected ideas
 
