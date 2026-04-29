@@ -58,14 +58,8 @@ the virtual package MUST be absent EXCEPT when `CONDA_OVERRIDE_CUDA_ARCH` is set
 described below.
 
 If the `CONDA_OVERRIDE_CUDA_ARCH` environment variable is set to a non-empty value that can
-be parsed as a compute capability string and build string separated by `=`, the
-`__cuda_arch` virtual package MUST be exposed with that version and build string EXCEPT as
-noted above.
-
-If the `CONDA_OVERRIDE_CUDA_ARCH` environment variable is set to a non-empty value that can
-be parsed as a compute capability string and no build string, the `__cuda_arch` virtual
-package MUST be exposed with that version with the build string set to `0` EXCEPT as noted
-above.
+be parsed as a compute capability string, the `__cuda_arch` virtual
+package MUST be exposed with that version with the build string set to `0`.
 
 ## Rationale
 
