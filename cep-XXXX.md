@@ -81,6 +81,14 @@ Providing multiple virtual packages (one for each major compute capability) or o
 minimum and maximum compute capability on the system would provide more information to the
 solver, but would be more difficult to work when defining constraints in conda recipes.
 
+## Rejected Ideas
+
+Setting the build string to the product name of the device whose compute capability is
+being reported was rejected. The build string is now always 0 in order to avoid discussions
+about how the device product name should be represented as a string. Additionally, we don't
+want people to use the device name as a constraint; they cannot do this if the build string
+does not contain that information.
+
 ## Backwards Compatibility
 
 Adding the `__cuda_arch` virtual package is backwards compatible. It does not effect
