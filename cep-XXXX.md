@@ -8,7 +8,7 @@
 <tr><td> Updated </td><td> Mar 13, 2026</td></tr>
 <tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/157 </td></tr>
 <tr><td> Implementation </td><td> https://github.com/conda-incubator/nvidia-virtual-packages </td></tr>
-<tr><td> Requires </td><td> CEP 30 </td></tr>
+<tr><td> Requires </td><td> </td></tr>
 </table>
 
 > The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT",
@@ -48,9 +48,7 @@ absent.
 
 When present, the version value MUST be set to the lowest compute capability of all CUDA
 devices detected on the system, formatted as `{major}.{minor}`; subarchitecture letters
-(e.g. `a`, `f`) are excluded.
-
-When present, the build string MUST be `0`.
+(e.g. `a`, `f`) are excluded. The build string MUST be `0`.
 
 The `__cuda_arch` virtual package MUST be present when a CUDA device is detected EXCEPT when
 `CONDA_OVERRIDE_CUDA_ARCH` is set as described below.
