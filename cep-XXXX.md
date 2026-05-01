@@ -5,7 +5,7 @@
 <tr><td> Status </td><td> Draft </td></tr>
 <tr><td> Author(s) </td><td> Daniel Ching &lt;dching@nvidia.com&gt;</td></tr>
 <tr><td> Created </td><td> Mar 13, 2026</td></tr>
-<tr><td> Updated </td><td> Mar 13, 2026</td></tr>
+<tr><td> Updated </td><td> May 1, 2026</td></tr>
 <tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/157 </td></tr>
 <tr><td> Implementation </td><td> https://github.com/conda-incubator/nvidia-virtual-packages </td></tr>
 <tr><td> Requires </td><td> </td></tr>
