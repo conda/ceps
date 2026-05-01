@@ -93,7 +93,7 @@ about how the device product name should be represented as a string. Additionall
 want people to use the device name as a constraint; they cannot do this if the build string
 does not contain that information.
 
-Apending 'a', 'f' to the version to represent arch- and family- specific features. It is
+Appending 'a', 'f' to the version to represent arch- and family- specific features. It is
 improper to include 'a', 'f' in the version because these indicate extended instruction sets
 not the device architecture itself. `__cuda_arch` answers the question: "What sm is
 available?" Therefore 'a' , 'f' are redundant because any device which is 100 supports 100a,
