@@ -1,7 +1,7 @@
-# CEP XXXX - A backwards-compatible repodata update strategy
+# CEP XXXX - A backwards-compatible update strategy for repodata `v3`
 
 <table>
-<tr><td> Title </td><td> A backwards-compatible repodata update strategy </td>
+<tr><td> Title </td><td> A backwards-compatible update strategy for repodata <code>v3</code> </td>
 <tr><td> Status </td><td> Draft </td></tr>
 <tr><td> Author(s) </td>
   <td>
@@ -11,20 +11,19 @@
   </td>
 </tr>
 <tr><td> Created </td><td> Jan 12, 2026 </td></tr>
-<tr><td> Updated </td><td> Mar 18, 2026 </td></tr>
+<tr><td> Updated </td><td> May 5, 2026 </td></tr>
 <tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/146 </td></tr>
 <tr><td> Implementation </td><td> N/A </td></tr>
-<tr><td> Requires </td><td> N/A </td></tr>
+<tr><td> Requires </td><td> https://github.com/conda/ceps/pull/164, https://github.com/conda/ceps/pull/165, https://github.com/conda/ceps/pull/166, https://github.com/conda/ceps/pull/151 </td></tr>
 </table>
+
+> The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in [RFC2119][RFC2119] when, and only when, they appear in all capitals, as shown here.
+
+[RFC2119]: https://datatracker.ietf.org/doc/html/rfc2119
 
 ## Abstract
 
-This document addresses the challenges of updating the specification of `repodata.json` files (and its sharded derivatives) by proposing:
-
-* to provide a way to extend repodata with new variants, _without_ incrementing `repodata_version`
-* to encode new versions of the repodata in parallel with existing one, behind a `vN` key where `N` is the repodata revision
-* to indicate the latest available repodata revision as part of the `info` top-level dictionary
-* to provide useful metadata for end-user error reporting in case of lack of support in the client (oldest and newest timestamps, number of packages available)
+This document proposes a set of updates to `repodata.json` files and its sharded derivatives to include the improvements introduced in CEP PRs [#164](https://github.com/conda/ceps/pull/164), [#165](https://github.com/conda/ceps/pull/165), [#166](https://github.com/conda/ceps/pull/166), and [#151](https://github.com/conda/ceps/pull/151). To do so in a backwards compatible manner, it also proposes a revision system as a way to extend repodata with new variants, _without_ incrementing `repodata_version`.
 
 ## Motivation
 
@@ -32,22 +31,36 @@ This document addresses the challenges of updating the specification of `repodat
 
 The main problem is the introduction of backwards incompatible changes. The obvious solution is to bump the `repodata_version` field (like it was done with [CEP 15](./cep-0015.md)). However, this is not desirable for existing channels, since it immediately prevents non-compatible clients from interacting with the channel. Since most clients would update via a new version available in the channel, it creates a chicken-and-egg problem that would significantly delay the introduction of new features and hinder adoption.
 
-There must be a strategy to introduce backwards incompatible changes without breaking existing channels. This CEP centralizes the discussion for the update strategy and consolidates that feedback into a concrete proposal.
+There must be a strategy to introduce backwards incompatible changes without breaking existing channels. This CEP centralizes the discussion for the update strategy and consolidates that feedback into a concrete proposal for `v3`.
+
+The `v3` update includes breaking changes in CEP CEP PRs [#164](https://github.com/conda/ceps/pull/164), [#165](https://github.com/conda/ceps/pull/165), [#164](https://github.com/conda/ceps/pull/166), and [#151](https://github.com/conda/ceps/pull/151), that wouldn't otherwise reach existing channels without disrupting the user experience for outdated clients.
 
 ## Specification
 
-A repodata revision introduces backwards incompatible features in a way that does not disrupt existing metadata. To do so, a new CEP MUST be proposed, following these guidelines below.
+This CEP introduces two new keys:
 
-A new item MUST be added to the `info.repodata_revisions` array, that MUST list the revisions found in the repodata file as dictionaries with the following schema:
+- A top-level `v3` key
+- A `repodata_revisions` key under the top-level `info` dictionary
 
-* `revision: int`: Required. The integer identifying the revision.
-* `n_packages: int`: Required. The number of packages available in this revision.
-* `oldest: int | None`: Optional. The timestamp (in milliseconds) of the oldest record published in this revision. If set to `None` or missing, the timestamp information is not available.
-* `newest: int | None`: Optional. The timestamp (in milliseconds) of the newest record published in this revision. If set to `None` or missing, the timestamp information is not available.
+### The `v3` top-level key
 
-A new top-level field identified by the syntax `v{revision}` (where `revision` comes from `info.repodata_revisions[*].revision`) MUST map to a dictionary whose schema is presented in the relevant CEP.
+This key MUST map to a dictionary where:
 
-The CEP MUST also specify how to identify whether a given record belongs in the newer version, or can be added to the previous ones (e.g. a new field extending CEP 20's `info/index.json`)
+- Each key SHOULD represent the file extension (without the leading period) of the included artifacts. These are usually `tar.bz2` and `conda`.
+- Each value MUST be a dictionary where:
+  - Each key MUST be the artifact filename without its extension
+  - Each value MUST be a valid CEP 36 "package record metadata" dictionary, optionally extended with CEP PR [#151](https://github.com/conda/ceps/pull/151)'s `url` key and/or the keys introduced in `index.json`'s `schema_version: 3` update (CEP PRs [#164](https://github.com/conda/ceps/pull/164), [#165](https://github.com/conda/ceps/pull/165), [#164](https://github.com/conda/ceps/pull/166)).
+
+### The `info.repodata_revisions` key
+
+A repodata _revision_ introduces backwards incompatible features in a way that does not disrupt existing metadata.
+
+The new `info.repodata_revisions` key maps to an array that MUST list the revisions found in the repodata file or shard as dictionaries with the following schema:
+
+- `revision: int`: Required. The integer identifying the revision. It MUST be 3 or larger. It MUST be used in the corresponding file top-level key, with syntax `v{revision}`. For the `v3` update proposed in this CEP, the value is `3`.
+- `n_packages: int`: Required. The number of packages available in this revision in the current `repodata.json` or shard.
+- `oldest: int | None`: Optional. The timestamp (in milliseconds) of the oldest record published in this revision in the current `repodata.json` or shard. If set to `None` or missing, the timestamp information is not available.
+- `newest: int | None`: Optional. The timestamp (in milliseconds) of the newest record published in this revision in the current `repodata.json` or shard. If set to `None` or missing, the timestamp information is not available.
 
 The `repodata_version` MUST be `1` or, if [CEP 15](./cep-0015.md) applies, `2`.
 
@@ -65,15 +78,13 @@ Adding new fields is backwards compatible and does not break older clients, whic
 
 Bumps in this number should only result in backwards incompatible changes that would anyway prevent a channel from operating completely. While `repodata_version: 2` exists (as per CEP 15), its implementations are not sufficiently old to guarantee that the majority of existing conda clients would support it:
 
-* `rattler` supports it since [v0.9.0](https://github.com/conda/rattler/blob/main/CHANGELOG.md#090---2023-09-22) (released on 2023-09-22), which means that `pixi` supports it since [v0.4.0](https://github.com/prefix-dev/pixi/blob/d8d2d8a3e8e1ce99707885aa1437e3768614456b/Cargo.toml#L38) (released on 2023-09-22 too).
-* `conda` only supports it as of [v24.5.0](https://github.com/conda/conda/blob/main/CHANGELOG.md#2450-2024-05-08) (released on 2024-05-08)
-* `mamba` started supporting it in [v2.0](https://github.com/mamba-org/mamba/blob/main/CHANGELOG.md#20240925) (released on 2024-09-25).
+- `rattler` supports it since [v0.9.0](https://github.com/conda/rattler/blob/main/CHANGELOG.md#090---2023-09-22) (released on 2023-09-22), which means that `pixi` supports it since [v0.4.0](https://github.com/prefix-dev/pixi/blob/d8d2d8a3e8e1ce99707885aa1437e3768614456b/Cargo.toml#L38) (released on 2023-09-22 too).
+- `conda` only supports it as of [v24.5.0](https://github.com/conda/conda/blob/main/CHANGELOG.md#2450-2024-05-08) (released on 2024-05-08)
+- `mamba` started supporting it in [v2.0](https://github.com/mamba-org/mamba/blob/main/CHANGELOG.md#20240925) (released on 2024-09-25).
 
 Hence, we suggest to stick to `repodata_version: 1` and _only_ use `repodata_version: 2` when a new channel needs a global `base_url` for all the entries in the `packages` and `packages.conda` fields.
 
-## Examples
-
-A hypothetical new repodata revision `3` would need to present the following `info.repodata_revisions` entry, accompanied by this sample top-level `v3` field aggregating some of the proposed CEP ideas (at the time of writing, Jan 2026):
+## Example
 
 ```js
 {
@@ -120,7 +131,6 @@ A hypothetical new repodata revision `3` would need to present the following `in
     }
   },
   "v3": {
-    // This is a hypothetical v3, not a real proposal
     "tar.bz2": {},
     "conda": {
       "example-2.0.0-0": {  // key does not have the extension anymore
@@ -137,7 +147,6 @@ A hypothetical new repodata revision `3` would need to present the following `in
         "subdir": "noarch",
         "timestamp": 1768249989851,
         "version": "2.0.0",
-        "new_field": "CRITICAL"  // new field
       },
       "example-3.0.0-0": {  // key does not have the extension anymore
         "build": "0",
@@ -153,7 +162,6 @@ A hypothetical new repodata revision `3` would need to present the following `in
         "subdir": "noarch",
         "timestamp": 1773851561010,
         "version": "3.0.0",
-        "new_field": "CRITICAL"  // new field
       }
     }
   }
@@ -166,9 +174,9 @@ A hypothetical new repodata revision `3` would need to present the following `in
 
 One alternative would be to create new `repodata.json` filenames (e.g. `repodata.v4.json`) for each new incompatible bump. However, this was rejected by the authors as it introduces complexity in other areas:
 
-* It would require more HTTP calls to retrieve the latest version served by the channel.
-* It would introduce duplication across `repodata.json` versions and their shards.
-* Indexing tools would need to maintain the different versions of `repodata.json` in sync.
+- It would require more HTTP calls to retrieve the latest version served by the channel.
+- It would introduce duplication across `repodata.json` versions and their shards.
+- Indexing tools would need to maintain the different versions of `repodata.json` in sync.
 
 ## Copyright
 
