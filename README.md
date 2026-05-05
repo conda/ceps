@@ -49,6 +49,10 @@ for conda's implementation, all major changes should be submitted as
 | [0036](cep-0036.md) | Package metadata files served by conda channels                             |
 | [0037](cep-0037.md) | `conda-lock.yml` lockfiles                                                  |
 | [0038](cep-0038.md) | Channel-wide metadata files served by conda channels                        |
+| [0039](cep-0039.md) | A new recipe format (part 3): `jinja` functions in recipes                  |
+| [0040](cep-0040.md) | A new recipe format (part 4): Rendered recipe YAML and serialization        |
+| [0041](cep-0041.md) | The staging output in v1 recipes / rattler-build                            |
+| [0042](cep-0042.md) | Channel relations in repodata                                               |
 
 ## References
 
