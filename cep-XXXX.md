@@ -11,7 +11,7 @@
   </td>
 </tr>
 <tr><td> Created </td><td> Jan 12, 2026 </td></tr>
-<tr><td> Updated </td><td> May 5, 2026 </td></tr>
+<tr><td> Updated </td><td> May 6, 2026 </td></tr>
 <tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/146 </td></tr>
 <tr><td> Implementation </td><td> N/A </td></tr>
 <tr><td> Requires </td><td> https://github.com/conda/ceps/pull/164, https://github.com/conda/ceps/pull/165, https://github.com/conda/ceps/pull/166, https://github.com/conda/ceps/pull/151 </td></tr>
@@ -31,7 +31,7 @@ This document proposes a set of updates to `repodata.json` files and its sharded
 
 The main problem is the introduction of backwards incompatible changes. The obvious solution is to bump the `repodata_version` field (like it was done with [CEP 15](./cep-0015.md)). However, this is not desirable for existing channels, since it immediately prevents non-compatible clients from interacting with the channel. Since most clients would update via a new version available in the channel, it creates a chicken-and-egg problem that would significantly delay the introduction of new features and hinder adoption.
 
-There must be a strategy to introduce backwards incompatible changes without breaking existing channels. This CEP centralizes the discussion for the update strategy and consolidates that feedback into a concrete proposal for `v3`.
+There must be a strategy to introduce backwards incompatible changes without breaking existing channels. This CEP centralizes the discussion for the update strategy by introducing the concept of _revisions_ and consolidates that feedback into a concrete proposal for `v3`.
 
 The `v3` update includes breaking changes in CEP CEP PRs [#164](https://github.com/conda/ceps/pull/164), [#165](https://github.com/conda/ceps/pull/165), [#164](https://github.com/conda/ceps/pull/166), and [#151](https://github.com/conda/ceps/pull/151), that wouldn't otherwise reach existing channels without disrupting the user experience for outdated clients.
 
@@ -39,8 +39,20 @@ The `v3` update includes breaking changes in CEP CEP PRs [#164](https://github.c
 
 This CEP introduces two new keys:
 
-- A top-level `v3` key
 - A `repodata_revisions` key under the top-level `info` dictionary
+- A top-level `v3` key
+
+### The `info.repodata_revisions` key
+
+This key MUST map to a dictionary where:
+
+- Each key MUST correspond to a newly introduced top-level key with syntax `vN`, where `N` MUST be `3` or a larger integer.
+- Each value MUST be a dictionary with the following optional key-value pairs. Additional keys SHOULD be ignored.
+  - `n_packages: int | None`: If present and not `None`, it MUST match the sum of all the resulting records found under the `vN` key in the current repodata file or shard.
+  - `oldest: int | None`: If present and not `None`, a timestamp (in milliseconds) that MUST match the oldest record published in this revision in the current repodata file or shard.
+  - `newest: int | None`: If present and not `None`, a timestamp (in milliseconds) that MUST match the newest record published in this revision in the current repodata file or shard.
+
+The `info.repodata_version` value MUST be `1` or, if [CEP 15](./cep-0015.md) applies, `2`.
 
 ### The `v3` top-level key
 
@@ -50,19 +62,6 @@ This key MUST map to a dictionary where:
 - Each value MUST be a dictionary where:
   - Each key MUST be the artifact filename without its extension
   - Each value MUST be a valid CEP 36 "package record metadata" dictionary, optionally extended with CEP PR [#151](https://github.com/conda/ceps/pull/151)'s `url` key and/or the keys introduced in `index.json`'s `schema_version: 3` update (CEP PRs [#164](https://github.com/conda/ceps/pull/164), [#165](https://github.com/conda/ceps/pull/165), [#164](https://github.com/conda/ceps/pull/166)).
-
-### The `info.repodata_revisions` key
-
-A repodata _revision_ introduces backwards incompatible features in a way that does not disrupt existing metadata.
-
-The new `info.repodata_revisions` key maps to an array that MUST list the revisions found in the repodata file or shard as dictionaries with the following schema:
-
-- `revision: int`: Required. The integer identifying the revision. It MUST be 3 or larger. It MUST be used in the corresponding file top-level key, with syntax `v{revision}`. For the `v3` update proposed in this CEP, the value is `3`.
-- `n_packages: int`: Required. The number of packages available in this revision in the current `repodata.json` or shard.
-- `oldest: int | None`: Optional. The timestamp (in milliseconds) of the oldest record published in this revision in the current `repodata.json` or shard. If set to `None` or missing, the timestamp information is not available.
-- `newest: int | None`: Optional. The timestamp (in milliseconds) of the newest record published in this revision in the current `repodata.json` or shard. If set to `None` or missing, the timestamp information is not available.
-
-The `repodata_version` MUST be `1` or, if [CEP 15](./cep-0015.md) applies, `2`.
 
 ## Rationale
 
@@ -91,14 +90,13 @@ Hence, we suggest to stick to `repodata_version: 1` and _only_ use `repodata_ver
   "repodata_version": 1,
   "info": {
     "subdir": "noarch",
-    "repodata_revisions": [
-      {
-        "revision": 3,
+    "repodata_revisions": {
+      "v3": {
         "n_packages": 2,
         "oldest": 1768249989851,
         "newest": 1773851561010,
       }
-    ]
+    }
   },
   "packages": {
     "example-1.0.0-0.tar.bz2": {
