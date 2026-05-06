@@ -14,7 +14,7 @@
 <tr><td> Updated </td><td> May 7, 2026 </td></tr>
 <tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/146 </td></tr>
 <tr><td> Implementation </td><td> N/A </td></tr>
-<tr><td> Requires </td><td> https://github.com/conda/ceps/pull/164, https://github.com/conda/ceps/pull/165, https://github.com/conda/ceps/pull/166, https://github.com/conda/ceps/pull/151 </td></tr>
+<tr><td> Requires </td><td> https://github.com/conda/ceps/pull/164, https://github.com/conda/ceps/pull/165, https://github.com/conda/ceps/pull/166, https://github.com/conda/ceps/pull/151, https://github.com/conda/ceps/pull/154 </td></tr>
 </table>
 
 > The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in [RFC2119][RFC2119] when, and only when, they appear in all capitals, as shown here.
@@ -23,7 +23,7 @@
 
 ## Abstract
 
-This document proposes a set of updates to `repodata.json` files and its sharded derivatives to include the improvements introduced in CEP PRs [#164](https://github.com/conda/ceps/pull/164), [#165](https://github.com/conda/ceps/pull/165), [#166](https://github.com/conda/ceps/pull/166), and [#151](https://github.com/conda/ceps/pull/151). To do so in a backwards compatible manner, it also proposes a revision system as a way to extend repodata with new additions, _without_ incrementing `repodata_version`.
+This document proposes a set of updates to `repodata.json` files and its sharded derivatives to include the improvements introduced in CEP PRs [#164](https://github.com/conda/ceps/pull/164), [#165](https://github.com/conda/ceps/pull/165), [#166](https://github.com/conda/ceps/pull/166), [#154](https://github.com/conda/ceps/pull/154), and [#151](https://github.com/conda/ceps/pull/151). To do so in a backwards compatible manner, it also proposes a revision system as a way to extend repodata with new additions, _without_ incrementing `repodata_version`.
 
 ## Motivation
 
@@ -33,7 +33,7 @@ The main problem is the introduction of backwards incompatible changes. The obvi
 
 There must be a strategy to introduce backwards incompatible changes without breaking existing channels. This CEP centralizes the discussion for the update strategy by introducing the concept of _revisions_ and consolidates that feedback into a concrete proposal for `v3`.
 
-The `v3` update includes breaking changes in CEP CEP PRs [#164](https://github.com/conda/ceps/pull/164), [#165](https://github.com/conda/ceps/pull/165), [#166](https://github.com/conda/ceps/pull/166), and [#151](https://github.com/conda/ceps/pull/151), that wouldn't otherwise reach existing channels without disrupting the user experience for outdated clients.
+The `v3` update includes breaking changes in CEP CEP PRs [#164](https://github.com/conda/ceps/pull/164), [#165](https://github.com/conda/ceps/pull/165), [#166](https://github.com/conda/ceps/pull/166), [#154](https://github.com/conda/ceps/pull/154), and [#151](https://github.com/conda/ceps/pull/151), that wouldn't otherwise reach existing channels without disrupting the user experience for outdated clients.
 
 ## Specification
 
@@ -49,8 +49,8 @@ This key MUST map to a dictionary where:
 - Each key MUST correspond to a newly introduced top-level key with syntax `vN`, where `N` MUST be `3` or a larger integer.
 - Each value MUST be a dictionary with the following optional key-value pairs. Additional keys SHOULD be ignored.
   - `n_packages: int | None`: If present and not `None`, it MUST match the sum of all the resulting records found under the `vN` key in the current repodata file or shard.
-  - `oldest: int | None`: If present and not `None`, a timestamp (in milliseconds) that MUST match the oldest record published in this revision in the current repodata file or shard.
-  - `newest: int | None`: If present and not `None`, a timestamp (in milliseconds) that MUST match the newest record published in this revision in the current repodata file or shard.
+  - `oldest: int | None`: If present and not `None`, a timestamp (in milliseconds) that MUST match the `indexed_timestamp` field of the oldest record published in this revision in the current repodata file or shard.
+  - `newest: int | None`: If present and not `None`, a timestamp (in milliseconds) that MUST match the `indexed_timestamp` field of the newest record published in this revision in the current repodata file or shard.
 
 The `info.repodata_version` value MUST be `1` or, if [CEP 15](./cep-0015.md) applies, `2`.
 
@@ -63,7 +63,7 @@ More precisely, each key MUST be a non-empty string. The key SHOULD represent th
 Each value MUST be a dictionary of type `dict[str, dict]` where:
 
 - Each key MUST be a non-empty string representing the artifact filename without its extension.
-- Each value MUST be a valid CEP 36 "package record metadata" dictionary, optionally extended with CEP PR [#151](https://github.com/conda/ceps/pull/151)'s `url` key and/or the keys introduced in `index.json`'s `schema_version: 3` update (CEP PRs [#164](https://github.com/conda/ceps/pull/164), [#165](https://github.com/conda/ceps/pull/165), [#166](https://github.com/conda/ceps/pull/166)).
+- Each value MUST be a valid CEP 36 "package record metadata" dictionary, optionally extended with the fields introduced by CEP PRs [#151](https://github.com/conda/ceps/pull/151), [#154](https://github.com/conda/ceps/pull/154), and [#165](https://github.com/conda/ceps/pull/165). The relevant `MatchSpec` strings MAY include changes introduced by `index.json`'s `schema_version: 3` (PRs [#164](https://github.com/conda/ceps/pull/164), [#165](https://github.com/conda/ceps/pull/165), and [#166](https://github.com/conda/ceps/pull/166)).
 
 ## Rationale
 
@@ -145,7 +145,8 @@ Hence, we suggest to stick to `repodata_version: 1` and _only_ use `repodata_ver
         "sha256": "eb65e866067865793b981c2ba74485f75bef441842b5998badc4ec66717685c7",
         "size": 1234,
         "subdir": "noarch",
-        "timestamp": 1768249989851,
+        "timestamp": 1768249940850,
+        "indexed_at": 1768249989851,
         "version": "2.0.0",
       },
       "example-3.0.0-0": {  // key does not have the extension anymore
@@ -160,7 +161,8 @@ Hence, we suggest to stick to `repodata_version: 1` and _only_ use `repodata_ver
         "sha256": "74485f75bef441842b5998badc4ec66717685c7eb65e866067865793b981c2ba",
         "size": 2345,
         "subdir": "noarch",
-        "timestamp": 1773851561010,
+        "timestamp": 1773851540030,
+        "indexed_at": 1773851561010,
         "version": "3.0.0",
       }
     }
@@ -216,7 +218,7 @@ A review comment proposed subdividing the dictionary of filenames to records in 
 
 This would simplify parsing of records, but would also complicate the enumeration of existing records.
 
-### Expose `MatchSpec` entries in records as dictionaries 
+### Expose `MatchSpec` entries in records as dictionaries
 
 MatchSpec parsing in `depends` and other record fields has a non-negligible cost that may add up over thousands of records. Instead of keeping these fields as `list[str]` where each string is a `MatchSpec` expression, it was suggested to expose each entry as a dictionary of `MatchSpec` fields.
 
