@@ -178,6 +178,83 @@ One alternative would be to create new `repodata.json` filenames (e.g. `repodata
 - It would introduce duplication across `repodata.json` versions and their shards.
 - Indexing tools would need to maintain the different versions of `repodata.json` in sync.
 
+### Nested `name`-`version`-`build_string` dictionaries
+
+A review comment proposed subdividing the dictionary of filenames to records in nested dictionaries. In other words, instead of listing the artifact `package-version-build.conda` as:
+
+```js
+{
+  ...,
+  "v3": {
+    "conda": {
+      "example-2.0.0-0": {
+        ... // record dictionary
+      }
+    }
+  }
+}
+```
+
+... expose it as:
+
+```js
+{
+  ...,
+  "v3": {
+    "conda": {      // extension
+      "example": {  // name
+        "2.0.0":    // version
+          "0": {    // build string
+            ...     // record dictionary
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+This would simplify parsing of records, but would also complicate the enumeration of existing records.
+
+### Expose `MatchSpec` entries in records as dictionaries 
+
+MatchSpec parsing in `depends` and other record fields has a non-negligible cost that may add up over thousands of records. Instead of keeping these fields as `list[str]` where each string is a `MatchSpec` expression, it was suggested to expose each entry as a dictionary of `MatchSpec` fields.
+
+For example, for this input `index.json`:
+
+```js
+{
+  "build": "0",
+  "build_number": 0,
+  "depends": [
+    "package[version=3,build_number=0,when=__unix]"
+  ],
+  "name": "example",
+  "noarch": "generic",
+  "subdir": "noarch",
+  "version": "3.0.0",
+}
+```
+
+... `depends` would adopt this form:
+
+```js
+{
+  ...,
+  "depends": [
+    {
+      "name": "package",
+      "version": "=3",
+      "build_number": 0,
+      "when": "__unix"
+    }
+  ],
+  ...
+}
+```
+
+This would involve bigger changes in the implementations, delaying the adoption of `v3`.
+
 ## Copyright
 
 All CEPs are explicitly [CC0 1.0 Universal](https://creativecommons.org/publicdomain/zero/1.0/).
