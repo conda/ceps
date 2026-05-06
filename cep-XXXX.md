@@ -11,7 +11,7 @@
   </td>
 </tr>
 <tr><td> Created </td><td> Jan 12, 2026 </td></tr>
-<tr><td> Updated </td><td> May 6, 2026 </td></tr>
+<tr><td> Updated </td><td> May 7, 2026 </td></tr>
 <tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/146 </td></tr>
 <tr><td> Implementation </td><td> N/A </td></tr>
 <tr><td> Requires </td><td> https://github.com/conda/ceps/pull/164, https://github.com/conda/ceps/pull/165, https://github.com/conda/ceps/pull/166, https://github.com/conda/ceps/pull/151 </td></tr>
@@ -23,17 +23,17 @@
 
 ## Abstract
 
-This document proposes a set of updates to `repodata.json` files and its sharded derivatives to include the improvements introduced in CEP PRs [#164](https://github.com/conda/ceps/pull/164), [#165](https://github.com/conda/ceps/pull/165), [#166](https://github.com/conda/ceps/pull/166), and [#151](https://github.com/conda/ceps/pull/151). To do so in a backwards compatible manner, it also proposes a revision system as a way to extend repodata with new variants, _without_ incrementing `repodata_version`.
+This document proposes a set of updates to `repodata.json` files and its sharded derivatives to include the improvements introduced in CEP PRs [#164](https://github.com/conda/ceps/pull/164), [#165](https://github.com/conda/ceps/pull/165), [#166](https://github.com/conda/ceps/pull/166), and [#151](https://github.com/conda/ceps/pull/151). To do so in a backwards compatible manner, it also proposes a revision system as a way to extend repodata with new additions, _without_ incrementing `repodata_version`.
 
 ## Motivation
 
-`repodata.json` files are central to the conda ecosystem. They are the main source of packaging metadata and inform solvers about the catalog of available packages and their dependency constraints. As such, innovation work often refrains from modifying it, and the format itself has seen very few changes over its lifetime. However, a few ongoing efforts will inevitably result in `repodata.json` modifications (conditional dependencies, optional dependency groups, non-conda dependencies, etc).
+`repodata.json` files are central to the conda ecosystem. They are the main source of packaging metadata and inform solvers about the catalog of available packages and their dependency constraints. As such, innovation work often refrains from modifying it, and the format itself has seen very few changes over its lifetime. However, a few ongoing as (of the first half of 2026) efforts will inevitably result in `repodata.json` modifications (conditional dependencies, optional dependency groups, non-conda dependencies, etc).
 
 The main problem is the introduction of backwards incompatible changes. The obvious solution is to bump the `repodata_version` field (like it was done with [CEP 15](./cep-0015.md)). However, this is not desirable for existing channels, since it immediately prevents non-compatible clients from interacting with the channel. Since most clients would update via a new version available in the channel, it creates a chicken-and-egg problem that would significantly delay the introduction of new features and hinder adoption.
 
 There must be a strategy to introduce backwards incompatible changes without breaking existing channels. This CEP centralizes the discussion for the update strategy by introducing the concept of _revisions_ and consolidates that feedback into a concrete proposal for `v3`.
 
-The `v3` update includes breaking changes in CEP CEP PRs [#164](https://github.com/conda/ceps/pull/164), [#165](https://github.com/conda/ceps/pull/165), [#164](https://github.com/conda/ceps/pull/166), and [#151](https://github.com/conda/ceps/pull/151), that wouldn't otherwise reach existing channels without disrupting the user experience for outdated clients.
+The `v3` update includes breaking changes in CEP CEP PRs [#164](https://github.com/conda/ceps/pull/164), [#165](https://github.com/conda/ceps/pull/165), [#166](https://github.com/conda/ceps/pull/166), and [#151](https://github.com/conda/ceps/pull/151), that wouldn't otherwise reach existing channels without disrupting the user experience for outdated clients.
 
 ## Specification
 
@@ -56,12 +56,14 @@ The `info.repodata_version` value MUST be `1` or, if [CEP 15](./cep-0015.md) app
 
 ### The `v3` top-level key
 
-This key MUST map to a dictionary where:
+This key MUST map to a dictionary of type `dict[str, dict]`.
 
-- Each key SHOULD represent the file extension (without the leading period) of the included artifacts. These are usually `tar.bz2` and `conda`.
-- Each value MUST be a dictionary where:
-  - Each key MUST be the artifact filename without its extension
-  - Each value MUST be a valid CEP 36 "package record metadata" dictionary, optionally extended with CEP PR [#151](https://github.com/conda/ceps/pull/151)'s `url` key and/or the keys introduced in `index.json`'s `schema_version: 3` update (CEP PRs [#164](https://github.com/conda/ceps/pull/164), [#165](https://github.com/conda/ceps/pull/165), [#164](https://github.com/conda/ceps/pull/166)).
+More precisely, each key MUST be a non-empty string. The key SHOULD represent the file extension (without the leading period) of the included artifacts (usually `tar.bz2` and `conda`).
+
+Each value MUST be a dictionary of type `dict[str, dict]` where:
+
+- Each key MUST be a non-empty string representing the artifact filename without its extension.
+- Each value MUST be a valid CEP 36 "package record metadata" dictionary, optionally extended with CEP PR [#151](https://github.com/conda/ceps/pull/151)'s `url` key and/or the keys introduced in `index.json`'s `schema_version: 3` update (CEP PRs [#164](https://github.com/conda/ceps/pull/164), [#165](https://github.com/conda/ceps/pull/165), [#166](https://github.com/conda/ceps/pull/166)).
 
 ## Rationale
 
