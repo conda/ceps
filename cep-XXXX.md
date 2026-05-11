@@ -141,6 +141,28 @@ However, older clients that don't recognize the `url` field will continue to con
 
 Therefore, channels MUST follow the backwards-compatible repodata update strategy specified in [conda/ceps#146](https://github.com/conda/ceps/pull/146) when introducing `url` fields for packages stored at non-flat paths. That strategy ensures older clients can still resolve and download artifacts correctly during the transition period.
 
+## Lockfile Considerations
+
+Previously, within a single channel's repodata, each package entry had a unique URL since it was derived directly from the unique dictionary key. This CEP decouples location from identity: a package record may now contain a `url` field pointing to an external location, meaning two entries in the same repodata can have different channel URLs and metadata while resolving to the same `url`.
+For example:
+
+```text
+https://conda.anaconda.org/my-channel/linux-64/numpy-2.4.2-py314hd4f4903_0.conda  ->  url: https://cdn.example.com/packages/numpy/numpy-2.4.2-py314hd4f4903_0.conda
+https://conda.anaconda.org/my-channel/linux-64/numpy-2.4.2-py313hd4f4903_0.conda  ->  url: https://cdn.example.com/packages/numpy/numpy-2.4.2-py314hd4f4903_0.conda
+```
+
+The resolved `url` is therefore no longer a guaranteed unique identifier for a package record.
+
+### Recommendation
+
+Lockfile implementations SHOULD adopt Package URLs (PURLs), as defined in [conda/ceps#159](https://github.com/conda/ceps/pull/159) (draft), as the canonical unique identifier for package records. A conda PURL encodes a package's identity (channel, name, version, build string, and subdir) in a standardized, location-independent form, for example:
+
+```text
+pkg:conda/conda-forge/numpy@2.4.2?build=py314hd4f4903_0&subdir=linux-64
+```
+
+PURLs separate identity from location: two channels that independently index the same external CDN artifact will produce distinct PURLs. The resolved `url` field SHOULD be stored separately in the lockfile for fetching purposes.
+
 ## Rejected ideas
 
 ### Using the dictionary key for paths
@@ -154,6 +176,7 @@ A separate `fn` field could specify a different filename for saving locally. How
 ## References
 
 - [conda/ceps#146 - A backwards-compatible repodata update strategy](https://github.com/conda/ceps/pull/146): Repodata rollout pattern this CEP relies on when introducing optional package-record fields such as `url`
+- [conda/ceps#159 (draft) - PURLs for conda packages](https://github.com/conda/ceps/pull/159): Defines the standardized Package URL format for conda packages, recommended as the long-term unique identifier for lockfiles
 - [CEP 15 - Hosting repodata.json and packages separately by adding a `base_url` property](https://conda.org/learn/ceps/cep-0015): Introduced the `base_url` field for repodata
 - [PyPI Simple Repository API](https://peps.python.org/pep-0503/): Specification for simple package repositories
 - [Hosting your own simple repository](https://packaging.python.org/en/latest/guides/hosting-your-own-index/#manual-repository): Example of package repositories with per-package subdirectories
