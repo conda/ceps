@@ -33,7 +33,7 @@ Without a standardized distribution mechanism, clients cannot reliably discover 
 
 3. **Works with existing infrastructure**: The sidecar file approach integrates naturally with static file hosting, CDNs, and mirrors.
 
-4. **Follows ecosystem conventions**: Similar approaches are used by PyPI ([Integrity API][PyPI Integrity]), npm ([provenance attestations][npm provenance]), and ([RubyGems][rubygems release-gem]).
+4. **Follows ecosystem conventions**: Similar approaches are used by PyPI ([Integrity API][PyPI Integrity]), npm ([provenance attestations][npm provenance]), and ([RubyGems][rubygems]).
 
 ## Specification
 
@@ -41,13 +41,13 @@ Without a standardized distribution mechanism, clients cannot reliably discover 
 
 For any conda package artifact at URL:
 
-```
+```text
 <channel_url>/<subdir>/<artifact_filename>
 ```
 
 For channels implementing this CEP, attestations MUST be available at:
 
-```
+```text
 <channel_url>/<subdir>/<artifact_filename>.sigs
 ```
 
@@ -56,7 +56,7 @@ For channels implementing this CEP, attestations MUST be available at:
 | Package URL                                                                         | Attestation URL                                                                          |
 | ----------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
 | `https://conda.anaconda.org/conda-forge/linux-64/numpy-2.0.0-py312h1234567_0.conda` | `https://conda.anaconda.org/conda-forge/linux-64/numpy-2.0.0-py312h1234567_0.conda.sigs` |
-| `https://prefix.dev/my-channel/noarch/my-package-1.0.0-pyhd8ed1ab_0.conda`           | `https://prefix.dev/my-channel/noarch/my-package-1.0.0-pyhd8ed1ab_0.conda.sigs`           |
+| `https://prefix.dev/my-channel/noarch/my-package-1.0.0-pyhd8ed1ab_0.conda`          | `https://prefix.dev/my-channel/noarch/my-package-1.0.0-pyhd8ed1ab_0.conda.sigs`          |
 | `https://example.com/channel/win-64/pkg-1.0-0.tar.bz2`                              | `https://example.com/channel/win-64/pkg-1.0-0.tar.bz2.sigs`                              |
 
 ### Response Format
@@ -91,7 +91,7 @@ If no attestations exist for a package, the endpoint MUST return an empty JSON a
 
 | Status Code     | Meaning                                                                                         |
 | --------------- | ----------------------------------------------------------------------------------------------- |
-| `200 OK`        | The package exists and attestations were returned successfully (the array may be empty)          |
+| `200 OK`        | The package exists and attestations were returned successfully (the array may be empty)         |
 | `404 Not Found` | For channels implementing this CEP, the package does not exist                                  |
 
 Channels that support attestations MUST return `200 OK` with an empty array `[]` when the package exists but no attestations are available for it.
@@ -179,7 +179,7 @@ Each channel entry MUST specify `enabled`, `require`, and `trusted_identities`; 
 
 | Setting              | Values           | Behavior                                                        |
 | -------------------- | ---------------- | --------------------------------------------------------------- |
-| `enabled`            | `true`/`false`   | Enable or disable attestation fetching and verification          |
+| `enabled`            | `true`/`false`   | Enable or disable attestation fetching and verification         |
 | `require`            | `error`          | Fail if attestations are missing or invalid                     |
 |                      | `warn`           | Log warning but continue if attestations are missing or invalid |
 |                      | `ignore`         | Silently continue (still verify if attestations exist)          |
