@@ -87,59 +87,6 @@ If no attestations exist for a package, the endpoint MUST return an empty JSON a
 []
 ```
 
-#### Example Response
-
-The following is an abbreviated example of a `.sigs` response containing a single attestation:
-
-```json
-[
-  {
-    "mediaType": "application/vnd.dev.sigstore.bundle.v0.3+json",
-    "dsseEnvelope": {
-      "payload": "<base64-encoded in-toto statement>",
-      "payloadType": "application/vnd.in-toto+json",
-      "signatures": [
-        {
-          "keyid": "",
-          "sig": "<base64-encoded signature>"
-        }
-      ]
-    },
-    "verificationMaterial": {
-      "certificate": {
-        "rawBytes": "<base64-encoded Fulcio certificate>"
-      },
-      "tlogEntries": [
-        {
-          "logIndex": "168604147",
-          "logId": {
-            "keyId": "<base64-encoded log ID>"
-          },
-          "kindVersion": {
-            "kind": "dsse",
-            "version": "0.0.1"
-          },
-          "integratedTime": "1738678814",
-          "inclusionPromise": {
-            "signedEntryTimestamp": "<base64-encoded SET>"
-          },
-          "inclusionProof": {
-            "logIndex": "46699885",
-            "rootHash": "<base64-encoded root hash>",
-            "treeSize": "46699887",
-            "hashes": ["<base64-encoded hashes>"],
-            "checkpoint": {
-              "envelope": "<signed checkpoint>"
-            }
-          },
-          "canonicalizedBody": "<base64-encoded canonical body>"
-        }
-      ]
-    }
-  }
-]
-```
-
 ### HTTP Status Codes
 
 | Status Code     | Meaning                                                                                         |
@@ -181,15 +128,7 @@ CEP 27 publish attestations intentionally describe a single package artifact. Ot
 
 ### Multiple Attestations
 
-A package MAY have multiple attestations from different sources. Examples of attestation producers that this distribution format can support include:
-
-| Source                              | Purpose                                                |
-| ----------------------------------- | ------------------------------------------------------ |
-| Build system (e.g., GitHub Actions) | Proves the package was built from specific source code  |
-| Channel operator                    | Proves the channel accepted and published the package  |
-| Third-party auditor                 | Proves the package passed security review              |
-
-When multiple attestations are present, each attestation intended to apply to the package artifact MUST identify that artifact according to the verification rules for its predicate type. Clients MAY choose which attestations to verify based on their trust policy.
+A package MAY have multiple attestations, provided each attestation intended to apply to the package artifact identifies that artifact according to the verification rules for its predicate type. Clients MAY choose which attestations to verify based on their trust policy.
 
 This CEP does not define upload authorization, channel admission policy, or access control for adding attestations. For example, a third party may produce an attestation, but the channel decides whether and how that attestation is accepted for distribution.
 
