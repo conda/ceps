@@ -25,11 +25,11 @@ This CEP defines a standard endpoint for distributing [Sigstore] attestations al
 
 > "This CEP does not specify a distribution mechanism for attestations (i.e., Sigstore bundles containing attestations)."
 
-Without a standardized distribution mechanism, clients cannot reliably discover and retrieve attestations. This CEP addresses that gap by defining a simple, RESTful endpoint that:
+Without a standardized distribution mechanism, clients cannot reliably discover and retrieve attestations. This CEP addresses that gap by defining a simple, read-only HTTP sidecar endpoint that:
 
 1. **Enables client verification**: Clients can fetch attestations alongside packages and verify them before installation.
 
-2. **Supports multiple attestations**: A single package may have multiple attestations (e.g., from the build system, from the channel on upload, from third-party auditors).
+2. **Supports multiple attestations**: A single package may have multiple attestations, such as attestations produced during build, during channel upload, or by other review processes.
 
 3. **Works with existing infrastructure**: The sidecar file approach integrates naturally with static file hosting, CDNs, and mirrors.
 
@@ -45,7 +45,7 @@ For any conda package artifact at URL:
 <channel_url>/<subdir>/<artifact_filename>
 ```
 
-Attestations MUST be available at:
+For channels implementing this CEP, attestations MUST be available at:
 
 ```
 <channel_url>/<subdir>/<artifact_filename>.sigs
@@ -61,7 +61,7 @@ Attestations MUST be available at:
 
 ### Response Format
 
-The `.sigs` endpoint MUST return a JSON array containing zero or more [Sigstore bundles][Sigstore Bundle]. Each bundle represents one attestation for the package.
+For channels implementing this CEP, the `.sigs` endpoint MUST return a JSON array containing zero or more [Sigstore bundles][Sigstore Bundle]. Each bundle represents one attestation for the package.
 
 #### Content-Type
 
@@ -142,11 +142,14 @@ The following is an abbreviated example of a `.sigs` response containing a singl
 
 ### HTTP Status Codes
 
-| Status Code     | Meaning                                                      |
-| --------------- | ------------------------------------------------------------ |
-| `200 OK`        | Attestations returned successfully (may be empty array)      |
+| Status Code     | Meaning                                                                                         |
+| --------------- | ----------------------------------------------------------------------------------------------- |
+| `200 OK`        | The package exists and attestations were returned successfully (the array may be empty)          |
+| `404 Not Found` | For channels implementing this CEP, the package does not exist                                  |
 
-Channels that support attestations MUST always return `200 OK` with an empty array `[]`, even when the package does not exist.
+Channels that support attestations MUST return `200 OK` with an empty array `[]` when the package exists but no attestations are available for it.
+
+For backwards compatibility, clients MUST NOT use a `404 Not Found` response from the `.sigs` endpoint alone to determine whether a package exists. Channels that do not implement this CEP may return `404 Not Found` for every `.sigs` URL, even when the underlying package exists. Clients that need to determine package existence MUST use the channel's package metadata or the package artifact URL itself.
 
 ### Repodata changes
 
@@ -160,27 +163,35 @@ The repodata index is changed to include a new `attestations` field that MUST co
 }
 ```
 
+This hash allows mirrors and clients to detect changes to the `.sigs` sidecar, including attestations added after the package was first published, and re-fetch the sidecar when it changes.
+
 ### Attestation Requirements
 
-Each attestation in the response MUST comply with [CEP 27]. Specifically:
+This CEP defines discovery and distribution of attestations. Verification of publish attestations MUST follow [CEP 27].
+
+Each element in the response MUST be a valid [Sigstore Bundle]. If a bundle contains a [CEP 27] publish attestation, then:
 
 1. The in-toto statement's `subject[0].name` MUST match the artifact filename.
 
 2. The in-toto statement's `subject[0].digest.sha256` MUST match the SHA256 hash of the artifact.
 
-3. The `predicateType` MUST be `https://schemas.conda.org/attestations-publish-1.schema.json` or another registered predicate type.
+3. The `predicateType` MUST be `https://schemas.conda.org/attestations-publish-1.schema.json`.
+
+CEP 27 publish attestations intentionally describe a single package artifact. Other predicate types MAY appear in the same `.sigs` response, but this CEP does not define their verification rules. Clients MUST verify each recognized predicate type according to its own specification and MAY ignore or reject unrecognized predicate types according to local policy.
 
 ### Multiple Attestations
 
-A package MAY have multiple attestations from different sources. Common scenarios include:
+A package MAY have multiple attestations from different sources. Examples of attestation producers that this distribution format can support include:
 
 | Source                              | Purpose                                                |
 | ----------------------------------- | ------------------------------------------------------ |
-| Build system (e.g., GitHub Actions) | Proves the package was built from specific source code |
+| Build system (e.g., GitHub Actions) | Proves the package was built from specific source code  |
 | Channel operator                    | Proves the channel accepted and published the package  |
 | Third-party auditor                 | Proves the package passed security review              |
 
-When multiple attestations are present, they MUST all refer to the same artifact (same filename and SHA256 hash). Clients MAY choose which attestations to verify based on their trust policy.
+When multiple attestations are present, each attestation intended to apply to the package artifact MUST identify that artifact according to the verification rules for its predicate type. Clients MAY choose which attestations to verify based on their trust policy.
+
+This CEP does not define upload authorization, channel admission policy, or access control for adding attestations. For example, a third party may produce an attestation, but the channel decides whether and how that attestation is accepted for distribution.
 
 ### Mirror Behavior
 
@@ -188,9 +199,11 @@ Mirrors and proxies SHOULD:
 
 1. Fetch and cache `.sigs` files alongside packages
 2. Serve cached attestations without modification
-3. Return `404` if the upstream `.sigs` endpoint returns `404`
+3. Use the repodata `attestations` hash to detect changed `.sigs` sidecars
+4. Re-fetch a cached `.sigs` sidecar when the repodata `attestations` hash changes
+5. Preserve upstream `404 Not Found` responses for `.sigs` URLs when the upstream channel does not provide a sidecar
 
-TODO: specify further the desired behavior of mirrors.
+Mirrors MUST NOT infer that a package does not exist solely because the upstream `.sigs` endpoint returns `404 Not Found`.
 
 ## Client Behavior
 
@@ -200,7 +213,7 @@ Clients implementing attestation verification SHOULD follow this workflow:
 
 1. **Download package** from the channel
 2. **Fetch attestations** from `<package_url>.sigs`
-3. **Verify each attestation** against the configuration.
+3. **Verify each attestation** using the verification process defined by [CEP 27] or by the attestation's registered predicate type.
 4. **Accept or reject** the package based on verification results
 
 ### Configuration
@@ -218,13 +231,16 @@ attestations:
        - "https://github.com/my-org/*"
   https://prefix.dev/foobar:
     enabled: true
+    require: warn
     trusted_identities:
         - "https://github.com/foobar"
 ```
 
+Each channel entry MUST specify `enabled`, `require`, and `trusted_identities`; clients MUST NOT infer default values for omitted fields.
+
 | Setting              | Values           | Behavior                                                        |
 | -------------------- | ---------------- | --------------------------------------------------------------- |
-| `enabled`            | `true`/`false`   | Enable or disable attestation fetching and verification         |
+| `enabled`            | `true`/`false`   | Enable or disable attestation fetching and verification          |
 | `require`            | `error`          | Fail if attestations are missing or invalid                     |
 |                      | `warn`           | Log warning but continue if attestations are missing or invalid |
 |                      | `ignore`         | Silently continue (still verify if attestations exist)          |
@@ -235,7 +251,7 @@ attestations:
 For offline verification, clients MAY cache `.sigs` files alongside packages in local repositories.
 The Sigstore bundle format is self-contained and supports offline verification once the Sigstore trust root is available locally.
 
-Note: clients MUST periodically update the sigstore trust root to ensure no keys were revoked.
+Clients MUST periodically update the Sigstore trust root so they do not miss trust-root changes, including key revocations and newly trusted keys.
 
 ## References
 
