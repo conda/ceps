@@ -54,6 +54,7 @@ for conda's implementation, all major changes should be submitted as
 | [0041](cep-0041.md) | The staging output in v1 recipes / rattler-build                            |
 | [0042](cep-0042.md) | Channel relations in repodata                                               |
 | [0043](cep-0043.md) | Conditional dependencies                                                    |
+| [0044](cep-0044.md) | Optional dependency groups                                                  |
 
 ## References
 
