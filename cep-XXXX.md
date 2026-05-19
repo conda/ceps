@@ -27,7 +27,16 @@ of materials (SBOMs), vulnerability reporting, and cross-ecosystem compatibility
 However, the [existing conda PURL definition][purl-conda-def] fails to properly capture the
 multi-stakeholder nature of the conda ecosystem, various commonly-understood concepts within the
 ecosystem, and critically, the standards specified in other accepted CEPs.  This CEP seeks to
-address such shortcomings with an ecosystem-approved specification for the conda PURL definition.
+address such shortcomings with an ecosystem-approved specification for the conda PURL definition,
+that once approved, will be submitted for review to [the PURL standard][gh-purl-spec].
+
+For an example, this CEP proposes changes to the conda PURL definition so that the PURL for
+conda-forge's `zlib=1.3.2=h25fd6f3_2` package, which currently would have to be written
+`pkg:conda/zlib@1.3.2?build=h25fd6f3_2&channel=conda-forge&repository_url=https:%2F%2Fconda.anaconda.org`,
+could be more succinctly and understandably written as
+`pkg:conda/conda-forge/zlib@1.3.2?build=h25fd6f3_2`.
+(In fact, a strict reading of the existing conda PURL definition would not allow a conda-forge or
+other non-Anaconda channels, as it does not provide for a `repository_url` qualifier.)
 
 
 ## Specification
@@ -55,16 +64,18 @@ For conda PURLs, these seven components are defined as follows:
 
 #### `scheme` component
 
-In accordance with ECMA-427 Clause 5.6.1 ("Scheme"), the `scheme` component for a conda PURL is
-the ASCII string literal "pkg".  Systems handling conda PURLs SHOULD also follow the other rules
-for the `scheme` component specified in ECMA-427 Clause 5.6.1.
+The `scheme` component for a conda PURL is the ASCII string literal "pkg".  Systems processing
+conda PURLs MUST follow all of the rules specified in ECMA-427 Clause 5.6.1 ("Scheme"), with the
+key word "shall" in ECMA-427 Clause 5.6.1 being interpreted as its BCP 14 equivalent "SHALL".
 
 #### `type` component
 
-In accordance with ECMA-427 Clause 5.6.2 ("Type"), the canonical form for a conda PURL's `type`
-component is the ASCII string literal "conda".  The `type` component MUST be treated as
-case-insensitive, and system handling conda PURLs are encouraged to normalize the `type` component
-to its canonical lowercase form, following the behaviors specified in ECMA-427 Clause 5.5.
+The canonical form for conda PURL's `type` component is the ASCII string literal "conda".  Systems
+processing conda PURLs MUST follow all of the rules specified in ECMA-427 Clause 5.6.2 ("Type"),
+with the key word "shall" in ECMA-427 Clause 5.6.2 being interpreted as its BCP 14 equivalent
+"SHALL".  Systems processing conda PURLs are RECOMMENDED to normalize the `type` component to its
+canonical lowercase form, following the behaviors specified in ECMA-427 Clause 5.5 ("Case
+folding").
 
 #### `namespace` component
 
@@ -82,7 +93,7 @@ conform to the following rules:
   defined in CEP 26.
 - If the `namespace` component is provided, each ECMA-427 Clause 5.6.3 `namespace` segment MUST be
   a valid channel base URL path component, as defined in CEP 26.  All other rules for the
-  `namespace` component specified in ECMA-417 Clause 5.6.3 apply to conda PURLs, including the
+  `namespace` component specified in ECMA-427 Clause 5.6.3 apply to conda PURLs, including the
   requirement that segments within a PURL `namespace` MUST be separated by a single unencoded
   ASCII "/" (slash) character.
 - If the `namespace` component is provided, then the concatenation of the `repository_url`
@@ -124,17 +135,16 @@ The `version` component MUST comply with all character encoding rules specified 
 
 For conda PURLs to support the desired level of specificity, the `version` component SHOULD be
 treated as an exact equality, with any necessary `.0` padding, when used for package version
-comparisons.  In other words, the `version` component should be be treated as equivalent to a
+comparisons.  In other words, the `version` component SHOULD be treated as equivalent to a
 `==version` MatchSpec expression, as described in [CEP 29][matchspec-ver-match].  As an example, a
 `version` component with the value `1.2` should match versions `1.2` and `1.2.0` of the named
 package but not versions `1.2.0.1` and `1.2.3`.
 
 If [fuzzy equality][matchspec-ver-match] or other, more complex version matching is needed, the
-`version` component SHOULD be omitted and [the `vers` qualifier](#qualifiers-component) used
-instead.  The `version` component and `vers` qualifier are mutually exclusive and SHOULD NOT be
-used together in a conda PURL; in cases where both the `version` component and `vers` qualifier are
-provided, the `version` component SHALL take precedence.
-
+`version` component MUST be omitted and [the `vers` qualifier](#qualifiers-component) used
+instead.  The `version` component and `vers` qualifier are mutually exclusive and MUST NOT be
+used together in a conda PURL; in cases where both the `version` component and `vers` qualifier
+are provided, the corresponding conda PURL MUST be treated as an invalid or erroneous PURL.
 
 #### `qualifiers` component
 
@@ -146,7 +156,7 @@ The following `qualifiers` are defined for conda PURLs:
   as defined in CEP 26.
 - `build`: Optional qualifier, with no default value.  If provided, its value MUST be the
   [build string](./cep-0026.md#build-strings), as defined in CEP 26, of the identified package(s).
-- `build_number`: Optional qualifier, with no default value.  If provided, its value MUST the
+- `build_number`: Optional qualifier, with no default value.  If provided, its value MUST be the
   [build number](./cep-0034.md#infoindexjson), as defined in CEP 34, of the identified package(s).
 - `subdir`: Optional qualifier, with no default value.  If provided, its value MUST be the
   [channel subdir name](./cep-0026.md#subdir-names), as defined in CEP 26, of the identified
@@ -159,12 +169,13 @@ The following `qualifiers` are defined for conda PURLs:
   [Version Range Specifier (VERS)][vers-spec], whose `version-scheme` is `conda`; the specification
   of the `conda` VERS and its relationship to concepts like the [MatchSpec query language][CEP29]
   are considered out of scope for this CEP and will be discussed elsewhere.  This qualifier and the
-  `version` component are mutually exclusive and SHOULD NOT be used together; additional details
-  about this constraint are provided in the "`version` component" section of this CEP.
+  `version` component are mutually exclusive and MUST NOT be used together in a conda PURL; in
+  cases where both the `version` component and `vers` qualifier are provided, the corresponding
+  conda PURL MUST be treated as an invalid or erroneous URL.
 - `checksum`:  Optional qualifier, with no default value.  If provided, its value MUST consist of
   one or more checksum specifications, with consecutive checksum specifications separated by a
   single, unencoded ASCII "," (comma) character.  Each checksum specification is defined as the
-  concatenating of the lowercase checksum algorithm name (e.g., "md5", "sha256"); a single,
+  concatenation of the lowercase checksum algorithm name (e.g., "md5", "sha256"); a single,
   unencoded ":" (colon) character; and the lowercase, hex-encoded checksum value.
 
   The lowercase checksum algorithm name MUST only contain the ASCII lowercase characters `a-z` and
@@ -200,7 +211,7 @@ or erroneous PURL.
 This CEP explicitly _undefines_ the `channel` qualifier found in the [existing conda PURL
 definition][purl-conda-def].  The `channel` qualifier corresponds to a weakly-defined concept not
 properly captured in any existing CEP, and its presumed purpose in the existing definition is
-better handled by the combination of the `namspace` component and `repository_url` qualifier, as
+better handled by the combination of the `namespace` component and `repository_url` qualifier, as
 described in this CEP.  Upon acceptance of this CEP, systems handling conda PURLs SHOULD treat
 PURLs containing a `channel` qualifier as invalid.
 
@@ -216,7 +227,7 @@ rules defined in CEP 26.
 The optional `subpath` component of a conda PURL is used to specify a path within the identified
 package(s), subject to the following:
 
-- The `subpath` component SHALL confirm to all rules specified in ECMA-427 Clause 5.6.7
+- The `subpath` component SHALL conform to all rules specified in ECMA-427 Clause 5.6.7
   ("Subpath"), with the key words "shall", "shall not", and "may" in ECMA-427 Clause 5.6.7 being
   interpreted as their BCP 14 equivalents "SHALL", "SHALL NOT", and "MAY", respectively.
 - The `subpath` component MUST be treated as case-sensitive.
@@ -231,7 +242,7 @@ package(s), subject to the following:
   in ECMA-427 Clause 5.6.7 MUST be interpreted as a relative path from a common root directory
   into which both inner archives (i.e., `info-{name}-{version}-{build}.tar.zst` and
   `pkg-{name}-{version}-{build}.tar.zst`) have been extracted.
-- The `subpath` component MUST be interpreted as a reference to a path as it exist in the package
+- The `subpath` component MUST be interpreted as a reference to a path as it exists in the package
   artifact(s), and _not_ as a reference to a path after any modifications that may have occurred
   when the package artifact(s) are processed by conda-compatible clients (e.g., prefix replacement,
   pre- or post-link scripts, etc.).
@@ -323,7 +334,7 @@ patterns in the conda ecosystem.  Among the motivations for these breaking chang
 ## Implementation Notes
 
 Upon approval of this CEP by conda steering council, the CEP author(s) will submit the necessary
-changes to the [Github `package-url/purl-spec`](https://github.com/package-url/purl-spec)
+changes to the [Github `package-url/purl-spec`][gh-purl-spec]
 repository needed to make its conda PURL type definition and any other related files conformant
 with this standard.
 
@@ -355,7 +366,7 @@ with this standard.
   and `prefix.dev/conda-forge`.  Supporting such PURLs would require additional work, including
   formalizing the concept of "mirrors" for conda channels and specifying which PURL components or
   qualifiers should be used to identify the set of mirrors for a given packages.  (Due to the
-  fairly portable nature of conda packages, the combination is [shortened] channel name, package
+  fairly portable nature of conda packages, the combination of [shortened] channel name, package
   name, version string, and build string may not be sufficient to uniquely identify across all
   possible repositories.)
 
@@ -396,6 +407,7 @@ with this standard.
 [CEP35.v1]: ./cep-0035.md#tarbz2
 [CEP35.v2]: ./cep-0035.md#conda
 [CEP36]: ./cep-0036.md
+[gh-purl-spec]: https://github.com/package-url/purl-spec
 [matchspec-ver-match]: ./cep-0029.md#version-matching
 [purl-conda-def]: https://github.com/package-url/purl-spec/blob/a6c97bcfe5c83985a1da348f73a65c9842c7e354/types/conda-definition.json
 [purl-quals-guide]: https://github.com/package-url/purl-spec/blob/a6c97bcfe5c83985a1da348f73a65c9842c7e354/docs/common-qualifiers.md
