@@ -56,6 +56,7 @@ for conda's implementation, all major changes should be submitted as
 | [0043](cep-0043.md) | Conditional dependencies                                                    |
 | [0044](cep-0044.md) | Optional dependency groups                                                  |
 | [0045](cep-0045.md) | Simplified variant selection                                                |
+| [0046](cep-0046.md) | The `__cuda_arch` virtual package                                           |
 
 ## References
 
