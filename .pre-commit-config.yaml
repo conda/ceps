@@ -24,7 +24,7 @@ repos:
         args: [--write-changes]
   # lint markdown
   - repo: https://github.com/DavidAnson/markdownlint-cli2
-    rev: 5387279b3b4c24822c0f86d4df4f28b37e3e8992  # frozen: v0.21.0
+    rev: 996abf60411a8d954288ac9856aae7602b80cbda  # frozen: v0.22.1
     hooks:
       - id: markdownlint-cli2
         args: ['--fix']
