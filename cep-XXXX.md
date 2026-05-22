@@ -163,6 +163,20 @@ pkg:conda/conda-forge/numpy@2.4.2?build=py314hd4f4903_0&subdir=linux-64
 
 PURLs separate identity from location: two channels that independently index the same external CDN artifact will produce distinct PURLs. The resolved `url` field SHOULD be stored separately in the lockfile for fetching purposes.
 
+## Security Considerations
+
+A package record's `url` field is authored by the channel. An attacker who can write to `repodata.json` can set an absolute `url` pointing to an attacker-controlled host and update the `md5`/`sha256` hashes to match. The client fetches the malicious artifact directly from that host, and could bypass any artifact proxy that the user may rely on for vulnerability scanning, egress control, and audit. Hash verification passes because the attacker controls both the artifact and the expected hashes.
+
+This attack requires only a write to `repodata.json`. In channel architectures where index generation and artifact storage use separate credentials or pipelines, such as a CI-driven indexing step backed by separate artifact storage, this represents a narrower attack surface than replacing an artifact directly.
+
+Client implementations MUST expose a `url_policy` configuration option with the following values:
+
+- `allow` (default): absolute and relative `url` values are resolved and fetched as specified.
+- `relative_only`: absolute URLs in `url` fields are ignored; the client falls back to constructing the download URL from `base_url` and the package filename. RECOMMENDED for environments using artifact proxies or with egress restrictions.
+- `disabled`: the `url` field is ignored entirely; behavior is equivalent to a client that does not implement this CEP.
+
+Channel operators using absolute URLs for CDN distribution SHOULD document the set of external hosts used so that consumers can permit them in egress allow-lists.
+
 ## Rejected ideas
 
 ### Using the dictionary key for paths
