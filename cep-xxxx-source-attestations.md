@@ -6,7 +6,7 @@
 <tr><td> Author(s) </td><td> Wolf Vollprecht &lt;wolf@prefix.dev&gt;</td></tr>
 <tr><td> Created </td><td> May 20, 2026</td></tr>
 <tr><td> Updated </td><td> May 20, 2026</td></tr>
-<tr><td> Discussion </td><td> NA </td></tr>
+<tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/168 </td></tr>
 <tr><td> Implementation </td><td> https://github.com/prefix-dev/rattler-build (experimental) </td></tr>
 <tr><td> Requires </td><td> CEP 14 (recipe format) </td></tr>
 </table>
