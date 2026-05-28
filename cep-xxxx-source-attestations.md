@@ -8,7 +8,6 @@
 <tr><td> Updated </td><td> May 20, 2026</td></tr>
 <tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/168 </td></tr>
 <tr><td> Implementation </td><td> https://github.com/prefix-dev/rattler-build (experimental) </td></tr>
-<tr><td> Requires </td><td> CEP 14 (recipe format) </td></tr>
 </table>
 
 > The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT",
