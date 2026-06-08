@@ -61,7 +61,7 @@ The value of a server-controlled index timestamp varies by channel model. Curate
 
 ### Channel server requirements
 
-Channel servers and indexing tools (such as `conda-index`, `quetz`, or Anaconda's infrastructure) SHOULD set `indexed_timestamp` on each package record when the artifact is first indexed into the channel. The value MUST reflect the actual time the artifact became available in the channel, not the build time or any value from the artifact itself. The `repodata-record-1` schema at schemas.conda.org SHOULD be updated accordingly.
+Channel servers and indexing tools (such as `conda-index`, `quetz`, or Anaconda's infrastructure) SHOULD set `indexed_timestamp` on each package record when the artifact is first indexed into the channel. The value MUST reflect the actual time the artifact became available in the channel, not the build time or any value from the artifact itself.
 
 For artifacts that predate this CEP and lack an `indexed_timestamp`, channel servers MAY seed the value from the artifact's `timestamp` field or from another server-side signal such as file modification time. This is acceptable because the security benefits of `indexed_timestamp` (dependency cooldowns, exclude-newer) protect against the initial publication window, which has long closed for existing artifacts.
 
@@ -131,7 +131,7 @@ Both directions would need their own CEPs to specify field names, encoding, veri
 - [CEP 38 - Channel-wide metadata files served by conda channels](./cep-0038.md)
 - [conda/ceps#146 - A backwards-compatible repodata update strategy](https://github.com/conda/ceps/pull/146)
 - [conda/ceps#151 - URL field for package records](https://github.com/conda/ceps/pull/151)
-- [schemas.conda.org - repodata-record-1.schema.json](https://schemas.conda.org/repodata-record-1.schema.json)
+- [schemas.conda.org - repodata-record-1.schema.json, downstream schema to update with `indexed_timestamp`](https://schemas.conda.org/repodata-record-1.schema.json)
 - [schemas.conda.org - common-1.schema.json](https://schemas.conda.org/common-1.schema.json)
 - [PyPI JSON API - upload_time field](https://warehouse.pypa.io/api-reference/json.html)
 - [RFC 3161 - Internet X.509 Public Key Infrastructure Time-Stamp Protocol (TSP)](https://datatracker.ietf.org/doc/html/rfc3161)
