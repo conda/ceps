@@ -24,11 +24,11 @@ The conda ecosystem currently lacks a reliable, per-artifact indicator of when a
 
 ### The `timestamp` field is builder-controlled
 
-[CEP 34](./cep-0034.md) defines `timestamp` in `info/index.json` as "Starting time of the package build", expressed as Unix time in milliseconds. This value propagates into `repodata.json` as specified by [CEP 36](./cep-0036.md). Because it is set by the build tool (`conda-build`, `rattler-build`), a package author or malicious actor can set it to any value. The `common-1` schema at schemas.conda.org also marks this field as `patchable: true`.
+[CEP 34](./cep-0034.md) defines `timestamp` in `info/index.json` as "Starting time of the package build", expressed as Unix time in milliseconds. This value propagates into `repodata.json` as specified by [CEP 36](./cep-0036.md). Because it is set by the build tool (`conda-build`, `rattler-build`), a package author or malicious actor can set it to any value.
 
 ### `channeldata.json` is too coarse
 
-[CEP 38](./cep-0038.md) specifies a `timestamp` field in `channeldata.json`, defined as "Upload date of the most recently published artifact". While this is server-controlled, it is per-package-name, not per-artifact. It only reflects the most recent upload and cannot be used to determine when a specific version or build was published.
+[CEP 38](./cep-0038.md) specifies a `timestamp` field in `channeldata.json`, defined as "Upload date of the most recently published artifact". Current indexer implementations do not reliably provide that exact semantic; for example, `conda-index` derives the value from package record timestamps. Even if corrected, `channeldata.json` is per-package-name, not per-artifact. It only reflects the most recent publication event and cannot be used to determine when a specific version or build was published.
 
 ### Ecosystem precedent
 
@@ -41,7 +41,7 @@ Within the conda ecosystem, pixi already provides an [`exclude-newer`](https://p
 
 ### Channel models have different risk profiles
 
-The value of a server-controlled index timestamp varies by channel model. Curated channels like Anaconda's defaults already have human review gates before packages reach users, similar to the Debian model. Community forges like conda-forge release at the speed of volunteer CI, where packages can go from merged PR to indexed artifact in minutes. Cooldown support is most critical for these faster-moving channels.
+The value of a server-controlled index timestamp varies by channel model. Curated channels like Anaconda's `defaults` already have human review gates before packages reach users, similar to the Debian model. Community forges like conda-forge release at the speed of volunteer CI, where packages can go from merged PR to indexed artifact in minutes. Cooldown support is most critical for these faster-moving channels.
 
 ### Use cases
 
@@ -93,7 +93,7 @@ The name `indexed_timestamp` accurately reflects this, and fits naturally alongs
 
 ### Not subject to repodata patching
 
-Because `indexed_timestamp` is a server-controlled fact about when an artifact entered the index, it should not be modified by repodata patching. Repodata patches are intended for correcting package-side metadata (such as dependency constraints), not for altering server-side provenance.
+Because `indexed_timestamp` is a server-controlled fact about when an artifact entered the index, it SHOULD NOT be modified by repodata patching. Repodata patches are intended for correcting package-side metadata (such as dependency constraints), not for altering server-side provenance.
 
 ### Why optional
 
