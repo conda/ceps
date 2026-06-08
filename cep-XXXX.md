@@ -5,7 +5,7 @@
 <tr><td> Status </td><td> Draft </td></tr>
 <tr><td> Author(s) </td><td> Jannis Leidel </td></tr>
 <tr><td> Created </td><td> Mar 4, 2026 </td></tr>
-<tr><td> Updated </td><td> Apr 10, 2026 </td></tr>
+<tr><td> Updated </td><td> Jun 8, 2026 </td></tr>
 <tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/154 </td></tr>
 <tr><td> Implementation </td><td> <a href="https://github.com/conda/conda/issues/15759">conda/conda#15759</a> </td></tr>
 </table>
@@ -73,7 +73,7 @@ When indexing an artifact, channel servers SHOULD validate that the artifact's `
 
 ### Client behavior
 
-Conda clients that implement time-based filtering (e.g., dependency cooldowns, exclude-newer) SHOULD prefer `indexed_timestamp` when present. If `indexed_timestamp` is absent, clients MAY fall back to `timestamp` with appropriate documentation that the value is builder-controlled.
+Conda clients that implement time-based filtering (e.g., dependency cooldowns, exclude-newer) SHOULD prefer `indexed_timestamp` when present. If `indexed_timestamp` is absent, clients MAY fall back to `timestamp` with appropriate documentation that the value is builder-controlled. Clients MAY support global, channel-scoped, package-scoped, or other policy scopes, but each policy should apply the same per-record effective timestamp.
 
 ## Rationale
 
@@ -137,7 +137,9 @@ Both directions would need their own CEPs to specify field names, encoding, veri
 - [RFC 3161 - Internet X.509 Public Key Infrastructure Time-Stamp Protocol (TSP)](https://datatracker.ietf.org/doc/html/rfc3161)
 - [Sigstore Bundle Format - TimestampVerificationData](https://docs.sigstore.dev/about/bundle)
 - [conda/conda#15759 - Exclude-newer tracking issue](https://github.com/conda/conda/issues/15759)
-- [conda/conda#15761 - Exclude-newer implementation in conda](https://github.com/conda/conda/pull/15761)
+- [conda/conda#15761 - Exclude-newer implementation in conda, including global, package, and channel-scoped policy](https://github.com/conda/conda/pull/15761)
+- [conda/conda-libmamba-solver#905 - Exclude-newer policy support for conda-libmamba-solver](https://github.com/conda/conda-libmamba-solver/pull/905)
+- [conda/conda-rattler-solver#49 - Exclude-newer policy support for conda-rattler-solver](https://github.com/conda/conda-rattler-solver/pull/49)
 - [mamba-org/mamba#4228 - exclude_newer_timestamp support in libmamba](https://github.com/mamba-org/mamba/pull/4228)
 - [William Woodruff - We should all be using dependency cooldowns](https://blog.yossarian.net/2025/11/21/We-should-all-be-using-dependency-cooldowns)
 - [Andrew Nesbitt - Package managers need to cool down](https://nesbitt.io/2026/03/04/package-managers-need-to-cool-down.html)
