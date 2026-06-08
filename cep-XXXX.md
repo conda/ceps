@@ -23,7 +23,7 @@
 
 ## Abstract
 
-This document proposes a set of updates to `repodata.json` files and its sharded derivatives to include the improvements introduced in CEP PRs [#164](https://github.com/conda/ceps/pull/164), [#165](https://github.com/conda/ceps/pull/165), [#166](https://github.com/conda/ceps/pull/166), [#154](https://github.com/conda/ceps/pull/154), and [#151](https://github.com/conda/ceps/pull/151). To do so in a backwards compatible manner, it also proposes a revision system as a way to extend repodata with new additions, _without_ incrementing `repodata_version`.
+This document proposes a set of updates to `repodata.json` files and its derivatives (sharded, subsets) to include the improvements introduced in CEP PRs [#164](https://github.com/conda/ceps/pull/164), [#165](https://github.com/conda/ceps/pull/165), [#166](https://github.com/conda/ceps/pull/166), [#154](https://github.com/conda/ceps/pull/154), and [#151](https://github.com/conda/ceps/pull/151). To do so in a backwards compatible manner, it also proposes a revision system as a way to extend repodata with new additions, _without_ incrementing `repodata_version`.
 
 ## Motivation
 
