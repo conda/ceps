@@ -5,7 +5,7 @@
 <tr><td> Status </td><td> Draft </td></tr>
 <tr><td> Author(s) </td><td> Jannis Leidel </td></tr>
 <tr><td> Created </td><td> Mar 4, 2026 </td></tr>
-<tr><td> Updated </td><td> Jun 8, 2026 </td></tr>
+<tr><td> Updated </td><td> Jun 9, 2026 </td></tr>
 <tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/154 </td></tr>
 <tr><td> Implementation </td><td> <a href="https://github.com/conda/conda/issues/15759">conda/conda#15759</a> </td></tr>
 </table>
@@ -64,6 +64,8 @@ The value of a server-controlled index timestamp varies by channel model. Curate
 Channel servers and indexing tools (such as `conda-index`, `quetz`, or Anaconda's infrastructure) SHOULD set `indexed_timestamp` on each package record when the artifact is first indexed into the channel. The value MUST reflect the actual time the artifact became available in the channel, not the build time or any value from the artifact itself.
 
 For artifacts that predate this CEP and lack an `indexed_timestamp`, channel servers MAY seed the value from the artifact's `timestamp` field or from another server-side signal such as file modification time. This is acceptable because the security benefits of `indexed_timestamp` (dependency cooldowns, exclude-newer) protect against the initial publication window, which has long closed for existing artifacts.
+
+Once `indexed_timestamp` has been assigned for a package record, channel servers and indexing tools MUST preserve that value across subsequent indexing runs. They MUST NOT recompute it from file modification time, the artifact's `timestamp`, or any other fallback signal while an existing `indexed_timestamp` is present. Channel operators MAY correct demonstrably erroneous values as an intentional metadata correction.
 
 For artifacts first indexed after this CEP is approved, the value MUST be set by the server at indexing time.
 
