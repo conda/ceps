@@ -28,7 +28,7 @@ The conda ecosystem currently lacks a reliable, per-artifact indicator of when a
 
 ### `channeldata.json` is too coarse
 
-[CEP 38](./cep-0038.md) specifies a `timestamp` field in `channeldata.json`, defined as "Upload date of the most recently published artifact". Current indexer implementations do not reliably provide that exact semantic; for example, `conda-index` derives the value from package record timestamps. Even if corrected, `channeldata.json` is per-package-name, not per-artifact. It only reflects the most recent publication event and cannot be used to determine when a specific version or build was published.
+[CEP 38](./cep-0038.md) specifies a `timestamp` field in `channeldata.json`, defined as the most recent `timestamp` value of all records for a package name, expressed as POSIX time in seconds. This is per-package-name, not per-artifact, and it is derived from builder-controlled package record timestamps rather than a server-controlled publication time. It cannot be used to determine when a specific version or build was published.
 
 ### Ecosystem precedent
 
@@ -81,7 +81,7 @@ Conda clients that implement time-based filtering (e.g., dependency cooldowns, e
 
 ### Why per-record, not per-package
 
-`channeldata.json` (CEP 38) already tracks an upload date, but at the package-name level. Different versions and builds of the same package are published at different times, so a per-record field is necessary for meaningful time-based filtering.
+`channeldata.json` (CEP 38) already includes a timestamp, but at the package-name level and derived from package record timestamps. Different versions and builds of the same package are published at different times, so a per-record field is necessary for meaningful time-based filtering.
 
 ### Why server-controlled
 
@@ -109,7 +109,7 @@ This follows the same pattern as the `url` field proposed in [conda/ceps#151](ht
 
 ### Why milliseconds
 
-For consistency with the existing `timestamp` field (CEP 34) and `channeldata.json` timestamp (CEP 38), both of which use Unix time in milliseconds.
+For consistency with the existing package record `timestamp` field defined by CEP 34, which uses Unix time in milliseconds. The `channeldata.json` timestamp defined by CEP 38 uses seconds, but `indexed_timestamp` belongs to package records in `repodata.json` and should follow the package record convention.
 
 ## Future work
 
