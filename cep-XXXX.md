@@ -23,7 +23,6 @@ hash collisions when filenames contained the same byte sequences used as type ma
 separators. This CEP fixes that vulnerability by length-prefixing every variable-length field in the
 hash stream, making all field boundaries unambiguous.
 
-
 ## Motivation
 
 The CEP 19 algorithm builds the hash stream for each directory entry by concatenating raw bytes in
