@@ -6,7 +6,7 @@
 <tr><td> Author(s) </td><td> pb01ka &lt;gaganpb08singh@gmail.com&gt; </td></tr>
 <tr><td> Created </td><td> Jun 4, 2026</td></tr>
 <tr><td> Updated </td><td> Jun 5, 2026</td></tr>
-<tr><td> Discussion </td><td> https://github.com/conda/ceps/issues/150 </td></tr>
+<tr><td> Discussion </td><td> https://github.com/conda/ceps/issues/150, https://github.com/conda/ceps/pull/174 </td></tr>
 <tr><td> Implementation </td><td> https://github.com/conda/conda-build/pull/5992 </td></tr>
 <tr><td> Supersedes </td><td> <a href="cep-0019.md">CEP 19</a> </td></tr>
 </table>
@@ -213,7 +213,7 @@ linkL../target-
 The first `4:` encodes the 4-byte path `link`. After the `L` type marker, `9:` encodes the 9-byte
 symlink target `../target`.
 
-### Example 3: The collision case (CEP 19 vulnerability)
+### Example 3: Collision (CEP 19 vulnerability)
 
 This example reproduces the collision from the Motivation section at the byte-stream level.
 
@@ -268,7 +268,7 @@ so these fields do not need their own length prefix. File contents are similarly
 they are bracketed by the type marker on one side and the `-` separator on the other, with no
 variable-length field interleaved.
 
-### Why erroring out on unredable files?
+### Why erroring out on unreadable files?
 
 The rationale is unchanged from CEP 19: we can't verify the contents of such entries, and an
 attacker could hide malicious content in those paths and later make them accessible
@@ -293,11 +293,11 @@ approach by retaining support for the legacy algorithm behind a compatibility fl
 
 This CEP changes the computed hash for any directory that contains entries whose relative path or
 (for symlinks) target path contains any of the bytes `F`, `D`, `L`, or `-`. In practice, that means
-nearly all real-world directories will produce a different digest under this CEP than under CEP 19.
+many real-world directories will produce a different digest under this CEP than under CEP 19.
 
 Existing `content_sha256`, `content_sha384`, and `content_sha512` recipe keys continue to be
 validated using the original CEP 19 algorithm (legacy mode) but are deprecated; implementations
-SHOULD emit a `PendingDeprecationWarning` when these keys are used. New recipes SHOULD migrate to
+SHOULD emit a deprecation warning when these keys are used. New recipes SHOULD migrate to
 `content_sha256_v2`, `content_sha384_v2`, and `content_sha512_v2`, which are validated using the
 fixed algorithm defined in this CEP.
 
