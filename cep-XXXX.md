@@ -92,27 +92,6 @@ For each entry in the sorted contents, feed the following bytes into the hasher 
 All other aspects of the algorithm (sorting order, text vs. binary detection, line-ending
 normalization, error handling) are unchanged.
 
-### Stream comparison: CEP 19 vs this CEP
-
-The table below shows the raw byte sequences fed to the hasher for two structurally different
-directory trees that produce a **collision under CEP 19** but distinct digests under this CEP.
-
-**Tree 1:** one file named `testFhello-world` (16 UTF-8 bytes) with content `www`.
-
-**Tree 2:** a file named `test` (content `hello`) and a file named `world` (content `www`).
-
-| Algorithm     | Tree 1                     | Tree 2                      | Collision? |
-| ------------- | -------------------------- | --------------------------- | ---------- |
-| CEP 19        | `testFhello-worldFwww-`    | `testFhello-worldFwww-`     | Yes        |
-| This proposal | `16:testFhello-worldFwww-` | `4:testFhello-5:worldFwww-` | No         |
-
-Under CEP 19 both trees yield the identical stream `testFhello-worldFwww-` and therefore the same
-digest. Under this proposal, the `16:` length prefix on Tree 1 unambiguously marks the path as 16
-bytes, so the `F` that follows is the type marker - not part of the filename. Tree 2 produces a
-completely different stream and a different digest.
-
-More cases discussed in the Examples section.
-
 ### Reference implementation
 
 For Python 3.6+:
@@ -217,6 +196,22 @@ symlink target `../target`.
 
 This example reproduces the collision from the Motivation section at the byte-stream level.
 
+**Tree 1:** one file named `testFhello-world` (16 UTF-8 bytes) with content `www`.
+
+**Tree 2:** a file named `test` (content `hello`) and a file named `world` (content `www`).
+
+| Algorithm     | Tree 1                     | Tree 2                      | Collision? |
+| ------------- | -------------------------- | --------------------------- | ---------- |
+| CEP 19        | `testFhello-worldFwww-`    | `testFhello-worldFwww-`     | Yes        |
+| This proposal | `16:testFhello-worldFwww-` | `4:testFhello-5:worldFwww-` | No         |
+
+Under CEP 19 both trees yield the identical stream `testFhello-worldFwww-` and therefore the same
+digest. Under this proposal, the `16:` length prefix on Tree 1 unambiguously marks the path as 16
+bytes, so the `F` that follows is the type marker - not part of the filename. Tree 2 produces a
+completely different stream and a different digest.
+
+The step-by-step breakdown for this CEP:
+
 **Tree 1** - one file named `testFhello-world` (content `www`):
 
 | Step | Field             | Bytes fed to hasher |
@@ -246,8 +241,7 @@ Full stream: `16:testFhello-worldFwww-`
 
 Full stream: `4:testFhello-5:worldFwww-`
 
-The two streams are distinct, so the digests are distinct. Under CEP 19 both trees produced the
-same stream `testFhello-worldFwww-`, making the collision possible.
+The two streams are distinct, so the digests are distinct.
 
 ## Rationale
 
@@ -278,7 +272,7 @@ attacker could hide malicious content in those paths and later make them accessi
 
 The algorithm change produces different digests for the same directory contents, so existing stored
 hashes computed with CEP 19 are not compatible with hashes computed under this CEP. Implementations
-that currently use CEP 19 SHOULD:
+that currently use CEP 19 should:
 
 1. Treat the v1 (CEP 19) and v2 (this CEP) hashes as distinct key families (e.g. by using
    different key names such as `content_sha256` vs `content_sha256_v2`, or by tagging stored
