@@ -53,6 +53,10 @@ for conda's implementation, all major changes should be submitted as
 | [0040](cep-0040.md) | A new recipe format (part 4): Rendered recipe YAML and serialization        |
 | [0041](cep-0041.md) | The staging output in v1 recipes / rattler-build                            |
 | [0042](cep-0042.md) | Channel relations in repodata                                               |
+| [0043](cep-0043.md) | Conditional dependencies                                                    |
+| [0044](cep-0044.md) | Optional dependency groups                                                  |
+| [0045](cep-0045.md) | Simplified variant selection                                                |
+| [0046](cep-0046.md) | The `__cuda_arch` virtual package                                           |
 
 ## References
 
