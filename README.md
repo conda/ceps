@@ -58,6 +58,7 @@ for conda's implementation, all major changes should be submitted as
 | [0045](cep-0045.md) | Simplified variant selection                                                |
 | [0046](cep-0046.md) | The `__cuda_arch` virtual package                                           |
 | [0047](cep-0047.md) | Index timestamp in package record metadata                                  |
+| [0048](cep-0048.md) | Additional recipe test types and `info/tests/tests.yaml` serialization      |
 
 ## References
 
