@@ -57,6 +57,7 @@ for conda's implementation, all major changes should be submitted as
 | [0044](cep-0044.md) | Optional dependency groups                                                  |
 | [0045](cep-0045.md) | Simplified variant selection                                                |
 | [0046](cep-0046.md) | The `__cuda_arch` virtual package                                           |
+| [0047](cep-0047.md) | Index timestamp in package record metadata                                  |
 
 ## References
 
