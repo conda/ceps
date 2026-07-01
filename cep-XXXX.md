@@ -1,0 +1,774 @@
+# CEP XXXX - Improving dependency export infrastructure
+
+<table>
+<tr><td> Title </td><td> Improving dependency export infrastructure </td>
+<tr><td> Status </td><td> Draft </td></tr>
+<tr><td> Author(s) </td><td> Axel Obermeier &lt;h.vetinari@gmx.com&gt;</td></tr>
+<tr><td> Created </td><td> Aug 29, 2025 </td></tr>
+<tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/129 </td></tr>
+<tr><td> Implementation </td><td> N/A </td></tr>
+</table>
+
+## Abstract
+
+This CEP proposes to overhaul the way that packages "export" some required dependency or constraint,
+in a way that directly specifies the conditions (of the build phase of a dependent package) which
+need to be met for the export to be triggered, as well as the target environment where the respective
+dependency or constraint should be applied. This has a wide variety of important uses which are so far
+difficult or impossible to express, and increases clarity of the respective recipes, as well as the
+teachability of the underlying concepts.
+
+This document builds upon [CEP 13](cep-0013.md) and [CEP 14](cep-0014.md), which define what
+is known as the "v1" recipe format.
+
+## History
+
+From the beginning, one of the big advantages of `conda` over `pip` has been the ability to
+track dependencies sufficiently well in order to be able to share artefacts between packages,
+rather than vendoring dependent libraries for every consumer.
+
+In contrast to static or header-only libraries, a shared library `foo` is not only required during the
+build phase for `bar` (the headers for `# include <foo.h>` to work and `libfoo.so` for linkage to succeed),
+but needs to be present in the final environment for `bar` as well. Aside from corner-cases,
+this runtime dependency *always* follows, and it is therefore natural to ask the build tool (together
+with appropriate metadata) to do this work for us.
+
+This is what the original [design discussion](https://github.com/conda/conda-build/issues/1142) in conda-build started
+out from, which was first implemented first as [`pin_downstream`](https://github.com/conda/conda-build/commit/e344bbae369658ca7e2defab8a3960d8570fbf8a)
+and soon after renamed to [`run_exports`](https://github.com/conda/conda-build/commit/d90aa3135cc81a5db28e8160b521f11d27083453).
+The original [documentation](https://github.com/conda/conda-docs/pull/414) for this feature provides
+additional context.
+
+This yielded a feature that at the time of conda-build 3.0.0 (CB3)
+[looked like](https://github.com/conda/conda-build/blob/3.0.0/tests/test-recipes/variants/10_runtimes/uses_run_exports/meta.yaml):
+
+```yaml
+build:
+  run_exports:
+    - foo  {{ pin_compatible('foo') }}
+
+requirements:
+  build:
+    - foo
+```
+
+It's worth noting that the introduction of "variants" and "run_exports" happened during the same CB3 timeframe
+which also saw the introduction of the separation into `build:`/`host:`/`run:` environments (necessary to correctly
+handle more complex scenarios like cross-compilation). As well as can be gleaned from the history of the repository,
+it appears that the design for run-exports did not originally take this new tripartite environment separation into
+account.
+
+This was [rectified](https://github.com/conda/conda-build/commit/f7133b61c75ba1b5c82b5fb20729a37d05ae28a5)
+by introducing a separation into strong and weak run-exports, where the scenario described above is default, in
+which a `host:` dependency exports a dependency to `run:`, whereas "strong" exports are necessary for a `build:`
+dependency to have the same effect (in some way, the jump between `build:` and `run:` is farther than the one
+between `host:` and `run:`, and hence needs a bigger push).
+
+However, this doesn't cover the full gamut of scenarios how packages may influence or constrain each other
+between environments, and opens further questions along the lines of:
+> If `qux` has a strong run-export, and appears in a `run:` environment of another package,
+  does the export trigger or not?
+
+### Run-exports vs. noarch
+
+In 2020, a `noarch:` type of run-exports got [added](https://github.com/conda/conda-build/pull/3868); the
+design for this seems to primarily come from comments in that PR and boils down to:
+> > > Ray Donnelly: Do we not really want to use a different run_export type here? Dropping all but the package name?
+> >
+> > Isuru Fernando: I don't understand. Are you suggesting a different run_exports scheme ('noarch' in addition to
+> > 'weak', 'strong') that would be applied if the package is a dependency of a `noarch` package?
+>
+> Ray Donnelly: I am.
+
+This is a relatively little-used feature, c.f. this approximate [search](https://github.com/search?q=org%3Aconda-forge+%2F%28%3Fs%29%5Csrun_exports%3A.*noarch%3A%2F+path%3Arecipe%2F*.yaml&type=code)
+(note: many false positives, but should be exhaustive), though crucially including core packages like
+python and R, which are of course key use-cases for building noarch packages atop of.
+
+Perhaps most notably, since the linked PR, regular run-exports (either weak or strong) do not apply to
+`noarch: {generic, python}` packages anymore, as thereafter they had their own special export type.
+
+### Extension to constraints
+
+Later in 2020, the constraint variants `weak_constrains` and `strong_constrains` were
+[added](https://github.com/conda/conda-build/pull/4125). Since then the feature has
+not seen any major changes.
+
+### The v1 recipe format
+
+CEP 14 moved `run_exports:` and `ignore_run_exports:` from the `build:` section to the `requirements:`
+of the respective output, but otherwise did not change the semantics of this feature, aside from renaming
+`run_constrained` to `run_constraints` and `{weak,strong}_constrains` to `{weak,strong}_constraints`.
+
+## Motivation
+
+### "Host-exports"
+
+One key motivation for this proposal is that even with the weak/strong distinction, run-exports are not
+powerful enough to handle relevant scenarios that are a natural consequence of the separation into
+`build:` / `host:` / `run:` environments.
+
+Abstractly speaking, this separation introduces more cases where one wants to express relations between
+environments, e.g. from `build:` to `host:` (see <https://github.com/conda/ceps/issues/77>). For this case
+in particular, the urgency was reduced by the fact that it could be passably emulated by using strong
+run-exports; while this would "over-export" things into the `run:` environment, this is harmless in many cases.
+
+However, there are cases where that is not so, and the relevant constraints cannot currently be expressed
+(resp. where abuse of the strong run-export would require all consumers to ignore the extraneous run-exports,
+which is not feasible at scale, and would be a constant tripping hazard).
+
+For example, C++ and Fortran modules (as of 2025) are not portable between compilers and need to be consumed
+by the same compiler that produced them. Let's assume we have a package `foo-devel` containing Fortran modules,
+to which we would like to attach a `_fortran_modules_abi =*=compiler_flavour*` constraint that ensures that
+it can only be combined with the appropriate compiler. The problem in this case is that with a recipe like
+
+```yaml
+  - name: i-consume-fortran-modules
+    requirements:
+      build:
+        - {{ stdlib("c") }}
+        - {{ compiler("fortran") }}
+      host:
+        - foo-devel
+```
+
+there's no way to make the "wrong" fortran compiler conflict with `foo-devel`, because we explicitly
+do not want a strong run-export from the general-purpose `{{ compiler("fortran") }}` (more precisely,
+the underlying package `${fortran_compiler}_${target_platform}`) to enforce a specific compiler ABI in
+`run:`. This would unnecessarily make the package unusable together with packages built by other Fortran
+compilers, as the Fortran modules are a build-only quantity and their ABI is not relevant at runtime.
+
+The solution in this case would be to add an export to the various `${fortran_compiler}_${target_platform}`
+packages which injects `_fortran_modules_abi =*=compiler_flavour*` *only* into the `host:` environment;
+this would impose the right constraints (i.e. conflict if ABI between the compiler and the constraint
+attached to `foo-devel` doesn't match), while avoiding too-tight constraints at runtime. The situation is
+explained/discussed in more detail in <https://github.com/conda-forge/conda-forge.github.io/issues/2525>.
+
+### Ecosystem Evolution
+
+Zooming out a bit, the conda ecosystem has changed dramatically over the last decade, including less
+visible aspects like build infrastructure. Most platforms nowadays have a choice of multiple different
+compilers (at least for C, C++, Fortran), and we need to be able to able to handle constraints arising
+from this in a way that avoids inscrutable errors for unsuspecting recipe maintainers.
+
+On top of that, the long-in-the-making maturation of C++20 modules (which are subject to the same ABI
+constraints as the Fortran case explained above), means that our infrastructure needs to be ready to
+reliably handle packaging challenges in a world where these C++ modules are beginning to come into more
+wide-spread use. Leaving run-exports in their current state indefinitely is therefore not a palatable option.
+
+### Teachability
+
+This effort started out with the intention of making minimal changes in the pursuit of effecting change
+as quickly as feasible. However, owing to how organically the run-exports feature has grown over time,
+a sober analysis of the situation must conclude that generalising it even further, towards cases having
+not even the slightest relation to the term "run", risks creating a situation where both the concepts
+and the mechanics would be very confusing.
+
+Run-exports are already among the most arcane and difficult-to-understand aspects of the conda ecosystem,
+which makes it unsustainable to further overload them with complexity. Ideally, a feature designed from
+the ground up based on all the lessons learned in the last decade would be much easier to explain and grasp,
+lowering the barrier to entry into the ecosystem, and helping existing contributors navigate packaging
+challenges more easily.
+
+### The many uses of exports
+
+What began as a simple idea (e.g. to inject a runtime dependency on a shared library from `host:`
+to `run:`) expressible with a single verb, _to export_ (and its nominalization into `run_exports:`)
+has turned into a key concept across many use-cases. As a consequence, exports have become ubiquitous.
+
+Not only that, but we need to describe fundamentally different processes about exports:
+
+- Attaching an export (e.g. to a package `foo`)
+- Applying an export (e.g. when building a package `bar` depending on `foo`)
+- Ignoring an export (e.g. if `bar` needs `foo` present, but doesn't want the export itself)
+- Inheriting an export (when talking about `package:`-global builds influencing their `outputs:`,
+  which may be `files:`-based and thus have no `build:`/`host:` environments of their own, yet
+  still need to reflect the runtime dependencies of their content)
+
+These actions are currently either implicit or dispersed incongruously across the recipe.
+
+## Design
+
+We begin with the following observations based on the above:
+
+- There is a need for a flexible mechanism to do cross-environment dependency injection in the conda ecosystem.
+- There are cases where the "run" in `run_exports:` is not appropriate (e.g. `build:` to `host:`), because
+  no aspect of the export in question involves something related to the `run:` environment or runtime.
+- Just as important as where we're exporting *to* is where we're exporting *from*. Leaving this implicit
+  gets exponentially more complicated the more export-flavours there are.
+- Already the existing strong run-exports can be subject to this confusion (e.g. "does a strong run-export
+  trigger in a host environment?"), [even](https://github.com/conda/ceps/issues/77#issuecomment-3187310320)
+  by very experienced contributors.
+- It would be nice to cover constraints as well as dependencies with the same pattern.
+- There are other use-cases ([example](https://github.com/conda-forge/ctng-compiler-activation-feedstock/blob/e2bdf15eb170008eda386056a900ce93e0f9cb16/recipe/meta.yaml#L147-L150))
+  which have so far been under-served by the existing run-export infrastructure.
+- Run-exports are not applied when building `noarch` packages, except if the export is of type `noarch:`.
+- The v1 recipe format unified all requirement-related topics (including run-exports) under `requirements:`.
+- Exports and their associated actions should be consolidated as well.
+
+Based on this, we propose the following pattern:
+
+```yaml
+requirements:
+  build:
+    - [...]
+  host:
+    - [...]
+  run:
+    - [...]
+  # relying on the surrounding "requirements" key for context
+  exports:
+    # exports that the output itself will apply when *used* for building other packages
+    attach:
+      host_to_run:            # matches `weak:` run-export
+        - a_shared_library
+      build_to_host:          # "host-export"
+        - a_host_constraint =*=*foo
+      build_to_run:           # produces same effect as `strong:` run-export when used together with build_to_host
+        - a_compiler_runtime
+      host_to_constraints:    # matches `weak_constrains:` (v0) / `weak_constraints:` (v1)
+        - a_run_constraint
+      build_to_constraints:   # matches `strong_constrains:` (v0) / `strong_constraints:` (v1)
+        - a_run_constraint
+      # all the above _do not_ apply when building `noarch: generic` or `noarch: python` packages
+      noarch_to_run:          # matches `noarch:` run-export; _does_ apply when building noarch packages
+        - a_dependency_exported_when_consumer_is_noarch
+      # potential future additions (see CEP-XXXY), but included for completeness
+      build_to_build:
+        - a_compile_time_only_dependency
+      host_to_host:
+        - a_compile_time_only_dependency
+
+    # exports from dependencies in the current output that should be ignored when *building*
+    ignore:
+      to_any:           # default; `exports: ignore: foo` maps to `exports: ignore: to_any: foo`
+        from:
+          - zlib
+        by_name:
+          - libzlib
+      to_run:
+        [...]           # same inner schema
+      to_host:
+        [...]           # same inner schema
+      # potential future addition (see CEP-XXXY)
+      to_build:
+        [...]
+
+    # exports to be inherited from staging output while *building* the output;
+    # NOT PROPOSED here, but relevant for https://github.com/conda/ceps/pull/102
+    inherit:
+      to_any:           # default; `exports: inherit: foo` maps to `exports: inherit: to_any: foo`
+        from:
+          - name-of-staging-output
+      to_{run,host,build}:
+        [...]           # same inner schema
+```
+
+This unifies all export-related things under `requirements.exports`, as well as collecting the
+different actions `{attach,ignore}` (plus potentially `inherit` in the future) in one place. We'll look
+at the `ignore:` side further down; let us start with the heart of the matter: to `attach:` an export
+to the package being built.
+
+As indicated by the comments, `host_to_run:` matches the existing weak run-export attached to a package.
+If taken together with `build_to_run:`, this produces the same effect of a strong run-export.
+Similarly for `host_to_constraints:`
+and `build_to_constraints:`. The other keys introduce new functionality, which is explained below.
+
+This design has the advantage that it's
+immediately clear from the key pattern `<source>_to_<target>` under which conditions a given export
+triggers (i.e. the package carrying the export finds itself in conditions matching `<source>`),
+and what it influences (i.e. the export gets added to `<target>`). This avoids a lot of mental arithmetic
+(and ideally, implementation complexity) in keeping track of which export triggers when.
+
+The case for `build_to_host:` was already made in the Motivation section, though there are other cases
+beyond C++/Fortran modules where the ability to constrain interactions between compilers and host variants
+is desirable (e.g. openmp, openmpi, etc.).
+
+The `noarch_to_run:` breaks from the pattern of using a `<source>` that is an existing type of environment.
+Despite being used relatively rarely, it is required by important use-cases like python, and so this variant
+cannot be abandoned for the sake of foolish consistency. Given how existing run-exports do not apply to
+noarch packages at all, it's seems natural to consider noarch as just another condition that is either met
+during the build phase of a dependent project, or not. The overall rule still remains easy to summarise as
+"`exports:` do not apply when building noarch packages, unless the export is of type `noarch_to_run:`."
+
+Combined with the consistent `<from>_to_<to>` naming scheme, `exports: noarch_to_run: ...` is also more
+self-explanatory than the current `run_exports: noarch: ...`.
+
+### Omitted combinations
+
+One could ask about a possible `host_to_build:` key. While this would arguably be an even better
+fit for the C++/Fortran modules ABI issue described above, the reason this proposal refrains from suggesting
+such a key is to limit implementation complexity, by having an explicit order of environment resolution from
+`build:` to `host:` to `run:`. Allowing both `host_to_build:` as well as `build_to_*:` would complicate this
+process unnecessarily, and we believe the relevant use-cases are fully expressible using `build_to_host:`
+together with constraints (such as `_fortran_modules_abi`) attached to packages that appear in `host:`.
+
+### Exporting happens more than once during the build
+
+While the `build:` to `host:` to `run:` order described above reduces procedural complexity, it still enlarges
+the space of possible scenarios. Specifically, there are now at least two distinct points where exports happen,
+once for `build_to_*:` and once for `host_to_run:`. This leads to new questions how chained exports interact.
+
+For example, if we have
+
+```yaml
+# output: a_complicated_package
+requirements:
+  exports:
+    attach:
+      build_to_host:
+        - some_package_with_a_run_export
+```
+
+and
+
+```yaml
+# output: some_package_with_a_run_export
+requirements:
+  exports:
+    attach:
+      host_to_run:
+        - the_export_in_question
+```
+
+and then consume it
+
+```yaml
+# output: mypkg
+requirements:
+  build:
+    - a_complicated_package
+  host:
+    # from a_complicated_package's build_to_host export
+    # - some_package_with_a_run_export
+  run:
+    # ...should the host_to_run export of some_package_with_a_run_export get triggered here?!
+    # - the_export_in_question
+```
+
+the question arises how to handle export of a package _that's not explicitly named_ in the recipe.
+
+Obviously this is quite an impactful question, as it is certainly not desirable to apply the exports of all
+packages that happen to transitively make it into a build or host environment.
+
+Taken in isolation, it would be understandable to conclude from the above that the rule "only packages named
+explicitly in the recipe may have their exports applied" should remain sacrosanct, and that consequently, the
+answer to the above question would be that `the_export_in_question` should not get added.
+
+There is however an important other use-case on the horizon that needs to be taken into account for the design
+here. There are technical constraints (dependencies on other efforts) why this CEP does not propose the resulting
+mechanism directly, but that should not hinder us from approaching the design space holistically.
+
+### Future-proofing: self-exports
+
+Consider the following use-case: `libB` depends on `libA` as usual, but compiling against `libB` needs
+*the specific version* of `libA` used to build `libB`, e.g. due to the way ABI and headers between
+`libA` and `libB` interact. This is a scenario that happens with increasing frequency for C++ for example,
+where the adoption of templates and `contexpr` functions effectively push dependencies into public headers.
+
+This can be regarded as a "compile-time-only" dependency of `libB`; `libA` is not necessary at runtime, but
+_compiling against_ `libB` requires the correct `libA` to be present. For example, if `libB 1.0.0 *_1` is built
+against `libA=1` and `libB 1.0.0 *_2` is built against `libA=2`, then a package `mypkg` that (generically) depends
+on `libB` needs to match the `libA` version that was used to build the *specific* artefact of `libB` that is in
+`host:` at build time of `mypkg`.
+
+To illustrate this better, let us look at some example recipes:
+
+```yaml
+# output: libA
+requirements:
+  # omitted: regular build/host/run environments
+  exports:
+    attach:
+      host_to_run:
+        - ${{ pin_compatible("libA") }}
+```
+
+This matches the operations of `run_export:` so far. Before we consider the recipe of `libB`, let us consider
+`mypkg` first, because it illustrates that using `libB` _necessarily_ needs to inject a constraint on `libA`
+that's not present in the consuming recipe:
+
+```yaml
+# output: mypkg
+requirements:
+  # omitted: regular build environment
+  host:
+    - libB
+    # injected!
+    # - libA  # matches libA-constraint of libB
+  run:
+    # regular host_to_run export from libB
+    # - libB >={{ver_B}},<{{next_ver_B}}
+    # host_to_run export from injected libA!
+    # - libA >={{ver_A}},<{{next_ver_A}}
+    - some_other_regular_dependency
+```
+
+Clearly, this is an usual situation deserving of very explicit syntax. Fortunately, the `<from>_to_<to>`
+pattern provides a very natural way to do this:
+
+```yaml
+# output: libB
+requirements:
+  # omitted: regular build environment
+  host:
+    - libA
+  run:
+    # regular host_to_run export from libA
+    # - libA >={{ver_A}},<{{next_ver_A}}
+  exports:
+    attach:
+      host_to_run:
+        - ${{ pin_compatible("libB") }}
+      # export that injects libA whenever libB is a named dependency in a host environment!
+      host_to_host:
+        - ${{ pin_compatible("libA") }}
+```
+
+The main additional complication this introduces (and why it is not being proposed in this CEP yet), is that
+one cannot simply follow the previous process of:
+
+- resolve environment
+- collect any exports of concrete packages
+- inject those packages into next environment
+
+anymore, because the resolution process becomes entangled with the exports. Doing this iteratively is not an
+option because arbitrarily pathological behaviour is possible (e.g. the addition of a `host_to_host:` export
+could add constraints that end up evicting the package that caused the export in the first place!).
+
+This can be solved in conjunction with conditional dependencies, and will be handled in a separate CEP.
+
+### Applying exports transitively
+
+The fact that there are important use cases where it is necessary to apply exports of packages not explicitly
+named in the recipe provides us a concrete answer to the question about what should happen with `the_export_in_question`
+in the example further up: it should be applied.
+
+This provides consistent behaviour between `build_to_host:` with how `build_to_build:` resp. `host_to_host:`
+necessarily must operate. Instead of only applying exports from packages named in the respective environment,
+the consistent rule then becomes:
+"exports are applied from packages that are either explicitly named in the environment, or have been injected via exports."
+
+### Ignoring exports
+
+As a natural counterpart to increased variety of exports, we need to consider the facilities for overriding
+exports where necessary. For the most common use, we simply rename `ignore_run_exports`
+
+```yaml
+  requirements:
+    exports:
+      ignore:           # changed from ignore_run_exports
+        from:           # changed from "from_package"
+          - zlib
+        by_name:
+          - libzlib
+```
+
+The reason to also change `from_package:` to `from:` is that this will make it structurally obvious how
+complementary ignored exports are with inherited ones (see https://github.com/conda/ceps/pull/102).
+More specifically, for a staging output `libxml2-split` that gets split into different components (e.g.
+`libxml2`, `libxml2-devel`, etc.), the following would be a no-op:
+
+
+```yaml
+requirements:
+  exports:
+    inherit:
+      from:
+        - libxml2-split
+    ignore:
+      from:
+        - libxml2-split
+```
+
+This illustrates the duality of the two operations, and should make it easy for recipe authors to
+dial in the desired behaviour by inheriting or ignoring exports more granularly.
+
+To enable the necessary flexibility, we propose the following syntax for the general case:
+
+```yaml
+  requirements:
+    exports:
+      ignore:
+        to_any:         # additional key!
+          from:
+            - zlib
+          by_name:
+            - libzlib
+```
+
+Unsurprisingly, the above instructs the build tool to ignore the application of any exports matching the
+conditions (whether by originating package or by name of the export), regardless of where it comes from.
+
+In more complicated cases, e.g. where the same dependency is exported into several environments, or where same
+dependency is being exported _from_ different environments, it may be necessary to ignore exports more granularly.
+For this purpose, we allow qualifying the same ignore schema (i.e. `from:` / `by_name:`) by the target
+environment (which is a more natural fit here than the originating environment of a given export).
+
+```yaml
+requirements:
+  exports:
+    ignore:
+      to_host:
+        from:
+          - zlib
+        by_name:
+          - libzlib
+      to_run:       # covers exports to both `run:` and `constraints:`
+        [...]       # same inner schema as `to_host:`
+      to_build:     # potential future addition (CEP-XXXY)
+        [...]
+      to_any:       # trivially combineable with universally ignored exports
+        [...]
+```
+
+### No convenience shorthand
+
+Owing to the twists and turns of the way the feature was introduced, conda-build has allowed
+
+```yaml
+build:
+  run_exports:
+    - libfoo
+```
+
+to be equivalent to
+
+```yaml
+build:
+  run_exports:
+    weak:
+     - libfoo
+```
+
+which was introduced later (as discussed in History section). The v1 recipe format has kept this shorthand.
+Even though it is likely that `host_to_run:` will represent the overwhelming majority of occurrences of exports,
+we do not believe it is worth allowing a similar shortcut for `exports.host_to_run:`
+
+```yaml
+requirements:
+  exports:
+    - libfoo    # NOT PROPOSED!
+```
+
+The above would be fundamentally at odds with unifying `attach:` & `ignore:` under `exports:`.
+Likewise, we don't propose:
+
+```yaml
+requirements:
+  exports:
+    attach:
+      - libfoo  # NOT PROPOSED!
+```
+
+For one, it complicates the schema definition and handling unnecessarily, and saving a few characters is not worth
+the resulting ambiguity. Finally, using `host_to_run:` improves clarity for the recipe reader and will naturally
+(we believe) lead to understanding the other export types (or even exports as a concept in the first place).
+
+### Other modifications
+
+Additionally, to keep the `<valid_requirements_key>_to_<valid_requirements_key>` pattern (aside from
+the special case for `noarch`), we rename
+
+```yaml
+requirements:
+  constraints:  # changed from run_constraints
+    - [...]
+```
+
+because constraints only make sense when that package gets installed somewhere in any case, so the
+"run_" is superfluous (aside from being inconsistent with the proposed pattern for export variants).
+On top of that, the "run_" can also be confusing, because the name might be misinterpreted as being
+specific to the `run:` environment, when in actuality, the `run_constraints:` of a package still
+take effect also when installed into a `host:` or `build:` environment.
+
+### Summary
+
+To recap, `build:` can export to all others (i.e. `host:`, `run:`, `constraints:`), `host:` can export
+to `run:` and `constraints:`, while nothing can be exported from either `run:` or `constraints:`. None
+of these exports apply when building noarch packages, which only take into account `noarch_to_run:` exports.
+
+Packages that have been added through an export to an environment will in turn have their own exports be
+applied, even if not explicitly named in the recipe.
+
+Finally, granular facilities exist for ignoring exports overall or into specific environments.
+
+## Impacts on package and channel metadata
+
+### Background
+
+Both [CEP 12](cep-0012.md) and [CEP 21](cep-0021.md) worked in the area of specifying how run-exports are
+represented in package and channel metadata.
+
+To the best of our knowledge, the format of `run_exports.json` on a per-output level has not been formalised,
+though, unsurprisingly, it is [simply](https://github.com/conda/conda-build/blob/25.7.0/conda_build/build.py#L1378-L1387)
+a JSON-extract of the relevant `run_exports:` portion of the rendered recipe.
+CB3 originally introduced this as `run_exports.yaml`, which got [switched](https://github.com/conda/conda-build/commit/1347f3df264c57d79ab078f88fae2d8862a58d9f)
+to JSON (by default) in 2018. In practice, it is fair to assume that only `run_exports.json` files exist nowadays.
+
+CEP 12 introduced a channel-level `run_exports.json` which provides the information in aggregated format, allowing
+extraction of run-export metadata (e.g. for conda-forge's bot infrastructure) at scale without having to download
+every individual package first. This effort refrained from touching `repodata.json`, among other reasons because:
+> It would require extending the `repodata` schema, currently not formally standardised.
+
+Indeed, inspection of output-level `repodata_record.json` of contemporary (mid-2025) packages shows that run-exports
+do not even appear in the regular metadata, only in `run_exports.json`.
+
+CEP 21 (building on top of [CEP 16](cep-0016.md)) added channel-level run-export information, though in contrast
+to CEP 12, added this to the physically sharded but logically unified repodata.
+
+Finally, only the exports under `exports.attach:` actually have any effect after building the package in question,
+so these are the only quantities worth reflecting in the channel metadata.
+
+### Transition plan
+
+It's easy to map the new export structure to the respective metadata; the complexity lies in providing a smooth
+transition for the ecosystem across various versions of tools that build or consume packages and metadata.
+
+The approach suggested here is based on the intention to avoid having to introduce a repodata v2, but if such
+an [effort](https://github.com/conda/ceps/pull/111) should come to fruition, the below could certainly be
+simplified. We suggest to:
+
+- Output-level:
+  - Add another `exports.json` next to `repodata_record.json`, to be preferred over `run_exports.json` by tools
+    which know how to handle it.
+  - Populate `run_exports.json` with "compatible" metadata derived from `exports.attach:` (see below).
+- Channel-level:
+  - Add a `exports.json` file to the monolithic channel metadata, to be preferred over `run_exports.json` by
+    tools which know how to handle it.
+  - Add an `exports:` key within sharded metadata without altering `run_exports:`. The same argument with respect to
+    the storage footprint as in CEP 21 applies, i.e. the data is highly compressible and will not have more than
+    ~5% size impact. Long-term, the existing `run_exports:` information should be removed, freeing up the additional
+    space again.
+
+The reason to add separate files and keys is that this provides the easiest compatibility story: tools which are
+aware of this CEP can prefer `exports.json` and equivalents, whereas older versions of these tools continue to
+work unchanged.
+
+### Compatibility mapping back to `run_exports.json`
+
+To smooth the transition, even tools that are aware of this CEP should still populate `run_exports.json` etc., to
+avoid causing breaking behaviour changes for older versions of build tools that are still in use. For setting the
+values, we propose a conservative approach, in the sense that we default to strong exports in case of doubt:
+
+- Reuse values for keys which have a 1:1 equivalent in `run_exports:` schema:
+  - `host_to_run:` --> `weak:`
+  - `host_to_constraints:` --> `weak_constrains:`
+  - `build_to_constraints:` --> `strong_constrains:`
+  - `noarch_to_run:` --> `noarch:`
+- Add strong run-export in case of doubt, i.e. merge any values of `build_to_host:` & `build_to_run:` into `strong:`.
+
+### Indexing old artefacts
+
+The same mapping can be inverted to populate the information necessary for `exports.json` of a channel containing
+a mix of new and old artefacts, where the latter cannot be expected to consistently have output-level `exports.json`
+metadata yet.
+
+## Specification
+
+### Open questions
+
+- if we change the keys, do we need to bump the recipe version to v2?
+- do we need to update `patch_instructions_version` or other changes to patching infrastructure?
+
+### Recipes, Parsing, Package Building
+
+TODO!
+
+### Package and Channel Metadata
+
+On output-level, if there are any non-empty `exports.attach:` sections specified, build tools MUST produce an
+`exports.json` in the root of the artefact (next to `index.json` etc.), and populate the values with the
+attached exports as specified
+in the rendered recipe for that output. If the output has no (or empty) `exports.attach:`, creation of `exports.json`
+MAY be omitted. For the value of each key under `exports.attach:`, before creating `exports.json` and in the following
+order, tools:
+
+- MUST error on illegal `PackageSelector`s (as defined in CEP 14),
+- MAY normalize the contained `PackageSelector`s (including removal of empty ones),
+- MAY remove exact duplicates within the list of `PackageSelector`s, and
+- MAY omit serializing a given key entirely, if its value is an empty list.
+
+If the file `exports.json` gets created, its content MUST be a valid JSON object according to the schema below:
+
+```json
+{
+    "build_to_constraints": [PackageSelector],
+    "build_to_host": [PackageSelector],
+    "build_to_run": [PackageSelector],
+    "host_to_constraints": [PackageSelector],
+    "host_to_run": [PackageSelector],
+    "noarch_to_run": [PackageSelector]
+}
+```
+
+We define the following translation between this schema and previous versions of the `run_exports:` schema:
+
+| `exports.attach:` | `run_exports:` (v0) | `run_exports:` (v1) |
+|---|---|--|
+| `build_to_constraints:` | `strong_constrains:` | `strong_constraints:` |
+| `build_to_host:` | `strong:` | `strong:` |
+| `build_to_run:` | `strong:` | `strong:` |
+| `host_to_constraints:` | `weak_constrains:` | `weak_constraints:` |
+| `host_to_run:` | `weak:` | `weak:` |
+| `noarch_to_run:` | `noarch:` | `noarch:` |
+
+Build tools MUST populate the output-level `run_exports.json` file with the payload of the `exports.attach:` object
+(for the respective output in the rendered recipe) as follows: they MUST translate keys to the v0 schema per
+the table above (while leaving the corresponding values unchanged).
+If both `build_to_host:` and `build_to_run:` have non-empty values for
+the output in question, those values MUST be concatenated into `strong:`. Tools MUST apply the same list of
+normalization steps, as specified for `exports.json` above, before creating `run_exports.json`.
+
+On channel-level, the `exports.json` file MUST be populated when indexing the channel, in the same way
+as described for `run_exports.json` in CEP 12, but using the following schema. Where artefacts do not yet
+have `exports.json` metadata, the values in `exports:` MUST be populated from the respective keys in
+`run_exports:` according to the above schema mapping.
+
+```json
+{
+    "info": {
+        "platform": "string",
+        "arch": "string",
+        "subdir": "string",
+        "version": 0
+    },
+    "packages": {
+        "package-version-build.conda": {  # or package-version-build.tar.bz
+            "exports": {
+                "build_to_constraints": [
+                    "string",
+                ],
+                "build_to_host": [
+                    "string",
+                ],
+                "build_to_run": [
+                    "string",
+                ],
+                "host_to_constraints": [
+                    "string",
+                ],
+                "host_to_run": [
+                    "string",
+                ],
+                "noarch_to_run": [
+                    "string",
+                ]
+            }
+        }
+    },
+}
+```
+
+Indexers MUST (continue to) populate the channel-level `run_exports.json` from the output-level `run_exports.json`.
+
+For sharded repodata following CEP 16 & 21, indexers MUST add an `exports:` key and populate it with the respective
+output-level `exports.attach` metadata. Where outputs do not yet provide `exports.json`, the values of
+`exports:` in the sharded repodata MUST be populated
+from the respective keys in `run_exports:` according to the above schema mapping. Furthermore, indexers MUST
+(continue to) populate the value of `run_exports:` with the aggregation of output-level `run_exports.json`.
+
+Tools MUST take information from `exports:` / `exports.json` (if available) over `run_exports:` / `run_exports.json`.
+
+### Patching
+
+TODO!
