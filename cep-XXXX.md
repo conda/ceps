@@ -1,0 +1,257 @@
+# CEP XXXX - A backwards-compatible update strategy for repodata `v3`
+
+<table>
+<tr><td> Title </td><td> A backwards-compatible update strategy for repodata <code>v3</code> </td>
+<tr><td> Status </td><td> Draft </td></tr>
+<tr><td> Author(s) </td>
+  <td>
+    Jaime Rodríguez-Guerra &lt;jaime.rogue@gmail.com&gt;,
+    Bas Zalmstra &lt;bas@prefix.dev&gt;,
+    Wolf Vollprecht &lt;w.vollprecht@gmail.com&gt;
+  </td>
+</tr>
+<tr><td> Created </td><td> Jan 12, 2026 </td></tr>
+<tr><td> Updated </td><td> Jun 21, 2026 </td></tr>
+<tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/146 </td></tr>
+<tr><td> Implementation </td><td> N/A </td></tr>
+<tr><td> Requires </td><td> https://github.com/conda/ceps/pull/151 </td></tr>
+</table>
+
+> The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in [RFC2119][RFC2119] when, and only when, they appear in all capitals, as shown here.
+
+[RFC2119]: https://datatracker.ietf.org/doc/html/rfc2119
+
+## Abstract
+
+This document proposes a set of updates to `repodata.json` files and its derivatives (sharded, subsets) to include the improvements introduced in CEP [43](./cep-0043.md), [44](./cep-0044.md), and [45](./cep-0045.md), as well as PR [#151](https://github.com/conda/ceps/pull/151). To do so in a backwards compatible manner, it also proposes a revision system as a way to extend repodata with new additions, _without_ incrementing `repodata_version`.
+
+## Motivation
+
+`repodata.json` files are central to the conda ecosystem. They are the main source of packaging metadata and inform solvers about the catalog of available packages and their dependency constraints. As such, innovation work often refrains from modifying it, and the format itself has seen very few changes over its lifetime. However, the adoption of a few ongoing (as of the first half of 2026) efforts will inevitably result in `repodata.json` modifications (conditional dependencies, optional dependency groups, non-conda dependencies, etc).
+
+The main problem is the introduction of backwards incompatible changes. The obvious solution is to bump the `repodata_version` field (like it was done with [CEP 15](./cep-0015.md)). However, this is not desirable for existing channels, since it immediately prevents non-compatible clients from interacting with the channel. Since most clients would update via a new version available in the channel, it creates a chicken-and-egg problem that would significantly delay the introduction of new features and hinder adoption.
+
+There must be a strategy to introduce backwards incompatible changes without breaking existing channels. This CEP centralizes the discussion for the update strategy by introducing the concept of _revisions_ and consolidates that feedback into a concrete proposal for `v3`.
+
+The `v3` update includes breaking changes in CEPs [43](./cep-0043.md), [44](./cep-0044.md), and [45](./cep-0045.md), and PR [#151](https://github.com/conda/ceps/pull/151), that wouldn't otherwise reach existing channels without disrupting the user experience for outdated clients.
+
+## Specification
+
+This CEP introduces two new keys:
+
+- A `repodata_revisions` key under the top-level `info` dictionary
+- A top-level `v3` key
+
+### The `info.repodata_revisions` key
+
+This key MUST map to a dictionary where:
+
+- Each key MUST correspond to a newly introduced top-level key with syntax `vN`, where `N` MUST be `3` or a larger integer.
+- Each value MUST be a dictionary with the following optional key-value pairs. Additional keys SHOULD be ignored.
+  - `message: str | None`: If present and not `None`, a free-form string to be set by channel operators at their convenience. Its length measured in Unicode characters MUST NOT exceed 8192.
+  - `n_packages: int | None`: If present and not `None`, it MUST match the sum of all the resulting records found under the `vN` key in the current repodata file or shard.
+  - `newest: int | None`: If present and not `None`, a timestamp (in milliseconds) that MUST match the `indexed_timestamp` field of the newest record published in this revision in the current repodata file or shard.
+  - `oldest: int | None`: If present and not `None`, a timestamp (in milliseconds) that MUST match the `indexed_timestamp` field of the oldest record published in this revision in the current repodata file or shard.
+
+The `info.repodata_version` value MUST be `1` or, if [CEP 15](./cep-0015.md) applies, `2`.
+
+### The `v3` top-level key
+
+This key MUST map to a dictionary of type `dict[str, dict]`:
+
+- Each key MUST be a non-empty string. The key SHOULD represent the file extension (without the leading period) of the included artifacts (usually `tar.bz2` and `conda`).
+- Each value MUST be a dictionary of type `dict[str, dict]` where:
+  - Each subkey MUST be a non-empty string representing the artifact filename without its extension.
+  - Each subvalue MUST be a valid [CEP 36](./cep-0036.md) "package record metadata" dictionary,  including these changes:
+    - The `indexed_timestamp` field introduced by CEP PR [#154](https://github.com/conda/ceps/pull/154) SHOULD be set.
+    - The `extra_depends` field introduced by [44](./cep-0045.md) MAY be present.
+    - The MatchSpec strings mentioned in the fields `depends`, `constrains` and the lists of strings within `extra_depends` groups:
+      - MUST set the `name` field to an exact string (no globbing allowed).
+      - MAY set the fields: `version`, `build`, `build_number`, CEP 43's `when`, CEP 44 `extra`, CEP 45 `flags`.
+      - MUST NOT set any other fields.
+      - MUST be represented with the `name` + square-brackets form (e.g. `name[version="1.2.*",build_number=0]`)
+
+## Rationale
+
+### Version metadata in `info`
+
+Adding a new field in the `info` dictionary is backwards compatible, and can be used by clients to parse the necessary keys directly without having to traverse the whole document. The `oldest`, `newest`, and `n_packages` fields are useful for client messaging, like "the client is not recent enough to see all records in this channel, please update to ensure you can obtain access to {n_packages} additional packages published between {oldest} and {newest}". They are not added as a top-level field to stop polluting the global namespace.
+
+### Using top-level fields for new metadata schemas
+
+Adding new fields is backwards compatible and does not break older clients, which will simply ignore those and continue operating as usual.
+
+### Freezing `repodata_version` to `1`
+
+Bumps in this number should only result in backwards incompatible changes that would anyway prevent a channel from operating completely. While `repodata_version: 2` exists (as per CEP 15), its implementations are not sufficiently old to guarantee that the majority of existing conda clients would support it:
+
+- `rattler` supports it since [v0.9.0](https://github.com/conda/rattler/blob/main/CHANGELOG.md#090---2023-09-22) (released on 2023-09-22), which means that `pixi` supports it since [v0.4.0](https://github.com/prefix-dev/pixi/blob/d8d2d8a3e8e1ce99707885aa1437e3768614456b/Cargo.toml#L38) (released on 2023-09-22 too).
+- `conda` only supports it as of [v24.5.0](https://github.com/conda/conda/blob/main/CHANGELOG.md#2450-2024-05-08) (released on 2024-05-08)
+- `mamba` started supporting it in [v2.0](https://github.com/mamba-org/mamba/blob/main/CHANGELOG.md#20240925) (released on 2024-09-25).
+
+Hence, we suggest to stick to `repodata_version: 1` and _only_ use `repodata_version: 2` when a new channel needs a global `base_url` for all the entries in the `packages` and `packages.conda` fields.
+
+## Example
+
+```js
+{
+  "repodata_version": 1,
+  "info": {
+    "subdir": "noarch",
+    "repodata_revisions": {
+      "v3": {
+        "n_packages": 2,
+        "oldest": 1768249989851,
+        "newest": 1773851561010,
+      }
+    }
+  },
+  "packages": {
+    "example-1.0.0-0.tar.bz2": {
+      "build": "0",
+      "build_number": 0,
+      "depends": [],
+      "md5": "82ecc40f09b9c44483e6b70cad2545d7",
+      "name": "example",
+      "noarch": "generic",
+      "sha256": "eb65e866067865793b981c2ba74485f75bef441842b5998badc4ec66717685c7",
+      "size": 1234,
+      "subdir": "noarch",
+      "timestamp": 1689209309623,
+      "version": "1.0.0"
+    }
+  },
+  "packages.conda": {
+    "package-1.0.0-0.conda": {
+      "build": "0",
+      "build_number": 0,
+      "depends": [],
+      "md5": "4483e6b70c82ecc40f09b9c4ad2545d7",
+      "name": "package",
+      "noarch": "generic",
+      "sha256": "4485f75bef441842b59eb65e866067865793b981c2ba798badc4ec66717685c7",
+      "size": 1234,
+      "subdir": "noarch",
+      "timestamp": 1689209359623,
+      "version": "1.0.0"
+    }
+  },
+  "v3": {
+    "tar.bz2": {},
+    "conda": {
+      "example-3.0.0-0": {  // key does not have the extension anymore
+        "build": "0",
+        "build_number": 0,
+        "depends": [
+          "package[version=2,build_number=0,when=__unix]"  // bracket syntax, w/ conditional
+        ],
+        "extras_depends": { // NEW
+          "test": [
+            "test-dependency"
+          ]
+        },
+        "md5": "6b70cad2545d782ecc40f09b9c44483e",
+        "name": "example",
+        "noarch": "generic",
+        "sha256": "74485f75bef441842b5998badc4ec66717685c7eb65e866067865793b981c2ba",
+        "size": 2345,
+        "subdir": "noarch",
+        "timestamp": 1773851540030,
+        "indexed_timestamp": 1773851561010, // NEW
+        "version": "3.0.0",
+      }
+    }
+  }
+}
+```
+
+## Rejected ideas
+
+### Encoding version information in the filename
+
+One alternative would be to create new `repodata.json` filenames (e.g. `repodata.v4.json`) for each new incompatible bump. However, this was rejected by the authors as it introduces complexity in other areas:
+
+- It would require more HTTP calls to retrieve the latest version served by the channel.
+- It would introduce duplication across `repodata.json` versions and their shards.
+- Indexing tools would need to maintain the different versions of `repodata.json` in sync.
+
+### Nested `name`-`version`-`build_string` dictionaries
+
+A review comment proposed subdividing the dictionary of filenames to records in nested dictionaries. In other words, instead of listing the artifact `package-version-build.conda` as:
+
+```js
+{
+  ...,
+  "v3": {
+    "conda": {
+      "example-2.0.0-0": {
+        ... // record dictionary
+      }
+    }
+  }
+}
+```
+
+... expose it as:
+
+```js
+{
+  ...,
+  "v3": {
+    "conda": {      // extension
+      "example": {  // name
+        "2.0.0":    // version
+          "0": {    // build string
+            ...     // record dictionary
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+This would simplify parsing of records, but would also complicate the enumeration of existing records.
+
+### Expose `MatchSpec` entries in records as dictionaries
+
+MatchSpec parsing in `depends` and other record fields has a non-negligible cost that may add up over thousands of records. Instead of keeping these fields as `list[str]` where each string is a `MatchSpec` expression, it was suggested to expose each entry as a dictionary of `MatchSpec` fields.
+
+For example, for this input `index.json`:
+
+```js
+{
+  "build": "0",
+  "build_number": 0,
+  "depends": [
+    "package[version=3,build_number=0,when=__unix]"
+  ],
+  "name": "example",
+  "noarch": "generic",
+  "subdir": "noarch",
+  "version": "3.0.0",
+}
+```
+
+... `depends` would adopt this form:
+
+```js
+{
+  ...,
+  "depends": [
+    {
+      "name": "package",
+      "version": "=3",
+      "build_number": 0,
+      "when": "__unix"
+    }
+  ],
+  ...
+}
+```
+
+This would involve bigger changes in the implementations, delaying the adoption of `v3`.
+
+## Copyright
+
+All CEPs are explicitly [CC0 1.0 Universal](https://creativecommons.org/publicdomain/zero/1.0/).
