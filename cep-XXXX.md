@@ -116,13 +116,19 @@ For each entry in the sorted contents, feed the following bytes into the hasher 
 
 ### Summary of changes from CEP 19
 
-| Field          | CEP 19           | This CEP                             |
-| -------------- | ---------------- | ------------------------------------ |
-| Path           | `<path_bytes>`   | `<len(path_bytes)>:<path_bytes>`     |
+| Field | CEP 19 | This CEP |
+| --- | --- | --- |
+| Path | `<path_bytes>` | `<len(path_bytes)>:<path_bytes>` |
 | Symlink target | `<target_bytes>` | `<len(target_bytes)>:<target_bytes>` |
+| Sorting | Raw Unicode code point comparison | NFC-normalized, UTF-8-encoded byte comparison |
+| Error handling | Unreadable files, unknown entry types | Additionally: null bytes, invalid/absolute entry paths, drive letters/UNC prefixes, non-UTF-8 paths, NFC-induced path collisions |
 
-All other aspects of the algorithm (sorting order, text vs. binary detection, line-ending
-normalization, error handling) are unchanged.
+Text vs. binary detection and line-ending normalization work the same way as in CEP 19: given the
+same file, they produce the same content bytes in both algorithms. Only the reference
+implementation's internal mechanics were clarified (see
+[Rationale](#why-keep-the-textbinary-distinction-and-line-ending-normalization)) - this does not
+mean the overall per-entry byte stream is unchanged, since it still includes the new length prefixes
+shown in the table above.
 
 ### Reference implementation
 
