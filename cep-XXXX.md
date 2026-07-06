@@ -85,8 +85,15 @@ The `attestation` mapping has the following fields:
 The `attestation` field MUST NOT appear on `git:` or `path:` sources in
 this CEP. (Future CEPs MAY extend it to other source types.)
 
+When `attestation` is present, the source MUST also declare a `sha256`
+hash: the in-toto subject formats used in practice identify artifacts by
+SHA-256, and a weaker hash such as `md5` next to an attestation would
+undermine the binding.
+
 A recipe MAY omit the `attestation` field; absence means the builder
 SHALL NOT perform any source attestation verification for that source.
+The field is an additive, backwards-compatible extension of the
+[CEP 14] recipe schema and does not change the schema version.
 
 ### Publisher Identities
 
@@ -115,9 +122,12 @@ publishers:
 
 An `identity` value that is a URL (starts with `https://`) is matched
 against URI SANs using **repository-boundary prefix matching** (see
-below). Any other `identity` value is matched for exact string equality
-against the certificate's SAN (e.g. an email SAN). The `issuer` is
-always compared for exact string equality with the certificate's issuer
+below); this comparison is case-insensitive, since the providers defined
+here treat owner and repository names as case-insensitive while the SAN
+carries whatever casing the provider canonicalized. Any other `identity`
+value is matched for exact, case-sensitive string equality against the
+certificate's SAN (e.g. an email SAN). The `issuer` is always compared
+for exact, case-sensitive string equality with the certificate's issuer
 extension.
 
 The mapping form can express identities that are not `owner/repo` URLs —
@@ -141,6 +151,17 @@ A shorthand publisher identity is a string of the form:
 | `owner`    | The owner / organization on that provider. MUST NOT be empty.                          |
 | `repo`     | The repository on that provider. MUST NOT be empty.                                    |
 | `ref`      | Optional ref constraint (e.g. `refs/tags/v1.0`). Reserved; see **Future Work** below.  |
+
+A shorthand is parsed by splitting at the first `:` (provider), the
+first subsequent `/` (owner), and the first `@` (ref), if any. The
+`<repo>` component MAY therefore itself contain `/` separators to
+address nested namespaces — e.g. GitLab subgroups:
+`gitlab:group/subgroup/project` expands to the identity
+`https://gitlab.com/group/subgroup/project`.
+
+The `ref` semantics are not defined by this CEP. Builders that do not
+implement ref matching MUST fail with an error when a `ref` is present,
+rather than silently ignoring the constraint.
 
 Each shorthand is exactly equivalent to an explicit mapping:
 
@@ -182,11 +203,15 @@ This rule MUST be applied by all conformant builders.
 
 ### Bundle Discovery
 
+[CEP 14] allows `url:` to be a list of equivalent mirror URLs; the
+*download URL* below refers to the entry from which the builder
+actually retrieved the archive.
+
 The bundle URLs are determined as follows, in order:
 
 1. If `bundle_url` is set in the recipe, the builder MUST fetch every
    listed URL (a plain string is equivalent to a single-element list).
-2. Otherwise, if the source URL host is `pypi.org`, `pypi.io`, or
+2. Otherwise, if the download URL's host is `pypi.org`, `pypi.io`, or
    `files.pythonhosted.org`, the builder MUST construct a PyPI
    Integrity API URL of the form:
 
@@ -194,10 +219,20 @@ The bundle URLs are determined as follows, in order:
    https://pypi.org/integrity/<project>/<version>/<filename>/provenance
    ```
 
-   where `<project>` is the [PEP 503][PEP 503]-normalized project name
-   (lowercase, `[-_.]` collapsed to `-`) and `<version>` and `<filename>`
-   are extracted from the source URL's filename. (`pypi.io` is a legacy
-   alias of `pypi.org` that remains widespread in conda recipes.)
+   where `<filename>` is the last path segment of the download URL, and
+   `<project>` and `<version>` are derived from it: after stripping the
+   file extension, an sdist stem is split at its last `-` (sdist
+   filenames follow [PEP 625][PEP 625]), while for a wheel the first
+   two `-`-separated fields of the stem are the project and version
+   (per the [binary distribution format][Wheel Format]). The project
+   part is then [PEP 503][PEP 503]-normalized (lowercase, runs of
+   `[-_.]` collapsed to `-`). `pypi.io` is a legacy alias of `pypi.org`
+   that remains widespread in conda recipes.
+
+   Legacy sdist filenames that predate PEP 625 can parse ambiguously;
+   if the derived URL is wrong, the Integrity API fetch fails (and with
+   it the build), and the recipe author SHOULD set an explicit
+   `bundle_url` instead.
 3. Otherwise, the builder MUST fail with an error reporting that no
    `bundle_url` is set and one cannot be auto-derived.
 
@@ -226,35 +261,42 @@ each bundle URL:
 The bundles obtained from all fetched URLs together form the *bundle
 set* used in **Minimum Verification** below.
 
-For PEP 740 responses the builder MUST verify that any in-toto subject
-present in each converted bundle matches the artifact (see below), and
-SHOULD skip transparency-log verification since PEP 740 does not preserve
-canonicalized Rekor entries. Other verification steps proceed normally.
+For bundles converted from PEP 740 responses the builder SHOULD skip
+transparency-log verification, since PEP 740 does not preserve
+canonicalized Rekor entries; all other verification steps proceed
+normally.
 
 ### Minimum Verification
 
 When the `attestation` field is present, the builder MUST, before using
 the downloaded source:
 
-1. **Download** the source archive and verify its `sha256` (or other
-   declared hash) as it would for any URL source.
+1. **Download** the source archive and verify its `sha256` as it would
+   for any URL source.
 2. **Fetch** the attestation bundle set from the URLs determined in
-   **Bundle Discovery**.
-3. **Verify** each bundle's Sigstore signature against the current
-   Sigstore trust root. The trust root SHOULD be fetched via [TUF] from
-   the Sigstore public-good instance; cached trust material MAY be used
-   subject to the freshness rules of the Sigstore specification.
-4. **Verify** that the in-toto statement's `subject[].digest.sha256`
-   contains the SHA-256 of the downloaded archive. If no subject matches,
+   **Bundle Discovery**. If any fetch fails — including a response
+   indicating that no attestations are available — the build MUST fail.
+3. **Verify** each bundle cryptographically as defined by the
+   [Sigstore Client Specification][Sigstore Client Spec]: certificate
+   chain validation against the trust root, transparency-log inclusion
+   (subject to the PEP 740 exception in **Response Formats**), and
+   timestamp verification. The trust root SHOULD be fetched via [TUF]
+   from the Sigstore public-good instance; cached trust material MAY be
+   used subject to the freshness rules of the Sigstore specification.
+   A bundle that fails cryptographic verification indicates tampering:
    the build MUST fail.
-5. **Filter** the bundle set, if `predicate_type` is set in the recipe,
-   to those bundles whose in-toto statement has exactly that
-   `predicateType`. Bundles with a different predicate type MUST NOT
-   count towards publisher matching.
+4. **Filter** the bundle set to those bundles whose in-toto statement
+   lists a `subject[].digest.sha256` equal to the SHA-256 of the
+   downloaded archive. Bundles attesting other artifacts — which can
+   legitimately occur in pooled responses — are excluded without error.
+   If the filtered set is empty, the build MUST fail.
+5. **Filter** the bundle set further, if `predicate_type` is set in the
+   recipe, to those bundles whose in-toto statement has exactly that
+   `predicateType`. If the filtered set is empty, the build MUST fail.
 6. **Verify** that for *each* publisher listed in `publishers`, at least
-   one bundle in the (filtered) bundle set has a certificate whose SAN
+   one bundle in the filtered bundle set has a certificate whose SAN
    matches that publisher's `identity` (see **Publisher Identities**),
-   and whose OIDC issuer is exactly the publisher's `issuer`. If any
+   and whose OIDC issuer matches the publisher's `issuer`. If any
    listed publisher cannot be matched, the build MUST fail.
 
 If any of the above checks fail, the builder MUST abort the build and
@@ -340,10 +382,54 @@ source:
 
 Every listed publisher must be matched by some bundle in the bundle set.
 
+## Security Considerations
+
+### What attestation verification adds — and what it does not
+
+A pinned `sha256` already guarantees that every build uses exactly the
+bytes the recipe author selected; an attacker who replaces the upstream
+archive *after* the recipe is written is caught by the hash check alone.
+The `attestation` block instead protects the *selection* of those bytes,
+and their auditability afterwards:
+
+- At authoring or update time, verification proves that the archive was
+  produced by the expected publisher — catching compromised uploads and
+  typosquatted or mirrored artifacts *before* their hash is pinned. This
+  matters most for automated version bumps, where no human inspects the
+  new tarball.
+- After the fact, the recipe records a machine-checkable claim about the
+  source's origin that auditors and rebuilders can re-verify.
+
+### The recipe itself is not signed
+
+This CEP does not protect against modification of the recipe: an
+attacker who can edit the recipe can remove the `attestation` block (or
+change `publishers`) along with the hash. Defenses against recipe
+tampering — signed recipes or feedstocks, channel policies that
+*require* attestation blocks for certain sources, or lockfile-level
+pinning of verified provenance — are complementary and out of scope
+here.
+
+### Bundle transport
+
+Bundle URLs SHOULD use `https`. The security of verification does not
+depend on the transport, however: bundles are signed, so an attacker who
+controls the bundle host or the connection can at worst cause a build
+failure (denial of service), not a false verification success.
+
+### Network dependence
+
+Verification requires fetching bundles and (via [TUF]) trust-root
+updates at build time. Builders MAY cache bundles and trust material
+alongside cached sources for offline or air-gapped operation, subject to
+the trust root freshness rules. Long-term reproducibility depends on the
+continued availability of the bundle URLs; see **Future Work**.
+
 ## Future Work
 
 - **Ref constraints.** The `@<ref>` suffix in the shorthand grammar is
-  reserved but not yet required to be enforced. A follow-up CEP may
+  reserved but its matching semantics are not yet defined (builders MUST
+  reject it for now, see **Publisher Identities**). A follow-up CEP may
   define how `refs/tags/v1.0`, `refs/heads/main`, etc. are matched
   against the certificate SAN.
 - **Additional auto-derivation hosts.** GitHub Releases, GitLab Releases,
@@ -355,6 +441,11 @@ Every listed publisher must be matched by some bundle in the bundle set.
 - **Predicate-specific assertions.** Recipes may eventually want to
   assert facts encoded in the predicate (e.g. SLSA build level,
   reproducibility flags). That is deliberately not in this CEP.
+- **Offline verification and bundle vendoring.** Rebuilding an old
+  recipe requires its bundle URLs (e.g. the PyPI Integrity API) to
+  remain available. A follow-up may standardize vendoring bundles next
+  to the recipe or in channel metadata so that builds remain verifiable
+  offline and long after upstream endpoints change.
 - **`git:` and `path:` sources.** Out of scope here; both have weaker
   upstream conventions for attestation distribution today.
 
@@ -364,8 +455,11 @@ Every listed publisher must be matched by some bundle in the bundle set.
 - [CEP 27 - Publish attestation for conda packages][CEP 27]
 - [Sigstore][Sigstore]
 - [Sigstore Bundle Specification][Sigstore Bundle]
+- [Sigstore Client Specification][Sigstore Client Spec]
 - [in-toto Attestation Framework][in-toto]
 - [PEP 740 - Index support for digital attestations][PEP 740]
+- [PEP 625 - Filename of a source distribution][PEP 625]
+- [Binary distribution format (wheels)][Wheel Format]
 - [PyPI Integrity API][PyPI Integrity]
 - [Package-URL specification][PURL]
 - [`actions/attest`][actions-attest]
@@ -377,6 +471,9 @@ All CEPs are explicitly [CC0 1.0 Universal](https://creativecommons.org/publicdo
 [RFC2119]: https://www.ietf.org/rfc/rfc2119.txt
 [Sigstore]: https://sigstore.dev
 [Sigstore Bundle]: https://github.com/sigstore/protobuf-specs/blob/main/protos/sigstore_bundle.proto
+[Sigstore Client Spec]: https://github.com/sigstore/architecture-docs/blob/main/client-spec.md
+[PEP 625]: https://peps.python.org/pep-0625/
+[Wheel Format]: https://packaging.python.org/en/latest/specifications/binary-distribution-format/
 [in-toto]: https://in-toto.io
 [CEP 14]: ./cep-0014.md
 [CEP 27]: ./cep-0027.md
