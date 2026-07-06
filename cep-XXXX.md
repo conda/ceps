@@ -1,11 +1,11 @@
 # CEP XXXX - Source Attestation Verification in Recipes
 
 <table>
-<tr><td> Title </td><td> Source Attestation Verification in Recipes </td>
+<tr><td> Title </td><td> Source Attestation Verification in Recipes </td></tr>
 <tr><td> Status </td><td> Draft </td></tr>
 <tr><td> Author(s) </td><td> Wolf Vollprecht &lt;wolf@prefix.dev&gt;</td></tr>
 <tr><td> Created </td><td> May 20, 2026</td></tr>
-<tr><td> Updated </td><td> May 20, 2026</td></tr>
+<tr><td> Updated </td><td> Jul 6, 2026</td></tr>
 <tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/168 </td></tr>
 <tr><td> Implementation </td><td> https://github.com/prefix-dev/rattler-build (experimental) </td></tr>
 </table>
@@ -71,14 +71,16 @@ source:
     publishers:
       - github:pallets/flask
     bundle_url: https://example.com/flask-3.1.1.tar.gz.sigstore.json  # optional
+    predicate_type: https://docs.pypi.org/attestations/publish/v1     # optional
 ```
 
 The `attestation` mapping has the following fields:
 
-| Field        | Type            | Required | Description                                                                 |
-| ------------ | --------------- | -------- | --------------------------------------------------------------------------- |
-| `publishers` | list of strings | yes      | Publisher identities that the attestation's signing certificate must match. |
-| `bundle_url` | string (URL)    | no       | Explicit URL of the Sigstore bundle. See **Bundle Discovery** below.        |
+| Field            | Type                          | Required | Description                                                                                   |
+| ---------------- | ----------------------------- | -------- | --------------------------------------------------------------------------------------------- |
+| `publishers`     | list of publisher identities  | yes      | Publisher identities that the attestations' signing certificates must match. See below.       |
+| `bundle_url`     | string or list of strings     | no       | Explicit URL(s) of Sigstore bundles or provenance responses. See **Bundle Discovery** below.  |
+| `predicate_type` | string (type URI)             | no       | Restricts which attestations count towards publisher matching. See **Minimum Verification**.  |
 
 The `attestation` field MUST NOT appear on `git:` or `path:` sources in
 this CEP. (Future CEPs MAY extend it to other source types.)
@@ -86,9 +88,48 @@ this CEP. (Future CEPs MAY extend it to other source types.)
 A recipe MAY omit the `attestation` field; absence means the builder
 SHALL NOT perform any source attestation verification for that source.
 
-### Publisher Identity Grammar
+### Publisher Identities
 
-A publisher identity is a string of the form:
+Sigstore binds a signature to the pair of an X.509 certificate *identity*
+(the Subject Alternative Name, SAN) and the *OIDC issuer* that vouched
+for it. A publisher identity in this CEP therefore always denotes such a
+pair. This mirrors established verification interfaces such as `cosign
+verify --certificate-identity/--certificate-oidc-issuer` and
+`gh attestation verify`, which accept the same two values.
+
+Each entry in `publishers` is either an **explicit mapping** or a
+**shorthand string**.
+
+#### Explicit mapping form
+
+```yaml
+publishers:
+  - identity: https://github.com/pallets/flask
+    issuer: https://token.actions.githubusercontent.com
+```
+
+| Field      | Required | Description                                                        |
+| ---------- | -------- | ------------------------------------------------------------------ |
+| `identity` | yes      | The certificate SAN to match. Matching rules are described below.  |
+| `issuer`   | yes      | The OIDC issuer URL of the certificate.                            |
+
+An `identity` value that is a URL (starts with `https://`) is matched
+against URI SANs using **repository-boundary prefix matching** (see
+below). Any other `identity` value is matched for exact string equality
+against the certificate's SAN (e.g. an email SAN). The `issuer` is
+always compared for exact string equality with the certificate's issuer
+extension.
+
+The mapping form can express identities that are not `owner/repo` URLs —
+for example artifacts signed via Google Cloud infrastructure carry email
+SANs such as `123456789-compute@developer.gserviceaccount.com` with the
+issuer `https://accounts.google.com` — as well as self-hosted CI
+instances (e.g. a GitHub Enterprise Server or self-managed GitLab
+deployment) whose issuer differs from the hosted defaults.
+
+#### Shorthand string form
+
+A shorthand publisher identity is a string of the form:
 
 ```text
 <provider>:<owner>/<repo>[@<ref>]
@@ -101,24 +142,51 @@ A publisher identity is a string of the form:
 | `repo`     | The repository on that provider. MUST NOT be empty.                                    |
 | `ref`      | Optional ref constraint (e.g. `refs/tags/v1.0`). Reserved; see **Future Work** below.  |
 
-For the providers defined here, the publisher identity maps to the
-Sigstore certificate's Subject Alternative Name (SAN) and OIDC issuer
-as follows:
+Each shorthand is exactly equivalent to an explicit mapping:
 
-| Provider | Identity prefix                          | OIDC issuer                                          |
+| Provider | Expands to `identity`                    | Expands to `issuer`                                  |
 | -------- | ---------------------------------------- | ---------------------------------------------------- |
 | `github` | `https://github.com/<owner>/<repo>`      | `https://token.actions.githubusercontent.com`        |
 | `gitlab` | `https://gitlab.com/<owner>/<repo>`      | `https://gitlab.com`                                 |
 
+The providers named here refer to the hosted `github.com` and
+`gitlab.com` services only. Self-hosted instances of these products use
+different issuer URLs and MUST be expressed with the explicit mapping
+form instead.
+
 Builders that encounter an unknown `provider` MUST fail with an error
 rather than silently skipping verification.
 
+> **Why not PURLs?** [Package-URLs][PURL] identify *package artifacts*
+> within an ecosystem, not *signing identities*: they cannot carry the
+> OIDC issuer, and non-repository identities (such as email SANs) have
+> no PURL form. The `(identity, issuer)` pair is the native vocabulary
+> of Sigstore certificate verification, so this CEP uses it directly.
+
+#### Repository-boundary prefix matching
+
+Sigstore certificates for CI providers typically encode the full workflow
+path as the SAN (for example
+`https://github.com/pallets/flask/.github/workflows/release.yml@refs/tags/3.1.1`).
+Matching by raw string prefix is unsafe: `https://github.com/pallets/flask`
+would match `https://github.com/pallets/flask-cors` as well.
+
+A publisher's URL identity `P` matches a certificate SAN `S` if and
+only if:
+
+- `S == P`, or
+- `S` starts with `P` *and* the character immediately following `P` in
+  `S` is `/` or `@`.
+
+This rule MUST be applied by all conformant builders.
+
 ### Bundle Discovery
 
-The bundle URL is determined as follows, in order:
+The bundle URLs are determined as follows, in order:
 
-1. If `bundle_url` is set in the recipe, the builder MUST use that URL.
-2. Otherwise, if the source URL host is `pypi.io` or
+1. If `bundle_url` is set in the recipe, the builder MUST fetch every
+   listed URL (a plain string is equivalent to a single-element list).
+2. Otherwise, if the source URL host is `pypi.org`, `pypi.io`, or
    `files.pythonhosted.org`, the builder MUST construct a PyPI
    Integrity API URL of the form:
 
@@ -128,25 +196,35 @@ The bundle URL is determined as follows, in order:
 
    where `<project>` is the [PEP 503][PEP 503]-normalized project name
    (lowercase, `[-_.]` collapsed to `-`) and `<version>` and `<filename>`
-   are extracted from the source URL's filename.
+   are extracted from the source URL's filename. (`pypi.io` is a legacy
+   alias of `pypi.org` that remains widespread in conda recipes.)
 3. Otherwise, the builder MUST fail with an error reporting that no
    `bundle_url` is set and one cannot be auto-derived.
 
-This list MAY be extended by future CEPs (e.g. to auto-derive bundle
-URLs for GitHub releases). Builders MAY recognize additional auto-derived
-hosts, but the recipe author SHOULD provide an explicit `bundle_url` for
-portability between builders that do not.
+This list is closed for this CEP: builders MUST NOT auto-derive bundle
+URLs for other hosts, so that a recipe verifies identically on every
+conformant builder. Future CEPs MAY extend the auto-derivation list
+(e.g. for GitHub or GitLab releases); until then, recipe authors MUST
+provide an explicit `bundle_url` for non-PyPI hosts.
+
+Allowing `bundle_url` to be a list accommodates sources that publish
+attestations in more than one place (for example PyPI provenance *and* a
+GitHub release bundle); the bundles from all responses are pooled for
+verification.
 
 ### Response Formats
 
 A builder MUST accept at least the following two response formats from
-the bundle URL:
+each bundle URL:
 
 1. A [Sigstore Bundle][Sigstore Bundle] in JSON form, identified by the
    presence of a `mediaType` field.
 2. A [PEP 740][PEP 740] provenance response with an `attestation_bundles`
    array, each containing `attestations` that the builder converts to
    Sigstore bundles.
+
+The bundles obtained from all fetched URLs together form the *bundle
+set* used in **Minimum Verification** below.
 
 For PEP 740 responses the builder MUST verify that any in-toto subject
 present in each converted bundle matches the artifact (see below), and
@@ -160,7 +238,7 @@ the downloaded source:
 
 1. **Download** the source archive and verify its `sha256` (or other
    declared hash) as it would for any URL source.
-2. **Fetch** the attestation bundle from the URL determined in
+2. **Fetch** the attestation bundle set from the URLs determined in
    **Bundle Discovery**.
 3. **Verify** each bundle's Sigstore signature against the current
    Sigstore trust root. The trust root SHOULD be fetched via [TUF] from
@@ -169,31 +247,18 @@ the downloaded source:
 4. **Verify** that the in-toto statement's `subject[].digest.sha256`
    contains the SHA-256 of the downloaded archive. If no subject matches,
    the build MUST fail.
-5. **Verify** that for *each* publisher listed in `publishers`, at least
-   one bundle in the response has a certificate whose SAN matches that
-   publisher's identity prefix using **repository-boundary prefix
-   matching** (see below), and whose OIDC issuer matches the provider's
-   issuer. If any listed publisher cannot be matched, the build MUST fail.
+5. **Filter** the bundle set, if `predicate_type` is set in the recipe,
+   to those bundles whose in-toto statement has exactly that
+   `predicateType`. Bundles with a different predicate type MUST NOT
+   count towards publisher matching.
+6. **Verify** that for *each* publisher listed in `publishers`, at least
+   one bundle in the (filtered) bundle set has a certificate whose SAN
+   matches that publisher's `identity` (see **Publisher Identities**),
+   and whose OIDC issuer is exactly the publisher's `issuer`. If any
+   listed publisher cannot be matched, the build MUST fail.
 
 If any of the above checks fail, the builder MUST abort the build and
 MUST NOT use the downloaded source for further build steps.
-
-#### Repository-boundary prefix matching
-
-Sigstore certificates for CI providers typically encode the full workflow
-path as the SAN (for example
-`https://github.com/pallets/flask/.github/workflows/release.yml@refs/tags/3.1.1`).
-Matching by raw string prefix is unsafe: `https://github.com/pallets/flask`
-would match `https://github.com/pallets/flask-cors` as well.
-
-A publisher's identity prefix `P` matches a certificate SAN `S` if and
-only if:
-
-- `S == P`, or
-- `S` starts with `P` *and* the character immediately following `P` in
-  `S` is `/` or `@`.
-
-This rule MUST be applied by all conformant builders.
 
 ### Predicate Semantics Are Out of Scope
 
@@ -206,6 +271,13 @@ that appear in the in-toto statement. In particular:
   attester chose (commonly the SLSA build provenance predicate).
 - Conda-specific publish attestations are defined by [CEP 27] and apply
   to *built conda packages*, not source archives.
+
+The optional `predicate_type` field does not change this: it pins the
+predicate *type string* without interpreting the predicate body, so that
+a signature with different semantics from the same identity (e.g. a test
+attestation instead of a publish attestation) does not satisfy the
+recipe's intent. Recipe authors SHOULD set it when the upstream predicate
+type is known and stable.
 
 A builder MAY apply additional predicate-specific checks beyond the
 minimum above; such checks are out of scope here.
@@ -240,6 +312,19 @@ source:
       - github:facebook/zstd
 ```
 
+### Explicit identity mapping (email SAN, pinned predicate type)
+
+```yaml
+source:
+  url: https://files.pythonhosted.org/packages/ab/cd/widget-2.0.tar.gz
+  sha256: "abc123..."
+  attestation:
+    predicate_type: https://docs.pypi.org/attestations/publish/v1
+    publishers:
+      - identity: 123456789-compute@developer.gserviceaccount.com
+        issuer: https://accounts.google.com
+```
+
 ### Multiple required publishers
 
 ```yaml
@@ -253,17 +338,20 @@ source:
       - github:widget-org/release-bot
 ```
 
-Every listed publisher must be matched by some bundle in the response.
+Every listed publisher must be matched by some bundle in the bundle set.
 
 ## Future Work
 
-- **Ref constraints.** The `@<ref>` suffix in the publisher grammar is
+- **Ref constraints.** The `@<ref>` suffix in the shorthand grammar is
   reserved but not yet required to be enforced. A follow-up CEP may
   define how `refs/tags/v1.0`, `refs/heads/main`, etc. are matched
   against the certificate SAN.
 - **Additional auto-derivation hosts.** GitHub Releases, GitLab Releases,
   and crates.io publish bundles at predictable locations; a follow-up
   may standardize their derivation.
+- **Additional shorthand providers.** Follow-up CEPs may register more
+  shorthand providers (and their issuer URLs) as ecosystems adopt
+  Sigstore signing.
 - **Predicate-specific assertions.** Recipes may eventually want to
   assert facts encoded in the predicate (e.g. SLSA build level,
   reproducibility flags). That is deliberately not in this CEP.
@@ -279,6 +367,7 @@ Every listed publisher must be matched by some bundle in the response.
 - [in-toto Attestation Framework][in-toto]
 - [PEP 740 - Index support for digital attestations][PEP 740]
 - [PyPI Integrity API][PyPI Integrity]
+- [Package-URL specification][PURL]
 - [`actions/attest`][actions-attest]
 
 ## Copyright
@@ -294,5 +383,6 @@ All CEPs are explicitly [CC0 1.0 Universal](https://creativecommons.org/publicdo
 [PEP 740]: https://peps.python.org/pep-0740/
 [PEP 503]: https://peps.python.org/pep-0503/
 [PyPI Integrity]: https://docs.pypi.org/api/integrity/
+[PURL]: https://github.com/package-url/purl-spec
 [actions-attest]: https://github.com/actions/attest
 [TUF]: https://theupdateframework.io/
