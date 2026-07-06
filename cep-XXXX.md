@@ -20,9 +20,12 @@ This CEP extends the conda recipe format ([CEP 14]) with an optional
 `attestation` field on URL sources. The field lets recipe authors declare
 that an upstream source archive carries a [Sigstore] attestation, and
 specifies a minimum set of checks that any conformant builder MUST perform
-before using the archive. The CEP standardizes the *recipe schema* only:
-the attestation formats and predicate semantics themselves remain owned by
-their upstream issuers (e.g. [PyPI][PyPI Integrity], GitHub Releases).
+before using the archive. It further specifies how the verified bundles
+are embedded in the built package, so the package itself stays tied to
+its upstream producer. The CEP standardizes the recipe schema and this
+embedding only: the attestation formats and predicate semantics
+themselves remain owned by their upstream issuers (e.g.
+[PyPI][PyPI Integrity], GitHub Releases).
 
 ## Motivation
 
@@ -52,7 +55,10 @@ This CEP closes that gap by:
 2. Defining a *minimum* set of checks that a conformant builder MUST
    perform when the block is present, so a verified build means the same
    thing across implementations.
-3. Explicitly **not** redefining upstream predicate formats. PyPI's
+3. Defining how verified bundles are embedded in the built package, so
+   the provenance link survives into the distributed artifact and can be
+   re-verified offline.
+4. Explicitly **not** redefining upstream predicate formats. PyPI's
    provenance schema, GitHub's bundle format, and the [in-toto] statement
    format are referenced as-is.
 
@@ -324,6 +330,73 @@ type is known and stable.
 A builder MAY apply additional predicate-specific checks beyond the
 minimum above; such checks are out of scope here.
 
+### Embedding verified bundles in the built package
+
+Builders that embed the rendered recipe in the built package (e.g.
+under `info/recipe/`, as rattler-build does with
+`info/recipe/rendered_recipe.yaml`) SHOULD also embed the attestation
+bundles they verified. The built package then carries the evidence that
+ties it back to its upstream source and producer: auditors and
+rebuilders can re-run the checks against the package alone, without
+re-fetching the bundle URLs — which may have moved or disappeared by
+then. Combined with a [CEP 27] publish attestation covering the built
+package itself, this yields a machine-checkable chain from the package
+through the recipe to the upstream source publisher.
+
+A builder that embeds bundles MUST use the following layout. Every
+bundle that survived the filtering steps of **Minimum Verification** is
+written, as a [Sigstore Bundle][Sigstore Bundle] in JSON form, to:
+
+```text
+info/recipe/attestations/<filename>.<n>.sigstore.json
+```
+
+where `<filename>` is the source archive's filename and `<n>` is the
+zero-based index of the bundle within that source's filtered bundle
+set. Bundles obtained from PEP 740 responses are stored in their
+*converted* Sigstore Bundle form. Bundles that were excluded during
+filtering MUST NOT be stored. Builders SHOULD serialize each stored
+bundle deterministically — byte-for-byte as fetched where possible,
+otherwise with stable key ordering — so that repeated builds produce
+identical packages.
+
+In the rendered recipe, the source's `attestation` mapping is augmented
+with a `verified` list containing one entry per stored bundle:
+
+```yaml
+source:
+  url: https://files.pythonhosted.org/packages/ab/cd/flask-3.1.1.tar.gz
+  sha256: "6489f1..."
+  attestation:
+    publishers:
+      - github:pallets/flask
+    verified:
+      - path: attestations/flask-3.1.1.tar.gz.0.sigstore.json
+        sha256: "9f31ab..."
+        predicate_type: https://docs.pypi.org/attestations/publish/v1
+        san: https://github.com/pallets/flask/.github/workflows/publish.yml@refs/tags/3.1.1
+        issuer: https://token.actions.githubusercontent.com
+```
+
+| Field            | Description                                                        |
+| ---------------- | ------------------------------------------------------------------ |
+| `path`           | Bundle file path, relative to the rendered recipe's directory.     |
+| `sha256`         | SHA-256 of the stored bundle file.                                 |
+| `predicate_type` | The `predicateType` of the bundle's in-toto statement.             |
+| `san`            | The certificate SAN, copied verbatim.                              |
+| `issuer`         | The certificate's OIDC issuer, copied verbatim.                    |
+
+The `verified` entries deliberately record no wall-clock timestamp:
+embedding one would make otherwise identical builds non-reproducible,
+and the transparency-log entries inside the stored bundles already
+carry signed time evidence.
+
+A consumer of the built package MAY re-run steps 3–6 of **Minimum
+Verification** against the stored bundles (using its own trust root) to
+independently confirm the publisher claims recorded in the rendered
+recipe. The `verified` metadata is a convenience index; the stored
+bundles remain the source of truth.
+
 ## Examples
 
 ### PyPI source with auto-derived bundle URL
@@ -422,8 +495,11 @@ failure (denial of service), not a false verification success.
 Verification requires fetching bundles and (via [TUF]) trust-root
 updates at build time. Builders MAY cache bundles and trust material
 alongside cached sources for offline or air-gapped operation, subject to
-the trust root freshness rules. Long-term reproducibility depends on the
-continued availability of the bundle URLs; see **Future Work**.
+the trust root freshness rules. Once a package is built, the embedded
+bundles (see **Embedding verified bundles in the built package**) allow
+re-verification without any upstream availability; *rebuilding* from the
+recipe, however, still depends on the bundle URLs remaining reachable —
+see **Future Work**.
 
 ## Future Work
 
@@ -441,10 +517,11 @@ continued availability of the bundle URLs; see **Future Work**.
 - **Predicate-specific assertions.** Recipes may eventually want to
   assert facts encoded in the predicate (e.g. SLSA build level,
   reproducibility flags). That is deliberately not in this CEP.
-- **Offline verification and bundle vendoring.** Rebuilding an old
-  recipe requires its bundle URLs (e.g. the PyPI Integrity API) to
-  remain available. A follow-up may standardize vendoring bundles next
-  to the recipe or in channel metadata so that builds remain verifiable
+- **Bundle vendoring at build time.** Built packages embed their
+  verified bundles, but *rebuilding* an old recipe still requires its
+  bundle URLs (e.g. the PyPI Integrity API) to remain available. A
+  follow-up may standardize vendoring bundles next to the source recipe
+  or in channel metadata so that builds themselves remain possible
   offline and long after upstream endpoints change.
 - **`git:` and `path:` sources.** Out of scope here; both have weaker
   upstream conventions for attestation distribution today.
