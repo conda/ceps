@@ -50,9 +50,10 @@ hash matches that of a different, potentially malicious tree.
 ## Specification
 
 Given a directory (the "scanned directory"), recursively scan all its contents (without following
-symlinks) and sort them by their full path. The scanned directory itself (`.`) MUST NOT be included
-as an entry. Paths MUST be NFC-normalized and then UTF-8-encoded before sorting; the sort MUST be a
-lexicographic comparison of the resulting UTF-8 bytes.
+symlinks) and sort them by their path relative to the scanned directory. The scanned directory
+itself (`.`) MUST NOT be included as an entry. Paths MUST be NFC-normalized and then UTF-8-encoded
+before sorting; the sort MUST be a byte-wise comparison of the resulting UTF-8 bytes, ordering by
+unsigned byte value (0-255).
 
 The paths MUST be normalized before they are processed by the algorithm below. The following rules
 apply to both entry paths and symlink targets:
@@ -88,31 +89,36 @@ absolute path:
 
 For each entry in the sorted contents, feed the following bytes into the hasher in order:
 
-1. The decimal representation of the byte length of the normalized relative path, encoded as UTF-8,
-   followed by the UTF-8 encoded bytes of `:`.
+1. The byte length of the UTF-8-encoded normalized relative path, written in decimal and that decimal
+   string encoded as UTF-8, followed by the UTF-8 encoded byte of `:`.
 2. The UTF-8 encoded bytes of the normalized relative path.
 3. Then, depending on the entry type:
    - For a **regular file**:
-     - The UTF-8 encoded bytes of `F`.
-     - If the file is a text file (i.e. its entire contents can be UTF-8 decoded): its raw bytes
-       with every `\r\n` byte sequence (`0x0D 0x0A`) replaced by `\n` (`0x0A`). If the file can't be
-       opened, it MUST be handled as if it were empty. This is the default, normative mode; see
-       [Rationale](#why-keep-the-textbinary-distinction-and-line-ending-normalization) for an
-       optional alternative mode.
-     - If the file is binary: its raw bytes, unmodified.
-     - If the file can't be read, implementations MUST error out.
-     - In either case, the file is classified as text or binary only to decide whether the
-       `\r\n` -> `\n` substitution is applied; the resulting bytes are then fed into the hasher
-       directly as raw bytes, with no decode/re-encode round-trip.
-   - For a **directory**: the UTF-8 encoded bytes of `D`, and nothing else.
+     - The UTF-8 encoded byte of `F`.
+     - The content bytes are determined as follows:
+       - If the file is a text file (i.e. its entire contents can be UTF-8 decoded): the file's raw
+         bytes with every `\r\n` byte sequence (`0x0D 0x0A`) replaced by `\n` (`0x0A`). The
+         substitution MUST be performed directly on the raw bytes, not via a decode-to-text-then-
+         re-encode round-trip. This is the default, normative mode; see
+         [Rationale](#why-keep-the-textbinary-distinction-and-line-ending-normalization) for an
+         optional alternative mode.
+       - If the file is binary: its raw bytes, unmodified.
+       - If the file can't be opened or read, implementations MUST error out.
+     - The byte length of those content bytes, written in decimal and encoded as UTF-8, followed by
+       the UTF-8 encoded byte of `:`, MUST be fed into the hasher immediately before the content
+       bytes themselves. Content is length-prefixed for the same reason entry paths and symlink
+       targets are: without it, content containing `-` followed by bytes that look like a valid
+       subsequent entry can reproduce the byte stream of a different, structurally distinct tree
+       (see [Rationale](#why-length-prefix-file-content-too) for a worked collision).
+   - For a **directory**: the UTF-8 encoded byte of `D`, and nothing else.
    - For a **symlink**:
-     - The UTF-8 encoded bytes of `L`.
-     - The decimal representation of the byte length of the symlink target path, encoded as UTF-8,
-       followed by the UTF-8 encoded bytes of `:`.
+     - The UTF-8 encoded byte of `L`.
+     - The byte length of the UTF-8-encoded symlink target path, written in decimal and that decimal
+       string encoded as UTF-8, followed by the UTF-8 encoded byte of `:`.
      - The UTF-8 encoded bytes of the symlink target path, normalized per the common rules and the
        **Symlink targets** rules above (the **Entry paths** rules do not apply to symlink targets).
    - For **any other type**, implementations MUST error out.
-4. The UTF-8 encoded bytes of `-`.
+4. The UTF-8 encoded byte of `-`.
 
 ### Summary of changes from CEP 19
 
@@ -120,6 +126,7 @@ For each entry in the sorted contents, feed the following bytes into the hasher 
 | --- | --- | --- |
 | Path | `<path_bytes>` | `<len(path_bytes)>:<path_bytes>` |
 | Symlink target | `<target_bytes>` | `<len(target_bytes)>:<target_bytes>` |
+| File content | `<content_bytes>` | `<len(content_bytes)>:<content_bytes>` |
 | Sorting | Raw Unicode code point comparison | NFC-normalized, UTF-8-encoded byte comparison |
 | Error handling | Unreadable files, unknown entry types | Additionally: null bytes, invalid/absolute entry paths, drive letters/UNC prefixes, non-UTF-8 paths, NFC-induced path collisions |
 
@@ -136,23 +143,68 @@ For Python 3.6+:
 
 ```python
 import hashlib
+import posixpath
+import re
+import unicodedata
 from pathlib import Path
+
+_DRIVE_LETTER_RE = re.compile(r"^[A-Za-z]:")
+
+
+def _normalize_path(raw: str) -> str:
+    # Applies the common rules: reject null bytes, normalize separators, collapse
+    # redundant components (including a leading "./"), then NFC-normalize.
+    if "\0" in raw:
+        raise ValueError(f"path contains a null byte: {raw!r}")
+    raw = raw.replace("\\", "/")
+    collapsed = posixpath.normpath(raw)
+    if collapsed == ".":
+        collapsed = ""
+    return unicodedata.normalize("NFC", collapsed)
+
+
+def _encode_path(path: str) -> bytes:
+    # `path` may contain surrogate-escaped code points (PEP 383) if the on-disk name isn't
+    # valid UTF-8. Encoding with the default "strict" handler (not "surrogateescape") raises
+    # UnicodeEncodeError in that case, which is the required behavior: error out rather than
+    # silently letting non-UTF-8 bytes into the hash stream.
+    return path.encode("utf-8")
+
+
+def _check_entry_path(path: str) -> None:
+    if path.startswith("/"):
+        raise ValueError(f"entry path must be relative: {path!r}")
+    if _DRIVE_LETTER_RE.match(path):
+        raise ValueError(f"entry path must not contain a drive letter: {path!r}")
+
+
+def _check_symlink_target(target: str) -> None:
+    if target.startswith("//"):
+        raise ValueError(f"symlink target must not contain a UNC prefix: {target!r}")
+    if _DRIVE_LETTER_RE.match(target):
+        raise ValueError(f"symlink target must not contain a drive letter: {target!r}")
 
 
 def contents_hash(directory: str, algorithm: str) -> str:
+    directory = Path(directory)
+    entries = []
+    seen_paths = set()
+    for path in directory.rglob("*"):
+        rel = _normalize_path(path.relative_to(directory).as_posix())
+        _check_entry_path(rel)
+        if rel in seen_paths:
+            raise ValueError(f"NFC normalization collision on path: {rel!r}")
+        seen_paths.add(rel)
+        entries.append((_encode_path(rel), path))
+
     hasher = hashlib.new(algorithm)
-    for path in sorted(Path(directory).rglob("*")):
-        rel = path.relative_to(directory).as_posix().replace("\\", "/")
-        # `rel` may contain surrogate-escaped bytes (PEP 383) if the on-disk name isn't valid
-        # UTF-8. Encoding with the default "strict" handler (not "surrogateescape") raises
-        # UnicodeEncodeError in that case, which is the required behavior: error out rather than
-        # silently letting non-UTF-8 bytes into the hash stream.
-        rel_bytes = rel.encode("utf-8")
+    for rel_bytes, path in sorted(entries, key=lambda entry: entry[0]):
         hasher.update(f"{len(rel_bytes)}:".encode("utf-8"))
         hasher.update(rel_bytes)
         if path.is_symlink():
-            target = str(path.readlink()).replace("\\", "/")
-            target_bytes = target.encode("utf-8")  # strict; see note above
+            target = _normalize_path(str(path.readlink()))
+            _check_symlink_target(target)
+            target_bytes = _encode_path(target)
             hasher.update(b"L")
             hasher.update(f"{len(target_bytes)}:".encode("utf-8"))
             hasher.update(target_bytes)
@@ -160,23 +212,27 @@ def contents_hash(directory: str, algorithm: str) -> str:
             hasher.update(b"D")
         elif path.is_file():
             hasher.update(b"F")
-            try:
-                with open(path, "rb") as fh:
-                    data = fh.read()
-            except OSError:
-                data = b""
+            with open(path, "rb") as fh:
+                data = fh.read()
             try:
                 data.decode("utf-8")
             except UnicodeDecodeError:
                 pass  # binary: hash the raw bytes unmodified
             else:
                 data = data.replace(b"\r\n", b"\n")  # text: normalize line endings
+            hasher.update(f"{len(data)}:".encode("utf-8"))
             hasher.update(data)
         else:
             raise RuntimeError(f"Unknown file type: {path}")
         hasher.update(b"-")
     return hasher.hexdigest()
 ```
+
+This implementation attempts to cover every normalization and error-handling rule from the
+[Specification](#specification) above (NFC normalization and collision detection, null bytes,
+redundant components, absolute/drive-letter/UNC rejection, non-UTF-8 paths, unreadable files); it is
+provided as a normative illustration, not a certified conformance suite, so a discrepancy against the
+Specification text should be treated as a bug in this snippet rather than in the rule it's illustrating.
 
 ## Examples
 
@@ -201,12 +257,12 @@ README.txtFHello\n-srcD-
 **This CEP byte stream:**
 
 ```text
-10:README.txtFHello\n-3:srcD-
+10:README.txtF6:Hello\n-3:srcD-
 ```
 
-The `10:` prefix encodes the 10-byte path `README.txt`; `3:` encodes the 3-byte path `src`. The
-type markers (`F`, `D`) and the entry separator (`-`) are unchanged and still unambiguous because
-the path boundary is now known exactly.
+The `10:` prefix encodes the 10-byte path `README.txt`; `6:` encodes the 6-byte content `Hello\n`;
+`3:` encodes the 3-byte path `src`. The type markers (`F`, `D`) and the entry separator (`-`) are
+unchanged and still unambiguous because both the path and content boundaries are now known exactly.
 
 ### Example 2: Directory containing a symlink
 
@@ -253,11 +309,12 @@ letter, so `.gitignore` sorts before `README.txt` and `src`:
 **This CEP byte stream:**
 
 ```text
-10:.gitignoreF*.pyc\n-10:README.txtFHello\n-3:srcD-
+10:.gitignoreF6:*.pyc\n-10:README.txtF6:Hello\n-3:srcD-
 ```
 
 The `10:` prefix encodes the 10-byte path `.gitignore`, which is processed as an ordinary regular
-file: the leading `.` has no special meaning to the algorithm.
+file: the leading `.` has no special meaning to the algorithm. Its `6:` content prefix encodes the
+6-byte content `*.pyc\n`.
 
 ### Example 4: NFC normalization before sorting
 
@@ -289,7 +346,7 @@ mydir/
 | `café.txt` | `63 61 66 c3 a9 2e 74 78 74` | 9 |
 | `cafe.txt` | `63 61 66 65 2e 74 78 74` | 8 |
 
-**Step 3 - lexicographically compare the byte sequences and sort:**
+**Step 3 - compare the byte sequences (unsigned byte value) and sort:**
 
 The first three bytes (`63 61 66`) are equal in both paths. The fourth byte decides the order:
 `cafe.txt` has `0x65` (`e`) and `café.txt` has `0xc3` (the first byte of `é`). Since `0x65 < 0xc3`,
@@ -302,7 +359,7 @@ cafe.txt, café.txt
 **This CEP byte stream:**
 
 ```text
-8:cafe.txtFdrip\n-9:café.txtFespresso\n-
+8:cafe.txtF5:drip\n-9:café.txtF9:espresso\n-
 ```
 
 Without the NFC normalization step, a directory tree using the decomposed form of `café.txt` would
@@ -318,10 +375,10 @@ This example reproduces the collision from the Motivation section at the byte-st
 
 **Tree 2:** a file named `test` (content `hello`) and a file named `world` (content `www`).
 
-| Algorithm     | Tree 1                     | Tree 2                      | Collision? |
-| ------------- | -------------------------- | --------------------------- | ---------- |
-| CEP 19        | `testFhello-worldFwww-`    | `testFhello-worldFwww-`     | Yes        |
-| This proposal | `16:testFhello-worldFwww-` | `4:testFhello-5:worldFwww-` | No         |
+| Algorithm     | Tree 1                       | Tree 2                          | Collision? |
+| ------------- | ---------------------------- | ------------------------------- | ---------- |
+| CEP 19        | `testFhello-worldFwww-`      | `testFhello-worldFwww-`         | Yes        |
+| This proposal | `16:testFhello-worldF3:www-` | `4:testF5:hello-5:worldF3:www-` | No         |
 
 Under CEP 19 both trees yield the identical stream `testFhello-worldFwww-` and therefore the same
 digest. Under this proposal, the `16:` length prefix on Tree 1 unambiguously marks the path as 16
@@ -332,15 +389,16 @@ The step-by-step breakdown for this CEP:
 
 **Tree 1** - one file named `testFhello-world` (content `www`):
 
-| Step | Field             | Bytes fed to hasher |
-| ---- | ----------------- | ------------------- |
-| 1    | path length + `:` | `16:`               |
-| 2    | path              | `testFhello-world`  |
-| 3    | type marker       | `F`                 |
-| 4    | file content      | `www`               |
-| 5    | entry separator   | `-`                 |
+| Step | Field                | Bytes fed to hasher |
+| ---- | -------------------- | ------------------- |
+| 1    | path length + `:`    | `16:`               |
+| 2    | path                 | `testFhello-world`  |
+| 3    | type marker          | `F`                 |
+| 4    | content length + `:` | `3:`                |
+| 5    | file content         | `www`               |
+| 6    | entry separator      | `-`                 |
 
-Full stream: `16:testFhello-worldFwww-`
+Full stream: `16:testFhello-worldF3:www-`
 
 **Tree 2** - file `test` (content `hello`) followed by file `world` (content `www`):
 
@@ -349,15 +407,17 @@ Full stream: `16:testFhello-worldFwww-`
 | 1    | path length + `:` for `test`  | `4:`                |
 | 2    | path                          | `test`              |
 | 3    | type marker                   | `F`                 |
-| 4    | file content                  | `hello`             |
-| 5    | entry separator               | `-`                 |
-| 6    | path length + `:` for `world` | `5:`                |
-| 7    | path                          | `world`             |
-| 8    | type marker                   | `F`                 |
-| 9    | file content                  | `www`               |
-| 10   | entry separator               | `-`                 |
+| 4    | content length + `:`          | `5:`                |
+| 5    | file content                  | `hello`             |
+| 6    | entry separator               | `-`                 |
+| 7    | path length + `:` for `world` | `5:`                |
+| 8    | path                          | `world`             |
+| 9    | type marker                   | `F`                 |
+| 10   | content length + `:`          | `3:`                |
+| 11   | file content                  | `www`               |
+| 12   | entry separator               | `-`                 |
 
-Full stream: `4:testFhello-5:worldFwww-`
+Full stream: `4:testF5:hello-5:worldF3:www-`
 
 The two streams are distinct, so the digests are distinct.
 
@@ -371,14 +431,22 @@ complexity and potential for bugs. Length-prefixing is simpler, well-established
 of netstrings and many binary protocols), and adds a constant, predictable overhead of a few bytes
 per field.
 
-### Why only prefix the path and symlink target?
+### Why length-prefix file content too?
 
 Type markers (`F`, `D`, `L`) and the entry separator (`-`) are single fixed bytes that are always
-present in a known position relative to the length-prefixed path. Because the path length is now
-unambiguous, the parser always knows exactly where the path ends and where the type marker begins,
-so these fields do not need their own length prefix. File contents are similarly unambiguous because
-they are bracketed by the type marker on one side and the `-` separator on the other, with no
-variable-length field interleaved.
+present in a known position relative to the length-prefixed path, so they do not need their own
+length prefix. File content is different: it is arbitrary bytes chosen by whoever created the file,
+so it cannot be assumed to be safely bracketed by the `F` marker on one side and the `-` separator on
+the other - content can itself contain a `-` followed by bytes that look like a valid subsequent
+entry, reproducing a different tree's byte stream.
+
+For example, a single file `README.txt` containing the literal bytes `Hello\n-3:srcD` and a
+directory containing `README.txt` (content `Hello\n`) plus an empty subdirectory `src` would, without
+a content length prefix, both produce the identical stream `10:README.txtFHello\n-3:srcD-`: a hash
+collision between two structurally different trees, the same class of bug this CEP exists to fix for
+paths. Prefixing the content with its byte length, exactly as done for paths and symlink targets,
+closes this gap: the two trees instead produce `10:README.txtF13:Hello\n-3:srcD-` and
+`10:README.txtF6:Hello\n-3:srcD-`, which are no longer equal.
 
 ### Why erroring out on unreadable files?
 
@@ -480,10 +548,13 @@ incremental updates, pinpointing which file changed) are not needed for this use
 
 ### A different separator byte
 
-Choosing a separator byte that is unlikely to appear in filenames (e.g. `\0`) would reduce the
-practical collision surface but would not eliminate it, since `\0` is a legal byte in many
-filesystems' raw representations and the algorithm operates on Unicode strings. Length-prefixing is
-the only approach that is provably collision-free regardless of file naming.
+Choosing a separator byte that is unlikely to appear in paths (e.g. `\0`) would not by itself close
+the vulnerability. This CEP already forbids `\0` in path components (see
+[Specification](#specification)), but file content is arbitrary bytes and may legitimately contain
+`\0`, so a null-byte separator could still be defeated via file content the same way `-` can be
+today. Length-prefixing every variable-length field - paths, symlink targets, and file content, as
+this CEP already does - is the only approach that is provably collision-free regardless of what
+bytes appear in filenames or file data.
 
 ## References
 
