@@ -5,9 +5,9 @@
 <tr><td> Status </td><td> Draft </td></tr>
 <tr><td> Author(s) </td><td> Chris Burr &lt;christopher.burr@cern.ch&gt; </td></tr>
 <tr><td> Created </td><td> Jul 15, 2026 </td></tr>
-<tr><td> Updated </td><td> Jul 15, 2026 </td></tr>
-<tr><td> Discussion </td><td> NA </td></tr>
-<tr><td> Implementation </td><td> NA (documents existing behavior) </td></tr>
+<tr><td> Updated </td><td> Jul 17, 2026 </td></tr>
+<tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/180 </td></tr>
+<tr><td> Implementation </td><td> NA (documents existing behavior; see <a href="https://github.com/conda/conda/blob/2b543296f5c8a08a78ad2a8a5251091c3538f205/conda/core/portability.py">conda</a>, <a href="https://github.com/mamba-org/mamba/blob/614b93b8d7db3c9112943bedfaf1d464cdb8401a/libmamba/src/core/link.cpp">libmamba</a>, <a href="https://github.com/conda/rattler/blob/720114bff4675dc99ac32c18df88600478efdc87/crates/rattler/src/install/link.rs">rattler</a>) </td></tr>
 </table>
 
 > The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD",
