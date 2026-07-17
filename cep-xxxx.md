@@ -4,8 +4,8 @@
 <tr><td> Title </td><td> Specification of <code>conda_build_config.yaml</code> variant configuration files </td></tr>
 <tr><td> Status </td><td> Draft </td></tr>
 <tr><td> Author(s) </td><td> Ryan Keith &lt;rkeith@anaconda.com&gt;</td></tr>
-<tr><td> Created </td><td> Jun 4, 2026 </td></tr>
-<tr><td> Updated </td><td> Jun 4, 2026 </td></tr>
+<tr><td> Created </td><td> Jul 17, 2026 </td></tr>
+<tr><td> Updated </td><td> Jul 17, 2026 </td></tr>
 <tr><td> Discussion </td><td> NA </td></tr>
 <tr><td> Implementation </td><td> NA </td></tr>
 <tr><td> Requires </td><td> NA </td></tr>
