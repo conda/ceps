@@ -67,7 +67,7 @@ This key MUST map to a dictionary of type `dict[str, dict]`:
     - The `extra_depends` field introduced by [44](./cep-0045.md) MAY be present.
     - The MatchSpec strings mentioned in the fields `depends`, `constrains` and the lists of strings within `extra_depends` groups:
       - MUST set the `name` field to an exact string (no globbing allowed).
-      - MAY set the fields: `version`, `build`, `build_number`, CEP 43's `when`, CEP 44 `extra`, CEP 45 `flags`.
+      - MAY set the fields: `version`, `build`, `build_number`, CEP 43 `when`, CEP 44 `extras`, CEP 45 `flags`.
       - MUST NOT set any other fields.
       - MUST be represented with the `name` + square-brackets form (e.g. `name[version="1.2.*",build_number=0]`)
 
