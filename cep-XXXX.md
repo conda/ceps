@@ -5,7 +5,7 @@
 <tr><td> Status </td><td> Draft </td></tr>
 <tr><td> Author(s) </td><td> Chris Burr &lt;christopher.burr@cern.ch&gt; </td></tr>
 <tr><td> Created </td><td> Jul 15, 2026 </td></tr>
-<tr><td> Updated </td><td> Jul 17, 2026 </td></tr>
+<tr><td> Updated </td><td> Jul 22, 2026 </td></tr>
 <tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/180 </td></tr>
 <tr><td> Implementation </td><td> NA (documents existing behavior; see <a href="https://github.com/conda/conda/blob/2b543296f5c8a08a78ad2a8a5251091c3538f205/conda/core/portability.py">conda</a>, <a href="https://github.com/mamba-org/mamba/blob/614b93b8d7db3c9112943bedfaf1d464cdb8401a/libmamba/src/core/link.cpp">libmamba</a>, <a href="https://github.com/conda/rattler/blob/720114bff4675dc99ac32c18df88600478efdc87/crates/rattler/src/install/link.rs">rattler</a>) </td></tr>
 </table>
@@ -123,6 +123,45 @@ implemented. Neither conda-build nor rattler-build detects wide-encoding
 occurrences at build time, so affected files only receive a path entry
 through conda-build's `binary_has_prefix_files` or by also containing a UTF-8
 occurrence.
+
+The multi-encoding replacement is a sequence of byte-level search passes,
+one per encoding in the order listed above, and byte-level search cannot
+always tell the two endiannesses of a wide encoding apart. An ASCII
+character encodes to its ASCII byte plus zero bytes, on opposite sides
+depending on the endianness, so the big-endian encoding of an ASCII string
+contains the little-endian byte pattern of the same string at a shift of
+one byte (three bytes for UTF-32), with the final zero byte supplied by
+whatever follows the last character: the high bytes of the next character
+or the NUL terminator. For example, a placeholder `/pfx` stored as a
+NUL-terminated UTF-16-BE string, followed by one more zero byte (padding,
+or the high byte of the next big-endian character), admits two complete
+readings, each leaving a single unclaimed zero byte at the opposite end:
+
+```text
+bytes:       00 2f 00 70 00 66 00 78 00 00 00
+read as BE:  └'/'┘ └'p'┘ └'f'┘ └'x'┘ └NUL┘
+read as LE:     └'/'┘ └'p'┘ └'f'┘ └'x'┘ └NUL┘
+```
+
+A big-endian wide string containing the placeholder therefore also matches
+the little-endian pass, which runs first and splices the little-endian
+target at the shifted position. Whether the wrong guess matters depends on
+the characters involved. Below U+0100 every byte the wide encoding adds is
+zero, and the zeros are interchangeable between the two readings: the
+spliced bytes read back correctly at the big-endian alignment, so the
+wrong guess produces exactly the bytes the right one would. At U+0100 and
+above the added bytes are no longer zero, the shift pairs bytes across
+character boundaries, and the string is corrupted instead of replaced (a
+little-endian splice of `ā`, U+0101, reads back big-endian as the pair
+U+0001, U+0170). The ambiguity is symmetric, since a little-endian string
+preceded by a zero byte contains a phantom big-endian match one byte
+earlier, so no pass order resolves it; it merely goes unnoticed while the
+target prefix and the remainder of the affected string stay below U+0100,
+which paths in practice almost always do. A target prefix containing
+characters at or above U+0100, installed over a wide string of the
+opposite endianness, is the combination that corrupts. Metadata that
+records the encoding of each occurrence, as proposed in
+[conda/ceps#179][ceps-179], is not subject to this ambiguity.
 
 ### pyzzer launchers
 
