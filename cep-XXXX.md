@@ -174,7 +174,7 @@ Clients implementing attestation verification SHOULD follow this workflow:
 Clients SHOULD support the following configuration options:
 
 ```yaml
-# Example ~/.condarc configuration
+# Abstract example of Sigstore configuration:
 attestations:
   conda-forge:
     enabled: true
