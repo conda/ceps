@@ -43,6 +43,13 @@ repos:
         language: system
         types: [markdown]
         exclude: ^.github/.*\.md$
+      # zizmor
+      - id: zizmor
+        name: zizmor
+        entry: pixi run zizmor --min-severity high --fix .
+        language: system
+        types: [yaml]
+        pass_filenames: false
       # CEP-specific checks
       - id: cep-header
         name: CEP must start with a '# CEP \d - Title' header

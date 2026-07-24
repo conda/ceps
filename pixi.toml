@@ -10,6 +10,7 @@ pre-commit = "*"
 pre-commit-hooks = "*"
 codespell = "*"
 markdownlint-cli2 = "*"
+zizmor = "*"
 
 [tasks]
 lint = "pre-commit run --all-files"
