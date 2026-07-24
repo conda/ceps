@@ -1,70 +1,83 @@
-# disable autofixing PRs, commenting "pre-commit.ci autofix" on a pull request triggers a autofix
-ci:
-  autofix_prs: false
 repos:
-  # generic verification and formatting
-  - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c  # frozen: v6.0.0
-    hooks:
-      # standard end of line/end of file cleanup
-      - id: mixed-line-ending
-      - id: end-of-file-fixer
-      - id: trailing-whitespace
-      - id: check-merge-conflict
-  - repo: meta
-    # see https://pre-commit.com/#meta-hooks
-    hooks:
-      - id: check-hooks-apply
-      - id: check-useless-excludes
-  - repo: https://github.com/codespell-project/codespell
-    # see setup.cfg
-    rev: 2ccb47ff45ad361a21071a7eedda4c37e6ae8c5a  # frozen: v2.4.2
-    hooks:
-      - id: codespell
-        args: [--write-changes]
-  # lint markdown
-  - repo: https://github.com/DavidAnson/markdownlint-cli2
-    rev: 996abf60411a8d954288ac9856aae7602b80cbda  # frozen: v0.22.1
-    hooks:
-      - id: markdownlint-cli2
-        args: ['--fix']
-        exclude: ^.github/.*\.md$
   - repo: local
     hooks:
-    - id: cep-header
-      name: CEP must start with a '# CEP \d - Title' header
-      entry: ^# CEP (\d{1,4}|XXXX) - .+$
-      language: pygrep
-      types: [text]
-      args: [--negate]
-      files: cep-.+\.md
-    - id: cep-nodash
-      name: CEPs must be referred to with 'CEP N' (no dash)
-      entry: CEP-+\d+
-      language: pygrep
-      types: [text]
-      files: cep-.+\.md
-    - id: cep-nozero
-      name: CEPs must be referred to with 'CEP N' (no leading zeros)
-      entry: CEP[- ]+0+\d+
-      language: pygrep
-      types: [text]
-      files: cep-.+\.md
-    - id: cep-hrefs
-      name: Links to CEPs must be relative (no leading slash)
-      entry: '\(/cep-\d{4}\.md\)'
-      language: pygrep
-      types: [text]
-      files: cep-.+\.md
-    - id: email-tags
-      name: Email addresses must use &lt; and &gt;
-      entry: <[^<>\s]+@[^<>\s]+>
-      language: pygrep
-      types: [text]
-      files: cep-.+\.md
-    - id: cep-filenames
-      name: CEP filenames must be 'cep-XXXX.md'
-      entry: CEP documents must be named '/cep-XXXX.md'
-      language: fail
-      files: ^.*cep-.*\.md.*$
-      exclude: ^cep-(\d{4}|XXXX)\.md$
+      - id: pixi-install
+        name: pixi-install
+        entry: pixi install
+        language: system
+        always_run: true
+        require_serial: true
+        pass_filenames: false
+      # generic verification and formatting
+      - id: mixed-line-ending
+        name: mixed-line-ending
+        entry: pixi run mixed-line-ending
+        language: system
+        types: [text]
+      - id: end-of-file-fixer
+        name: end-of-file-fixer
+        entry: pixi run end-of-file-fixer
+        language: system
+        types: [text]
+      - id: trailing-whitespace-fixer
+        name: trailing-whitespace-fixer
+        entry: pixi run trailing-whitespace-fixer
+        language: system
+        types: [text]
+      - id: check-merge-conflict
+        name: check-merge-conflict
+        entry: pixi run check-merge-conflict --assume-in-merge
+        language: system
+        types: [text]
+      # codespell
+      - id: codespell
+        name: codespell
+        entry: pixi run codespell
+        language: system
+        types: [text]
+        args: [--write-changes]
+      # lint markdown
+      - id: markdownlint-cli2
+        name: markdownlint-cli2
+        entry: pixi run markdownlint-cli2 --fix
+        language: system
+        types: [markdown]
+        exclude: ^.github/.*\.md$
+      # CEP-specific checks
+      - id: cep-header
+        name: CEP must start with a '# CEP \d - Title' header
+        entry: ^# CEP (\d{1,4}|XXXX) - .+$
+        language: pygrep
+        types: [text]
+        args: [--negate]
+        files: cep-.+\.md
+      - id: cep-nodash
+        name: CEPs must be referred to with 'CEP N' (no dash)
+        entry: CEP-+\d+
+        language: pygrep
+        types: [text]
+        files: cep-.+\.md
+      - id: cep-nozero
+        name: CEPs must be referred to with 'CEP N' (no leading zeros)
+        entry: CEP[- ]+0+\d+
+        language: pygrep
+        types: [text]
+        files: cep-.+\.md
+      - id: cep-hrefs
+        name: Links to CEPs must be relative (no leading slash)
+        entry: '\(/cep-\d{4}\.md\)'
+        language: pygrep
+        types: [text]
+        files: cep-.+\.md
+      - id: email-tags
+        name: Email addresses must use &lt; and &gt;
+        entry: <[^<>\s]+@[^<>\s]+>
+        language: pygrep
+        types: [text]
+        files: cep-.+\.md
+      - id: cep-filenames
+        name: CEP filenames must be 'cep-XXXX.md'
+        entry: CEP documents must be named '/cep-XXXX.md'
+        language: fail
+        files: ^.*cep-.*\.md.*$
+        exclude: ^cep-(\d{4}|XXXX)\.md$

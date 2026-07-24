@@ -1,0 +1,15 @@
+[workspace]
+authors = ["conda steering council <steering@conda.org>"]
+channels = ["conda-forge"]
+exclude-newer = "7d"
+name = "ceps"
+platforms = ["osx-64", "osx-arm64", "win-64", "linux-64"]
+
+[dependencies]
+pre-commit = "*"
+pre-commit-hooks = "*"
+codespell = "*"
+markdownlint-cli2 = "*"
+
+[tasks]
+lint = "pre-commit run --all-files"

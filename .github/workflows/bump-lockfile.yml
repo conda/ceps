@@ -1,0 +1,52 @@
+name: Update lockfiles
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: 0 5 1 * * # monthly
+jobs:
+  pixi-update:
+    permissions:
+      contents: write
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Set up pixi
+        uses: prefix-dev/setup-pixi@a09b6247153796b190642a2b53fac4241043cf6f # v0.10.0
+        with:
+          run-install: false
+      - name: Update lockfiles
+        run: |
+          set -o pipefail
+          pixi update --json | pixi exec pixi-diff-to-markdown >> diff.md
+      - name: Create pull request using GH CLI
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # 1. Configure git user
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+
+          # 2. Check if pixi.lock has actually changed
+          if [ -z "$(git status --porcelain pixi.lock)" ]; then
+            echo "No changes detected in pixi.lock. Skipping PR creation."
+            exit 0
+          fi
+
+          # 3. Stage, commit, and push changes
+          git checkout -b update-pixi
+          git add pixi.lock
+          git commit -m "Update pixi lockfile"
+          git push origin update-pixi --force
+
+          # 4. Create the Pull Request if needed
+          if gh pr view update-pixi &>/dev/null; then
+              echo "PR already exists. Updating existing PR branch suffices."
+              exit 0
+          fi
+          gh pr create \
+            --title "Update pixi lockfile" \
+            --body-file diff.md \
+            --base main \
+            --head update-pixi \
+            --label "pixi"
