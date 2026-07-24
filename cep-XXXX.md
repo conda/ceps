@@ -33,18 +33,18 @@ described.
 
 conda has no standard way to describe packages built for mobile operating systems. Both Python
 (via [PEP 730] and [PEP 738]) and the wider native toolchain ecosystem now support iOS and Android as
-first-class cross-compilation targets, and tools such as pixi and rattler-build are able to produce
-packages for them. Without an agreed naming scheme, each implementation would be free to invent its
+first-class target platforms, and tools such as pixi and rattler-build are able to produce packages
+for them. Without an agreed naming scheme, each implementation would be free to invent its
 own subdir tokens (`ios_arm64` vs `ios-arm64`, `ios-sim-arm64` vs `iossimulator-arm64`) and its own
 way of encoding the minimum-OS version, producing packages that cannot be described consistently or
 consumed across tools. That fragmentation is exactly the class of problem this CEP exists to prevent.
 
 Two facts about these platforms shape the design:
 
-1. **They are cross-compilation-only targets.** conda tooling does not run *on* iOS or Android as a
-   build host; packages are always produced by cross-compiling from another platform. The subdir and
-   virtual packages must therefore be expressible for a *target* platform, independent of the host
-   the solver runs on.
+1. **The subdir describes a target platform.** These names identify the platform a package is *for*,
+   independently of the host that resolves or builds it. In practice packages are often produced by
+   cross-compiling from another host, but this CEP does not assume that — an implementation may just
+   as well run natively on the platform.
 
 2. **PyPI already encodes three axes in one wheel tag.** A wheel tag such as
    `ios_13_0_arm64_iphoneos` packs together the CPU architecture (`arm64`), the ABI / platform variant
@@ -123,15 +123,16 @@ make the corresponding virtual package available:
 - For an `android-*` target, provide `__android` (and `__unix`).
 - `__glibc` MUST NOT be provided for `android-*` targets.
 
-Because these are cross-compilation-only targets, the version SHOULD be taken from an explicit
-override rather than detected from the running host:
+The version MAY be detected from the host when an implementation runs natively on the platform.
+Otherwise (for example when cross-compiling) it SHOULD be taken from an explicit override:
 
 - `__ios` version: from the `CONDA_OVERRIDE_IOS` environment variable, otherwise a build-tool-supplied
   default, otherwise `0` (matches any requirement).
 - `__android` version: from the `CONDA_OVERRIDE_ANDROID` environment variable, otherwise a
   build-tool-supplied default, otherwise `0`.
 
-Runtime detection of these versions from a host is not defined by this CEP and is left as future work.
+The exact mechanism for host-based detection is not specified by this CEP and is left to
+implementations.
 
 ### Compatibility summary
 
