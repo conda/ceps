@@ -22,7 +22,7 @@
 
 ## Abstract
 
-This document proposes a set of updates to `repodata.json` files and its derivatives (sharded, subsets) to include the improvements introduced in CEP [43](./cep-0043.md), [44](./cep-0044.md),  [45](./cep-0045.md), and [47](./cep-0047.md). To do so in a backwards compatible manner, it also proposes a revision system as a way to extend repodata with new additions, _without_ incrementing `repodata_version`.
+This document proposes a set of updates to `repodata.json` files and its derivatives (sharded, subsets) to include the improvements introduced in CEP [43](./cep-0043.md), [44](./cep-0044.md), [45](./cep-0045.md), and [47](./cep-0047.md). To do so in a backwards compatible manner, it also proposes a revision system as a way to extend repodata with new additions, _without_ incrementing `repodata_version`.
 
 ## Motivation
 
@@ -38,8 +38,8 @@ The `v3` update includes breaking changes in CEPs [43](./cep-0043.md), [44](./ce
 
 This CEP introduces two new keys:
 
-- A `repodata_revisions` key under the top-level `info` dictionary
-- A top-level `v3` key
+- A `repodata_revisions` key under the top-level `info` dictionary.
+- A top-level `v3` key.
 
 ### The `info.repodata_revisions` key
 
@@ -47,7 +47,7 @@ This key MUST map to a dictionary where:
 
 - Each key MUST correspond to a newly introduced top-level key with syntax `vN`, where `N` MUST be `3` or a larger integer.
 - Each value MUST be a dictionary with the following optional key-value pairs. Additional keys SHOULD be ignored.
-  - `message: str | None`: If present and not `None`, a free-form string to be set by channel operators at their convenience. Its length MUST NOT exceed 8192 bytes.
+  - `message: str | None`: If present and not `None`, a free-form string to be set by channel operators to provide contextual information (e.g., announcements, deprecation notices, or a change in client requirements). Its length MUST NOT exceed 8192 bytes.
   - `n_packages: int | None`: If present and not `None`, it MUST match the sum of all the resulting records found under the `vN` key in the current repodata file or shard.
   - `newest: int | None`: If present and not `None`, a timestamp (in milliseconds) that MUST match the `indexed_timestamp` field of the newest record published in this revision in the current repodata file or shard.
   - `oldest: int | None`: If present and not `None`, a timestamp (in milliseconds) that MUST match the `indexed_timestamp` field of the oldest record published in this revision in the current repodata file or shard.
@@ -61,9 +61,9 @@ This key MUST map to a dictionary of type `dict[str, dict]`:
 - Each key MUST be a non-empty string. The key SHOULD represent the file extension (without the leading period) of the included artifacts (usually `tar.bz2` and `conda`).
 - Each value MUST be a dictionary of type `dict[str, dict]` where:
   - Each subkey MUST be a non-empty string representing the artifact filename without its extension.
-  - Each subvalue MUST be a valid [CEP 36](./cep-0036.md) "package record metadata" dictionary,  including these changes:
+  - Each subvalue MUST be a valid [CEP 36](./cep-0036.md) "package record metadata" dictionary, including these changes:
     - The `indexed_timestamp` field introduced by [CEP 47](./cep-0047.md) SHOULD be set.
-    - The `extra_depends` field introduced by [44](./cep-0045.md) MAY be present.
+    - The `extra_depends` field introduced by [44](./cep-0044.md) MAY be present.
     - The MatchSpec strings mentioned in the fields `depends`, `constrains` and the lists of strings within `extra_depends` groups:
       - MUST set the `name` field to an exact string (no globbing allowed).
       - MAY set the fields: `version`, `build`, `build_number`, CEP 43 `when`, CEP 44 `extras`, CEP 45 `flags`.
@@ -89,7 +89,7 @@ Bumps in this number should only result in backwards incompatible changes that w
 - `conda` only supports it as of [v24.5.0](https://github.com/conda/conda/blob/main/CHANGELOG.md#2450-2024-05-08) (released on 2024-05-08)
 - `mamba` started supporting it in [v2.0](https://github.com/mamba-org/mamba/blob/main/CHANGELOG.md#20240925) (released on 2024-09-25).
 
-Hence, we suggest to stick to `repodata_version: 1` and _only_ use `repodata_version: 2` when a new channel needs a global `base_url` for all the entries in the `packages` and `packages.conda` fields.
+Hence, we recommend sticking to `repodata_version: 1` and only using `repodata_version: 2` when a new channel needs a global `base_url` for all the entries in the `packages` and `packages.conda` fields.
 
 ## Example
 
@@ -102,7 +102,7 @@ Hence, we suggest to stick to `repodata_version: 1` and _only_ use `repodata_ver
       "v3": {
         "n_packages": 2,
         "oldest": 1768249989851,
-        "newest": 1773851561010,
+        "newest": 1773851561010
       }
     }
   },
@@ -145,7 +145,7 @@ Hence, we suggest to stick to `repodata_version: 1` and _only_ use `repodata_ver
         "depends": [
           "package[version=2,build_number=0,when=__unix]"  // bracket syntax, w/ conditional
         ],
-        "extras_depends": { // NEW
+        "extra_depends": { // NEW
           "test": [
             "test-dependency"
           ]
@@ -158,7 +158,7 @@ Hence, we suggest to stick to `repodata_version: 1` and _only_ use `repodata_ver
         "subdir": "noarch",
         "timestamp": 1773851540030,
         "indexed_timestamp": 1773851561010, // NEW
-        "version": "3.0.0",
+        "version": "3.0.0"
       }
     }
   }
@@ -229,7 +229,7 @@ For example, for this input `index.json`:
   "name": "example",
   "noarch": "generic",
   "subdir": "noarch",
-  "version": "3.0.0",
+  "version": "3.0.0"
 }
 ```
 
