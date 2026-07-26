@@ -11,10 +11,9 @@
   </td>
 </tr>
 <tr><td> Created </td><td> Jan 12, 2026 </td></tr>
-<tr><td> Updated </td><td> Jun 21, 2026 </td></tr>
+<tr><td> Updated </td><td> Jul 26, 2026 </td></tr>
 <tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/146 </td></tr>
 <tr><td> Implementation </td><td> N/A </td></tr>
-<tr><td> Requires </td><td> https://github.com/conda/ceps/pull/151 </td></tr>
 </table>
 
 > The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in [RFC2119][RFC2119] when, and only when, they appear in all capitals, as shown here.
@@ -23,17 +22,17 @@
 
 ## Abstract
 
-This document proposes a set of updates to `repodata.json` files and its derivatives (sharded, subsets) to include the improvements introduced in CEP [43](./cep-0043.md), [44](./cep-0044.md), and [45](./cep-0045.md), as well as PR [#151](https://github.com/conda/ceps/pull/151). To do so in a backwards compatible manner, it also proposes a revision system as a way to extend repodata with new additions, _without_ incrementing `repodata_version`.
+This document proposes a set of updates to `repodata.json` files and its derivatives (sharded, subsets) to include the improvements introduced in CEP [43](./cep-0043.md), [44](./cep-0044.md),  [45](./cep-0045.md), and [47](./cep-0047.md). To do so in a backwards compatible manner, it also proposes a revision system as a way to extend repodata with new additions, _without_ incrementing `repodata_version`.
 
 ## Motivation
 
-`repodata.json` files are central to the conda ecosystem. They are the main source of packaging metadata and inform solvers about the catalog of available packages and their dependency constraints. As such, innovation work often refrains from modifying it, and the format itself has seen very few changes over its lifetime. However, the adoption of a few ongoing (as of the first half of 2026) efforts will inevitably result in `repodata.json` modifications (conditional dependencies, optional dependency groups, non-conda dependencies, etc).
+`repodata.json` files are central to the conda ecosystem. They are the main source of packaging metadata and inform solvers about the catalog of available packages and their dependency constraints. As such, innovation work often refrains from modifying it, and the format itself has seen very few changes over its lifetime. However, the adoption of CEPs 43, 44, 45 and 47 will inevitably result in `repodata.json` modifications (conditional dependencies, optional dependency groups, non-conda dependencies, etc).
 
 The main problem is the introduction of backwards incompatible changes. The obvious solution is to bump the `repodata_version` field (like it was done with [CEP 15](./cep-0015.md)). However, this is not desirable for existing channels, since it immediately prevents non-compatible clients from interacting with the channel. Since most clients would update via a new version available in the channel, it creates a chicken-and-egg problem that would significantly delay the introduction of new features and hinder adoption.
 
 There must be a strategy to introduce backwards incompatible changes without breaking existing channels. This CEP centralizes the discussion for the update strategy by introducing the concept of _revisions_ and consolidates that feedback into a concrete proposal for `v3`.
 
-The `v3` update includes breaking changes in CEPs [43](./cep-0043.md), [44](./cep-0044.md), and [45](./cep-0045.md), and PR [#151](https://github.com/conda/ceps/pull/151), that wouldn't otherwise reach existing channels without disrupting the user experience for outdated clients.
+The `v3` update includes breaking changes in CEPs [43](./cep-0043.md), [44](./cep-0044.md), [45](./cep-0045.md), and [47](./cep-0047.md) that wouldn't otherwise reach existing channels without disrupting the user experience for outdated clients.
 
 ## Specification
 
@@ -48,7 +47,7 @@ This key MUST map to a dictionary where:
 
 - Each key MUST correspond to a newly introduced top-level key with syntax `vN`, where `N` MUST be `3` or a larger integer.
 - Each value MUST be a dictionary with the following optional key-value pairs. Additional keys SHOULD be ignored.
-  - `message: str | None`: If present and not `None`, a free-form string to be set by channel operators at their convenience. Its length measured in Unicode characters MUST NOT exceed 8192.
+  - `message: str | None`: If present and not `None`, a free-form string to be set by channel operators at their convenience. Its length MUST NOT exceed 8192 bytes.
   - `n_packages: int | None`: If present and not `None`, it MUST match the sum of all the resulting records found under the `vN` key in the current repodata file or shard.
   - `newest: int | None`: If present and not `None`, a timestamp (in milliseconds) that MUST match the `indexed_timestamp` field of the newest record published in this revision in the current repodata file or shard.
   - `oldest: int | None`: If present and not `None`, a timestamp (in milliseconds) that MUST match the `indexed_timestamp` field of the oldest record published in this revision in the current repodata file or shard.
@@ -63,13 +62,14 @@ This key MUST map to a dictionary of type `dict[str, dict]`:
 - Each value MUST be a dictionary of type `dict[str, dict]` where:
   - Each subkey MUST be a non-empty string representing the artifact filename without its extension.
   - Each subvalue MUST be a valid [CEP 36](./cep-0036.md) "package record metadata" dictionary,  including these changes:
-    - The `indexed_timestamp` field introduced by CEP PR [#154](https://github.com/conda/ceps/pull/154) SHOULD be set.
+    - The `indexed_timestamp` field introduced by [CEP 47](./cep-0047.md) SHOULD be set.
     - The `extra_depends` field introduced by [44](./cep-0045.md) MAY be present.
     - The MatchSpec strings mentioned in the fields `depends`, `constrains` and the lists of strings within `extra_depends` groups:
       - MUST set the `name` field to an exact string (no globbing allowed).
       - MAY set the fields: `version`, `build`, `build_number`, CEP 43 `when`, CEP 44 `extras`, CEP 45 `flags`.
       - MUST NOT set any other fields.
-      - MUST be represented with the `name` + square-brackets form (e.g. `name[version="1.2.*",build_number=0]`)
+      - If only `name` is set, the MatchSpec MUST be the bare name string (e.g. `pip`). Empty brackets (e.g. `pip[]`) MUST NOT be used.
+      - If any field other than `name` is set, the MatchSpec MUST use the `name` + square-brackets form (e.g. `name[version="1.2.*",build_number=0]`).
 
 ## Rationale
 
