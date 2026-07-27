@@ -56,9 +56,7 @@ Two facts about these platforms shape the design:
 
 ### Subdirectories
 
-This CEP defines the following subdirs. Each subdir is single-architecture by construction and uses a
-single `<os>-<arch>` separator dash, so that tools which split a subdir on the first (and only) `-`
-continue to work unchanged.
+This CEP defines the following subdirs. As per CEP 26, each subdir is single-architecture and follows the `<os>-<arch>` syntax.
 
 #### iOS
 
