@@ -5,7 +5,7 @@
 <tr><td> Status </td><td> Draft </td></tr>
 <tr><td> Author(s) </td><td> Wolf Vollprecht &lt;wolf@prefix.dev&gt;</td></tr>
 <tr><td> Created </td><td> Jul 24, 2026</td></tr>
-<tr><td> Updated </td><td> Jul 24, 2026</td></tr>
+<tr><td> Updated </td><td> Jul 27, 2026</td></tr>
 <tr><td> Discussion </td><td> NA </td></tr>
 <tr><td> Implementation </td><td> https://github.com/conda/rattler (feat/ios-android-subdirs) </td></tr>
 </table>
@@ -20,43 +20,24 @@
 
 ## Abstract
 
-This CEP defines a set of conda subdirectories (`subdir`) for building and distributing packages that
-target Apple's iOS and Google's Android, together with two new virtual packages, `__ios` and
-`__android`, that carry the minimum-OS-version compatibility axis. The design maps the PyPI wheel-tag
-model for these platforms ([PEP 730] for iOS, [PEP 738] for Android) onto conda's existing
-subdir + virtual-package machinery, so that version compatibility is resolved by the ordinary solver
-in the same way as `__osx` and `__glibc` today. The goal is a single, cross-implementation set of
-names so that conda, mamba, rattler, and the wider ecosystem agree on how mobile packages are
-described.
+This CEP defines conda subdirs for packages targeting Apple's iOS and Google's Android, together
+with two virtual packages, `__ios` and `__android`, for OS-version compatibility. It maps the PyPI
+wheel-tag model for these platforms ([PEP 730] for iOS and [PEP 738] for Android) onto conda's
+existing subdir and virtual-package machinery.
 
 ## Motivation
 
-conda has no standard way to describe packages built for mobile operating systems. Both Python
-(via [PEP 730] and [PEP 738]) and the wider native toolchain ecosystem now support iOS and Android as
-first-class target platforms, and tools such as pixi and rattler-build are able to produce packages
-for them. Without an agreed naming scheme, each implementation would be free to invent its
-own subdir tokens (`ios_arm64` vs `ios-arm64`, `ios-sim-arm64` vs `iossimulator-arm64`) and its own
-way of encoding the minimum-OS version, producing packages that cannot be described consistently or
-consumed across tools. That fragmentation is exactly the class of problem this CEP exists to prevent.
-
-Two facts about these platforms shape the design:
-
-1. **The subdir describes a target platform.** These names identify the platform a package is *for*,
-   independently of the host that resolves or builds it. In practice packages are often produced by
-   cross-compiling from another host, but this CEP does not assume that — an implementation may just
-   as well run natively on the platform.
-
-2. **PyPI already encodes three axes in one wheel tag.** A wheel tag such as
-   `ios_13_0_arm64_iphoneos` packs together the CPU architecture (`arm64`), the ABI / platform variant
-   (device `iphoneos` vs simulator `iphonesimulator`), and the minimum OS version (`13.0`). conda
-   traditionally splits these axes across the *subdir* (architecture and ABI) and *virtual packages*
-   (OS-version compatibility). This CEP applies the same split rather than inventing a monolithic tag.
+conda has no standard way to describe packages built for mobile operating systems. Python and the
+wider native toolchain ecosystem now support iOS and Android as target platforms, and conda build
+tools can produce packages for them. Common subdir and virtual-package names are needed so those
+packages can be described and consumed consistently across implementations.
 
 ## Specification
 
-### Subdirectories
+### Subdirs
 
-This CEP defines the following subdirs. As per CEP 26, each subdir is single-architecture and follows the `<os>-<arch>` syntax.
+This CEP defines the following subdirs. As per [CEP 26](./cep-0026.md), each subdir is
+single-architecture and follows the `<os>-<arch>` syntax.
 
 #### iOS
 
@@ -66,94 +47,72 @@ This CEP defines the following subdirs. As per CEP 26, each subdir is single-arc
 | `iossimulator-arm64` | `arm64`      | Simulator (`iphonesimulator`) |
 | `iossimulator-64`    | `x86_64`     | Simulator (`iphonesimulator`) |
 
-The device/simulator distinction is a genuine ABI split: a binary built for the simulator cannot run
-on a device and vice versa, even for the same architecture. Rather than introduce a second dash
-(which would break subdir-splitting tools), the variant is folded into the OS token: device builds use
-`ios`, simulator builds use `iossimulator`. There is no `ios-64` (Apple ships no x86_64 iOS *device*).
-
 #### Android
 
-| Subdir              | Architecture | Android ABI     |
-| ------------------- | ------------ | --------------- |
-| `android-aarch64`   | `aarch64`    | `arm64-v8a`     |
-| `android-armv7a`    | `armv7a`     | `armeabi-v7a`   |
-| `android-64`        | `x86_64`     | `x86_64`        |
-| `android-32`        | `x86`        | `x86`           |
-
-The `armv7a` architecture token denotes Android's `armeabi-v7a` ABI. It is deliberately distinct from
-`armv7l` (used by `linux-armv7l`): both are 32-bit ARMv7, but `armeabi-v7a` uses Android's softfp
-calling convention and links against Bionic rather than glibc, so binaries are not interchangeable
-between the two.
-
-#### Android is not Linux
-
-Although Android runs a Linux kernel, `android-*` subdirs MUST NOT be treated as Linux subdirs.
-`linux-*` packages express their C-library requirement through the `__glibc` virtual package, and
-Android links against Bionic, which cannot satisfy a glibc constraint. Treating Android as Linux
-would allow the solver to install `linux-*` packages whose libc requirement is silently violated.
-iOS and Android subdirs ARE Unix subdirs for the purpose of the `__unix` virtual package.
+| Subdir            | Architecture | Android ABI   |
+| ----------------- | ------------ | ------------- |
+| `android-aarch64` | `aarch64`    | `arm64-v8a`   |
+| `android-armv7a`  | `armv7a`     | `armeabi-v7a` |
+| `android-64`      | `x86_64`     | `x86_64`      |
+| `android-32`      | `x86`        | `x86`         |
 
 ### Virtual packages
 
-Two new virtual packages carry the minimum-OS-version axis that the subdir intentionally omits.
+The following virtual packages extend [CEP 30](./cep-0030.md). Their build strings MUST be `0`.
 
-#### The `__ios` virtual package
+#### `__ios`
 
-- **Name:** `__ios`
-- **Version:** the *minimum supported iOS version* (the deployment target), e.g. `13.0`. This mirrors
-  the `ios_<major>_<minor>` component of a PEP 730 wheel tag.
-- A package that requires iOS 13.0 or newer depends on `__ios >=13.0`, exactly as an `osx-*` package
-  depends on `__osx >=<version>`.
+`__ios` MUST be present when the target subdir is `ios-*` or `iossimulator-*`, and MUST NOT be
+present otherwise. Its version MUST represent the iOS version available in the target environment,
+for example `13.0`. A package requiring iOS 13.0 or newer depends on `__ios >=13.0`.
 
-#### The `__android` virtual package
+The version MUST be overridable with `CONDA_OVERRIDE_IOS` when set to a non-empty valid version
+string. Without an override, an implementation MAY use a detected native version or a
+build-tool-supplied target version; if neither is available, the version MUST be `0`. The override
+MUST be ignored for other target subdirs.
 
-- **Name:** `__android`
-- **Version:** the *minimum supported Android API level*, encoded as a version, e.g. `21`. This
-  mirrors the API-level component of a PEP 738 wheel tag such as `android_21_arm64_v8a`.
-- A package that requires API level 21 or newer depends on `__android >=21`.
+#### `__android`
 
-#### Provisioning
+`__android` MUST be present when the target subdir is `android-*`, and MUST NOT be present otherwise.
+Its version MUST represent the Android API level available in the target environment, for example
+`21`. A package requiring API level 21 or newer depends on `__android >=21`.
 
-When solving *for* an `ios-*`/`iossimulator-*` or `android-*` target subdir, an implementation MUST
-make the corresponding virtual package available:
+The version MUST be overridable with `CONDA_OVERRIDE_ANDROID` when set to a non-empty valid version
+string. Without an override, an implementation MAY use a detected native API level or a
+build-tool-supplied target API level; if neither is available, the version MUST be `0`. The override
+MUST be ignored for other target subdirs.
 
-- For an `ios-*`/`iossimulator-*` target, provide `__ios` (and `__unix`).
-- For an `android-*` target, provide `__android` (and `__unix`).
-- `__glibc` MUST NOT be provided for `android-*` targets.
+The `__unix` virtual package MUST be present for every subdir defined by this CEP.
 
-The version MAY be detected from the host when an implementation runs natively on the platform.
-Otherwise (for example when cross-compiling) it SHOULD be taken from an explicit override:
+## Rationale
 
-- `__ios` version: from the `CONDA_OVERRIDE_IOS` environment variable, otherwise a build-tool-supplied
-  default, otherwise `0` (matches any requirement).
-- `__android` version: from the `CONDA_OVERRIDE_ANDROID` environment variable, otherwise a
-  build-tool-supplied default, otherwise `0`.
+- **Separate iOS device and simulator subdirs.** iOS provides one API but two incompatible ABIs:
+  `iphoneos` for devices and `iphonesimulator` for simulators. Even when both use `arm64`, a binary
+  built for one cannot run on the other, and a fat binary cannot span the two ABIs. The existing
+  `osx-*` subdirs are also unsuitable because iOS and macOS have significant platform differences
+  despite both using the Darwin kernel.
+- **No separate iPadOS subdirs.** iPadOS is not distinct from iOS for development purposes. Binaries
+  built for the `iphoneos` and `iphonesimulator` ABIs can also be deployed to iPads.
+- **The `ios` and `iossimulator` OS tokens.** Apple's `iphoneos` and `iphonesimulator` names identify
+  vendor ABIs. The conda token identifies the operating system, so `ios` follows CPython's platform
+  name and includes iPads. The `simulator` suffix records the ABI split without implying an
+  iPhone-only target.
+- **Version in a virtual package.** Encoding the minimum OS version in the subdir, as PyPI does in a
+  wheel tag, would multiply the number of subdirs and move compatibility resolution out of the
+  solver. `__ios` and `__android` reuse conda's existing version-compatibility mechanism.
 
-The exact mechanism for host-based detection is not specified by this CEP and is left to
-implementations.
+## Rejected ideas
 
-### Compatibility summary
-
-The following table shows how the three PyPI wheel-tag axes are distributed in conda:
-
-| Wheel-tag axis         | PyPI example             | conda location                        |
-| ---------------------- | ------------------------ | ------------------------------------- |
-| CPU architecture       | `arm64`, `x86_64`        | subdir arch (`-arm64`, `-64`)         |
-| ABI / platform variant | `iphoneos` / `arm64-v8a` | subdir os token (`iossimulator`, ...) |
-| Minimum OS version     | `ios_13_0`, `android_21` | `__ios` / `__android` virtual package |
-
-## Rationale and alternatives
-
-- **A single dash per subdir.** An alternative was to encode the simulator variant as a third dash
-  (`ios-simulator-arm64`). This breaks the widespread assumption that a subdir is `<os>-<arch>` and
-  splits on a single `-`. Folding the variant into the OS token (`iossimulator`) preserves that
-  assumption.
-- **Version in the subdir vs. a virtual package.** Encoding the minimum OS version in the subdir (as
-  PyPI does in the wheel tag) would multiply the number of subdirs and move compatibility resolution
-  out of the solver. Using `__ios`/`__android` keeps a small, fixed set of subdirs and reuses the
-  existing, well-understood `__osx`/`__glibc` mechanism.
-- **Reusing `linux-*` for Android.** Rejected: Bionic is not glibc, and reuse would let the solver
-  violate libc requirements silently (see [Android is not Linux](#android-is-not-linux)).
+- **`ios-simulator-*` subdirs.** A second dash does not conform to CEP 26. The simulator variant is
+  therefore folded into the OS token.
+- **An `ios-64` subdir.** Apple does not provide an x86_64 iOS device ABI.
+- **Using `armv7l` for Android.** Android's `armeabi-v7a` uses the softfp calling convention and
+  Bionic, unlike the ABI represented by `linux-armv7l`. The `armv7a` token keeps these incompatible
+  targets distinct.
+- **Using `linux-*` for Android.** Modeling Bionic as a C standard-library variant in `linux-*` would
+  put incompatible binaries in the same subdir and rely on every package declaring an exact standard
+  library constraint. Android also has its own userspace ABI, dynamic linker, and platform APIs, so
+  it receives separate subdirs.
 
 ## References
 
