@@ -5,7 +5,7 @@
 <tr><td> Status </td><td> Draft </td></tr>
 <tr><td> Author(s) </td><td> Wolf Vollprecht &lt;wolf@prefix.dev&gt;</td></tr>
 <tr><td> Created </td><td> Dec 02, 2025</td></tr>
-<tr><td> Updated </td><td> Jul 05, 2026</td></tr>
+<tr><td> Updated </td><td> Jul 23, 2026</td></tr>
 <tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/142 </td></tr>
 <tr><td> Implementation </td><td> https://prefix.dev (preview implementation) </td></tr>
 <tr><td> Requires </td><td> CEP 27 (Publish Attestation) </td></tr>
@@ -21,7 +21,8 @@
 
 ## Abstract
 
-This CEP defines a standard endpoint for distributing [Sigstore] attestations alongside conda packages. Building upon [CEP 27], which standardizes the attestation format, this proposal specifies how channels serve attestations to clients via a `.sigs` sidecar endpoint, enabling verification of package integrity and provenance.
+This CEP defines how [Sigstore] attestations are distributed alongside conda packages and how clients consume them.
+Building upon [CEP 27], which standardizes the attestation format, this proposal specifies how channels serve attestations via a `.sigs` sidecar endpoint, how the repodata index advertises and integrity-protects sidecars through a new `attestations` field, and the client-side configuration for discovering, verifying, and enforcing policy on attestations. Together, these enable verification of package integrity and provenance.
 
 ## Motivation
 
@@ -123,7 +124,7 @@ The field is the single discovery and integrity mechanism for attestation sideca
 1. **Discovery**: Clients learn from repodata alone whether a `.sigs` file exists, avoiding a network round-trip for packages without attestations.
 2. **Integrity**: Clients MUST verify that the fetched `.sigs` bytes hash to `sha256` before using the sidecar (see [Verification Workflow](#verification-workflow)). This prevents a mirror or intermediary from stripping or replacing attestations without detection.
 3. **Change detection**: When attestations are added after a package was first published, the channel publishes an updated `.sigs` file and updates the field. Mirrors and clients re-fetch the sidecar when the hash changes.
-4. **Resource bounds**: `size` allows clients to enforce a download limit before fetching. Clients MAY refuse to download sidecars larger than a locally configured limit; such a refusal MUST be handled like a retrieval failure (see [Configuration](#configuration)).
+4. **Resource bounds**: `size` allows clients to enforce a download limit before fetching, protecting against accidentally downloading oversized sidecars. It is a pre-flight hint rather than a security mechanism: clients MUST also enforce their limit on the actual bytes received. Clients MAY refuse to download sidecars larger than a locally configured limit; such a refusal MUST be handled like a retrieval failure (see [Configuration](#configuration)).
 
 Tools that post-process repodata (e.g. hotfixing and patching pipelines) MUST preserve the `attestations` field. Channels using sharded repodata ([CEP 16]) update only the affected shard when attestations change, so clients pick up new attestations incrementally; consumers of monolithic `repodata.json` receive the update on the next regeneration.
 
@@ -180,22 +181,25 @@ attestations:
     enabled: true
     require: warn  # "error", "warn", or "ignore"
     trusted_identities:
-      - "https://github.com/conda-forge/*"
-      - "https://github.com/my-org/*"
+      - identity: "https://github.com/conda-forge/*"
+        issuer: "https://token.actions.githubusercontent.com"
+      - identity: "https://github.com/my-org/*"
+        issuer: "https://token.actions.githubusercontent.com"
   https://prefix.dev/foobar:
     enabled: true
     require: warn
     trusted_identities:
-      - "https://github.com/foobar"
+      - identity: "https://github.com/foobar"
+        issuer: "https://token.actions.githubusercontent.com"
 ```
 
 Each channel entry MUST specify `enabled`, `require`, and `trusted_identities`; clients MUST NOT infer default values for omitted fields.
 
-| Setting              | Values                       | Behavior                                                   |
-| -------------------- | ---------------------------- | ---------------------------------------------------------- |
-| `enabled`            | `true`/`false`               | Enable or disable attestation fetching and verification    |
-| `require`            | `error`/`warn`/`ignore`      | How to respond to attestation problems (see below)         |
-| `trusted_identities` | List of patterns             | Only accept attestations from matching Sigstore identities |
+| Setting              | Values                               | Behavior                                                   |
+| -------------------- | ------------------------------------ | ---------------------------------------------------------- |
+| `enabled`            | `true`/`false`                       | Enable or disable attestation fetching and verification    |
+| `require`            | `error`/`warn`/`ignore`              | How to respond to attestation problems (see below)         |
+| `trusted_identities` | List of `(identity, issuer)` entries | Only accept attestations from matching Sigstore identities |
 
 #### `require` semantics
 
@@ -215,9 +219,15 @@ Three classes of attestation problems exist:
 
 #### `trusted_identities` matching
 
-Each entry is a pattern matched against the certificate identity (the SubjectAlternativeName of the Sigstore signing certificate). Matching is case-sensitive and literal, except that `*` matches any sequence of characters, including `/`.
-For example, `https://github.com/conda-forge/*` matches `https://github.com/conda-forge/numpy-feedstock/.github/workflows/build.yml@refs/heads/main` but not `https://github.com/conda-forge-evil/...`, because the literal prefix includes the trailing slash.
-A future revision of this CEP MAY extend entries to additionally pin the OIDC issuer.
+A Sigstore signing identity is the *pair* of the certificate identity (the SubjectAlternativeName of the signing certificate) and the OIDC issuer that authenticated it. The same SubjectAlternativeName authenticated by two different issuers constitutes two different identities, so each `trusted_identities` entry MUST specify both fields:
+
+- `identity`: a pattern matched against the SubjectAlternativeName. Matching is case-sensitive and literal, except that `*` matches any sequence of characters, including `/`.
+  For example, `https://github.com/conda-forge/*` matches `https://github.com/conda-forge/numpy-feedstock/.github/workflows/build.yml@refs/heads/main` but not `https://github.com/conda-forge-evil/...`, because the literal prefix includes the trailing slash.
+- `issuer`: the OIDC issuer URL (e.g. `https://token.actions.githubusercontent.com` for GitHub Actions). Issuers are compared literally; patterns are not supported.
+
+An attestation matches an entry only when the SubjectAlternativeName matches `identity` **and** the certificate's OIDC issuer equals `issuer`. Clients MUST NOT accept attestations based on the identity pattern alone.
+
+Clients MAY offer shorthand notations that expand deterministically to `(identity, issuer)` entries (for example, deriving the GitHub Actions issuer from a `github:owner/repo` form), provided the expansion is documented and the underlying policy always contains both fields.
 
 ### Offline and Air-gapped Environments
 
@@ -230,7 +240,7 @@ Clients SHOULD refresh the Sigstore trust root regularly — for example, on the
 
 The `.sigs` sidecar is served by the same infrastructure as the package it describes: an attacker who can modify the package artifact can equally modify or remove the sidecar. The mechanisms in this CEP layer as follows:
 
-- **Sigstore verification** binds each attestation to a signing identity. An attacker cannot forge attestations for identities they do not control, but an attacker who controls the distribution path can substitute attestations signed by an identity they *do* control. The `trusted_identities` policy is what turns bundle verification into a guarantee about who produced the package.
+- **Sigstore verification** binds each attestation to a signing identity, that is, the pair of certificate identity and OIDC issuer. An attacker cannot forge attestations for identities they do not control, but an attacker who controls the distribution path can substitute attestations signed by an identity they *do* control. The `trusted_identities` policy, because it pins both the identity pattern and the issuer, is what turns bundle verification into a guarantee about who produced the package.
 - **The repodata `attestations` hash** binds the sidecar bytes to the repodata. An intermediary (mirror, CDN, proxy) that strips or rewrites a sidecar is detected by the client's hash check, provided the client obtained repodata from a trusted source.
 - The strength of the hash binding is bounded by the integrity of repodata itself, which is currently protected by transport security to the channel origin. A compromised channel origin can consistently rewrite the package, the sidecar, and the repodata. This is the same trust model that applies to packages today. A future repodata signing mechanism would automatically extend to sidecar integrity, since the `attestations` field is part of the signed content.
 - `require: warn` and `require: ignore` do not block installation on failure. Deployments that rely on attestations as a security control MUST use `require: error` together with a restrictive `trusted_identities` list.
