@@ -13,12 +13,12 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Set up pixi
         uses: prefix-dev/setup-pixi@a09b6247153796b190642a2b53fac4241043cf6f # v0.10.0
-        with:
-          run-install: false
       - name: Update lockfiles
         run: |
           set -o pipefail
-          pixi update --json | pixi exec pixi-diff-to-markdown >> diff.md
+          # use pixi-diff-to-markdown from previous pixi.lock
+          pixi install
+          pixi update --json --no-install | pixi run --as-is pixi-diff-to-markdown >> diff.md
       - name: Create pull request using GH CLI
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

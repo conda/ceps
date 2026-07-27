@@ -11,6 +11,7 @@ pre-commit-hooks = "*"
 codespell = "*"
 markdownlint-cli2 = "*"
 zizmor = "*"
+pixi-diff-to-markdown = "*"
 
 [tasks]
 lint = "pre-commit run --all-files"
