@@ -1,7 +1,7 @@
-# CEP XXXX - Subdirectories and virtual packages for iOS and Android
+# CEP XXXX - Subdirs and virtual packages for iOS and Android
 
 <table>
-<tr><td> Title </td><td> Subdirectories and virtual packages for iOS and Android </td>
+<tr><td> Title </td><td> Subdirs and virtual packages for iOS and Android </td>
 <tr><td> Status </td><td> Draft </td></tr>
 <tr><td> Author(s) </td><td> Wolf Vollprecht &lt;wolf@prefix.dev&gt;</td></tr>
 <tr><td> Created </td><td> Jul 24, 2026</td></tr>
