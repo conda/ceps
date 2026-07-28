@@ -351,7 +351,7 @@ with this standard.
   unambiguously state what the values of such [ECMA-427] properties should be.  The conda PURL type
   definition should be updated appropriately if/when the conda ecosystem standardizes on such
   case-sensitivity and normalization rules.
-- CEP 27 allows `file://` URLs to be channel base URLs, and the diversity of file systems and their
+- CEP 26 allows `file://` URLs to be channel base URLs, and the diversity of file systems and their
   behaviors may lead to conflicts with the requirements in this CEP and/or ECMA-427.  To avoid
   making this CEP overly complicated, the author(s) have intentionally chosen to defer any work
   needed to properly handle [certain types of] `file://`-based channels, especially since it is
