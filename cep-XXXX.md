@@ -105,7 +105,8 @@ conform to the following rules:
 - The final path component of `namespace` SHOULD NOT match any channel subdir name, as this can
   lead to ambiguous PURLs and channel base URLs, as noted in CEP 26.  If platform information is
   needed to properly identify the package(s), then the `subdir` qualifier (defined below) should be
-  used instead.
+  used instead.  (Note that this rule uses the "SHOULD NOT" rather than "MUST NOT" key words to
+  match the language in CEP 26.)
 
 An important implication of these rules is that a valid conda PURL must provide at least one of the
 `namespace` component or the `repository_url` qualifier, as a conda PURL that both omits the
@@ -113,14 +114,14 @@ An important implication of these rules is that a valid conda PURL must provide 
 below) specifies a channel base URL that is insufficient to properly locate the package.
 
 Further, the prohibition on using "defaults" as the `namespace` component value means that PURLs
-for Anaconda-built packages should use "main", "r", or "msys2" for their `namespace` component.
+for Anaconda-built packages must use "main", "r", or "msys2" for their `namespace` component.
 
 #### `name` component
 
 The `name` component MUST be the [distributable package name](./cep-0026.md#package-names) of the
 identified artifact(s), as defined in CEP 26.
 
-Conda PURLs SHOULD NOT be used to identify conda virtual packages since they do not correspond to
+Conda PURLs MUST NOT be used to identify conda virtual packages since they do not correspond to
 any concrete [package] artifact and only exist on the client side.
 
 #### `version` component
@@ -133,11 +134,11 @@ The `version` component MUST comply with all character encoding rules specified 
 (exclamation point) and the local version segment delimiter `+` (plus) must be percent encoded as
 `%21` and `%2B`, respectively.
 
-For conda PURLs to support the desired level of specificity, the `version` component SHOULD be
+For conda PURLs to support the desired level of specificity, the `version` component MUST be
 treated as an exact equality, with any necessary `.0` padding, when used for package version
-comparisons.  In other words, the `version` component SHOULD be treated as equivalent to a
+comparisons.  In other words, the `version` component MUST be treated as equivalent to a
 `==version` MatchSpec expression, as described in [CEP 29][matchspec-ver-match].  As an example, a
-`version` component with the value `1.2` should match versions `1.2` and `1.2.0` of the named
+`version` component with the value `1.2` matches versions `1.2` and `1.2.0` of the named
 package but not versions `1.2.0.1` and `1.2.3`.
 
 If [fuzzy equality][matchspec-ver-match] or other, more complex version matching is needed, the
@@ -204,7 +205,7 @@ Since existing CEPs do not define a strict relationship between a package artifa
 and build number, this CEP does not require that the `build` and `build_number` qualifiers in a
 conda PURL be mutually exclusive.  Further, it does specify which of these two qualifiers takes
 precedence in cases where their simultaneous use in a conda PURL creates a conflict.  Producers of
-conda PURLs should take care that their use of these qualifiers does not create a conflict, and
+conda PURLs must take care that their use of these qualifiers does not create a conflict, and
 consumers of conda PURLs are RECOMMENDED to treat conflicting use of these qualifiers as an invalid
 or erroneous PURL.
 
@@ -212,14 +213,14 @@ This CEP explicitly _undefines_ the `channel` qualifier found in the [existing c
 definition][purl-conda-def].  The `channel` qualifier corresponds to a weakly-defined concept not
 properly captured in any existing CEP, and its presumed purpose in the existing definition is
 better handled by the combination of the `namespace` component and `repository_url` qualifier, as
-described in this CEP.  Upon acceptance of this CEP, systems handling conda PURLs SHOULD treat
+described in this CEP.  Upon acceptance of this CEP, systems handling conda PURLs MUST treat
 PURLs containing a `channel` qualifier as invalid.
 
 To avoid the need for potentially complex precedence rules in this CEP, the [commonly-used
 qualifiers][purl-quals-guide] `filename` and `download_url` used by other PURL types are explicitly
 _not_ defined for conda PURLs.  In other words, the `filename` and `download_url` qualifiers MUST
 NOT be accepted when processing conda PURLs.  Should such values be needed to handle a conda PURL,
-they should be constructed from the other components and qualifiers defined in this CEP and the
+they must be constructed from the other components and qualifiers defined in this CEP and the
 rules defined in CEP 26.
 
 #### `subpath` component
@@ -288,7 +289,7 @@ list consisting of:
 - The canonical URL of this CEP
 
 Note that ECMA-427 Clause 6.12 specifies that the URLs listed in the `reference_urls` PURL type
-definition are informative.  However, to ensure standardized implementations, this CEP SHOULD be
+definition are informative.  However, to ensure standardized implementations, this CEP MUST be
 treated as normative and not just informative.
 
 
