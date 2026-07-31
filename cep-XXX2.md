@@ -10,7 +10,7 @@
 <tr><td> Updated </td><td> Apr 24, 2026</td></tr>
 <tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/145 </td></tr>
 <tr><td> Implementation </td><td> TBD </td></tr>
-<tr><td> Requires </td><td> [CEP XXX1 – Repodata wheel support](cep-XXX1.md) https://github.com/conda/ceps/pull/146 https://github.com/conda/ceps/pull/155 https://github.com/conda/ceps/pull/111 </td></tr>
+<tr><td> Requires </td><td> [CEP XXX1 – Repodata wheel support](cep-XXX1.md) https://github.com/conda/ceps/pull/146 https://github.com/conda/ceps/pull/155 [CEP 43](https://conda.org/learn/ceps/cep-0043) [CEP 44](https://conda.org/learn/ceps/cep-0044) </td></tr>
 <tr><td> See also </td><td> [CEP XXX0 – Wheel support in conda (overview)](cep-XXX0.md) </td></tr>
 </table>
 
@@ -20,7 +20,7 @@ described in [RFC2119][RFC2119] when, and only when, they appear in all capitals
 
 ## Abstract
 
-This CEP specifies how conda clients consume wheel entries published in repodata: loading `v{revision}.whl` into the same index as other repodata records, evaluating conditional dependencies and extras per [PR 111][pr-111], downloading wheel artifacts, and integrating them into the environment **as equivalent `noarch: python` conda packages** (layout, package database, and lifecycle).
+This CEP specifies how conda clients consume wheel entries published in repodata: loading `v{revision}.whl` into the same index as other repodata records, evaluating conditional dependencies and extras per [CEP 43][cep-43] and [CEP 44][cep-44], downloading wheel artifacts, and integrating them into the environment **as equivalent `noarch: python` conda packages** (layout, package database, and lifecycle).
 The shape of the `whl` index and publisher-side `METADATA` conversion are defined in [CEP XXX1 – Repodata wheel support][cep-xxx1].
 Background on **why** channels and clients pursue native wheel support, plus historical context and rejected ecosystem alternatives, is in [CEP XXX0 – Wheel support in conda (overview)][cep-xxx0].
 
@@ -47,10 +47,10 @@ Wheel records are normal [repodata records][repodata-record-schema] and solvers 
 
 ### Conditional dependencies and extras
 
-For wheel records, [PR 111][pr-111] normatively defines `when=` on `depends` and the **`extra_depends`** object for PyPI optional groups. Clients that implement this CEP MUST:
+For wheel records, [CEP 43][cep-43] defines `when=` on `depends` and [CEP 44][cep-44] defines the **`extra_depends`** object for optional groups. Clients that implement this CEP MUST:
 
 - Evaluate `when=` for wheel `depends` entries according to the same rules as for other new-syntax records, using an environment model that provides at least Python version and, where applicable, virtual packages (see [Marker handling](#marker-handling)).
-- Honor **`extra_depends`** when the user selects optional groups (for example with `extras=` in `MatchSpec`) per [PR 111][pr-111], and MUST NOT pull in `extra_depends` groups on a default install.
+- Honor **`extra_depends`** when the user selects optional groups (for example with `extras=` in `MatchSpec`) per [CEP 44][cep-44], and MUST NOT pull in `extra_depends` groups on a default install.
 - Load wheel records that use `when=` or `extra_depends` in the same `v{revision}` payload and revision-handling as other records introduced under the [backwards-compatible repodata update strategy](https://github.com/conda/ceps/pull/146).
 
 The strings on a wheel’s `depends` and `extra_depends` are produced by channel operators from wheel `METADATA` per [CEP XXX1][cep-xxx1]; the client’s job is to interpret them, not to re-parse the wheel for dependency resolution (though reading `METADATA` for validation or error messages is allowed).
@@ -59,7 +59,7 @@ The strings on a wheel’s `depends` and `extra_depends` are produced by channel
 
 **Publisher output (in repodata):** [CEP XXX1][cep-xxx1] requires converting certain PEP 508 markers on `Requires-Dist` into `when=` and optional-group fields. Other markers are out of scope for the default *publisher* conversion rules; repodata may omit or simplify them.
 
-**Client (solve time):** The solver MUST use the MatchSpec and PR 111 features carried on the repodata record: `when=` subexpressions, `python` constraints, and virtual packages, so that the effective dependency graph matches the published strings for the current environment. Clients MAY map additional environment dimensions to virtual packages where documented (non-normative per-variable notes appear in the [conda-pypi marker conversion][conda-pypi-marker-conversion] documentation).
+**Client (solve time):** The solver MUST use the MatchSpec features from [CEP 43][cep-43] and [CEP 44][cep-44] carried on the repodata record: `when=` subexpressions, `python` constraints, and virtual packages, so that the effective dependency graph matches the published strings for the current environment. Clients MAY map additional environment dimensions to virtual packages where documented (non-normative per-variable notes appear in the [conda-pypi marker conversion][conda-pypi-marker-conversion] documentation).
 
 **Out-of-scope dimensions:** Some PEP 508 variables (for example, `implementation_name`, or markers tied to a specific wheel build matrix beyond the pure-Python subset) do not have a defined mapping in the normative [CEP XXX1][cep-xxx1] record; behavior for such wheels remains undefined unless a future CEP or channel policy encodes them in repodata. Clients MUST NOT claim full PEP 508 equivalence beyond what the record expresses.
 
@@ -96,7 +96,7 @@ Conda clients install from the `.whl` artifact referenced in repodata and lay ou
 ### For conda client implementers
 
 - **Index:** Parse `whl` inside each supported `v{revision}` object alongside `packages` / `packages.conda` into the same solver-facing index.
-- **Conditional dependencies and extras ([PR 111][pr-111]):** Evaluate `when=` on `depends` and honor **`extra_depends`** when the user requests optional groups, consistent with the published record strings (wheel rows use the same syntax as other PR 111 records).
+- **Conditional dependencies and extras ([CEP 43][cep-43], [CEP 44][cep-44]):** Evaluate `when=` on `depends` and honor **`extra_depends`** when the user requests optional groups, consistent with the published record strings (wheel rows use the same syntax as other CEP 43 / CEP 44 records).
 - **Revision gating:** Treat new-syntax wheel records with the same `v{revision}` handling as the rest of the PR 146 strategy (do not expect older repodata only clients to read `whl`).
 - **Download:** Reuse the channel and fetch stack used for other artifacts (`fn`, channel/`base_url`, and checksum verification).
 - **Install:** Integrate wheels using the same prefix layout and metadata model as `noarch: python` conda packages ([CEP 20][cep-20], [CEP 34][cep-34]), including `info/link.json` for entry points when using conda's link pipeline. The [conda-pypi][conda-pypi] project demonstrates populating a conda package shape from a wheel (for example, suppressing duplicate `bin` script generation when `link.json` is used) as a non-normative example.
@@ -110,7 +110,7 @@ After installing `requests-2.32.5-py3-none-any.whl` from a wheel repodata record
 ## Backwards compatibility
 
 - **Repodata shape:** The `whl` key appears only under a registered `v{revision}` (see [PR 146](https://github.com/conda/ceps/pull/146)). Conda clients that do not support that revision or the `whl` index MUST ignore unknown `v{revision}` members or fall back to earlier revisions per channel policy.
-- **Record syntax:** Records that use `when=` and `extra_depends` are part of the new-syntax repodata world [PR 111][pr-111] already depends on; wheel rows are not a separate syntax fork.
+- **Record syntax:** Records that use `when=` and `extra_depends` are part of the new-syntax repodata world defined by [CEP 43][cep-43] and [CEP 44][cep-44]; wheel rows are not a separate syntax fork.
 
 ## Rejected ideas
 
@@ -123,7 +123,8 @@ Ecosystem-level alternatives (relying on pip only, on-the-fly PyPI without repod
 - [CEP 20 – `noarch` (python) packages and site-packages][cep-20]
 - [CEP 34 – Package metadata and `info/`](./cep-0034.md) (`index.json`, `link.json`, etc.)
 - [CEP 26 – Identifying packages and channels][cep-26]
-- [PR 111 – Conditional dependencies and optional groups][pr-111]
+- [CEP 43 – Conditional dependencies][cep-43]
+- [CEP 44 – Optional dependency groups][cep-44]
 - [PEP 508 marker conversion (conda-pypi developer docs)][conda-pypi-marker-conversion]
 - [Example `repodata.json` (conda-pypi test channel)][conda-pypi-example-repodata]
 - [conda-pypi project][conda-pypi]
@@ -147,7 +148,8 @@ All CEPs are explicitly [CC0 1.0 Universal](https://creativecommons.org/publicdo
 [conda-pypi]: https://github.com/conda-incubator/conda-pypi
 [conda-pypi-marker-conversion]: https://conda.github.io/conda-pypi/developer/marker-conversion/#pep-508-variables
 [conda-pypi-example-repodata]: https://github.com/conda-incubator/conda-pypi/blob/main/tests/conda_local_channel/noarch/repodata.json
-[pr-111]: https://github.com/conda/ceps/pull/111
+[cep-43]: https://conda.org/learn/ceps/cep-0043
+[cep-44]: https://conda.org/learn/ceps/cep-0044
 [conda-pupa]: https://github.com/dholth/conda-pupa
 [uv-in-pixi]: https://prefix.dev/blog/uv_in_pixi
 [rip]: https://github.com/prefix-dev/rip
