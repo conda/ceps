@@ -11,7 +11,7 @@
 <tr><td> Updated </td><td> Apr 24, 2026</td></tr>
 <tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/145 </td></tr>
 <tr><td> Implementation </td><td> TBD </td></tr>
-<tr><td> Requires </td><td> https://github.com/conda/ceps/pull/151 https://github.com/conda/ceps/pull/146 https://github.com/conda/ceps/pull/155 https://github.com/conda/ceps/pull/164 https://github.com/conda/ceps/pull/165 [CEP XXX2 (Wheel conda client support)](cep-XXX2.md) </td></tr>
+<tr><td> Requires </td><td> https://github.com/conda/ceps/pull/146 https://github.com/conda/ceps/pull/155 https://github.com/conda/ceps/pull/164 https://github.com/conda/ceps/pull/165 [CEP XXX2 (Wheel conda client support)](cep-XXX2.md) </td></tr>
 <tr><td> See also </td><td> [CEP XXX0 – Wheel support in conda (overview)](cep-XXX0.md) </td></tr>
 </table>
 
@@ -60,7 +60,6 @@ The `whl` dictionary maps conda-like filenames to repodata records. The key MUST
 - **`extra_depends`**: MAY be present. When present, MUST be an object mapping extra names to lists of dependency strings for optional groups, per [PR 165][pr-165]. When absent or empty, the record declares no optional groups beyond `depends`.
 - **`subdir`**: MUST be `"noarch"`.
 - **`noarch`**: MUST be `"python"`.
-- **`url`**: MAY be present. Semantics are defined in [PR 151][pr-151] (see [Wheel download URLs](#wheel-download-urls)).
 - **`fn`**: MUST be the wheel filename (`.whl`), as in standard conda repodata records (for example `requests-2.32.5-py3-none-any.whl`).
 - **`sha256`**, **`size`**: Standard repodata fields for the wheel file.
 
@@ -91,12 +90,11 @@ Channel references MUST use relative paths as required by that CEP (for example 
 
 Channel operators SHOULD document any naming conventions and mappings specific to their channel, including how they relate to their declared `channel_relations`.
 
-### Wheel download URLs
+### Wheel download locations
 
-This CEP depends on the optional per-record **`url`** field as specified in [PR 151][pr-151], which enables custom download locations. This is essential for wheel support since PyPI wheels are commonly hosted in per-package subdirectories or served from CDNs.
+Wheel artifacts SHALL be fetched like other conda packages: combine the channel location (or the repodata `info.base_url` when present, per [CEP 15][cep-15] / [CEP 16][cep-16]) with `subdir` and `fn`. Channel operators MUST make the `.whl` file available at that URL (typically `{channel}/noarch/{fn}`).
 
-The `whl` mapping (inside the `v{revision}` payload) and the per-record `url` field SHALL follow
-the backwards-compatible update strategy ([PR 146](https://github.com/conda/ceps/pull/146)).
+The `whl` mapping (inside the `v{revision}` payload) SHALL follow the backwards-compatible update strategy ([PR 146](https://github.com/conda/ceps/pull/146)).
 
 ### Wheel-Specific Record Values
 
@@ -107,7 +105,6 @@ When populating repodata records for pure Python wheels:
 - `subdir`: MUST be "noarch"
 - `noarch`: MUST be "python"
 - `fn`: MUST be the wheel filename (`.whl`)
-- `url`: MAY be present and follow the semantics in [PR 151][pr-151] and [Wheel download URLs](#wheel-download-urls)
 
 ### Pure Python wheel validation
 
@@ -203,8 +200,6 @@ This CEP has the following known limitations:
 How conda clients evaluate `when=` and optional groups at solve time (including environment context) is specified in [CEP XXX2][cep-xxx2] together with [PR 164][pr-164] and [PR 165][pr-165].
 3. **Conditionals and extras:** Normative syntax and record fields for `when=` on `depends` and for optional groups in **`extra_depends`** are specified in [PR 164][pr-164] and [PR 165][pr-165], on which this repodata CEP and [CEP XXX2][cep-xxx2] rely for PyPI-aligned conditionals and extras in published records and at client solve time, respectively.
 4. **Repodata size:** Supporting a significant portion of pure Python packages from PyPI (potentially hundreds of thousands of packages with multiple versions each) will substantially increase repodata size. Channels adopting wheel support at scale SHOULD implement sharded repodata ([CEP 16][cep-16]) to maintain acceptable performance.
-5. **PyPI package deletion:** PyPI allows package maintainers to delete releases (as opposed to only yanking them). Releases may also be removed when classified as **malicious** or otherwise pulled by PyPI administrators. Any removal may break locked environments that reference those artifacts.
-Channels using external PyPI URLs directly are subject to this risk. For production use and reproducible environments, channels MAY mirror and store wheel artifacts locally rather than relying solely on external PyPI URLs.
 
 ## Rationale
 
@@ -240,7 +235,7 @@ Channel operators adding wheel support SHOULD:
 - Maintain a mapping of PyPI to conda-style names for their channel, or declare `channel_relations.base` so clients load a base channel that defines those mappings (see [Naming standard and channel mapping](#naming-standard-and-channel-mapping) and [Channel relations in repodata][cep-channel-relations])
 - Consider automation to keep the repodata up to date with newer releases on PyPI
 - Document any naming conventions specific to their channel
-- For production channels, consider mirroring wheel artifacts locally to ensure reproducibility and protect against PyPI deletions
+- Host wheel artifacts on the channel (under `noarch/` by default) so clients can fetch them with standard conda URL construction
 - Establish patching workflows to correct metadata issues and resolve dependency conflicts
 - Document patching policies and maintain transparency about modified packages
 
@@ -261,51 +256,14 @@ The JSON fragments below use revision `3` as an example (`v3`). The integer MUST
 A complete channel index also includes the traditional top-level keys (`repodata_version`, `packages`,
 `packages.conda`, `removed`, and so on). A full generated example is checked in with [conda-pypi][conda-pypi-example-repodata].
 
-### Download wheels from the default location
+### Channel-hosted wheel (default location)
 
-Below represents the default behavior when the `url` field is omitted:
-
-```json
-{
-  "v3": {
-    "whl": {
-      "requests-2.32.5-py3_none_any_0": {
-        "name": "requests",
-        "version": "2.32.5",
-        "build": "py3_none_any_0",
-        "build_number": 0,
-        "depends": [
-          "charset-normalizer <4,>=2",
-          "idna <4,>=2.5",
-          "urllib3 <3,>=1.21.1",
-          "certifi >=2017.4.17",
-          "python >=3.9"
-        ],
-        "fn": "requests-2.32.5-py3-none-any.whl",
-        "sha256": "78820a3e5d9d3b25ce8e1c99c1c89cd19caa904a92973a3e50f8426009e8a4b3",
-        "size": 6899,
-        "subdir": "noarch",
-        "noarch": "python",
-        "url": null
-      }
-    }
-  }
-}
-```
-
-With this configuration, the wheel file will be downloaded from the following location (assuming we are hosting this from `https://repo.example.com/channel`):
-
-- `https://repo.example.com/channel/noarch/requests-2.32.5-py3-none-any.whl`
-
-### Downloading wheels from a relative location with `base_url`
-
-The `url` can also be relative as described above. Here's an example of what that looks like combined with setting the `base_url` property at the top level, and also showing how a channel can declare a base channel for naming and dependencies using `channel_relations` ([Channel relations in repodata][cep-channel-relations]):
+A channel-hosted wheel uses standard conda URL construction. The `.whl` file is served under the channel’s `noarch` directory (or under `info.base_url` when set), the same way as other `noarch` artifacts:
 
 ```json
 {
   "info": {
     "subdir": "noarch",
-    "base_url": "https://packages.example.org/wheel-extra/",
     "channel_relations": {
       "base": "../core"
     }
@@ -328,49 +286,16 @@ The `url` can also be relative as described above. Here's an example of what tha
         "sha256": "78820a3e5d9d3b25ce8e1c99c1c89cd19caa904a92973a3e50f8426009e8a4b3",
         "size": 6899,
         "subdir": "noarch",
-        "noarch": "python",
-        "url": "requests/requests-2.32.5-py3-none-any.whl"
+        "noarch": "python"
       }
     }
   }
 }
 ```
 
-This would result in the following being fetched by conda clients:
+With this configuration, the wheel file is downloaded from (assuming the channel is at `https://repo.example.com/channel`):
 
-- `https://packages.example.org/wheel-extra/noarch/requests/requests-2.32.5-py3-none-any.whl`
-
-### Downloading wheels from external location
-
-The following shows an example of using an external location to download the wheel from PyPI's file hosting:
-
-```json
-{
-  "v3": {
-    "whl": {
-      "requests-2.32.5-py3_none_any_0": {
-        "name": "requests",
-        "version": "2.32.5",
-        "build": "py3_none_any_0",
-        "build_number": 0,
-        "depends": [
-          "charset-normalizer <4,>=2",
-          "idna <4,>=2.5",
-          "urllib3 <3,>=1.21.1",
-          "certifi >=2017.4.17",
-          "python >=3.9"
-        ],
-        "fn": "requests-2.32.5-py3-none-any.whl",
-        "sha256": "78820a3e5d9d3b25ce8e1c99c1c89cd19caa904a92973a3e50f8426009e8a4b3",
-        "size": 6899,
-        "subdir": "noarch",
-        "noarch": "python",
-        "url": "https://files.pythonhosted.org/packages/1e/db/4254e3eabe8020b458f1a747140d32277ec7a271daf1d235b70dc0b4e6e3/requests-2.32.5-py3-none-any.whl"
-      }
-    }
-  }
-}
-```
+- `https://repo.example.com/channel/noarch/requests-2.32.5-py3-none-any.whl`
 
 ### Name mapping
 
@@ -393,8 +318,7 @@ Here is an example of name mapping and normalization of the record name and depe
         "sha256": "1f02e8b43a8fbbc3f3e0d4f0f4bfc8131bcb4eebe8849b8e5c773f3a1c582a53",
         "size": 13643,
         "subdir": "noarch",
-        "noarch": "python",
-        "url": "https://files.pythonhosted.org/packages/78/b6/6307fbef88d9b5ee7421e68d78a9f162e0da4900bc5f5793f6d3d0e34fb8/annotated_types-0.7.0-py3-none-any.whl"
+        "noarch": "python"
       }
     }
   }
@@ -424,7 +348,6 @@ The package record expresses the conditional with `when=` so `typing_extensions`
 - [PEP 508 marker conversion (conda-pypi developer docs)][conda-pypi-marker-conversion]
 - [Example `repodata.json` (conda-pypi test channel)][conda-pypi-example-repodata]
 - [Channel relations in repodata (PR 155)][cep-channel-relations]
-- [PR 151 – URL field for package records][pr-151]
 - [PR 164 – Conditional dependencies][pr-164]
 - [PR 165 – Optional dependency groups][pr-165]
 - [conda-pupa][conda-pupa]
@@ -438,6 +361,7 @@ All CEPs are explicitly [CC0 1.0 Universal](https://creativecommons.org/publicdo
 [RFC2119]: https://datatracker.ietf.org/doc/html/rfc2119
 [repodata-schema]: https://schemas.conda.org/repodata-1.schema.json
 [repodata-record-schema]: https://schemas.conda.org/repodata-record-1.schema.json
+[cep-15]: https://conda.org/learn/ceps/cep-0015
 [cep-16]: https://conda.org/learn/ceps/cep-0016
 [cep-26]: https://conda.org/learn/ceps/cep-0026
 [version-specifiers]: https://packaging.python.org/en/latest/specifications/version-specifiers/#id5
@@ -445,7 +369,6 @@ All CEPs are explicitly [CC0 1.0 Universal](https://creativecommons.org/publicdo
 [conda-pypi-marker-conversion]: https://conda.github.io/conda-pypi/developer/marker-conversion/#pep-508-variables
 [conda-pypi-example-repodata]: https://github.com/conda-incubator/conda-pypi/blob/main/tests/conda_local_channel/noarch/repodata.json
 [cep-channel-relations]: https://github.com/conda/ceps/pull/155
-[pr-151]: https://github.com/conda/ceps/pull/151
 [pr-164]: https://github.com/conda/ceps/pull/164
 [pr-165]: https://github.com/conda/ceps/pull/165
 [conda-pupa]: https://github.com/dholth/conda-pupa

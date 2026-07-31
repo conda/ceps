@@ -231,7 +231,7 @@ Despite these advantages, this approach was rejected because:
 - **Infrastructure burden:** Requires significant storage and bandwidth to host and serve converted packages that duplicate PyPI's CDN infrastructure
 - **Resource inefficiency:** Wheels are already an excellent format for pure Python packages. Conversion adds no technical value and wastes resources
 
-Native wheel support provides the same user experience (transparent PyPI access through channels that publish wheels) while avoiding the infrastructure burden and resource inefficiency of conversion. Channel operators who prefer converted packages can continue building conda packages from PyPI sources.
+Native wheel support provides the same user experience (transparent access to pure-Python packages through channels that index and host wheels like other packages) while avoiding the infrastructure burden and resource inefficiency of conversion. Channel operators who prefer converted packages can continue building conda packages from PyPI sources.
 
 ## References
 

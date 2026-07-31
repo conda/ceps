@@ -10,7 +10,7 @@
 <tr><td> Updated </td><td> Apr 24, 2026</td></tr>
 <tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/145 </td></tr>
 <tr><td> Implementation </td><td> TBD </td></tr>
-<tr><td> Requires </td><td> [CEP XXX1 – Repodata wheel support](cep-XXX1.md) https://github.com/conda/ceps/pull/151 https://github.com/conda/ceps/pull/146 https://github.com/conda/ceps/pull/155 https://github.com/conda/ceps/pull/111 </td></tr>
+<tr><td> Requires </td><td> [CEP XXX1 – Repodata wheel support](cep-XXX1.md) https://github.com/conda/ceps/pull/146 https://github.com/conda/ceps/pull/155 https://github.com/conda/ceps/pull/111 </td></tr>
 <tr><td> See also </td><td> [CEP XXX0 – Wheel support in conda (overview)](cep-XXX0.md) </td></tr>
 </table>
 
@@ -65,9 +65,9 @@ The strings on a wheel’s `depends` and `extra_depends` are produced by channel
 
 ### Download
 
-After the solver selects a wheel record, the client MUST download the `.whl` file using the same rules as for other `noarch` artifacts with a `fn` and optional `url`:
+After the solver selects a wheel record, the client MUST download the `.whl` file using the same rules as for other `noarch` artifacts with a `fn`:
 
-- Resolve the URL per [PR 151][pr-151] and the download examples in [CEP XXX1][cep-xxx1] (channel `base_url`, default `noarch` layout, or absolute per-record `url`).
+- Construct the download URL from the channel location (or repodata `info.base_url` when present) together with `subdir` and `fn`, as for other conda packages. See [Wheel download locations][cep-xxx1-download] in [CEP XXX1][cep-xxx1].
 - Verify integrity using `sha256` and `size` from the repodata record when those fields are present, consistent with other conda downloads.
 
 ### Installation layout and prefix placement
@@ -85,7 +85,7 @@ The repodata record points at a wheel file as the artifact to obtain; the **norm
 
 ### One solve, predictable layout
 
-Native wheel support in the client avoids separate PyPI or pip phases for the packages indexed in [CEP XXX1][cep-xxx1], matches user expectations for where importable code lives, and reuses conda's environment model. Keeping download rules aligned with [PR 151][pr-151] matches existing channel URL behavior.
+Native wheel support in the client avoids separate PyPI or pip phases for the packages indexed in [CEP XXX1][cep-xxx1], matches user expectations for where importable code lives, and reuses conda's environment model and fetch stack.
 
 ### Native unpack
 
@@ -98,7 +98,7 @@ Conda clients install from the `.whl` artifact referenced in repodata and lay ou
 - **Index:** Parse `whl` inside each supported `v{revision}` object alongside `packages` / `packages.conda` into the same solver-facing index.
 - **Conditional dependencies and extras ([PR 111][pr-111]):** Evaluate `when=` on `depends` and honor **`extra_depends`** when the user requests optional groups, consistent with the published record strings (wheel rows use the same syntax as other PR 111 records).
 - **Revision gating:** Treat new-syntax wheel records with the same `v{revision}` handling as the rest of the PR 146 strategy (do not expect older repodata only clients to read `whl`).
-- **Download:** Reuse the channel and fetch stack used for other artifacts, including `url` and checksum verification.
+- **Download:** Reuse the channel and fetch stack used for other artifacts (`fn`, channel/`base_url`, and checksum verification).
 - **Install:** Integrate wheels using the same prefix layout and metadata model as `noarch: python` conda packages ([CEP 20][cep-20], [CEP 34][cep-34]), including `info/link.json` for entry points when using conda's link pipeline. The [conda-pypi][conda-pypi] project demonstrates populating a conda package shape from a wheel (for example, suppressing duplicate `bin` script generation when `link.json` is used) as a non-normative example.
 
 ## Examples
@@ -124,7 +124,6 @@ Ecosystem-level alternatives (relying on pip only, on-the-fly PyPI without repod
 - [CEP 34 – Package metadata and `info/`](./cep-0034.md) (`index.json`, `link.json`, etc.)
 - [CEP 26 – Identifying packages and channels][cep-26]
 - [PR 111 – Conditional dependencies and optional groups][pr-111]
-- [PR 151 – URL field for package records][pr-151]
 - [PEP 508 marker conversion (conda-pypi developer docs)][conda-pypi-marker-conversion]
 - [Example `repodata.json` (conda-pypi test channel)][conda-pypi-example-repodata]
 - [conda-pypi project][conda-pypi]
@@ -144,10 +143,10 @@ All CEPs are explicitly [CC0 1.0 Universal](https://creativecommons.org/publicdo
 [cep-34]: ./cep-0034.md
 [cep-xxx0]: cep-XXX0.md
 [cep-xxx1]: cep-XXX1.md
+[cep-xxx1-download]: cep-XXX1.md#wheel-download-locations
 [conda-pypi]: https://github.com/conda-incubator/conda-pypi
 [conda-pypi-marker-conversion]: https://conda.github.io/conda-pypi/developer/marker-conversion/#pep-508-variables
 [conda-pypi-example-repodata]: https://github.com/conda-incubator/conda-pypi/blob/main/tests/conda_local_channel/noarch/repodata.json
-[pr-151]: https://github.com/conda/ceps/pull/151
 [pr-111]: https://github.com/conda/ceps/pull/111
 [conda-pupa]: https://github.com/dholth/conda-pupa
 [uv-in-pixi]: https://prefix.dev/blog/uv_in_pixi
