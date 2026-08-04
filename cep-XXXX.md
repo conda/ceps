@@ -1,7 +1,7 @@
 # CEP XXXX - PURLs for conda packages
 
 <table>
-<tr><td> Title </td><td> Package-URLs (PURLs) for conda packages </td>
+<tr><td> Title </td><td> Package-URLs (PURLs) for conda packages </td></tr>
 <tr><td> Status </td><td> Draft </td></tr>
 <tr><td> Author(s) </td><td> Cheng H. Lee &lt;clee@anaconda.com&gt; </td></tr>
 <tr><td> Created </td><td> 2026-04-02 </td></tr>
