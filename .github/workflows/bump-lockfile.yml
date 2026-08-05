@@ -17,7 +17,6 @@ jobs:
         run: |
           set -o pipefail
           # use pixi-diff-to-markdown from previous pixi.lock
-          pixi install
           pixi update --json --no-install | pixi run --as-is pixi-diff-to-markdown >> diff.md
       - name: Create pull request using GH CLI
         env:
