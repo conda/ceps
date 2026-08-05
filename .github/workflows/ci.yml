@@ -1,0 +1,24 @@
+name: CI
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+# Automatically stop old builds on the same branch/PR
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  lint:
+    permissions:
+      contents: read
+    name: Lint
+    timeout-minutes: 10
+    runs-on: ubuntu-slim
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Set up pixi
+        uses: prefix-dev/setup-pixi@a09b6247153796b190642a2b53fac4241043cf6f # v0.10.0
+      - name: Run linting
+        run: pixi run lint --color=always --show-diff-on-failure
