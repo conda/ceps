@@ -5,7 +5,7 @@
 <tr><td> Status </td><td> Draft </td></tr>
 <tr><td> Author(s) </td><td> Cheng H. Lee &lt;clee@anaconda.com&gt; </td></tr>
 <tr><td> Created </td><td> 2026-04-02 </td></tr>
-<tr><td> Updated </td><td> 2026-04-12 </td></tr>
+<tr><td> Updated </td><td> 2026-08-12 </td></tr>
 <tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/159, https://github.com/package-url/purl-spec/issues/868 </td></tr>
 <tr><td> Implementation </td><td> NA </td></tr>
 </table>
