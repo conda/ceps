@@ -5,19 +5,19 @@
 <tr><td> Status </td><td> Draft </td></tr>
 <tr><td> Author(s) </td><td> Cheng H. Lee &lt;clee@anaconda.com&gt; </td></tr>
 <tr><td> Created </td><td> 2026-04-02 </td></tr>
-<tr><td> Updated </td><td> 2026-04-08 </td></tr>
-<tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/159 </td></tr>
+<tr><td> Updated </td><td> 2026-04-12 </td></tr>
+<tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/159, https://github.com/package-url/purl-spec/issues/868 </td></tr>
 <tr><td> Implementation </td><td> NA </td></tr>
 </table>
 
 ## Abstract
 
 This CEP describes the Package-URL type definition for conda packages in a way that conforms to
-other relevant standards, including other CEPs and ECMA-427.
+other relevant standards, including other CEPs and [ECMA-427][ECMA427].
 
 ## Motivation
 
-Package URLs (PURLs) provide "a standardized, URL-based syntax that uniquely identifies software
+Package-URLs (PURLs) provide "a standardized, URL-based syntax that uniquely identifies software
 packages, independent of their ecosystem or distribution channel". Users may want or need to use
 PURLs to identify conda packages in various contexts, including but not limited to, software bills
 of materials (SBOMs), vulnerability reporting, and cross-ecosystem compatibility.
@@ -70,9 +70,7 @@ key word "shall" in ECMA-427 Clause 5.6.1 being interpreted as its BCP 14 equiva
 The canonical form for conda PURL's `type` component is the ASCII string literal "conda". Systems
 processing conda PURLs MUST follow all of the rules specified in ECMA-427 Clause 5.6.2 ("Type"),
 with the key word "shall" in ECMA-427 Clause 5.6.2 being interpreted as its BCP 14 equivalent
-"SHALL". Systems processing conda PURLs are RECOMMENDED to normalize the `type` component to its
-canonical lowercase form, following the behaviors specified in ECMA-427 Clause 5.5 ("Case
-folding").
+"SHALL".
 
 #### `namespace` component
 
@@ -270,7 +268,7 @@ The ECMA-427 Clause 6.4 `repository` property is REQUIRED for conda PURLs. Its u
 interpretation is defined in the "`namespace` component" and "`qualifier` component" sections.
 
 To maintain compatibility with the default behavior of existing conda-compatible clients, the
-default public repository (i.e., `default_repository_url`) for conda packages is SHALL be
+default public repository (i.e., `default_repository_url`) for conda packages SHALL be
 "https://conda.anaconda.org".
 
 #### `examples` property
@@ -291,9 +289,9 @@ treated as normative and not just informative.
 
 ## Examples
 
-- `pkg:conda/main/python`: basic usage, identifying [all] `python` packages from Anaconda
+- `pkg:conda/main/python`: basic usage, identifying _all_ `python` packages from Anaconda
 - `pkg:conda/conda-forge/python@3.13.12?build=hc97d973_100_cp313&subdir=linux-64`: basic usage,
-  identifying a specific `python` build from conda-forge.
+  identifying exactly one specific `python` build from conda-forge.
 - `pkg:conda/python?repository_url=https%3A%2F%2Frepo.anaconda.com%2Fpkgs%2Fmain`: using the
   `repository_url` qualifier to fully identify the channel base URL
 - `pkg:conda/conda-forge/python?repository_url=https%3A%2F%2Fprefix.dev`: using the
@@ -318,7 +316,7 @@ patterns in the conda ecosystem. Among the motivations for these breaking change
 - Simple PURLs like `pkg:conda/python` and `pkg:conda/python?channel=conda-forge` are accepted
   under the existing conda PURL definition but cannot be used to identify actual package artifacts,
   as that definition's default values produces non-existent URLs. The existing conda PURL
-  definition effectively requires that _every_ conda PURL explicitly provide a `repository_url`
+  definition effectively requires that _every_ conda PURL explicitly provides a `repository_url`
   qualifier, possibly combined with a `channel` qualifier in an unspecified way, to produce a URL
   that would correspond to an actual package artifact.
 - The prohibition of a `namespace` component in the existing conda PURL definition means
