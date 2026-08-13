@@ -22,7 +22,7 @@
 
 ## Abstract
 
-This document proposes a set of updates to `repodata.json` files and its derivatives (sharded, subsets) to include the improvements introduced in CEP [43](./cep-0043.md), [44](./cep-0044.md), [45](./cep-0045.md), and [47](./cep-0047.md). To do so in a backwards compatible manner, it also proposes a revision system as a way to extend repodata with new additions, _without_ incrementing `repodata_version`.
+This document proposes a set of updates to `repodata.json` files and its derivatives (sharded, subsets) to include the improvements introduced in CEPs [43](./cep-0043.md), [44](./cep-0044.md), [45](./cep-0045.md), and [47](./cep-0047.md). To do so in a backwards compatible manner, it also proposes a revision system as a way to extend repodata with new additions, _without_ incrementing `repodata_version`.
 
 ## Motivation
 
@@ -63,10 +63,10 @@ This key MUST map to a dictionary of type `dict[str, dict]`:
   - Each subkey MUST be a non-empty string representing the artifact filename without its extension.
   - Each subvalue MUST be a valid [CEP 36](./cep-0036.md) "package record metadata" dictionary, including these changes:
     - The `indexed_timestamp` field introduced by [CEP 47](./cep-0047.md) SHOULD be set.
-    - The `extra_depends` field introduced by [44](./cep-0044.md) MAY be present.
+    - The `extra_depends` field introduced by [CEP 44](./cep-0044.md) MAY be present.
     - The MatchSpec strings mentioned in the fields `depends`, `constrains` and the lists of strings within `extra_depends` groups:
       - MUST set the `name` field to an exact string (no globbing allowed).
-      - MAY set the fields: `version`, `build`, `build_number`, CEP 43 `when`, CEP 44 `extras`, CEP 45 `flags`.
+      - MAY set the fields: `version`, `build`, `build_number`, [CEP 43](./cep-0043.md) `when`, [CEP 44](./cep-0044.md) `extras`, [CEP 45](./cep-0045.md) `flags`.
       - MUST NOT set any other fields.
       - If only `name` is set, the MatchSpec MUST be the bare name string (e.g. `pip`). Empty brackets (e.g. `pip[]`) MUST NOT be used.
       - If any field other than `name` is set, the MatchSpec MUST use the `name` + square-brackets form (e.g. `name[version="1.2.*",build_number=0]`).
@@ -100,8 +100,9 @@ Hence, we recommend sticking to `repodata_version: 1` and only using `repodata_v
     "subdir": "noarch",
     "repodata_revisions": {
       "v3": {
-        "n_packages": 2,
-        "oldest": 1768249989851,
+        "message": "This is just an example v3 revision",
+        "n_packages": 1,
+        "oldest": 1773851561010,
         "newest": 1773851561010
       }
     }
