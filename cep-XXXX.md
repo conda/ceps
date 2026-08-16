@@ -19,9 +19,10 @@
 
 This CEP supersedes [CEP 19](cep-0019.md) and amends the algorithm for computing the aggregated
 hash of a directory's contents in a cross-platform way. The original algorithm was susceptible to
-hash collisions when filenames contained the same byte sequences used as type markers or field
-separators. This CEP fixes that vulnerability by length-prefixing every variable-length field in the
-hash stream, making all field boundaries unambiguous.
+hash collisions when a filename, a symlink target, or a file's contents contained the same byte
+sequences used as type markers or field separators. This CEP fixes that vulnerability by
+length-prefixing every variable-length field in the hash stream, making all field boundaries
+unambiguous.
 
 ## Motivation
 
@@ -33,8 +34,8 @@ the order:
 ```
 
 Because there is no field-length information, two structurally different directory trees can produce
-an identical byte stream whenever a filename happens to contain the same bytes used as type markers
-(`F`, `D`, `L`) or the entry separator (`-`).
+an identical byte stream whenever a filename, a symlink target, or a file's contents happen to
+contain the same bytes used as type markers (`F`, `D`, `L`) or the entry separator (`-`).
 
 **Concrete example:**
 
@@ -42,81 +43,141 @@ an identical byte stream whenever a filename happens to contain the same bytes u
 - **Tree 2:** a file named `test` (content `hello`) and a file named `world` (content `www`)
 
 Both trees produce the byte stream `testFhello-worldFwww-`, yielding the same digest: a true hash
-collision on structurally different directory trees.
+collision on structurally different directory trees. The same construction works through file
+contents rather than filenames, since content bytes are equally unbounded in the CEP 19 stream (see
+[Rationale](#why-length-prefix-file-content-too) for a worked example).
 
-An attacker who controls filenames could exploit this to produce a directory tree whose computed
-hash matches that of a different, potentially malicious tree.
+An attacker who controls filenames or file contents could exploit this to produce a directory tree
+whose computed hash matches that of a different, potentially malicious tree.
 
 ## Specification
 
-Given a directory (the "scanned directory"), recursively scan all its contents (without following
-symlinks) and sort them by their path relative to the scanned directory. The scanned directory
-itself (`.`) MUST NOT be included as an entry. Paths MUST be NFC-normalized and then UTF-8-encoded
-before sorting; the sort MUST be a byte-wise comparison of the resulting UTF-8 bytes, ordering by
-unsigned byte value (0-255).
+### Entry collection
 
-The paths MUST be normalized before they are processed by the algorithm below. The following rules
+Given a directory (the "scanned directory"), recursively scan all of its contents. Each individual
+regular file, each directory, and each symlink found anywhere beneath the scanned directory is one
+**entry**: a single item produced by the scan, identified by its own path relative to the scanned
+directory and contributing exactly one record of its own to the hash stream. A tree containing three
+files and two subdirectories therefore has five entries, not one. The resulting set of entries is
+what the rest of this algorithm operates on:
+
+- **Regular files** are collected as entries. A regular file is the only entry type whose contents
+  participate in the hash (see [Content normalization](#content-normalization)); every other type
+  contributes only path-derived bytes.
+- **Directories** are collected as entries in their own right, in addition to the entries for
+  whatever they contain. This includes empty directories: an empty directory is collected and is
+  represented solely by its own entry, which is what makes it visible to the hash at all.
+- **Symlinks** are collected as symlinks and MUST NOT be followed. Whatever a symlink points at is
+  therefore not scanned through that symlink - only the symlink's own entry (and its target path) is
+  hashed, even when the target is a directory inside the scanned directory.
+- **Any other entry type** (device nodes, FIFOs, sockets, ...) MUST cause the implementation to
+  error out, per the [Hash stream](#hash-stream) rules below.
+- The scanned directory itself (`.`) MUST NOT be included as an entry.
+
+An entry's relative path MUST be normalized per [Path normalization](#path-normalization) before it
+is used for anything. That normalized relative path is the only form of the path this algorithm ever
+uses: it is what entries are sorted by here, and it is also what is fed into the hasher in steps 1
+and 2 of the [Hash stream](#hash-stream).
+
+Entries MUST be sorted by that path: NFC-normalize it, encode it as UTF-8, and compare the resulting
+UTF-8 bytes byte-wise, ordering by unsigned byte value (0-255).
+
+### Path normalization
+
+The paths MUST be normalized before they are sorted or fed into the hasher. The following rules
 apply to both entry paths and symlink targets:
 
-- Before encoding a path to UTF-8 for sorting or hashing, implementations MUST normalize it to NFC.
-- If NFC normalization produces two entries with the same path, implementations MUST error out
-  rather than silently feeding duplicate bytes into the hasher.
-- Backslashes in the path MUST be normalized to forward slashes (e.g. `path\\to\\file`
-  becomes `path/to/file`).
-- Redundant path components MUST be removed (e.g. `path/to/../to/file` becomes `path/to/file`).
-- A leading `./` MUST be stripped (e.g. `./README.txt` becomes `README.txt`).
-- If any path component contains a null byte (`\0`), implementations MUST error out.
 - Every path MUST be UTF-8-encodable. If a path contains bytes that are not valid UTF-8,
   implementations MUST error out rather than silently substituting or passing through the invalid
   bytes (see [Rationale](#why-require-utf-8-encodable-paths) for a Python-specific pitfall this
-  guards against).
+  guards against). Every rule below that speaks of encoding a path to UTF-8 relies on this: a path
+  that fails here never reaches them.
+- If any path component contains a null byte (`\0`), implementations MUST error out.
+- Before encoding a path to UTF-8 for sorting or hashing, implementations MUST normalize it to NFC.
+  If this leaves two entries with the same path, implementations MUST error out rather than silently
+  feeding duplicate bytes into the hasher.
+- Backslashes in the path MUST be normalized to forward slashes (e.g. `path\\to\\file`
+  becomes `path/to/file`).
+- `.` and `..` components MUST NOT be collapsed (e.g. `foo/../bar` MUST NOT be rewritten to `bar`);
+  see [Rationale](#why-not-collapse-redundant-path-components).
 
 **Entry paths** (the paths of directory entries) are additionally subject to:
 
-- Entry paths MUST be relative; a leading `/` MUST be rejected (implementations MUST error out if an
-  entry path is absolute).
-- Entry paths MUST NOT contain a drive letter (e.g. `C:`) or a UNC prefix (e.g. `//server/share`);
-  implementations MUST error out if such a path is encountered.
+- A leading `./` MUST be stripped (e.g. `./README.txt` becomes `README.txt`) before the rules below
+  are applied.
+- An entry path MUST NOT be absolute: a leading `/` MUST be rejected.
+- An entry path MUST NOT contain a drive letter (e.g. `C:`) or a UNC prefix (e.g. `//server/share`).
+- An entry path MUST NOT contain any `.` or `..` component.
+
+Implementations MUST error out on an entry path that violates any of these rules, rather than
+rewrite it to satisfy them.
 
 **Symlink targets** are subject to different rules, since a symlink MAY legitimately point to an
 absolute path:
 
 - Symlink targets MAY be relative or absolute. A leading `/` is a legitimate absolute Unix path and
   MUST be preserved, not rejected.
+- A symlink target MUST be hashed as stored, apart from the common rules above: `.` and `..`
+  components, repeated slashes, and trailing slashes MUST all be preserved verbatim, and the target
+  MUST NOT be resolved against the filesystem. Two symlinks whose stored targets differ are different
+  symlinks, and MUST hash differently.
 - Windows drive letters (e.g. `C:`) and UNC prefixes (e.g. `//server/share`) in a symlink target
   MUST cause the implementation to error out, because there is no meaningful cross-platform way to
   normalize them into the hash stream.
+
+### Content normalization
+
+The **normalized content bytes** of a regular file are determined as follows:
+
+- If the file can't be opened or read, implementations MUST error out.
+- Otherwise, read the file's raw bytes and classify the file:
+  - **Text** (i.e. its entire contents can be UTF-8 decoded): the normalized content bytes are the
+    raw bytes with every `\r\n` byte sequence (`0x0D 0x0A`) replaced by `\n` (`0x0A`). The
+    substitution MUST be performed directly on the raw bytes, not via a
+    decode-to-text-then-re-encode round-trip.
+  - **Binary** (i.e. its contents cannot be UTF-8 decoded): the normalized content bytes are the raw
+    bytes, unmodified.
+
+This is the default, normative mode; see
+[Rationale](#why-keep-the-textbinary-distinction-and-line-ending-normalization) for an optional
+alternative mode.
+
+Wherever the hash stream below refers to a file's content - both for the length prefix and for the
+content bytes themselves - it refers to the normalized content bytes as defined here. In particular,
+the length prefix MUST be the byte length *after* line-ending normalization, not the raw on-disk
+byte length: a file whose only difference is CRLF vs. LF line endings MUST produce both the same
+length prefix and the same content bytes, otherwise the same directory would hash differently
+depending on the platform it was checked out on.
+
+### Hash stream
 
 For each entry in the sorted contents, feed the following bytes into the hasher in order:
 
 1. The byte length of the UTF-8-encoded normalized relative path, written in decimal and that decimal
    string encoded as UTF-8, followed by the UTF-8 encoded byte of `:`.
-2. The UTF-8 encoded bytes of the normalized relative path.
+2. The UTF-8 encoded bytes of the normalized relative path (per
+   [Path normalization](#path-normalization)).
 3. Then, depending on the entry type:
    - For a **regular file**:
      - The UTF-8 encoded byte of `F`.
-     - The content bytes are determined as follows:
-       - If the file is a text file (i.e. its entire contents can be UTF-8 decoded): the file's raw
-         bytes with every `\r\n` byte sequence (`0x0D 0x0A`) replaced by `\n` (`0x0A`). The
-         substitution MUST be performed directly on the raw bytes, not via a decode-to-text-then-
-         re-encode round-trip. This is the default, normative mode; see
-         [Rationale](#why-keep-the-textbinary-distinction-and-line-ending-normalization) for an
-         optional alternative mode.
-       - If the file is binary: its raw bytes, unmodified.
-       - If the file can't be opened or read, implementations MUST error out.
-     - The byte length of those content bytes, written in decimal and encoded as UTF-8, followed by
-       the UTF-8 encoded byte of `:`, MUST be fed into the hasher immediately before the content
-       bytes themselves. Content is length-prefixed for the same reason entry paths and symlink
-       targets are: without it, content containing `-` followed by bytes that look like a valid
-       subsequent entry can reproduce the byte stream of a different, structurally distinct tree
-       (see [Rationale](#why-length-prefix-file-content-too) for a worked collision).
+     - The byte length of the file's normalized content bytes (per
+       [Content normalization](#content-normalization)), written in decimal and that decimal string
+       encoded as UTF-8, followed by the UTF-8 encoded byte of `:`.
+     - The file's normalized content bytes (per
+       [Content normalization](#content-normalization)).
+
+     Content is length-prefixed for the same reason entry paths and symlink targets are: without it,
+     content containing `-` followed by bytes that look like a valid subsequent entry can reproduce
+     the byte stream of a different, structurally distinct tree (see
+     [Rationale](#why-length-prefix-file-content-too) for a worked collision).
    - For a **directory**: the UTF-8 encoded byte of `D`, and nothing else.
    - For a **symlink**:
      - The UTF-8 encoded byte of `L`.
      - The byte length of the UTF-8-encoded symlink target path, written in decimal and that decimal
        string encoded as UTF-8, followed by the UTF-8 encoded byte of `:`.
      - The UTF-8 encoded bytes of the symlink target path, normalized per the common rules and the
-       **Symlink targets** rules above (the **Entry paths** rules do not apply to symlink targets).
+       **Symlink targets** rules in [Path normalization](#path-normalization) (the **Entry paths**
+       rules do not apply to symlink targets).
    - For **any other type**, implementations MUST error out.
 4. The UTF-8 encoded byte of `-`.
 
@@ -126,9 +187,9 @@ For each entry in the sorted contents, feed the following bytes into the hasher 
 | --- | --- | --- |
 | Path | `<path_bytes>` | `<len(path_bytes)>:<path_bytes>` |
 | Symlink target | `<target_bytes>` | `<len(target_bytes)>:<target_bytes>` |
-| File content | `<content_bytes>` | `<len(content_bytes)>:<content_bytes>` |
+| File content | `<norm_content_bytes>` | `<len(norm_content_bytes)>:<norm_content_bytes>` |
 | Sorting | Raw Unicode code point comparison | NFC-normalized, UTF-8-encoded byte comparison |
-| Error handling | Unreadable files, unknown entry types | Additionally: null bytes, invalid/absolute entry paths, drive letters/UNC prefixes, non-UTF-8 paths, NFC-induced path collisions |
+| Error handling | Unreadable files, unknown entry types | Additionally: null bytes, invalid/absolute entry paths, `.`/`..` components in entry paths, drive letters/UNC prefixes, non-UTF-8 paths, NFC-induced path collisions |
 
 Text vs. binary detection and line-ending normalization work the same way as in CEP 19: given the
 same file, they produce the same content bytes in both algorithms. Only the reference
@@ -143,24 +204,12 @@ For Python 3.6+:
 
 ```python
 import hashlib
-import posixpath
+import os
 import re
 import unicodedata
 from pathlib import Path
 
 _DRIVE_LETTER_RE = re.compile(r"^[A-Za-z]:")
-
-
-def _normalize_path(raw: str) -> str:
-    # Applies the common rules: reject null bytes, normalize separators, collapse
-    # redundant components (including a leading "./"), then NFC-normalize.
-    if "\0" in raw:
-        raise ValueError(f"path contains a null byte: {raw!r}")
-    raw = raw.replace("\\", "/")
-    collapsed = posixpath.normpath(raw)
-    if collapsed == ".":
-        collapsed = ""
-    return unicodedata.normalize("NFC", collapsed)
 
 
 def _encode_path(path: str) -> bytes:
@@ -171,39 +220,69 @@ def _encode_path(path: str) -> bytes:
     return path.encode("utf-8")
 
 
-def _check_entry_path(path: str) -> None:
-    if path.startswith("/"):
-        raise ValueError(f"entry path must be relative: {path!r}")
-    if _DRIVE_LETTER_RE.match(path):
-        raise ValueError(f"entry path must not contain a drive letter: {path!r}")
+def _normalize_path(path: str) -> str:
+    # Applies the common rules in the order they are listed in the Specification: require
+    # UTF-8-encodability, reject null bytes, normalize separators, then NFC-normalize.
+    # "." and ".." components are deliberately NOT collapsed (no posixpath.normpath here):
+    # for a symlink target, collapsing them changes which file the target names.
+    _encode_path(path)  # raises before anything else looks at the path
+    if "\0" in path:
+        raise ValueError(f"path contains a null byte: {path!r}")
+    return unicodedata.normalize("NFC", path.replace("\\", "/"))
 
 
-def _check_symlink_target(target: str) -> None:
-    if target.startswith("//"):
-        raise ValueError(f"symlink target must not contain a UNC prefix: {target!r}")
-    if _DRIVE_LETTER_RE.match(target):
-        raise ValueError(f"symlink target must not contain a drive letter: {target!r}")
+def _normalize_entry_path(path: str) -> str:
+    normalized = _normalize_path(path)
+    while normalized.startswith("./"):  # scanner artifact, carries no information
+        normalized = normalized[2:]
+    if normalized.startswith("/"):
+        raise ValueError(f"entry path must be relative: {normalized!r}")
+    if _DRIVE_LETTER_RE.match(normalized):
+        raise ValueError(f"entry path must not contain a drive letter: {normalized!r}")
+    if any(part in (".", "..") for part in normalized.split("/")):
+        # Cannot come from a directory scan; treat it as a caller bug rather than resolving it.
+        raise ValueError(f"entry path must not contain '.' or '..' components: {normalized!r}")
+    return normalized
+
+
+def _normalize_symlink_target(target: str) -> str:
+    # Everything the common rules don't touch is preserved verbatim: "." / ".." components,
+    # repeated slashes and trailing slashes are all part of what the symlink actually stores.
+    normalized = _normalize_path(target)
+    if normalized.startswith("//"):
+        raise ValueError(f"symlink target must not contain a UNC prefix: {normalized!r}")
+    if _DRIVE_LETTER_RE.match(normalized):
+        raise ValueError(f"symlink target must not contain a drive letter: {normalized!r}")
+    return normalized
+
+
+def _reraise(error: OSError) -> None:
+    # os.walk swallows errors by default; a directory we cannot list would then be silently
+    # skipped, hiding entries from the hash. Same reasoning as erroring out on unreadable files.
+    raise error
 
 
 def contents_hash(directory: str, algorithm: str) -> str:
     directory = Path(directory)
-    entries = []
-    seen_paths = set()
-    for path in directory.rglob("*"):
-        rel = _normalize_path(path.relative_to(directory).as_posix())
-        _check_entry_path(rel)
-        if rel in seen_paths:
-            raise ValueError(f"NFC normalization collision on path: {rel!r}")
-        seen_paths.add(rel)
-        entries.append((_encode_path(rel), path))
+    entries = {}  # encoded relative path -> path on disk; the keys double as the seen-set
+    # os.walk does not follow symlinks (followlinks=False is the default), which is what the
+    # Specification requires: a symlink to a directory is reported as an entry in `dirnames`
+    # but never descended into.
+    for root, dirnames, filenames in os.walk(directory, onerror=_reraise):
+        for name in dirnames + filenames:
+            path = Path(root, name)
+            rel = _normalize_entry_path(path.relative_to(directory).as_posix())
+            rel_bytes = _encode_path(rel)
+            if rel_bytes in entries:
+                raise ValueError(f"NFC normalization collision on path: {rel!r}")
+            entries[rel_bytes] = path
 
     hasher = hashlib.new(algorithm)
-    for rel_bytes, path in sorted(entries, key=lambda entry: entry[0]):
+    for rel_bytes, path in sorted(entries.items()):
         hasher.update(f"{len(rel_bytes)}:".encode("utf-8"))
         hasher.update(rel_bytes)
         if path.is_symlink():
-            target = _normalize_path(str(path.readlink()))
-            _check_symlink_target(target)
+            target = _normalize_symlink_target(os.readlink(str(path)))
             target_bytes = _encode_path(target)
             hasher.update(b"L")
             hasher.update(f"{len(target_bytes)}:".encode("utf-8"))
@@ -230,9 +309,10 @@ def contents_hash(directory: str, algorithm: str) -> str:
 
 This implementation attempts to cover every normalization and error-handling rule from the
 [Specification](#specification) above (NFC normalization and collision detection, null bytes,
-redundant components, absolute/drive-letter/UNC rejection, non-UTF-8 paths, unreadable files); it is
-provided as a normative illustration, not a certified conformance suite, so a discrepancy against the
-Specification text should be treated as a bug in this snippet rather than in the rule it's illustrating.
+`.`/`..` rejection in entry paths, absolute/drive-letter/UNC rejection, non-UTF-8 paths, unreadable
+files); it is provided as a normative illustration, not a certified conformance suite, so a
+discrepancy against the Specification text should be treated as a bug in this snippet rather than in
+the rule it's illustrating.
 
 ## Examples
 
@@ -448,6 +528,54 @@ paths. Prefixing the content with its byte length, exactly as done for paths and
 closes this gap: the two trees instead produce `10:README.txtF13:Hello\n-3:srcD-` and
 `10:README.txtF6:Hello\n-3:srcD-`, which are no longer equal.
 
+### Why are entry paths checked rather than repaired?
+
+An entry path is by construction relative to the scanned directory and built only from real
+directory entry names, so [Entry collection](#entry-collection) cannot produce an absolute path, a
+drive letter or UNC prefix, or a `.` or `..` component - none of those are directory entry names.
+The entry path rules should therefore never fire on a correct implementation.
+
+They are written as checks rather than as transformations for that reason. A path that violates one
+did not come from the scan this CEP specifies, so the implementation has a bug or is being fed input
+from somewhere else; rewriting the path would paper over that while quietly changing which file the
+hash covers. Stopping is the only response that keeps the hash meaningful. The rules also mark where
+entry paths and symlink targets part ways, since a symlink target MAY legitimately be absolute or
+contain `..`.
+
+The one transformation in the group, stripping a leading `./`, is there because some scanners report
+paths that way. It carries no information and is not a repair of a malformed path.
+
+### Why not collapse redundant path components?
+
+An earlier draft of this CEP required removing redundant path components, so that `foo/../bar`
+became `bar`. That rule is not safe, and it is also not needed.
+
+It is not needed for entry paths: those come from scanning a directory, and `.` and `..` are not
+real directory entries, so a relative path built from scan results cannot contain them. There is
+nothing to collapse. If such a component does show up, the path was built wrong, which is why this
+CEP makes it an error instead.
+
+It is not safe for symlink targets, which are the only place such components can legitimately
+appear. POSIX resolves a path left to right, expanding each symlink as it goes, so `..` means "the
+parent of whatever the preceding component resolved to" - not "undo the preceding component". If
+`foo` is itself a symlink, the two targets name different files:
+
+```text
+a/foo   -> ../x/y     (a directory)
+a/link1 -> foo/../bar resolves to x/bar
+a/link2 -> bar        resolves to a/bar
+```
+
+Collapsing `foo/../bar` to `bar` would make `link1` and `link2` hash identically even though they
+point at different files - a collision between structurally different trees, which is the class of
+bug this CEP exists to remove. (The two also differ when `foo` does not exist: `foo/../bar` fails to
+resolve, `bar` does not.)
+
+Unlike NFC normalization or separator normalization, collapsing components buys nothing in return,
+because there is no platform variance to remove: a symlink stores its target as an opaque string and
+`readlink` hands back exactly those bytes on every platform. Two symlinks with different stored
+targets are different symlinks, so this CEP hashes the target as stored.
+
 ### Why erroring out on unreadable files?
 
 The rationale is unchanged from CEP 19: we can't verify the contents of such entries, and an
@@ -526,9 +654,12 @@ approach by retaining support for the legacy algorithm behind a compatibility fl
 
 ## Backwards Compatibility
 
-This CEP changes the computed hash for any directory that contains entries whose relative path or
-(for symlinks) target path contains any of the bytes `F`, `D`, `L`, or `-`. In practice, that means
-many real-world directories will produce a different digest under this CEP than under CEP 19.
+This CEP changes the computed hash of any directory that contains at least one entry: the length
+prefixes are added unconditionally, so the byte stream differs from CEP 19's even when no path,
+symlink target, or file content contains a type marker or the entry separator. Only an empty
+directory hashes identically under both algorithms. The collisions the change closes are those
+involving an entry whose relative path, (for symlinks) target path, or file contents contain any of
+the bytes `F`, `D`, `L`, or `-`.
 
 Existing `content_sha256`, `content_sha384`, and `content_sha512` recipe keys continue to be
 validated using the original CEP 19 algorithm (legacy mode) but are deprecated; implementations
