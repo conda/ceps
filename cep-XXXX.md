@@ -80,7 +80,7 @@ uses: it is what entries are sorted by here, and it is also what is fed into the
 and 2 of the [Hash stream](#hash-stream).
 
 Entries MUST be sorted by that path: NFC-normalize it, encode it as UTF-8, and compare the resulting
-UTF-8 bytes byte-wise, ordering by unsigned byte value (0-255).
+UTF-8 bytes, byte-wise, ordering by unsigned byte value (0-255).
 
 ### Path normalization
 
@@ -535,8 +535,8 @@ paths that way. It carries no information and is not a repair of a malformed pat
 
 ### Why not collapse redundant path components?
 
-An earlier draft of this CEP required removing redundant path components, so that `foo/../bar`
-became `bar`. That rule is not safe, and it is also not needed.
+Collapsing redundant path components, so that `foo/../bar` became `bar`, might seem like a natural
+normalization step. That rule is not safe, and it is also not needed.
 
 It is not needed for entry paths: those come from scanning a directory, and `.` and `..` are not
 real directory entries, so a relative path built from scan results cannot contain them. There is
