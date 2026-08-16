@@ -62,7 +62,7 @@ files and two subdirectories therefore has five entries, not one. The resulting 
 what the rest of this algorithm operates on:
 
 - **Regular files** are collected as entries. A regular file is the only entry type whose contents
-  participate in the hash (see [Content normalization](#content-normalization)); every other type
+  participate in the hash (see [File content handling](#file-content-handling)); every other type
   contributes only path-derived bytes.
 - **Directories** are collected as entries in their own right, in addition to the entries for
   whatever they contain. This includes empty directories: an empty directory is collected and is
@@ -125,29 +125,23 @@ absolute path:
   MUST cause the implementation to error out, because there is no meaningful cross-platform way to
   normalize them into the hash stream.
 
-### Content normalization
+### File content handling
 
-The **normalized content bytes** of a regular file are determined as follows:
+The bytes hashed for a regular file are its **unmodified raw bytes**:
 
 - If the file can't be opened or read, implementations MUST error out.
-- Otherwise, read the file's raw bytes and classify the file:
-  - **Text** (i.e. its entire contents can be UTF-8 decoded): the normalized content bytes are the
-    raw bytes with every `\r\n` byte sequence (`0x0D 0x0A`) replaced by `\n` (`0x0A`). The
-    substitution MUST be performed directly on the raw bytes, not via a
-    decode-to-text-then-re-encode round-trip.
-  - **Binary** (i.e. its contents cannot be UTF-8 decoded): the normalized content bytes are the raw
-    bytes, unmodified.
+- Otherwise, the unmodified raw bytes are exactly the file's raw bytes as read from disk. No UTF-8
+  decode is attempted, no text/binary distinction is made, and no line-ending rewriting (e.g.
+  `\r\n` -> `\n`) is performed.
 
-This is the default, normative mode; see
-[Rationale](#why-keep-the-textbinary-distinction-and-line-ending-normalization) for an optional
-alternative mode.
+See [Rationale](#why-doesnt-the-hash-normalize-line-endings) for why line endings are deliberately
+left unnormalized, and Appendix A and Appendix B for the underlying research and mitigations.
 
 Wherever the hash stream below refers to a file's content - both for the length prefix and for the
-content bytes themselves - it refers to the normalized content bytes as defined here. In particular,
-the length prefix MUST be the byte length *after* line-ending normalization, not the raw on-disk
-byte length: a file whose only difference is CRLF vs. LF line endings MUST produce both the same
-length prefix and the same content bytes, otherwise the same directory would hash differently
-depending on the platform it was checked out on.
+content bytes themselves - it refers to the unmodified raw bytes as defined here. The length prefix
+MUST be the raw on-disk byte length. A file whose only difference from another is CRLF vs. LF line
+endings therefore produces a different length prefix and different content bytes, and the two are
+expected to hash differently.
 
 ### Hash stream
 
@@ -160,11 +154,11 @@ For each entry in the sorted contents, feed the following bytes into the hasher 
 3. Then, depending on the entry type:
    - For a **regular file**:
      - The UTF-8 encoded byte of `F`.
-     - The byte length of the file's normalized content bytes (per
-       [Content normalization](#content-normalization)), written in decimal and that decimal string
+     - The byte length of the file's unmodified raw bytes (per
+       [File content handling](#file-content-handling)), written in decimal and that decimal string
        encoded as UTF-8, followed by the UTF-8 encoded byte of `:`.
-     - The file's normalized content bytes (per
-       [Content normalization](#content-normalization)).
+     - The file's unmodified raw bytes (per
+       [File content handling](#file-content-handling)).
 
      Content is length-prefixed for the same reason entry paths and symlink targets are: without it,
      content containing `-` followed by bytes that look like a valid subsequent entry can reproduce
@@ -187,16 +181,16 @@ For each entry in the sorted contents, feed the following bytes into the hasher 
 | --- | --- | --- |
 | Path | `<path_bytes>` | `<len(path_bytes)>:<path_bytes>` |
 | Symlink target | `<target_bytes>` | `<len(target_bytes)>:<target_bytes>` |
-| File content | `<norm_content_bytes>` | `<len(norm_content_bytes)>:<norm_content_bytes>` |
+| File content | `<content_bytes>` | `<len(content_bytes)>:<content_bytes>` |
+| File content normalization | Text/binary detection; CRLF -> LF rewrite for text files | None: raw on-disk bytes hashed as-is |
 | Sorting | Raw Unicode code point comparison | NFC-normalized, UTF-8-encoded byte comparison |
 | Error handling | Unreadable files, unknown entry types | Additionally: null bytes, invalid/absolute entry paths, `.`/`..` components in entry paths, drive letters/UNC prefixes, non-UTF-8 paths, NFC-induced path collisions |
 
-Text vs. binary detection and line-ending normalization work the same way as in CEP 19: given the
-same file, they produce the same content bytes in both algorithms. Only the reference
-implementation's internal mechanics were clarified (see
-[Rationale](#why-keep-the-textbinary-distinction-and-line-ending-normalization)) - this does not
-mean the overall per-entry byte stream is unchanged, since it still includes the new length prefixes
-shown in the table above.
+Unlike CEP 19, this CEP no longer performs text/binary detection or line-ending normalization: file
+content is hashed as raw on-disk bytes (see
+[Rationale](#why-doesnt-the-hash-normalize-line-endings)). Combined with the new length prefixes,
+this means a file whose only difference from another is CRLF vs. LF line endings now produces a
+different digest under this CEP, even though CEP 19 hashed the two identically.
 
 ### Reference implementation
 
@@ -292,13 +286,7 @@ def contents_hash(directory: str, algorithm: str) -> str:
         elif path.is_file():
             hasher.update(b"F")
             with open(path, "rb") as fh:
-                data = fh.read()
-            try:
-                data.decode("utf-8")
-            except UnicodeDecodeError:
-                pass  # binary: hash the raw bytes unmodified
-            else:
-                data = data.replace(b"\r\n", b"\n")  # text: normalize line endings
+                data = fh.read()  # raw on-disk bytes: no text/binary check, no line-ending rewrite
             hasher.update(f"{len(data)}:".encode("utf-8"))
             hasher.update(data)
         else:
@@ -582,25 +570,26 @@ The rationale is unchanged from CEP 19: we can't verify the contents of such ent
 attacker could hide malicious content in those paths and later make them accessible
 (e.g. by `chmod`ing them readable).
 
-### Why keep the text/binary distinction and line-ending normalization?
+### Why doesn't the hash normalize line endings?
 
-This was considered for removal, since it adds complexity: implementations must attempt a UTF-8
-decode of every file and rewrite `\r\n` to `\n` before hashing. It is kept because it exists to
-prevent an otherwise-identical directory checked out on Unix and on Windows from producing different
-hashes purely due to line-ending differences (CRLF vs. LF), which is a common and unwanted source of
-false hash mismatches in practice. Relying solely on `.gitattributes` (or equivalent) to pin line
-endings does not fully solve this, since some data files are intentionally meant to carry
-platform-specific line endings and would be misclassified if forced to a single style.
+CEP 19 rewrote `\r\n` to `\n` in text files before hashing, so that an otherwise-identical directory
+checked out on Unix and on Windows would still produce the same hash. This CEP deliberately does not
+carry that forward: the hash covers every regular file's raw on-disk bytes, unmodified.
 
-Because normalizing line endings is a deliberate, lossy step - it makes two files that differ only
-in line endings hash identically - implementations MAY offer skipping it (i.e. hashing every file's
-raw bytes, with no text/binary distinction) as an additional, opt-in mode for cases where exact byte
-fidelity matters more than cross-platform reproducibility. Implementations that do so MUST treat the
-resulting hashes as a distinct key family from the default mode's hashes (following the same
-versioning approach described in
-[Backwards compatibility and migration](#backwards-compatibility-and-migration)), since the two modes
-are not interchangeable and silently mixing them would reintroduce the same kind of ambiguity this
-CEP otherwise eliminates.
+The problem is that a file's bytes alone cannot say whether its CRLFs are meaningful content or an
+artifact of checkout-time conversion. Two files can be byte-for-byte identical on disk and still need
+opposite treatment depending on what a git index (or equivalent checkout metadata) recorded for each
+
+- information that lives outside the file and that the hash algorithm has no access to. Normalizing
+line endings unconditionally treats both cases the same and erases a difference between the two files
+that genuinely exists. See
+[Appendix A](#appendix-a-why-file-bytes-do-not-reveal-which-crlfs-are-real) for a worked example.
+
+Because this CEP's hash is defined purely over a directory's raw contents, it leaves line-ending
+reconciliation to whoever controls the checkout rather than to the hashing algorithm.
+[Appendix B](#appendix-b-avoiding-crlf-mismatches-at-checkout) recommends checkout-time and pre-hash
+mitigations, plus a last-resort, platform-specific fallback hash for the cases those mitigations
+can't cover.
 
 ### Why single out `\0`, `/`, `\\`, and `:` in filenames?
 
@@ -694,6 +683,60 @@ bytes appear in filenames or file data.
 - CEP 19 (superseded): [`cep-0019.md`](cep-0019.md).
 - The original issue that motivated CEP 19: [`conda-build#4762`][conda-build-4762].
 - Netstrings, a well-known length-prefixing format: [cr.yp.to/proto/netstrings.txt][netstrings].
+
+## Appendix A: Why File Bytes Do Not Reveal Which CRLFs Are Real
+
+This appendix elaborates on the claim in
+[Rationale](#why-doesnt-the-hash-normalize-line-endings) that a file's raw bytes cannot say whether
+its CRLF line endings are checkout-time noise or real content.
+
+Consider a Windows checkout of a git repository containing two files:
+
+| File | Git index (`i/`) | Working tree (`w/`) | Bytes on disk |
+| --- | --- | --- | --- |
+| `lf.txt` | LF | CRLF | `a\r\nb\r\n` |
+| `crlf_committed.txt` | CRLF | CRLF | `a\r\nb\r\n` |
+
+Both files have byte-for-byte identical contents on disk, but they need opposite treatment when
+recovering a canonical, cross-platform form:
+
+- `lf.txt` is stored in the index as LF. Git's checkout-time conversion (`core.autocrlf` or a `text`
+  attribute) rewrote it to CRLF on the way to the working tree. Recovering the canonical form means
+  converting its CRLFs back to LF.
+- `crlf_committed.txt` is stored in the index as CRLF. Its CRLFs are the file's real, committed
+  content and must be preserved as-is.
+
+Nothing in either file's bytes distinguishes these two cases - the on-disk bytes are identical. Only
+the git index records which file was converted and which was not. A hashing algorithm that only ever
+sees the bytes on disk, as this CEP's algorithm does, cannot tell them apart, and normalizing both
+unconditionally erases a distinction between the two files that genuinely exists. This is why
+line-ending normalization is left out of the hash algorithm and pushed to whoever has access to the
+index - see [Appendix B](#appendix-b-avoiding-crlf-mismatches-at-checkout) for how to do that.
+
+## Appendix B: Avoiding CRLF Mismatches at Checkout
+
+Because this CEP hashes raw on-disk bytes, a directory checked out from git with different
+line-ending conversion settings can hash differently even when the two checkouts would otherwise be
+considered equivalent. This appendix recommends ways to avoid that outside the hash algorithm itself.
+Both recommendations apply only to git checkouts: a downloaded tarball is extracted without any
+line-ending rewriting, so it already hashes the same on every platform and needs neither.
+
+1. **Fix it at checkout.** Set `* text=auto eol=lf` in `.gitattributes`, or set
+   `core.autocrlf=input`. This requires no additional tooling and solves the problem for everyone who
+   clones the repository, since files are checked out with LF endings regardless of platform.
+
+2. **If you cannot control the checkout, undo the conversion before hashing.** Run
+   `git ls-files --eol` and inspect each file's reported index (`i/`) and working-tree (`w/`) line
+   endings. For a file reported as `i/lf w/crlf`, replace `\r\n` with `\n` in memory before feeding
+   its bytes to the hasher, to recover the form the index actually stores.
+
+If, after applying these mitigations, two trees still differ in raw bytes - for example, files
+intentionally marked `eol=crlf`, or files from a source that has no git index to consult at all -
+they are different contents and are expected to hash differently; this is the algorithm working
+correctly, not a bug. Where this is unavoidable, a recipe MAY carry an additional, platform-specific
+hash as a last-resort fallback. Such a fallback hash
+MUST be treated as a distinct key family from this algorithm's hashes, following the same versioning
+approach as [Backwards compatibility and migration](#backwards-compatibility-and-migration).
 
 ## Copyright
 
