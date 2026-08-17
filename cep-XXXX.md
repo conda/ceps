@@ -352,13 +352,13 @@ with this standard.
   type of path (i.e., file or directory) that could possibly be included in conda packages.
   Updates to this CEP or additional CEPs may be needed if any gaps are identified in the `subpath`
   component specifications.
-- This CEP provides the `repository_url` qualifier that can be used identify a package on a
+- This CEP provides the `repository_url` qualifier that can be used to identify a package on a
   _specific_ mirror of a channel. However, this CEP does _not_ define a way to identify a specific
   package artifact that appears across multiple mirrors; e.g., a single PURL that would
   simultaneously identify a conda-forge package hosted on both `conda.anaconda.org/conda-forge`
   and `prefix.dev/conda-forge`. Supporting such PURLs would require additional work, including
   formalizing the concept of "mirrors" for conda channels and specifying which PURL components or
-  qualifiers should be used to identify the set of mirrors for a given packages. (Due to the
+  qualifiers should be used to identify the set of mirrors for a given package. (Due to the
   fairly portable nature of conda packages, the combination of shortened channel name, package
   name, version string, and build string may not be sufficient to uniquely identify across all
   possible repositories.)
@@ -402,7 +402,7 @@ with this standard.
 [matchspec-ver-match]: ./cep-0029.md#version-matching
 [purl-conda-def]: https://github.com/package-url/purl-spec/blob/a6c97bcfe5c83985a1da348f73a65c9842c7e354/types/conda-definition.json
 [purl-quals-guide]: https://github.com/package-url/purl-spec/blob/a6c97bcfe5c83985a1da348f73a65c9842c7e354/docs/common-qualifiers.md
-[vers-spec]: https://github.com/package-url/vers-spec/blob/main/docs/standard/specification.md
+[vers-spec]: https://github.com/package-url/vers-spec/blob/main/docs/specification/standard/specification.md
 
 ## Copyright
 
