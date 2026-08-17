@@ -22,7 +22,7 @@ packages, independent of their ecosystem or distribution channel". Users may wan
 PURLs to identify conda packages in various contexts, including but not limited to, software bills
 of materials (SBOMs), vulnerability reporting, and cross-ecosystem compatibility.
 
-However, the [existing conda PURL definition][purl-conda-def] fails to properly capture the
+However, the [existing (v1.0.1) conda PURL definition][purl-conda-def] fails to properly capture the
 multi-stakeholder nature of the conda ecosystem, various commonly-understood concepts within the
 ecosystem, and critically, the standards specified in other accepted CEPs. This CEP seeks to
 address such shortcomings with an ecosystem-approved specification for the conda PURL definition,
