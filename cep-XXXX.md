@@ -43,8 +43,8 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 described in BCP 14 ([RFC2119][RFC2119], [RFC8174][RFC8174]) when, and only when, they appear in
 all capitals, as shown here.
 
-For the purposes of this CEP, the phrase "existing conda PURL definition" refers to the [commit
-a6c97bc version of `types/conda-definition.json`][purl-conda-def], which is canonically available
+For the purposes of this CEP, the phrase "existing conda PURL definition" refers to the
+[v1.0.1 revision of `types/conda-definition.json`][purl-conda-def], which is canonically available
 in the https://github.com/package-url/purl-spec repository.
 
 For the purposes of this CEP, references to sections of [ECMA-427][ECMA427] are relative to the 1st
@@ -400,8 +400,8 @@ with this standard.
 [CEP36]: ./cep-0036.md
 [gh-purl-spec]: https://github.com/package-url/purl-spec
 [matchspec-ver-match]: ./cep-0029.md#version-matching
-[purl-conda-def]: https://github.com/package-url/purl-spec/blob/a6c97bcfe5c83985a1da348f73a65c9842c7e354/types/conda-definition.json
-[purl-quals-guide]: https://github.com/package-url/purl-spec/blob/a6c97bcfe5c83985a1da348f73a65c9842c7e354/docs/common-qualifiers.md
+[purl-conda-def]: https://github.com/package-url/purl-spec/blob/v1.0.1/types/conda-definition.json
+[purl-quals-guide]: https://github.com/package-url/purl-spec/blob/v1.0.1/docs/specification/common-qualifiers.md
 [vers-spec]: https://github.com/package-url/vers-spec/blob/main/docs/specification/standard/specification.md
 
 ## Copyright
