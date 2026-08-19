@@ -324,8 +324,9 @@ This CEP constrains how.
 
 The `cache` object of a report MAY contain:
 
-- `ttl_seconds: int`.
+- `ttl_seconds: int | "REBOOT"`.
   How long the verdicts may be reused.
+  The special value `"REBOOT"` means the verdicts may be reused until the next system reboot.
 - `watch_paths: list[str]`.
   Paths whose existence or modification time invalidates the verdicts.
 - `watch_env: list[str]`.
@@ -336,9 +337,12 @@ A client that caches:
 - MUST give every cache entry an expiry.
   "Cache this forever" MUST NOT be expressible: a driver upgrade would otherwise go unnoticed until someone cleared a cache by hand.
 - SHOULD apply a default expiry of **1 hour** when a plugin specifies no `ttl_seconds`.
-- MUST NOT honor a `ttl_seconds` longer than **30 days**, clamping to that maximum.
+- MUST NOT honor an integer `ttl_seconds` longer than **30 days**, clamping to that maximum.
+- MUST treat `"REBOOT"` as expiring no later than the next system reboot.
+- MUST fall back to a short duration when it cannot support reboot-bounded cache entries.
+  This fallback SHOULD be **1 hour**.
 - MUST treat `watch_paths` and `watch_env` as able to expire an entry **sooner** than its TTL, never later.
-- MUST treat a `ttl_seconds` of `0` as "do not reuse", which is how a plugin whose answer can change at any moment declares itself.
+- MUST treat an integer `ttl_seconds` of `0` as "do not reuse", which is how a plugin whose answer can change at any moment declares itself.
 
 A client MUST key a cache entry on the plugin *environment* as well as the plugin, so that a change in any package installed alongside the plugin produces a new entry.
 
@@ -544,8 +548,6 @@ This CEP intentionally does not choose.
 
 - A standard way for a plugin to report *why* it decided what it did, for diagnostics, without turning the report into a log.
 - Reusing one plugin environment across several channels that register the same plugin package.
-- A "detect once per boot" cache policy, for capabilities that cannot change while the machine is running.
-  This needs a portable boot identity, which is why it is not specified here.
 
 ## Rejected ideas
 
@@ -623,6 +625,8 @@ Making absence explicit turns a whole class of plugin bugs (early return, a swal
 ### Why a mandatory cache expiry
 
 A cache without an expiry turns a one-off detection into a permanent fact about a machine.
+`"REBOOT"` is still an expiry: it covers facts that are expected to stay true for a boot session but may change after hardware, driver, kernel, or daemon state is reinitialized.
+Clients that cannot observe reboot boundaries fall back to a short duration rather than treating the value as permanent.
 `watch_paths` and `watch_env` make an entry expire sooner, which is the safe direction.
 
 ### Why names are assumed unique
