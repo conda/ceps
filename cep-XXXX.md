@@ -15,14 +15,13 @@
   "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as
   described in [RFC2119][RFC2119] when, and only when, they appear in all capitals, as shown here.
 >
-> More specifically, violations of a MUST or MUST NOT rule MUST result in an error. Violations of the
-  rules specified by any of the other all-capital terms MAY result in a warning, at discretion of the
-  implementation.
 
 ## Abstract
 
-This CEP defines how [Sigstore] attestations are distributed alongside conda packages and how clients consume them.
-Building upon [CEP 27], which standardizes the attestation format, this proposal specifies how channels serve attestations via a `.sigs` sidecar endpoint, how the repodata index advertises and integrity-protects sidecars through a new `attestations` field, and the client-side configuration for discovering, verifying, and enforcing policy on attestations. Together, these enable verification of package integrity and provenance.
+This CEP defines how [Sigstore] attestations are distributed alongside conda packages.
+Building upon [CEP 27], which standardizes the attestation format, it specifies how channels serve attestations via content-addressed `.sigs` sidecars and how repodata advertises them through a new `attestations` field.
+
+This CEP intentionally covers only distribution and the minimal client requirements needed to discover sidecars, verify their hash, and bind attestations to package artifacts. Configuration, trust policy, lock files, and enforcement behavior are out of scope.
 
 ## Motivation
 
@@ -40,6 +39,17 @@ Without a standardized distribution mechanism, clients cannot reliably discover 
 
 4. **Follows ecosystem conventions**: Similar approaches are used by PyPI ([Integrity API][PyPI Integrity], standardized in [PEP 740]), npm ([provenance attestations][npm provenance]), and RubyGems ([release-gem][rubygems]).
 
+## Scope
+
+This CEP specifies the server side of attestation distribution and the minimal client behavior required for the mechanism to be sound. It does not specify:
+
+- Client configuration or user interfaces
+- Which signing identities a client should trust
+- TOFU or lock-file formats and behavior
+- Whether missing or invalid attestations warn, block installation, or are ignored
+
+These policy decisions may be standardized separately.
+
 ## Specification
 
 ### Endpoint Definition
@@ -50,25 +60,27 @@ For any conda package artifact at URL:
 <channel_url>/<subdir>/<artifact_filename>
 ```
 
-if the package has one or more attestations, they MUST be available at:
+if the package has one or more attestations, the sidecar MUST be available at:
 
 ```text
-<channel_url>/<subdir>/<artifact_filename>.sigs
+<channel_url>/<subdir>/<artifact_filename>.sigs.<sha256>
 ```
 
-Whether a package has attestations is advertised in the repodata index (see [Repodata changes](#repodata-changes)). Clients discover sidecars through repodata rather than by probing `.sigs` URLs; packages without attestations need not have a sidecar file at all.
+Here, `<sha256>` is the 64-character lowercase hexadecimal hash advertised in repodata (see [Repodata changes](#repodata-changes)). The bytes at this URL MUST NOT change, and the channel MUST retain the URL for as long as the package remains available. To append attestations, a channel first publishes a new content-addressed sidecar and then updates repodata to its hash. Thus clients with either old or new repodata can fetch the corresponding sidecar without a cache race.
 
-#### Examples
+Channels MAY also expose the latest sidecar at the mutable convenience URL `<artifact_filename>.sigs`. This alias is not a discovery or integrity mechanism, and clients implementing this CEP MUST use the content-addressed URL advertised through repodata.
 
-| Package URL                                                                         | Attestation URL                                                                          |
-| ----------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| `https://conda.anaconda.org/conda-forge/linux-64/numpy-2.0.0-py312h1234567_0.conda` | `https://conda.anaconda.org/conda-forge/linux-64/numpy-2.0.0-py312h1234567_0.conda.sigs` |
-| `https://prefix.dev/my-channel/noarch/my-package-1.0.0-pyhd8ed1ab_0.conda`          | `https://prefix.dev/my-channel/noarch/my-package-1.0.0-pyhd8ed1ab_0.conda.sigs`          |
-| `https://example.com/channel/win-64/pkg-1.0-0.tar.bz2`                              | `https://example.com/channel/win-64/pkg-1.0-0.tar.bz2.sigs`                              |
+Whether a package has attestations is advertised in the repodata index. Clients discover sidecars through repodata rather than by probing convenience URLs; packages without attestations need not have a sidecar file at all.
+
+#### Example
+
+| Package URL | Content-addressed attestation URL |
+| --- | --- |
+| `https://example.com/channel/win-64/pkg-1.0-0.conda` | `https://example.com/channel/win-64/pkg-1.0-0.conda.sigs.<sha256>` |
 
 ### Response Format
 
-The `.sigs` file MUST contain a JSON array of one or more [Sigstore bundles][Sigstore Bundle]. Each bundle represents one attestation for the package.
+The sidecar MUST contain a JSON array of one or more [Sigstore bundles][Sigstore Bundle]. Each bundle represents one attestation for the package.
 
 The sidecar is a static artifact: channels MUST serve it byte-for-byte identical to the file whose SHA256 hash is published in the repodata `attestations` field (see [Repodata changes](#repodata-changes)). Channels MUST NOT re-serialize the JSON when serving it. This makes the sidecar safe to host on static infrastructure (e.g. object storage or CDNs) and safe to cache and mirror by content hash.
 
@@ -95,9 +107,9 @@ Each element in the array MUST be a valid [Sigstore Bundle] as defined by the Si
 | `200 OK`        | The sidecar file exists and was returned |
 | `404 Not Found` | No sidecar file exists at this URL       |
 
-Attestation discovery goes through repodata, so clients MUST NOT infer anything about the existence of the package itself from a `.sigs` response. In particular, channels that do not implement this CEP may return `404 Not Found` for every `.sigs` URL, even when the underlying package exists.
+Attestation discovery goes through repodata, so clients MUST NOT infer anything about the existence of the package itself from a sidecar response. In particular, channels that do not implement this CEP may return `404 Not Found` for every sidecar URL, even when the underlying package exists.
 
-For a package whose repodata record carries an `attestations` field, any failure to retrieve a sidecar matching the advertised hash — including a `404 Not Found` — is a retrieval failure and MUST be handled according to the client's `require` policy (see [Configuration](#configuration)).
+For a package whose repodata record carries an `attestations` field, any failure to retrieve a sidecar matching the advertised hash — including a `404 Not Found` — is a retrieval failure (see [Client Requirements](#client-requirements)).
 
 ### Repodata changes
 
@@ -108,142 +120,61 @@ A package record in the repodata index (in `packages` or `packages.conda`, or th
   "name": "foobar",
   "version": "1.2.3",
   "attestations": {
-    "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
-    "size": 4842
+    "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
   }
 }
 ```
 
-- `sha256` (REQUIRED): the SHA256 hash of the exact bytes of the `.sigs` file as served.
-- `size` (REQUIRED): the size of the `.sigs` file in bytes.
+- `sha256` (REQUIRED): exactly 64 lowercase hexadecimal characters containing the SHA256 hash of the sidecar bytes and forming the suffix of its content-addressed URL. Clients MUST reject any other value before constructing the URL.
 
-The field MUST be present if and only if at least one attestation is available for the package. Its absence means the package has no attestations; clients MUST NOT treat an absent field as an error and SHOULD NOT request the `.sigs` URL in that case.
+The field MUST be present if and only if the package has a current sidecar containing at least one attestation. Its absence means no sidecar is advertised; clients MUST NOT treat this as an error and SHOULD NOT request a sidecar URL.
 
-The field is the single discovery and integrity mechanism for attestation sidecars:
+The field is the single discovery and hash-binding mechanism for attestation sidecars:
 
-1. **Discovery**: Clients learn from repodata alone whether a `.sigs` file exists, avoiding a network round-trip for packages without attestations.
-2. **Integrity**: Clients MUST verify that the fetched `.sigs` bytes hash to `sha256` before using the sidecar (see [Verification Workflow](#verification-workflow)). This prevents a mirror or intermediary from stripping or replacing attestations without detection.
-3. **Change detection**: When attestations are added after a package was first published, the channel publishes an updated `.sigs` file and updates the field. Mirrors and clients re-fetch the sidecar when the hash changes.
-4. **Resource bounds**: `size` allows clients to enforce a download limit before fetching, protecting against accidentally downloading oversized sidecars. It is a pre-flight hint rather than a security mechanism: clients MUST also enforce their limit on the actual bytes received. Clients MAY refuse to download sidecars larger than a locally configured limit; such a refusal MUST be handled like a retrieval failure (see [Configuration](#configuration)).
+1. **Discovery**: Clients learn from repodata alone whether a sidecar exists, avoiding a network round-trip for packages without attestations.
+2. **Consistency**: Clients MUST verify that the fetched sidecar bytes hash to `sha256` before using them (see [Client Requirements](#client-requirements)). This detects modified responses relative to repodata; it does not protect against a source that can also rewrite repodata.
+3. **Change detection**: When attestations are appended after a package was first published, the channel publishes a new content-addressed sidecar and updates the field. Mirrors and clients fetch the new URL when the hash changes.
 
 Tools that post-process repodata (e.g. hotfixing and patching pipelines) MUST preserve the `attestations` field. Channels using sharded repodata ([CEP 16]) update only the affected shard when attestations change, so clients pick up new attestations incrementally; consumers of monolithic `repodata.json` receive the update on the next regeneration.
 
 ### Attestation Requirements
 
-This CEP defines discovery and distribution of attestations. Verification of publish attestations MUST follow [CEP 27].
+Verification of [CEP 27] publish attestations, including binding the subject filename and SHA256 hash to the package artifact, MUST follow [CEP 27]. This CEP adds no publish-attestation verification rules.
 
-If a bundle contains a [CEP 27] publish attestation, then:
-
-1. The in-toto statement's `subject[0].name` MUST match the artifact filename.
-
-2. The in-toto statement's `subject[0].digest.sha256` MUST match the SHA256 hash of the artifact.
-
-3. The `predicateType` MUST be `https://schemas.conda.org/attestations-publish-1.schema.json`.
-
-CEP 27 publish attestations intentionally describe a single package artifact. Other predicate types MAY appear in the same `.sigs` response, but this CEP does not define their verification rules. When a client verifies a bundle with a recognized predicate type, it MUST apply the verification rules of that predicate type's specification. Clients MAY ignore or reject unrecognized predicate types according to local policy.
+Other predicate types MAY appear in the same sidecar, but this CEP does not define their verification rules. When a client verifies a recognized predicate type, it MUST apply that predicate type's specification. Clients MAY ignore or reject unrecognized predicate types according to local policy.
 
 ### Multiple Attestations
 
-A package MAY have multiple attestations, provided each attestation intended to apply to the package artifact identifies that artifact according to the verification rules for its predicate type. Clients MAY choose which attestations to verify based on their trust policy.
+A package MAY have multiple attestations, provided each attestation intended to apply to the package artifact identifies that artifact according to the verification rules for its predicate type. This CEP does not define which attestations a client trusts or requires.
 
 This CEP does not define upload authorization, channel admission policy, or access control for adding attestations. For example, a third party may produce an attestation, but the channel decides whether and how that attestation is accepted for distribution.
 
 ### Mirror Behavior
 
-Mirrors and proxies treat `.sigs` sidecars like any other channel artifact. They SHOULD:
+For every mirrored package record carrying an `attestations` field, mirrors and proxies MUST:
 
-1. Mirror the `.sigs` file for every package whose repodata record carries an `attestations` field
-2. Serve the file byte-for-byte, without modification
-3. Re-fetch a mirrored sidecar when the `attestations.sha256` value in the mirrored repodata changes
+1. Fetch the content-addressed sidecar and verify its hash
+2. Make the sidecar available before publishing repodata that references it
+3. Serve the file byte-for-byte, without modification
+4. Retain old sidecars for as long as the corresponding package remains available
 
-A mirror that modifies sidecar bytes breaks the hash binding to repodata, and clients will treat its responses as retrieval failures. Mirrors MUST NOT infer that a package does not exist solely because the upstream `.sigs` endpoint returns `404 Not Found`.
+A mirror that modifies sidecar bytes breaks the hash binding to repodata, and clients will treat its responses as retrieval failures. Mirrors MUST NOT infer that a package does not exist solely because an upstream sidecar endpoint returns `404 Not Found`.
 
-## Client Behavior
+## Client Requirements
 
-### Verification Workflow
+A client that consumes attestation sidecars:
 
-Clients implementing attestation verification SHOULD follow this workflow:
-
-1. **Check repodata**: If the package's repodata record has no `attestations` field, the package has no attestations. Handle this per the `require` policy for missing attestations and skip the remaining attestation steps.
-2. **Download the package** from the channel.
-3. **Fetch the sidecar** from `<package_url>.sigs` and verify that its bytes hash to the `attestations.sha256` value from repodata. On a mismatch or fetch failure, the client SHOULD retry once with refreshed repodata, since the sidecar may have been updated concurrently. A persistent mismatch is a retrieval failure and MUST be handled per the `require` policy.
-4. **Verify each attestation** using the verification process defined by [CEP 27] or by the attestation's predicate type (see [Attestation Requirements](#attestation-requirements)).
-5. **Accept or reject** the package based on the verification results and the `require` policy.
-
-### Configuration
-
-Clients SHOULD support the following configuration options:
-
-```yaml
-# Abstract example of Sigstore configuration:
-attestations:
-  conda-forge:
-    enabled: true
-    require: warn  # "error", "warn", or "ignore"
-    trusted_identities:
-      - identity: "https://github.com/conda-forge/*"
-        issuer: "https://token.actions.githubusercontent.com"
-      - identity: "https://github.com/my-org/*"
-        issuer: "https://token.actions.githubusercontent.com"
-  https://prefix.dev/foobar:
-    enabled: true
-    require: warn
-    trusted_identities:
-      - identity: "https://github.com/foobar"
-        issuer: "https://token.actions.githubusercontent.com"
-```
-
-Each channel entry MUST specify `enabled`, `require`, and `trusted_identities`; clients MUST NOT infer default values for omitted fields.
-
-| Setting              | Values                               | Behavior                                                   |
-| -------------------- | ------------------------------------ | ---------------------------------------------------------- |
-| `enabled`            | `true`/`false`                       | Enable or disable attestation fetching and verification    |
-| `require`            | `error`/`warn`/`ignore`              | How to respond to attestation problems (see below)         |
-| `trusted_identities` | List of `(identity, issuer)` entries | Only accept attestations from matching Sigstore identities |
-
-#### `require` semantics
-
-Three classes of attestation problems exist:
-
-- **Missing**: the package's repodata record has no `attestations` field.
-- **Retrieval failure**: the sidecar cannot be fetched, exceeds the client's size limit, or its bytes do not match the repodata `sha256`.
-- **Verification failure**: a bundle fails verification for its predicate type, or no attestation matches `trusted_identities`.
-
-| `require` | Missing | Retrieval failure | Verification failure |
-| --------- | ------- | ----------------- | -------------------- |
-| `error`   | fail    | fail              | fail                 |
-| `warn`    | warn    | warn              | warn                 |
-| `ignore`  | silent  | warn              | warn                 |
-
-"Fail" means the package MUST NOT be installed; "warn" means the client MUST log a warning and MAY continue. `ignore` accepts packages without attestations silently, but retrieval and verification failures are potential tampering signals and MUST NOT be silently swallowed: they are handled as under `warn`.
-
-#### `trusted_identities` matching
-
-A Sigstore signing identity is the *pair* of the certificate identity (the SubjectAlternativeName of the signing certificate) and the OIDC issuer that authenticated it. The same SubjectAlternativeName authenticated by two different issuers constitutes two different identities, so each `trusted_identities` entry MUST specify both fields:
-
-- `identity`: a pattern matched against the SubjectAlternativeName. Matching is case-sensitive and literal, except that `*` matches any sequence of characters, including `/`.
-  For example, `https://github.com/conda-forge/*` matches `https://github.com/conda-forge/numpy-feedstock/.github/workflows/build.yml@refs/heads/main` but not `https://github.com/conda-forge-evil/...`, because the literal prefix includes the trailing slash.
-- `issuer`: the OIDC issuer URL (e.g. `https://token.actions.githubusercontent.com` for GitHub Actions). Issuers are compared literally; patterns are not supported.
-
-An attestation matches an entry only when the SubjectAlternativeName matches `identity` **and** the certificate's OIDC issuer equals `issuer`. Clients MUST NOT accept attestations based on the identity pattern alone.
-
-Clients MAY offer shorthand notations that expand deterministically to `(identity, issuer)` entries (for example, deriving the GitHub Actions issuer from a `github:owner/repo` form), provided the expansion is documented and the underlying policy always contains both fields.
-
-### Offline and Air-gapped Environments
-
-For offline verification, clients MAY cache `.sigs` files alongside packages in local repositories.
-The Sigstore bundle format is self-contained and supports offline verification once the Sigstore trust root is available locally.
-
-Clients SHOULD refresh the Sigstore trust root regularly — for example, on the update cadence of the Sigstore TUF repository — so they do not miss trust-root changes, including key revocations and newly trusted keys. Clients SHOULD warn when verifying against a trust root older than a configurable threshold. In air-gapped environments, deployments SHOULD establish an out-of-band process for updating the trust root alongside the mirrored packages.
+1. MUST discover sidecars through the repodata `attestations` field and SHOULD NOT probe convenience URLs when the field is absent.
+2. MUST reject an invalid `attestations.sha256` value before constructing the content-addressed URL.
+3. MUST enforce an implementation-defined maximum size while streaming the sidecar and verify its hash before parsing it.
+4. MUST treat an unavailable, oversized, malformed, or hash-mismatched advertised sidecar as a retrieval failure. The client MUST NOT use the sidecar or silently treat the package as having no attestations; the user-facing response is tool policy.
+5. MUST follow [CEP 27] and the subject-binding rules in [Attestation Requirements](#attestation-requirements) when verifying a publish attestation.
 
 ## Security Considerations
 
-The `.sigs` sidecar is served by the same infrastructure as the package it describes: an attacker who can modify the package artifact can equally modify or remove the sidecar. The mechanisms in this CEP layer as follows:
+The sidecar is served by the same infrastructure as the package it describes. Sigstore verification binds an attestation to a signing identity, but deciding which identities to trust is outside this CEP.
 
-- **Sigstore verification** binds each attestation to a signing identity, that is, the pair of certificate identity and OIDC issuer. An attacker cannot forge attestations for identities they do not control, but an attacker who controls the distribution path can substitute attestations signed by an identity they *do* control. The `trusted_identities` policy, because it pins both the identity pattern and the issuer, is what turns bundle verification into a guarantee about who produced the package.
-- **The repodata `attestations` hash** binds the sidecar bytes to the repodata. An intermediary (mirror, CDN, proxy) that strips or rewrites a sidecar is detected by the client's hash check, provided the client obtained repodata from a trusted source.
-- The strength of the hash binding is bounded by the integrity of repodata itself, which is currently protected by transport security to the channel origin. A compromised channel origin can consistently rewrite the package, the sidecar, and the repodata. This is the same trust model that applies to packages today. A future repodata signing mechanism would automatically extend to sidecar integrity, since the `attestations` field is part of the signed content.
-- `require: warn` and `require: ignore` do not block installation on failure. Deployments that rely on attestations as a security control MUST use `require: error` together with a restrictive `trusted_identities` list.
+The repodata `attestations` hash binds sidecar bytes to repodata and the content-addressed URL prevents cache races between sidecar revisions. This does not protect against a source that can also rewrite repodata. A compromised channel origin can consistently rewrite the package, sidecar, and repodata; this is the same trust model that applies to packages today. A future repodata signing mechanism would extend to sidecar integrity because the `attestations` field is part of the signed content.
 
 ## References
 
