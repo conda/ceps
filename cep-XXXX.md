@@ -60,29 +60,33 @@ For any conda package artifact at URL:
 <channel_url>/<subdir>/<artifact_filename>
 ```
 
-if the package has one or more attestations, the sidecar MUST be available at:
+if the package has one or more attestations, the current sidecar MUST be available at both:
 
 ```text
+<channel_url>/<subdir>/<artifact_filename>.sigs
 <channel_url>/<subdir>/<artifact_filename>.sigs.<sha256>
 ```
 
-Here, `<sha256>` is the 64-character lowercase hexadecimal hash advertised in repodata (see [Repodata changes](#repodata-changes)). The bytes at this URL MUST NOT change, and the channel MUST retain the URL for as long as the package remains available. To append attestations, a channel first publishes a new content-addressed sidecar and then updates repodata to its hash. Thus clients with either old or new repodata can fetch the corresponding sidecar without a cache race.
+The first URL is mutable and supports tools that discover attestations by appending `.sigs` to the artifact URL. It MUST serve the same bytes as the current sidecar advertised in repodata and SHOULD use `Cache-Control: no-cache`.
 
-Channels MAY also expose the latest sidecar at the mutable convenience URL `<artifact_filename>.sigs`. This alias is not a discovery or integrity mechanism, and clients implementing this CEP MUST use the content-addressed URL advertised through repodata.
+The second URL is content-addressed. Here, `<sha256>` is the 64-character lowercase hexadecimal hash advertised in repodata (see [Repodata changes](#repodata-changes)). Its bytes MUST NOT change, and the channel MUST retain the URL for as long as the package remains available.
 
-Whether a package has attestations is advertised in the repodata index. Clients discover sidecars through repodata rather than by probing convenience URLs; packages without attestations need not have a sidecar file at all.
+To append attestations, a channel first publishes the new content-addressed sidecar, then updates the mutable `.sigs` URL, and finally updates repodata. Thus conda clients with either old or new repodata can fetch the corresponding immutable sidecar without a cache race.
+
+Whether a package has attestations is advertised in the repodata index. Conda clients discover sidecars through repodata and use the content-addressed URL; generic Sigstore tooling may use the mutable `.sigs` URL. Packages without attestations need not have either sidecar URL.
 
 #### Example
 
-| Package URL | Content-addressed attestation URL |
+| Kind | Attestation URL |
 | --- | --- |
-| `https://example.com/channel/win-64/pkg-1.0-0.conda` | `https://example.com/channel/win-64/pkg-1.0-0.conda.sigs.<sha256>` |
+| Mutable discovery | `https://example.com/channel/win-64/pkg-1.0-0.conda.sigs` |
+| Content-addressed | `https://example.com/channel/win-64/pkg-1.0-0.conda.sigs.<sha256>` |
 
 ### Response Format
 
 The sidecar MUST contain a JSON array of one or more [Sigstore bundles][Sigstore Bundle]. Each bundle represents one attestation for the package.
 
-The sidecar is a static artifact: channels MUST serve it byte-for-byte identical to the file whose SHA256 hash is published in the repodata `attestations` field (see [Repodata changes](#repodata-changes)). Channels MUST NOT re-serialize the JSON when serving it. This makes the sidecar safe to host on static infrastructure (e.g. object storage or CDNs) and safe to cache and mirror by content hash.
+Channels MUST serve both URLs byte-for-byte identical to the current sidecar whose SHA256 hash is published in repodata (see [Repodata changes](#repodata-changes)). Channels MUST NOT re-serialize the JSON when serving it. The content-addressed URL is safe to host on static infrastructure (e.g. object storage or CDNs) and safe to cache and mirror by content hash.
 
 #### Content-Type
 
@@ -107,7 +111,7 @@ Each element in the array MUST be a valid [Sigstore Bundle] as defined by the Si
 | `200 OK`        | The sidecar file exists and was returned |
 | `404 Not Found` | No sidecar file exists at this URL       |
 
-Attestation discovery goes through repodata, so clients MUST NOT infer anything about the existence of the package itself from a sidecar response. In particular, channels that do not implement this CEP may return `404 Not Found` for every sidecar URL, even when the underlying package exists.
+Conda-client discovery goes through repodata, so clients MUST NOT infer anything about the existence of the package itself from a sidecar response. In particular, channels that do not implement this CEP may return `404 Not Found` for every sidecar URL, even when the underlying package exists.
 
 For a package whose repodata record carries an `attestations` field, any failure to retrieve a sidecar matching the advertised hash — including a `404 Not Found` — is a retrieval failure (see [Client Requirements](#client-requirements)).
 
@@ -129,11 +133,11 @@ A package record in the repodata index (in `packages` or `packages.conda`, or th
 
 The field MUST be present if and only if the package has a current sidecar containing at least one attestation. Its absence means no sidecar is advertised; clients MUST NOT treat this as an error and SHOULD NOT request a sidecar URL.
 
-The field is the single discovery and hash-binding mechanism for attestation sidecars:
+The field is the conda-client discovery and hash-binding mechanism for attestation sidecars:
 
-1. **Discovery**: Clients learn from repodata alone whether a sidecar exists, avoiding a network round-trip for packages without attestations.
+1. **Discovery**: Conda clients learn from repodata alone whether a sidecar exists, avoiding a network round-trip for packages without attestations.
 2. **Consistency**: Clients MUST verify that the fetched sidecar bytes hash to `sha256` before using them (see [Client Requirements](#client-requirements)). This detects modified responses relative to repodata; it does not protect against a source that can also rewrite repodata.
-3. **Change detection**: When attestations are appended after a package was first published, the channel publishes a new content-addressed sidecar and updates the field. Mirrors and clients fetch the new URL when the hash changes.
+3. **Change detection**: When attestations are appended after a package was first published, the channel publishes a new content-addressed sidecar, updates the mutable URL, and updates the field. Mirrors and clients fetch the new immutable URL when the hash changes.
 
 Tools that post-process repodata (e.g. hotfixing and patching pipelines) MUST preserve the `attestations` field. Channels using sharded repodata ([CEP 16]) update only the affected shard when attestations change, so clients pick up new attestations incrementally; consumers of monolithic `repodata.json` receive the update on the next regeneration.
 
@@ -154,17 +158,19 @@ This CEP does not define upload authorization, channel admission policy, or acce
 For every mirrored package record carrying an `attestations` field, mirrors and proxies MUST:
 
 1. Fetch the content-addressed sidecar and verify its hash
-2. Make the sidecar available before publishing repodata that references it
-3. Serve the file byte-for-byte, without modification
-4. Retain old sidecars for as long as the corresponding package remains available
+2. Make the immutable sidecar available
+3. Update the mutable `.sigs` URL to the same bytes
+4. Publish the repodata that references it
+5. Serve both URLs byte-for-byte, without modification
+6. Retain old immutable sidecars for as long as the corresponding package remains available
 
 A mirror that modifies sidecar bytes breaks the hash binding to repodata, and clients will treat its responses as retrieval failures. Mirrors MUST NOT infer that a package does not exist solely because an upstream sidecar endpoint returns `404 Not Found`.
 
 ## Client Requirements
 
-A client that consumes attestation sidecars:
+A conda client that consumes attestation sidecars:
 
-1. MUST discover sidecars through the repodata `attestations` field and SHOULD NOT probe convenience URLs when the field is absent.
+1. MUST discover sidecars through the repodata `attestations` field and use the content-addressed URL.
 2. MUST reject an invalid `attestations.sha256` value before constructing the content-addressed URL.
 3. MUST enforce an implementation-defined maximum size while streaming the sidecar and verify its hash before parsing it.
 4. MUST treat an unavailable, oversized, malformed, or hash-mismatched advertised sidecar as a retrieval failure. The client MUST NOT use the sidecar or silently treat the package as having no attestations; the user-facing response is tool policy.
@@ -174,7 +180,9 @@ A client that consumes attestation sidecars:
 
 The sidecar is served by the same infrastructure as the package it describes. Sigstore verification binds an attestation to a signing identity, but deciding which identities to trust is outside this CEP.
 
-The repodata `attestations` hash binds sidecar bytes to repodata and the content-addressed URL prevents cache races between sidecar revisions. This does not protect against a source that can also rewrite repodata. A compromised channel origin can consistently rewrite the package, sidecar, and repodata; this is the same trust model that applies to packages today. A future repodata signing mechanism would extend to sidecar integrity because the `attestations` field is part of the signed content.
+The repodata `attestations` hash binds sidecar bytes to repodata and the content-addressed URL prevents cache races between sidecar revisions. The mutable `.sigs` URL provides discovery compatibility, not freshness or integrity, so conda clients use the content-addressed URL.
+
+This does not protect against a source that can also rewrite repodata. A compromised channel origin can consistently rewrite the package, sidecar, and repodata; this is the same trust model that applies to packages today. A future repodata signing mechanism would extend to sidecar integrity because the `attestations` field is part of the signed content.
 
 ## References
 
