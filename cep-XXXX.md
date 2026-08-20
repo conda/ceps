@@ -232,6 +232,7 @@ Platform/architecture predicates and environment variables — nothing derived f
 ## Sample implementation
 
 Current behavior is defined by conda-build's variant handling:
+
 - `conda_build/variants.py`:
   - `find_config_files`
   - `parse_config_file`
