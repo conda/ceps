@@ -189,6 +189,17 @@ The following `qualifiers` are defined for conda PURLs:
   packages; see, e.g., [CEP 16][CEP16], [CEP 32][CEP32], and [CEP 36][CEP36]. Given this and the
   sub-optimal security properties of MD5, the RECOMMENDED algorithm for the `checksum` qualifier is
   SHA-256.
+- `download_url`: Optional qualifier, with no default value. If provided, its value MUST be the
+  absolute URL that completely specifies where the identified package can be directly downloaded;
+  in this context, "completely specifies" means no processing of other PURL components is needed to
+  derive the direct download URL, and in particular, that the URL value MUST end with a path
+  component representing the package artifact's filename. The value of this qualifier SHALL take
+  precedence over all other methods for deriving a download URL from other PURL components.
+
+  Note that this CEP purposely does not prescribe how systems processing conda PURLs should handle
+  cases where information derived from a provided `download_url` seemingly conflicts with
+  information provided in the other PURL components. Resolution of such conflicts is left to the
+  discretion of the processing system and/or specifications in other CEPs.
 
 Qualifiers in conda PURLs SHALL conform with all the rules specified ECMA-427 Clause 5.6.6
 ("Qualifiers"), with the key words "shall", "shall not", and "may" in ECMA-427 Clause 5.6.6 being
@@ -212,11 +223,10 @@ described in this CEP. Upon acceptance of this CEP, systems processing conda PUR
 PURLs containing a `channel` qualifier as invalid.
 
 To avoid the need for potentially complex precedence rules in this CEP, the [commonly-used
-qualifiers][purl-quals-guide] `filename` and `download_url` used by other PURL types are explicitly
-_not_ defined for conda PURLs. In other words, the `filename` and `download_url` qualifiers MUST
-NOT be accepted when processing conda PURLs. Should such values be needed to handle a conda PURL,
-they must be constructed from the other components and qualifiers defined in this CEP and the
-rules defined in CEP 26.
+qualifier][purl-quals-guide] `filename` for other PURL types is explicitly _not_ defined for conda
+PURLs. In other words, the `filename` qualifier MUST NOT be accepted when processing conda PURLs.
+Should such a value be needed to handle a conda PURL, it must be derived from the other components
+and qualifiers defined in this CEP and the rules defined in CEP 26.
 
 #### `subpath` component
 
