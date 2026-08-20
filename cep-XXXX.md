@@ -177,11 +177,9 @@ Sources are applied in order. A later source's value **replaces** an earlier one
 
 Example (later source `b` wins for both keys):
 
-```python
-a = {"python": ["2.7", "3.5"], "numpy": ["1.10", "1.11"]}
-b = {"python": ["3.14", "3.15"], "numpy": ["2.3", "2.5"]}
-# merged = {"python": ["3.14", "3.15"], "numpy": ["2.3", "2.5"]}
-```
+    a = {"python": ["2.7", "3.5"], "numpy": ["1.10", "1.11"]}
+    b = {"python": ["3.14", "3.15"], "numpy": ["2.3", "2.5"]}
+    # merged = {"python": ["3.14", "3.15"], "numpy": ["2.3", "2.5"]}
 
 #### Reserved keys
 
