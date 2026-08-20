@@ -6,8 +6,8 @@
 <tr><td> Author(s) </td><td> Silvio Traversaro &lt;silvio@traversaro.it&gt; </td></tr>
 <tr><td> Created </td><td> Aug 20, 2026</td></tr>
 <tr><td> Updated </td><td> Aug 20, 2026</td></tr>
-<tr><td> Discussion </td><td> TBD </td></tr>
-<tr><td> Implementation </td><td> TBD </td></tr>
+<tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/189 </td></tr>
+<tr><td> Implementation </td><td> https://github.com/traversaro/amdgpu-virtual-packages </td></tr>
 </table>
 
 > The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT",
