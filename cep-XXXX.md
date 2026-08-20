@@ -174,11 +174,12 @@ The following `qualifiers` are defined for conda PURLs:
   concatenation of the lowercase checksum algorithm name (e.g., "md5", "sha256"); a single,
   unencoded ":" (colon) character; and the lowercase, hexadecimal checksum value.
 
-  The lowercase checksum algorithm name MUST only contain the ASCII lowercase characters `a-z` and
-  digits `0-9`. The recommended way to specify checksum algorithms whose names are commonly
-  written with upper case and/or non-alphanumeric characters such as dashes (e.g., "SHA-1",
-  "SHA-256") is to simply remove any non-alphanumeric characters in the commonly-written name and
-  lowercase the remaining string.
+  The lowercase checksum algorithm name MUST only contain the ASCII lowercase characters `a-z`,
+  digits `0-9`, and hyphen (minus) `-`. The recommended way to specify checksum algorithm names is
+  to lowercase the name, replace any non-alphanumeric characters with hyphens (`-`), and remove as
+  many hyphens as possible without creating potential ambiguities; for example, `sha256`,
+  `sha512-224`, and `sha3-512` are the recommended ways of specifying the SHA-256, SHA-512/224, and
+  SHA3-512 algorithms, respectively.
 
   The lowercase hexadecimal checksum value MUST only contain the ASCII lowercase characters `a-f`
   and digits `0-9`. The checksum value is explicitly understood to be hexadecimal, so
