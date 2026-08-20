@@ -32,7 +32,7 @@ This CEP proposes a standard for CBC files in order to officially declare what t
 ## Nomenclature
 
 - **CBC**: informal shorthand for `conda_build_config.yaml`.
-- **cbc.yaml**: also another shortand seen in some documentation and in code repositories.  Not used in this document.
+- **cbc.yaml**: also another shorthand seen in some documentation and in code repositories.  Not used in this document.
 - **Variant configuration file** (VCF): a YAML document that supplies the variant dictionary used at render/build time.
 - **Canonical filename**: `conda_build_config.yaml` (underscores). This is the name recognized by conda-build discovery, rattler-build legacy loading, and both:
   - [AnacondaRecipes/aggregate](https://github.com/AnacondaRecipes/aggregate/blob/master/conda_build_config.yaml)
@@ -81,7 +81,7 @@ Variants are defined as name/value pairs. Each such name becomes a variable avai
 A variant key with more than one value defines an axis of variation. When several keys each carry multiple values, the builds produced are the Cartesian product of those axes. This is the per-recipe "define variants" purpose: building the same recipe against, for example:
 
 - Building a package against several versions of Python (probably the most common use case)
-- Several Python versions crossed with different modalites of a library (such as CPU and GPU verisons)
+- Several Python versions crossed with different modalites of a library (such as CPU and GPU versions)
 
 In practice, channel-wide baselines exercise this very little. In both `AnacondaRecipes/aggregate` and `conda-forge-pinning`, nearly every key holds a single value, and the few multi-valued keys (such as `python`/`numpy`) are coupled with [`zip_keys`](#reserved-top-level-keys) rather than multiplied. The matrix collapses to a near-single point, and the file acts as a set of pinned defaults.
 
@@ -214,7 +214,7 @@ This CEP largely specifies existing conda-build behavior; most of it is descript
 
 ## Open questions
 
-1. **Do any recipe-local CBCs use interpreter-derived selectors?** This determines whether the interpreter-selector MUST NOT can apply to all CBCs or must be scoped to channel-baseline files. Needs a survey of recipe-local `conda_build_config.yaml` files in the wild for `# [py`, `# [np` usage.  A strong perference to move away from this practice and move that information into the recipe would be highly endorsed.
+1. **Do any recipe-local CBCs use interpreter-derived selectors?** This determines whether the interpreter-selector MUST NOT can apply to all CBCs or must be scoped to channel-baseline files. Needs a survey of recipe-local `conda_build_config.yaml` files in the wild for `# [py`, `# [np` usage.  A strong preference to move away from this practice and move that information into the recipe would be highly endorsed.
 2. **Is the reserved-key set stable across conda-build versions?** This CEP treats `zip_keys`, `pin_run_as_build`, `ignore_version`, `ignore_build_only_deps`, and `extend_keys` as the closed set, per current source. Future conda-build changes could alter it; the CEP may need a versioning story if so.
 3. **Should the interpreter-selector restriction be MUST NOT or SHOULD NOT?** Currently MUST NOT, on the grounds that no known file violates it. If review surfaces legitimate uses, this relaxes to SHOULD NOT.
 
