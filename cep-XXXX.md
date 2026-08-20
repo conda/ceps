@@ -41,7 +41,7 @@ This CEP proposes a standard for CBC files in order to officially declare what t
 ## Relationship to other standards
 
 | Standard | Relationship |
-|----------|----------------|
+| ---------- | ---------------- |
 | [CEP 24](./cep-0024.md) | The `environment.yml` specification standard. Both use comment-based `# [<expr>]` selectors. |
 | [CEP 39](./cep-0039.md) | v1 recipes consume variant keys; CBC is the usual source for global/channel keys like `c_compiler`. |
 | [CEP 40](./cep-0040.md) | `variant_config.yaml` in artifacts records keys *used* in one build, not the full CBC. |
@@ -97,7 +97,7 @@ Which combinations a tool actually materializes — build order, skipping, dedup
 Five root-level keys have defined meaning and are not treated as variant keys. They are used to control config file behavior. This set is fixed (conda-build handles them specially in variant parsing):
 
 | Key | Value shape | Role |
-|-----|-------------|------|
+| ----- | ------------- | ------ |
 | `zip_keys` | list of key names, or list of lists of names | Couples variant keys so their value lists advance together by index rather than forming a Cartesian product. |
 | `pin_run_as_build` | map of package name → `{min_pin, max_pin}` | Sets the default run pin for packages that are both build and run dependencies. |
 | `ignore_version` | list of key names | Suppresses automatic version pinning for the listed keys. |
@@ -188,7 +188,7 @@ b = {"python": ["3.14", "3.15"], "numpy": ["2.3", "2.5"]}
 Reserved keys are **additive** across sources (they do not last-wins overwrite):
 
 | Key | Accumulation |
-|-----|----------------|
+| ----- | ---------------- |
 | `pin_run_as_build` | Map merge (later entry for the same package name wins) |
 | `ignore_version`, `ignore_build_only_deps`, `extend_keys` | List concat, then de-duplicated |
 | `zip_keys` | Whole groups are appended and de-duplicated; existing groups are not grown or edited in place |
