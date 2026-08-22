@@ -81,21 +81,6 @@ absent.
 When present, its version MUST be the AMDGPU ISA version formatted as
 `{major}.{minor}.{stepping}`, where all three components are decimal integers.
 
-For example:
-
-| AMDGPU target | `__amdgpu_arch` version |
-| ------------- | ----------------------- |
-| `gfx908`      | `9.0.8`                 |
-| `gfx90a`      | `9.0.10`                |
-| `gfx942`      | `9.4.2`                 |
-| `gfx1100`     | `11.0.0`                |
-| `gfx1151`     | `11.5.1`                |
-| `gfx1201`     | `12.0.1`                |
-
-This representation corresponds to the major, minor, and stepping components of the AMDGPU
-ISA version. In particular, hexadecimal digits used in `gfx` target names are converted to
-decimal integers, so `gfx90a` is represented as `9.0.10`.
-
 The build string MUST be `0`.
 
 When several AMDGPU devices with different architectures are detected, the version MUST be
@@ -111,6 +96,66 @@ string `0`, except when `__amdgpu` is absent.
 
 If `CONDA_OVERRIDE_AMDGPU_ARCH` is set to the empty string, the `__amdgpu_arch` virtual
 package MUST be absent.
+
+A conforming implementation MUST produce the same ISA version as the
+following platform-specific procedures.
+
+#### Linux
+
+On Linux, the AMDGPU ISA version MUST be consistent with the one obtained from the
+`gfx_target_version` property exposed in:
+
+```text
+/sys/class/kfd/kfd/topology/nodes/<node>/properties
+```
+
+`gfx_target_version` represents an unsigned 32-bit integer and is exposed
+as its decimal text representation. After parsing it as a
+base-10 integer `v`, the ISA version components are:
+
+```text
+major    = (v // 10000) % 100
+minor    = (v // 100) % 100
+stepping = v % 100
+```
+
+The `__amdgpu_arch` version MUST be
+`{major}.{minor}.{stepping}`, with all components represented as decimal
+integers.
+
+For example, `gfx_target_version = 90010` produces `9.0.10`.
+
+#### Windows
+
+On Windows, the AMDGPU ISA version MUST be consistent with the one obtained by calling
+`hipGetDeviceProperties` from the HIP runtime library installed by the
+AMD GPU driver in the Windows system directory, `%SystemRoot%\System32`
+(by default `C:\Windows\System32`). The library is named
+`amdhip64_<major>.dll` for versioned HIP runtimes, for example
+`amdhip64_7.dll`, with `amdhip64.dll` used by older runtimes.
+
+The `gcnArchName` member of `hipDeviceProp_t` contains an AMDGPU target
+ID, for example `gfx90a` or `gfx1100:xnack-`. Only the substring before
+the first `:` MUST be used to determine the ISA version.
+
+The resulting target name MUST start with `gfx`. After removing this
+prefix, all characters except the final two form the major version and
+MUST be interpreted as a decimal integer. The final two characters are,
+respectively, the minor and stepping versions and MUST be interpreted as
+hexadecimal digits.
+
+The `__amdgpu_arch` version MUST be
+`{major}.{minor}.{stepping}`, with all components represented as decimal
+integers.
+
+For example:
+
+```text
+gfx90a              -> 9.0.10
+gfx90a:xnack-       -> 9.0.10
+gfx1151             -> 11.5.1
+gfx1201             -> 12.0.1
+```
 
 ## Rationale
 
@@ -169,6 +214,9 @@ Package authors SHOULD NOT assume that version ordering implies AMDGPU binary co
 * [Virtual packages framework (CEP 30)](cep-0030.md)
 * [`__cuda_arch` virtual package (CEP 46)](cep-0046.md)
 * [LLVM AMDGPU usage documentation](https://llvm.org/docs/AMDGPUUsage.html)
+* [AMD ROCprofiler-SDK `gfx_target_version` definition](https://rocm.docs.amd.com/projects/rocprofiler-sdk/en/docs-7.2.2/_doxygen/rocprofiler-sdk/html/agent_8h_source.html)
+* [Linux KFD AMDGPU device implementation](https://github.com/torvalds/linux/blob/master/drivers/gpu/drm/amd/amdkfd/kfd_device.c)
+* [MLIR AMDGPU `Chipset` version structure](https://github.com/llvm/llvm-project/blob/main/mlir/include/mlir/Dialect/AMDGPU/Utils/Chipset.h)
 
 ## Copyright
 
