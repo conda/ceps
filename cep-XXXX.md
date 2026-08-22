@@ -39,8 +39,11 @@ across GPU families and driver installation mechanisms. For example, some GPUs u
 AMDGPU driver provided by the operating system, while others may use an AMD-provided DKMS
 driver.
 
-Therefore, `__amdgpu` only indicates that an AMDGPU device is available. GPU architecture is
-reported separately through `__amdgpu_arch`.
+Therefore, `__amdgpu` only indicates that an AMDGPU device is available. This is done my making
+`__amdgpu` a "presence" virtual package, like `__unix` defined in CEP 30, in which the version and build string
+carry no information, and are set to `0`.
+
+GPU architecture is reported separately through `__amdgpu_arch`.
 
 ## Specification
 
