@@ -159,8 +159,9 @@ gfx1201             -> 12.0.1
 
 ## Rationale
 
-There is no mechanism by which a conda virtual package may expose multiple versions
-simultaneously. Therefore, a single `__amdgpu_arch` cannot describe all architectures in a
+As mentioned in CEP 46 Rationale section, there is no consensus on a convenient
+mechanism for a single virtual package to express multiple versions simultaneously.
+Therefore, a single `__amdgpu_arch` cannot describe all architectures in a
 heterogeneous multi-GPU system.
 
 `__cuda_arch` addresses this limitation by reporting the minimum CUDA compute capability.
