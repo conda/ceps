@@ -5,7 +5,7 @@
 <tr><td> Status </td><td> Draft </td></tr>
 <tr><td> Author(s) </td><td> Silvio Traversaro &lt;silvio@traversaro.it&gt; </td></tr>
 <tr><td> Created </td><td> Aug 20, 2026</td></tr>
-<tr><td> Updated </td><td> Aug 20, 2026</td></tr>
+<tr><td> Updated </td><td> Sep 13, 2026</td></tr>
 <tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/189 </td></tr>
 <tr><td> Implementation </td><td> https://github.com/traversaro/amdgpu-virtual-packages </td></tr>
 </table>
@@ -84,7 +84,9 @@ When present, its version MUST be the AMDGPU ISA version formatted as
 The build string MUST be `0`.
 
 When several AMDGPU devices with different architectures are detected, the version MUST be
-set to the highest AMDGPU ISA version among the detected devices.
+set to the AMDGPU ISA version of the device with the greatest number of compute units. If two
+or more devices have the same greatest number of compute units, the version MUST be set to the
+highest AMDGPU ISA version among those devices.
 
 The ordering of these versions MUST NOT be interpreted as defining binary compatibility
 between AMDGPU architectures. A greater `__amdgpu_arch` version does not imply compatibility
@@ -123,6 +125,9 @@ The `__amdgpu_arch` version MUST be
 `{major}.{minor}.{stepping}`, with all components represented as decimal
 integers.
 
+The compute-unit count used to select a device MUST be consistent with the value obtained as
+`simd_count / simd_per_cu`, using the corresponding properties in the same KFD topology node.
+
 For example, `gfx_target_version = 90010` produces `9.0.10`.
 
 #### Windows
@@ -148,6 +153,9 @@ The `__amdgpu_arch` version MUST be
 `{major}.{minor}.{stepping}`, with all components represented as decimal
 integers.
 
+The compute-unit count used to select a device MUST be consistent with the value obtained from
+the `hipDeviceAttributeMultiprocessorCount` device attribute.
+
 For example:
 
 ```text
@@ -172,9 +180,11 @@ AMDGPU binaries commonly contain code objects for specific `gfx` architectures, 
 GPU present in the system may not even be supported by the ROCm version used by an
 application.
 
-For this reason, this CEP selects the highest detected AMDGPU architecture. This is only a
-rule for choosing a representative device and does not define compatibility between
-architectures.
+For this reason, this CEP selects the architecture of the device with the most compute units.
+This preferentially selects the discrete GPU on systems that also have an integrated GPU, even
+when the integrated GPU has a newer architecture. An architecture comparison resolves a
+compute-unit-count tie. This is only a rule for choosing a representative device and does not
+define compatibility between architectures.
 
 A future mechanism capable of exposing all available architectures would represent
 heterogeneous GPU systems more accurately.
