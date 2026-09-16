@@ -1,0 +1,53 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+        "name": {
+            "type": "string"
+        },
+        "prefix": {
+            "type": "string"
+        },
+        "channels": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "dependencies": {
+            "type": "array",
+            "items": {
+                "anyOf": [
+                    {
+                        "type": "string"
+                    },
+                    {
+                        "$ref": "#/definitions/pip"
+                    }
+                ]
+            }
+        },
+        "variables": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "string"
+            }
+        }
+    },
+    "definitions": {
+        "pip": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "array",
+                "required": [
+                    "pip"
+                ],
+                "properties": {
+                    "pip": {
+                        "type": "array"
+                    }
+                }
+            }
+        }
+    }
+}
