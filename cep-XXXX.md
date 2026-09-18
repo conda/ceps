@@ -6,7 +6,7 @@
 <tr><td> Author(s) </td><td> Julian Hofer &lt;julian@prefix.dev&gt;, Wolf Vollprecht &lt;wolf@prefix.dev&gt;, Tobias Hunger &lt;tobias@prefix.dev&gt;</td></tr>
 <tr><td> Created </td><td> Aug 5, 2026</td></tr>
 <tr><td> Updated </td><td> Sep 18, 2026</td></tr>
-<tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/188 </td></tr>
+<tr><td> Discussion </td><td> https://github.com/conda/ceps/pull/188, https://github.com/conda/ceps/pull/191 </td></tr>
 <tr><td> Implementation </td><td> https://github.com/conda/rattler/pull/2701 (stack) </td></tr>
 <tr><td> Requires </td><td> CEP 26, CEP 29, CEP 30, CEP 32, CEP 33, CEP 34, CEP 46 </td></tr>
 </table>
