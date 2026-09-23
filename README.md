@@ -60,6 +60,7 @@ for conda's implementation, all major changes should be submitted as
 | [0047](cep-0047.md) | Index timestamp in package record metadata                                  |
 | [0048](cep-0048.md) | A backwards-compatible update strategy for repodata `v3`                    |
 | [0049](cep-0049.md) | Package-URLs (PURLs) for conda packages                                     |
+| [0050](cep-0050.md) | Distribution of Sigstore Attestations for Conda Packages                    |
 
 ## References
 
