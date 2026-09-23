@@ -39,6 +39,26 @@ for conda's implementation, all major changes should be submitted as
 | [0026](cep-0026.md) | Identifying Packages and Channels in the conda Ecosystem                    |
 | [0027](cep-0027.md) | Standardizing a publish attestation for the conda ecosystem                 |
 | [0028](cep-0028.md) | Customizable system DLL linkage checks for Windows                          |
+| [0029](cep-0029.md) | The `MatchSpec` query language                                              |
+| [0030](cep-0030.md) | Virtual packages                                                            |
+| [0031](cep-0031.md) | Build provenance metadata                                                   |
+| [0032](cep-0032.md) | Management and structure of conda environments                              |
+| [0033](cep-0033.md) | Version literals and their ordering                                         |
+| [0034](cep-0034.md) | Contents of conda packages                                                  |
+| [0035](cep-0035.md) | Distributable package artifacts file formats                                |
+| [0036](cep-0036.md) | Package metadata files served by conda channels                             |
+| [0037](cep-0037.md) | `conda-lock.yml` lockfiles                                                  |
+| [0038](cep-0038.md) | Channel-wide metadata files served by conda channels                        |
+| [0039](cep-0039.md) | A new recipe format (part 3): `jinja` functions in recipes                  |
+| [0040](cep-0040.md) | A new recipe format (part 4): Rendered recipe YAML and serialization        |
+| [0041](cep-0041.md) | The staging output in v1 recipes / rattler-build                            |
+| [0042](cep-0042.md) | Channel relations in repodata                                               |
+| [0043](cep-0043.md) | Conditional dependencies                                                    |
+| [0044](cep-0044.md) | Optional dependency groups                                                  |
+| [0045](cep-0045.md) | Simplified variant selection                                                |
+| [0046](cep-0046.md) | The `__cuda_arch` virtual package                                           |
+| [0047](cep-0047.md) | Index timestamp in package record metadata                                  |
+| [0048](cep-0048.md) | A backwards-compatible update strategy for repodata `v3`                    |
 
 ## References
 
