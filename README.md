@@ -59,6 +59,7 @@ for conda's implementation, all major changes should be submitted as
 | [0046](cep-0046.md) | The `__cuda_arch` virtual package                                           |
 | [0047](cep-0047.md) | Index timestamp in package record metadata                                  |
 | [0048](cep-0048.md) | A backwards-compatible update strategy for repodata `v3`                    |
+| [0049](cep-0049.md) | Package-URLs (PURLs) for conda packages                                     |
 
 ## References
 
