@@ -88,7 +88,8 @@ For names not standardized by a CEP, channels SHOULD include their channel name,
 Channels SHOULD register standardized names only to replace client detection, following the detector protocol's [standardized-name rules](https://github.com/Hofer-Julian/ceps/blob/virtual-package-detector-protocol/cep-XXXX.md#results-in-the-solve).
 
 Clients MUST be able to deal with different channels registering the same virtual package names.
-Clients MUST process registrations in CEP 42's resolved channel order.
+Clients MUST process registrations in CEP 42's resolved channel order, highest priority first.
+The input channel order MUST honor the client's configured channel priorities, including explicit per-channel priorities, before CEP 42 relations are resolved.
 A registration MUST be rejected if any of its virtual package names conflicts with an already accepted registration by normalized name or override variable; otherwise it MUST be accepted.
 Accepted registrations reserve all their names for the solve across all channels.
 Rejected registrations reserve no names, and their detectors MUST NOT be run.
@@ -99,6 +100,8 @@ A registration's origin is the registering channel's [CEP 26](./cep-0026.md) bas
 
 Its resolution channels are the ordered channels [CEP 42](./cep-0042.md) would resolve with that channel.
 If a cycle or depth limit prevents relation resolution, clients MUST use the registering channel alone and SHOULD warn.
+The detector MatchSpec MUST carry the registering channel as its channel qualifier, so the detector package itself always comes from the channel that registered it.
+Its dependencies resolve from the resolution channels.
 
 ### Consent and user controls
 
