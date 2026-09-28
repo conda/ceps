@@ -146,7 +146,6 @@ Clients MUST ignore unknown top-level keys and unknown keys inside a virtual pac
 Known fields with wrong types are malformed.
 Each watch list MUST contain at most 32 strings, each at most 4096 UTF-8 bytes after decoding.
 Exceeding either limit makes the report malformed.
-Duplicate or missing detector names make the report malformed.
 Any missing or undeclared virtual package name makes the report malformed.
 The report MUST contain every virtual package name from the registration and no other name.
 In the example, `null` reports absent MPICH; omitting `__conda_forge_mpich` would violate the contract.
@@ -206,10 +205,9 @@ For each record, clients MUST form a line with four fields separated by a single
 1. The normalized package name.
 2. The verbatim version string.
 3. The verbatim build string.
-4. The package artifact, identified by the first value present:
-   1. Any hash value allowed by [CEP 36](./cep-0036.md) for package authentication
-   2. The serialized package URL.
-5. All fields and separators must be UTF-8 encoded.
+4. The package artifact, identified by the first value present, in this order: the SHA-256 hash, the MD5 hash, the serialized package URL. Hashes are the lowercase hexadecimal strings of [CEP 36](./cep-0036.md).
+
+All fields and separators MUST be UTF-8 encoded.
 
 Clients MUST sort the lines in ascending order by their UTF-8 bytes and join them with a single line feed (`U+000A`) between adjacent lines.
 There MUST NOT be a line feed after the last line.
