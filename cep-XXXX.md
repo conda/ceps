@@ -51,10 +51,13 @@ For example, conda-forge could register a proposed `mpi-detect` package to repor
 Each key is equal to both the detector package name and the name of its [executable](https://github.com/Hofer-Julian/ceps/blob/virtual-package-detector-protocol/cep-XXXX.md#the-detector-package).
 Its array lists the virtual packages reported by the detector.
 
-A client MUST read the field as an opaque JSON value before validating it, so invalid registrations do not prevent parsing the rest of the repodata.
+The field, when present, MUST be a JSON object mapping detector package names to arrays of strings.
+`null`, non-object values, non-array registration values and non-string array entries are schema errors.
+Clients MUST report schema errors and MAY reject the surrounding repodata.
+Clients that continue after a schema error MUST ignore the channel's entire combined registration set.
+
 An absent field or empty dictionary registers no detectors. Otherwise:
 
-- The value MUST be a dictionary mapping detector package names to arrays of virtual package names. `null` and incorrectly shaped values are registration errors.
 - Each key MUST be a valid installable package name, not a virtual package name beginning with `__`, and MUST name a package served by the declaring channel in one of its subdirs. An invalid key is a registration error.
   Failure to resolve a syntactically valid name is a [detector failure](https://github.com/Hofer-Julian/ceps/blob/virtual-package-detector-protocol/cep-XXXX.md#failure-handling).
 - Each array MUST contain 1 to 16 entries. Names MUST satisfy the detector protocol's [name rules](https://github.com/Hofer-Julian/ceps/blob/virtual-package-detector-protocol/cep-XXXX.md#registrations).
@@ -74,7 +77,8 @@ The following are registration errors in the combined registration set:
 - Duplicate normalized detector keys within one subdir's dictionary. Clients whose JSON parser cannot expose duplicate keys need not detect them.
 
 Clients MUST report any registration error and ignore the channel's entire combined registration set.
-They MUST NOT reject the surrounding repodata or abort the solve.
+They MUST NOT reject the surrounding repodata or abort the solve because of a registration error.
+Schema errors are handled separately as described above.
 
 #### Sharded repodata
 
