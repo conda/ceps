@@ -85,6 +85,32 @@ Schema errors are handled separately as described above.
 For [CEP 16](./cep-0016.md) sharded repodata, `virtual_package_detectors` MAY appear in the shard index's `info` dictionary with the same schema and semantics.
 A channel serving both forms MUST publish consistent registrations. Clients need only read the form they loaded.
 
+### Optional package self-description
+
+Detector packages MAY declare their reported names in `info/about.json` under `extra.virtual_package_detectors`, allowing channel tooling and UIs to populate registrations without executing the detector:
+
+```json
+{
+  "extra": {
+    "virtual_package_detectors": {
+      "username-length-detect": ["__username_length"]
+    }
+  }
+}
+```
+
+The field MUST be an object mapping normalized detector package names to arrays of 1 to 16 unique, valid virtual package names.
+Tooling MUST use only the entry matching the containing package's normalized name from `info/index.json` and ignore other entries, so multi-output recipes can share this metadata.
+A missing entry provides no declaration; a malformed field or matching entry MUST NOT be used to populate a registration.
+
+The declared names MUST exactly match the detector's report keys, including names reported as `null` when absent.
+Tooling MUST NOT union conflicting declarations across builds.
+Maintainers SHOULD keep the name set stable across all builds that clients may resolve for a registration.
+
+Build tools MAY expose this metadata through recipes or other native configuration; this CEP specifies only its representation in the package archive.
+The declaration does not itself register a detector, select a publication subdir or authorize execution.
+Channels remain responsible for publishing valid registrations; clients need not read package self-descriptions.
+
 ### Names and channel priority
 
 A virtual package name has one meaning throughout a solve.
