@@ -85,31 +85,33 @@ Schema errors are handled separately as described above.
 For [CEP 16](./cep-0016.md) sharded repodata, `virtual_package_detectors` MAY appear in the shard index's `info` dictionary with the same schema and semantics.
 A channel serving both forms MUST publish consistent registrations. Clients need only read the form they loaded.
 
-### Optional package self-description
+### Optional package metadata
 
-Detector packages MAY declare their reported names in `info/about.json` under `extra.virtual_package_detectors`, allowing channel tooling and UIs to populate registrations without executing the detector:
+Detector packages MAY declare the virtual package names they report in `info/about.json` under `extra.virtual_package_detectors`.
+Channel tooling and UIs can use this metadata to fill in registrations without running the detector:
 
 ```json
 {
   "extra": {
     "virtual_package_detectors": {
-      "username-length-detect": ["__username_length"]
+      "mpi-detect": ["__conda_forge_openmpi", "__conda_forge_mpich"]
     }
   }
 }
 ```
 
 The field MUST be an object mapping normalized detector package names to arrays of 1 to 16 unique, valid virtual package names.
-Tooling MUST use only the entry matching the containing package's normalized name from `info/index.json` and ignore other entries, so multi-output recipes can share this metadata.
-A missing entry provides no declaration; a malformed field or matching entry MUST NOT be used to populate a registration.
+Tooling MUST use only the entry matching the package's normalized name from `info/index.json` and ignore other entries.
+This lets multi-output recipes share the metadata.
+A missing entry provides no declaration; a malformed field or matching entry MUST NOT be used to fill in a registration.
 
-The declared names MUST exactly match the detector's report keys, including names reported as `null` when absent.
-Tooling MUST NOT union conflicting declarations across builds.
+The declared names MUST exactly match the virtual package names in the detector's report, including names reported as `null` when absent.
+Tooling MUST NOT combine different name sets from different builds into one registration.
 Maintainers SHOULD keep the name set stable across all builds that clients may resolve for a registration.
 
-Build tools MAY expose this metadata through recipes or other native configuration; this CEP specifies only its representation in the package archive.
+Build tools MAY expose this metadata through recipes or other configuration; this CEP specifies only its representation in the package archive.
 The declaration does not itself register a detector, select a publication subdir or authorize execution.
-Channels remain responsible for publishing valid registrations; clients need not read package self-descriptions.
+Channels remain responsible for publishing valid registrations; clients need not read this metadata.
 
 ### Names and channel priority
 
