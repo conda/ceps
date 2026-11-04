@@ -103,11 +103,14 @@ Channel tools, such as indexers and package UIs, can use this metadata to fill i
 - The field MUST be a JSON object.
 - Each key MUST be a normalized detector package name, such as `mpi-detect`.
 - Each value MUST be an array of 1 to 16 unique virtual package names that follow the [registration name rules](#registration-metadata).
-- Channel tools MUST use only the entry whose key matches the package's normalized name in `info/index.json` and ignore other entries. This lets recipes with multiple outputs share the metadata.
 - The declared names MUST exactly match the names in `virtual_packages` in the detector's [JSON output](#example). The list includes names even when detection finds them absent on a particular machine.
+- Build tools MAY expose this metadata through recipes or other configuration. This CEP specifies only its representation in the package archive.
+
+#### Using package metadata
+
+- Channel tools MUST use only the entry whose key matches the package's normalized name in `info/index.json` and ignore other entries. This lets recipes with multiple outputs share the metadata.
 - Channel tools MUST NOT combine different name sets from different builds into one registration.
 - Maintainers SHOULD keep the name set stable across all builds that clients may resolve for a registration.
-- Build tools MAY expose this metadata through recipes or other configuration. This CEP specifies only its representation in the package archive.
 - Channels remain responsible for publishing valid registrations. Clients need not read this metadata.
 
 ### Names and channel priority
