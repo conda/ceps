@@ -109,7 +109,6 @@ Channel tools, such as indexers and package UIs, can use this metadata to fill i
 - Channel tools MUST NOT combine different name sets from different builds into one registration.
 - Maintainers SHOULD keep the name set stable across all builds that clients may resolve for a registration.
 - Build tools MAY expose this metadata through recipes or other configuration. This CEP specifies only its representation in the package archive.
-- The declaration does not itself register a detector, select a publication subdir or authorize execution.
 - Channels remain responsible for publishing valid registrations. Clients need not read this metadata.
 
 ### Names and channel priority
