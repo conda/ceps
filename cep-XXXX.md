@@ -88,7 +88,7 @@ A channel serving both forms MUST publish consistent registrations. Clients need
 ### Optional package metadata
 
 Detector packages MAY declare the virtual package names they report in `info/about.json` under `extra.virtual_package_detectors`.
-Channel tooling and UIs can use this metadata to fill in registrations without running the detector:
+Channel tools, such as indexers and package UIs, can use this metadata to fill in registrations without running the detector:
 
 ```json
 {
@@ -100,18 +100,17 @@ Channel tooling and UIs can use this metadata to fill in registrations without r
 }
 ```
 
-The field MUST be an object mapping normalized detector package names to arrays of 1 to 16 unique, valid virtual package names.
-Tooling MUST use only the entry matching the package's normalized name from `info/index.json` and ignore other entries.
-This lets multi-output recipes share the metadata.
-A missing entry provides no declaration; a malformed field or matching entry MUST NOT be used to fill in a registration.
-
-The declared names MUST exactly match the virtual package names in the detector's report, including names reported as `null` when absent.
-Tooling MUST NOT combine different name sets from different builds into one registration.
-Maintainers SHOULD keep the name set stable across all builds that clients may resolve for a registration.
-
-Build tools MAY expose this metadata through recipes or other configuration; this CEP specifies only its representation in the package archive.
-The declaration does not itself register a detector, select a publication subdir or authorize execution.
-Channels remain responsible for publishing valid registrations; clients need not read this metadata.
+- The field MUST be a JSON object.
+- Each key MUST be a normalized detector package name, such as `mpi-detect`.
+- Each value MUST be an array of 1 to 16 unique virtual package names that follow the [registration name rules](#registration-metadata).
+- Channel tools MUST use only the entry whose key matches the package's normalized name in `info/index.json` and ignore other entries. This lets recipes with multiple outputs share the metadata.
+- A missing field or entry provides no declaration. Channel tools MUST NOT use a malformed field or matching entry to fill in a registration.
+- The declared names MUST exactly match the names in `virtual_packages` in the detector's [JSON output](https://github.com/Hofer-Julian/ceps/blob/virtual-package-detector-protocol/cep-XXXX.md#the-report). The list includes names even when detection finds them absent on a particular machine.
+- Channel tools MUST NOT combine different name sets from different builds into one registration.
+- Maintainers SHOULD keep the name set stable across all builds that clients may resolve for a registration.
+- Build tools MAY expose this metadata through recipes or other configuration. This CEP specifies only its representation in the package archive.
+- The declaration does not itself register a detector, select a publication subdir or authorize execution.
+- Channels remain responsible for publishing valid registrations. Clients need not read this metadata.
 
 ### Names and channel priority
 
