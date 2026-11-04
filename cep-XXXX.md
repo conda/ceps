@@ -85,6 +85,34 @@ Schema errors are handled separately as described above.
 For [CEP 16](./cep-0016.md) sharded repodata, `virtual_package_detectors` MAY appear in the shard index's `info` dictionary with the same schema and semantics.
 A channel serving both forms MUST publish consistent registrations. Clients need only read the form they loaded.
 
+### Optional package metadata
+
+Detector packages MAY declare the virtual package names they report in `info/about.json` under `extra.virtual_package_detectors`.
+Channel tools, such as indexers and package UIs, can use this metadata to fill in registrations without running the detector:
+
+```json
+{
+  "extra": {
+    "virtual_package_detectors": {
+      "mpi-detect": ["__conda_forge_openmpi", "__conda_forge_mpich"]
+    }
+  }
+}
+```
+
+- The field MUST be a JSON object.
+- Each key MUST be a normalized detector package name, such as `mpi-detect`.
+- Each value MUST be an array of 1 to 16 unique virtual package names that follow the [registration name rules](#registration-metadata).
+- The declared names MUST exactly match the names in `virtual_packages` in the detector's [JSON output](#example). The list includes names even when detection finds them absent on a particular machine.
+- Build tools MAY expose this metadata through recipes or other configuration. This CEP specifies only its representation in the package archive.
+
+#### Using package metadata
+
+- Channel tools MUST use only the entry whose key matches the package's normalized name in `info/index.json` and ignore other entries. This lets recipes with multiple outputs share the metadata.
+- Channel tools MUST NOT combine different name sets from different builds into one registration.
+- Maintainers SHOULD keep the name set stable across all builds that clients may resolve for a registration. Registrations do not pin a version or build, so a client may select an older detector whose output fails validation if it reports different names.
+- Channels remain responsible for publishing valid registrations. Clients need not read this metadata.
+
 ### Names and channel priority
 
 A virtual package name has one meaning throughout a solve.
