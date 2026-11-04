@@ -110,7 +110,7 @@ Channel tools, such as indexers and package UIs, can use this metadata to fill i
 
 - Channel tools MUST use only the entry whose key matches the package's normalized name in `info/index.json` and ignore other entries. This lets recipes with multiple outputs share the metadata.
 - Channel tools MUST NOT combine different name sets from different builds into one registration.
-- Maintainers SHOULD keep the name set stable across all builds that clients may resolve for a registration.
+- Maintainers SHOULD keep the name set stable across all builds that clients may resolve for a registration. Registrations do not pin a version or build, so a client may select an older detector whose output fails validation if it reports different names.
 - Channels remain responsible for publishing valid registrations. Clients need not read this metadata.
 
 ### Names and channel priority
