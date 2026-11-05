@@ -96,6 +96,12 @@ Clients SHOULD warn once per skipped registration and name its override variable
 
 Clients SHOULD avoid execution when no applicable name can affect the solve.
 They MUST NOT skip a registration whose applicable names the solve could reference, or rely on exact prediction or skipping for correctness.
+
+Clients MAY install package records resolved earlier without solving, for example from a lock file.
+Detector results can then only affect the virtual-package dependencies the client checks those records against.
+Clients MAY skip registrations whose applicable names none of those dependencies reference, but MUST NOT skip the others.
+Registrations MUST be selected as they would be for a solve of the same environment, so that each name is reported by the same detector as when the records were resolved.
+
 Clients MAY cache results and avoid re-running the detector while the cache is valid.
 
 To execute a detector, the client MUST:
