@@ -1,0 +1,10 @@
+name: env-name
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.7
+  - codecov
+variables:
+  VAR1: valueA
+  VAR2: valueB
